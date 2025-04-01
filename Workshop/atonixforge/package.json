@@ -26,7 +26,7 @@
    "redux": "^4.1.0",
  "react-redux": "^7.2.4",
  "redux-thunk": "^2.3.0",
- "axios": "^0.21.1",
+ "axios": "^0.29.0",
  "auth0-js": "^9.15.0",
  "tailwindcss": "^2.2.7",
  "helmet": "^4.6.0",
