@@ -1,5 +1,5 @@
 
-FROM node:23.7.0-bookworm
+FROM node:23.11.0-bookworm
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
