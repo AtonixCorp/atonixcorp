@@ -4,8 +4,7 @@ go 1.23.0
 
 require (
 	github.com/canonical/go-dqlite/v3 v3.0.0
-	github.com/lib/pq v1.10.9
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
+	golang.org/x/sys v0.1.0
 )
 
 require (
