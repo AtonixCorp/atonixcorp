@@ -4,79 +4,71 @@
 version: '3.8'
 
 services:
-  app:
-    image: quay.io/atonixdev/atonixcorp-platform:latest
-    ports:
-      - "80:80"
-      - "443:443"
+  backend:
+    image: atonixdev/atonixcorp-backend:1.0.0
+    container_name: atonixcorp_backend
     environment:
-      # Django settings
       - ENVIRONMENT=production
       - DEBUG=False
       - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=atonixcorp.org,www.atonixcorp.org,api.atonixcorp.org
-      
-      # Database settings
+      - ALLOWED_HOSTS=api.atonixcorp.org
       - DATABASE_URL=${DATABASE_URL}
-      
-      # Security settings
-      - USE_HTTPS=True
-      - SECURE_SSL_REDIRECT=True
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - API_KEY_SALT=${API_KEY_SALT}
-      - AES_PASSWORD=${AES_PASSWORD}
-      - AES_SALT=${AES_SALT}
-      
-      # CORS settings
-      - CORS_ALLOWED_ORIGINS=https://atonixcorp.org,https://www.atonixcorp.org
-      
-      # Cache and session settings
       - REDIS_URL=${REDIS_URL}
-      
-      # Email settings
       - EMAIL_HOST=${EMAIL_HOST}
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USE_TLS=True
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - DEFAULT_FROM_EMAIL=noreply@atonixcorp.org
-      
-      # Monitoring and observability
       - OTEL_ENABLED=True
-      - OTEL_SERVICE_NAME=atonixcorp-platform-prod
-      - OTEL_SERVICE_VERSION=1.0.0
-      - JAEGER_ENDPOINT=${JAEGER_ENDPOINT}
+      - OTEL_SERVICE_NAME=atonixcorp-backend
       - PROMETHEUS_METRICS_PORT=8001
-      
-      # External services (optional)
-      - KAFKA_ENABLED=${KAFKA_ENABLED:-false}
-      - ZOOKEEPER_ENABLED=${ZOOKEEPER_ENABLED:-false}
-      
     volumes:
-      # SSL certificates
+      - app_media:/app/media
+      - app_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - atonix-network
+
+  frontend:
+    image: atonixdev/atonixcorp-frontend:1.0.0
+    container_name: atonixcorp_frontend
+    environment:
+      - REACT_APP_API_URL=https://api.atonixcorp.org
+      - REACT_APP_ENVIRONMENT=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - atonix-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: atonixcorp_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx-production.conf:/etc/nginx/nginx.conf:ro
       - ./ssl/atonixcorp.org.crt:/etc/ssl/certs/atonixcorp.org.crt:ro
       - ./ssl/atonixcorp.org.key:/etc/ssl/private/atonixcorp.org.key:ro
       - ./ssl/api.atonixcorp.org.crt:/etc/ssl/certs/api.atonixcorp.org.crt:ro
       - ./ssl/api.atonixcorp.org.key:/etc/ssl/private/api.atonixcorp.org.key:ro
-      - ./ssl/default.crt:/etc/ssl/certs/default.crt:ro
-      - ./ssl/default.key:/etc/ssl/private/default.key:ro
-      
-      # Persistent data
-      - app_media:/app/media
-      - app_logs:/app/logs
-      
-      # Production nginx config
-      - ./docker/nginx-production.conf:/etc/nginx/sites-available/default:ro
-      
+      - app_media:/var/www/media
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "https://api.atonixcorp.org/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    
     networks:
       - atonix-network
 
