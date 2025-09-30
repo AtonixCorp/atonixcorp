@@ -1,5 +1,5 @@
 {
-    "circleci.filters.branchFilter": "default",
+    "circleci.filters.branchFilter": "allBranches",
     "circleci.filters.statusFilter": {
         "canceled": true,
         "failed": true,
@@ -17,5 +17,8 @@
         "on_hold": true,
         "success": true,
         "unauthorized": true
-    }
+    },
+    "circleci.persistedProjectSelection": [
+        "gh/AtonixCorp/atonixcorp-platform"
+    ]
 }

@@ -79,7 +79,9 @@ install_prerequisites() {
         build-essential \
         python3 \
         python3-pip \
-        openjdk-11-jdk \
+    # Use Eclipse Temurin 21 (latest LTS) instead of OpenJDK 11
+    # On Debian/Ubuntu you may need to add the Adoptium/Temurin APT repo before installing.
+    temurin-21-jdk \
         postgresql \
         postgresql-contrib \
         nginx \

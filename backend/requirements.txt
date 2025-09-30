@@ -76,3 +76,7 @@ python-dateutil==2.9.0
 # Apache Spark
 pyspark>=3.5.0
 findspark>=2.0.1
+ 
+# Monitoring
+prometheus-client>=0.17.0
+influxdb>=5.3.1
