@@ -1,0 +1,11 @@
+version: 2.1
+workflows:
+  testing:
+    jobs:
+      - runner-test
+jobs:
+  runner-test:
+    machine:
+      image: ubuntu-2404:current
+    steps:
+      - run: echo "Hi I'm on Runners!"

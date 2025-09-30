@@ -23,9 +23,15 @@ from rest_framework.response import Response
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from drf_spectacular.utils import extend_schema
 from .auth_views import LoginView, SignupView, LogoutView, MeView
+from observability.views import telemetry_endpoint
 from core.health import health_check
 from core.api_utils import APIRootSerializer
 from core.views import landing_page, api_info, api_documentation
+from .quantum_views import submit_job, job_status
+from core.quantum_client import submit_quantum_job, get_job_status
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponseBadRequest
+import json
 
 # Import custom admin
 # from core.admin import admin_site  # Temporarily disabled
@@ -143,6 +149,8 @@ urlpatterns = [
     path('api/auth/signup/', SignupView.as_view(), name='api-signup'),
     path('api/auth/logout/', LogoutView.as_view(), name='api-logout'),
     path('api/auth/me/', MeView.as_view(), name='api-me'),
+    # Telemetry ingest endpoint for development
+    path('api/telemetry/', telemetry_endpoint, name='api-telemetry'),
     
     # Core application endpoints
     path('api/', include('projects.urls')),
@@ -157,6 +165,10 @@ urlpatterns = [
     
     # System and monitoring endpoints
     # path('api/zookeeper/', include('core.zookeeper_urls')),  # Temporarily disabled
+
+    # Quantum service proxy (development)
+    path('api/quantum/submit/', submit_job, name='quantum-submit'),
+    path('api/quantum/status/<str:job_id>/', job_status, name='quantum-status'),
 ]
 
 # Serve media files during development

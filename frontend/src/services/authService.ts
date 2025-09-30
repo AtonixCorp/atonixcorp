@@ -84,6 +84,7 @@ export const authService = {
       const backendUser = response.data.user;
       const normalizedUser: any = {
         id: backendUser.id,
+        uuid: backendUser.uuid,
         username: backendUser.username,
         email: backendUser.email,
         first_name: backendUser.first_name,
@@ -191,6 +192,7 @@ export const authService = {
     const backendUser = response.data.user;
     return {
       id: backendUser.id,
+      uuid: backendUser.uuid,
       username: backendUser.username,
       email: backendUser.email,
       first_name: backendUser.first_name,

@@ -1,0 +1,21 @@
+{
+    "circleci.filters.branchFilter": "default",
+    "circleci.filters.statusFilter": {
+        "canceled": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true
+    },
+    "circleci.notifications.statusFilter": {
+        "canceled": true,
+        "error": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true,
+        "unauthorized": true
+    }
+}

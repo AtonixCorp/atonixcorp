@@ -17,6 +17,7 @@ export interface SocialLoginResponse {
 
 export interface User {
   id: number;
+  uuid?: string;
   username: string;
   email: string;
   first_name: string;

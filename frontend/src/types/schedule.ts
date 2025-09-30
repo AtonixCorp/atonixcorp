@@ -1,5 +1,5 @@
 export interface ScheduleItem {
-  id: number;
+  id: string;
   owner: number;
   owner_username?: string;
   title: string;

@@ -1,8 +1,15 @@
 import os
 import logging
+import uuid
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def generate_uuid(prefix: str = "") -> str:
+    """Generate a UUID with optional prefix for readability."""
+    uid = str(uuid.uuid4())
+    return f"{prefix}{uid}" if prefix else uid
 
 
 def get_spark_conf_from_env() -> Dict[str, str]:

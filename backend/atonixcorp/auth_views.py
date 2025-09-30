@@ -7,6 +7,29 @@ from django.utils.decorators import method_decorator
 from django.views import View
 import json
 from rest_framework.authtoken.models import Token
+from core.models import UserProfile
+from core import gpg_utils
+
+
+def _user_from_token_header(request):
+    """Helper to extract user from Authorization header if present.
+
+    Supports header: Authorization: Token <key>
+    """
+    auth = request.META.get('HTTP_AUTHORIZATION', '')
+    if not auth:
+        return None
+    parts = auth.split()
+    if len(parts) != 2:
+        return None
+    scheme, key = parts
+    if scheme.lower() != 'token':
+        return None
+    try:
+        token = Token.objects.get(key=key)
+        return token.user
+    except Token.DoesNotExist:
+        return None
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -35,10 +58,14 @@ class LoginView(View):
                 # Create or get token for API authentication
                 token, created = Token.objects.get_or_create(user=user)
                 
+                # Get or create user profile for UUID
+                profile, created = UserProfile.objects.get_or_create(user=user)
+                
                 return JsonResponse({
                     'message': 'Login successful',
                     'user': {
                         'id': user.id,
+                        'uuid': str(profile.uuid),
                         'username': user.username,
                         'email': user.email,
                         'first_name': user.first_name,
@@ -136,13 +163,40 @@ class SignupView(View):
             # Create token for API authentication
             token = Token.objects.create(user=user)
             
+            # Create user profile for UUID
+            profile = UserProfile.objects.create(user=user)
+
+            # Optionally generate a GPG keypair for the user and return the
+            # plaintext private key once in the signup response. The request
+            # may include an optional `gpg_passphrase` to protect the private key.
+            one_time_private_key = None
+            try:
+                gpg_passphrase = data.get('gpg_passphrase', '')
+                name_email = f"{first_name} {last_name} <{email}>"
+                fingerprint, public_key, encrypted_private, private_key = gpg_utils.generate_gpg_keypair(name_email, passphrase=gpg_passphrase)
+
+                # Save metadata to profile
+                profile.gpg_fingerprint = fingerprint
+                profile.gpg_public_key = public_key
+                profile.gpg_private_key_encrypted = encrypted_private
+                profile.save()
+
+                # Expose the plaintext private key exactly once in response
+                one_time_private_key = private_key
+            except Exception as e:
+                # Don't fail signup for GPG generation issues; surface warning
+                gpg_error = str(e)
+            else:
+                gpg_error = None
+            
             # Log the user in
             login(request, user)
             
-            return JsonResponse({
+            resp = {
                 'message': 'Account created successfully',
                 'user': {
                     'id': user.id,
+                    'uuid': str(profile.uuid),
                     'username': user.username,
                     'email': user.email,
                     'first_name': user.first_name,
@@ -154,7 +208,18 @@ class SignupView(View):
                     'last_login': user.last_login.isoformat() if hasattr(user, 'last_login') and user.last_login else None,
                 },
                 'token': token.key
-            }, status=201)
+            }
+
+            # Include one-time private key in response when available. This is
+            # the only time the plaintext private key will be returned; it is
+            # the client's responsibility to persist it securely for the user.
+            if one_time_private_key:
+                resp['one_time_private_key'] = one_time_private_key
+
+            if gpg_error:
+                resp['gpg_error'] = gpg_error
+
+            return JsonResponse(resp, status=201)
             
         except json.JSONDecodeError:
             return JsonResponse({
@@ -195,19 +260,27 @@ class LogoutView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class MeView(View):
     def get(self, request):
-        if request.user.is_authenticated:
+        # Allow token-authenticated requests (API clients) in addition to session auth
+        user = request.user if request.user.is_authenticated else _user_from_token_header(request)
+        if user and user.is_authenticated:
+            try:
+                profile = UserProfile.objects.get(user=user)
+                user_uuid = str(profile.uuid)
+            except UserProfile.DoesNotExist:
+                user_uuid = None
             return JsonResponse({
                 'user': {
-                    'id': request.user.id,
-                    'username': request.user.username,
-                    'email': request.user.email,
-                    'first_name': request.user.first_name,
-                    'last_name': request.user.last_name,
-                    'is_staff': request.user.is_staff,
-                    'is_superuser': request.user.is_superuser,
-                    'is_active': request.user.is_active,
-                    'date_joined': request.user.date_joined.isoformat() if hasattr(request.user, 'date_joined') else None,
-                    'last_login': request.user.last_login.isoformat() if hasattr(request.user, 'last_login') and request.user.last_login else None,
+                    'id': user.id,
+                    'uuid': user_uuid,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                    'is_active': user.is_active,
+                    'date_joined': user.date_joined.isoformat() if hasattr(user, 'date_joined') else None,
+                    'last_login': user.last_login.isoformat() if hasattr(user, 'last_login') and user.last_login else None,
                 }
             })
         else:

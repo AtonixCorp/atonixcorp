@@ -8,7 +8,7 @@ export const scheduleService = {
     const resp = await api.get<ScheduleItem[]>('/schedule/');
     return resp.data;
   },
-  retrieve: async (id: number): Promise<ScheduleItem> => {
+  retrieve: async (id: string): Promise<ScheduleItem> => {
     const resp = await api.get<ScheduleItem>(`/schedule/${id}/`);
     return resp.data;
   },
@@ -16,18 +16,18 @@ export const scheduleService = {
     const resp = await api.post<ScheduleItem>('/schedule/', payload);
     return resp.data;
   },
-  update: async (id: number, payload: Partial<CreateScheduleItem | ScheduleItem>): Promise<ScheduleItem> => {
+  update: async (id: string, payload: Partial<CreateScheduleItem | ScheduleItem>): Promise<ScheduleItem> => {
     const resp = await api.put<ScheduleItem>(`/schedule/${id}/`, payload);
     return resp.data;
   },
-  partialUpdate: async (id: number, payload: Partial<CreateScheduleItem | ScheduleItem>): Promise<ScheduleItem> => {
+  partialUpdate: async (id: string, payload: Partial<CreateScheduleItem | ScheduleItem>): Promise<ScheduleItem> => {
     const resp = await api.patch<ScheduleItem>(`/schedule/${id}/`, payload);
     return resp.data;
   },
-  remove: async (id: number): Promise<void> => {
+  remove: async (id: string): Promise<void> => {
     await api.delete(`/schedule/${id}/`);
   },
-  markReminderSent: async (id: number): Promise<void> => {
+  markReminderSent: async (id: string): Promise<void> => {
     await api.post(`/schedule/${id}/mark_reminder_sent/`);
   }
 };

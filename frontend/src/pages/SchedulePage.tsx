@@ -38,7 +38,7 @@ const SchedulePage: React.FC = () => {
     setOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this item?')) return;
     await scheduleService.remove(id);
     await load();
