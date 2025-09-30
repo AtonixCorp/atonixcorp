@@ -72,3 +72,7 @@ python-dateutil==2.9.0
 
 # OpenTelemetry and Observability
 -r requirements-opentelemetry.txt
+
+# Apache Spark
+pyspark>=3.5.0
+findspark>=2.0.1

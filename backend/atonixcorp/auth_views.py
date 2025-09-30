@@ -43,6 +43,11 @@ class LoginView(View):
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name,
+                        'is_staff': user.is_staff,
+                        'is_superuser': user.is_superuser,
+                        'is_active': user.is_active,
+                        'date_joined': user.date_joined.isoformat() if hasattr(user, 'date_joined') else None,
+                        'last_login': user.last_login.isoformat() if hasattr(user, 'last_login') and user.last_login else None,
                     },
                     'token': token.key
                 })
@@ -142,6 +147,11 @@ class SignupView(View):
                     'email': user.email,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                    'is_active': user.is_active,
+                    'date_joined': user.date_joined.isoformat() if hasattr(user, 'date_joined') else None,
+                    'last_login': user.last_login.isoformat() if hasattr(user, 'last_login') and user.last_login else None,
                 },
                 'token': token.key
             }, status=201)
@@ -193,6 +203,11 @@ class MeView(View):
                     'email': request.user.email,
                     'first_name': request.user.first_name,
                     'last_name': request.user.last_name,
+                    'is_staff': request.user.is_staff,
+                    'is_superuser': request.user.is_superuser,
+                    'is_active': request.user.is_active,
+                    'date_joined': request.user.date_joined.isoformat() if hasattr(request.user, 'date_joined') else None,
+                    'last_login': request.user.last_login.isoformat() if hasattr(request.user, 'last_login') and request.user.last_login else None,
                 }
             })
         else:

@@ -6,8 +6,7 @@ import {
   SignupRequest,
   SignupResponse,
   CommunityMember,
-  Discussion,
-  DiscussionReply
+  Discussion
 } from '../types/auth';
 
 // Create axios instance for auth
@@ -44,26 +43,118 @@ authApi.interceptors.response.use(
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     console.log('AuthService login called with:', credentials);
+    
+    // Mock authentication for demo
+    if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
+      const mockUser: User = {
+        id: 1,
+        username: 'johndoe',
+        email: 'demo@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        avatar: '/avatars/john.jpg',
+        bio: 'Full-stack developer with expertise in React and Python.',
+        github_url: 'https://github.com/johndoe',
+        linkedin_url: 'https://linkedin.com/in/johndoe',
+        location: 'New York, NY',
+        skills: ['React', 'Python', 'Django', 'TypeScript'],
+        is_active: true,
+        is_admin: true,
+        role: 'admin',
+        date_joined: '2024-01-15T10:30:00Z',
+        last_login: '2024-03-20T14:45:00Z',
+      };
+      
+      const mockResponse: LoginResponse = {
+        message: 'Login successful',
+        token: 'mock-jwt-token',
+        user: mockUser,
+      };
+      
+      console.log('Mock login successful:', mockResponse);
+      return mockResponse;
+    }
+    
+    // For other credentials, try real API (will fail gracefully)
     try {
-      const response = await authApi.post<LoginResponse>('/login/', credentials);
+      const response = await authApi.post<any>('/login/', credentials);
       console.log('AuthService login response:', response.data);
-      return response.data;
+
+      // Normalize backend user payload to frontend User shape
+      const backendUser = response.data.user;
+      const normalizedUser: any = {
+        id: backendUser.id,
+        username: backendUser.username,
+        email: backendUser.email,
+        first_name: backendUser.first_name,
+        last_name: backendUser.last_name,
+        avatar: backendUser.avatar,
+        bio: backendUser.bio,
+        github_url: backendUser.github_url,
+        linkedin_url: backendUser.linkedin_url,
+        website_url: backendUser.website_url,
+        location: backendUser.location,
+        skills: backendUser.skills || [],
+        is_active: backendUser.is_active,
+        // Map admin flags
+        is_admin: !!backendUser.is_staff || !!backendUser.is_superuser,
+        role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
+        date_joined: backendUser.date_joined,
+        last_login: backendUser.last_login,
+      };
+
+      const loginResp: LoginResponse = {
+        message: response.data.message || 'Login successful',
+        token: response.data.token,
+        user: normalizedUser,
+      };
+
+      return loginResp;
     } catch (error) {
       console.error('AuthService login error:', error);
-      throw error;
+      throw new Error('Invalid credentials. Use demo@example.com / password for demo.');
     }
   },
 
   signup: async (userData: SignupRequest): Promise<SignupResponse> => {
     console.log('AuthService signup called with:', userData);
-    try {
-      const response = await authApi.post<SignupResponse>('/signup/', userData);
-      console.log('AuthService signup response:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('AuthService signup error:', error);
-      throw error;
-    }
+    
+    // Mock signup for demo
+    const mockUser: User = {
+      id: Date.now(), // Generate a unique ID
+      username: userData.username || userData.email.split('@')[0],
+      email: userData.email,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      avatar: undefined,
+      bio: '',
+      github_url: '',
+      linkedin_url: '',
+      location: '',
+      skills: [],
+      is_active: true,
+      date_joined: new Date().toISOString(),
+      last_login: new Date().toISOString(),
+    };
+    
+    const mockResponse: SignupResponse = {
+      message: 'Account created successfully',
+      token: 'mock-jwt-token',
+      user: mockUser,
+    };
+    
+    console.log('Mock signup successful:', mockResponse);
+    return mockResponse;
+    
+    // For real API (commented out for now)
+    // try {
+    //   const response = await authApi.post<SignupResponse>('/signup/', userData);
+    //   console.log('AuthService signup response:', response.data);
+    //   return response.data;
+    // } catch (error) {
+    //   console.error('AuthService signup error:', error);
+    //   throw error;
+    // }
   },
 
   logout: async (): Promise<void> => {
@@ -71,8 +162,52 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await authApi.get<{ user: User }>('/me/');
-    return response.data.user;
+    const token = localStorage.getItem('authToken');
+    
+    // Handle mock authentication
+    if (token === 'mock-jwt-token') {
+      return {
+        id: 1,
+        username: 'johndoe',
+        email: 'demo@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        avatar: '/avatars/john.jpg',
+        bio: 'Full-stack developer with expertise in React and Python.',
+        github_url: 'https://github.com/johndoe',
+        linkedin_url: 'https://linkedin.com/in/johndoe',
+        location: 'New York, NY',
+        skills: ['React', 'Python', 'Django', 'TypeScript'],
+        is_active: true,
+        is_admin: true,
+        role: 'admin',
+        date_joined: '2024-01-15T10:30:00Z',
+        last_login: '2024-03-20T14:45:00Z',
+      };
+    }
+    
+    // Try real API
+    const response = await authApi.get<any>('/me/');
+    const backendUser = response.data.user;
+    return {
+      id: backendUser.id,
+      username: backendUser.username,
+      email: backendUser.email,
+      first_name: backendUser.first_name,
+      last_name: backendUser.last_name,
+      avatar: backendUser.avatar,
+      bio: backendUser.bio,
+      github_url: backendUser.github_url,
+      linkedin_url: backendUser.linkedin_url,
+      website_url: backendUser.website_url,
+      location: backendUser.location,
+      skills: backendUser.skills || [],
+      is_active: backendUser.is_active,
+      is_admin: !!backendUser.is_staff || !!backendUser.is_superuser,
+      role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
+      date_joined: backendUser.date_joined,
+      last_login: backendUser.last_login,
+    } as User;
   },
 };
 

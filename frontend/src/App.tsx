@@ -40,6 +40,8 @@ import MyProjectsPage from './pages/MyProjectsPage';
 import ProjectAnalyticsPage from './pages/ProjectAnalyticsPage';
 import HelpPage from './pages/HelpPage';
 import DashboardTeamsPage from './pages/DashboardTeamsPage';
+import ManagementDashboard from './pages/ManagementDashboard';
+import AdminLoginPage from './pages/AdminLoginPage';
 
 // Auth Components
 import SocialCallback from './components/Auth/SocialCallback';
@@ -64,6 +66,27 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   return isAuthenticated ? <>{children}</> : null;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!isLoading && (!isAuthenticated || (!((user as any)?.is_admin) && (user as any)?.role !== 'admin'))) {
+      navigate('/');
+    }
+  }, [isAuthenticated, isLoading, user, navigate]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  return isAuthenticated && ((user as any)?.is_admin || (user as any)?.role === 'admin') ? <>{children}</> : null;
 };
 
 // Create premium professional theme for AtonixCorp
@@ -429,6 +452,14 @@ function App() {
                       </DashboardLayout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/admin" element={
+                    <AdminRoute>
+                      <DashboardLayout>
+                        <ManagementDashboard />
+                      </DashboardLayout>
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route path="/projects/:slug" element={<ProjectDetailPage />} />
                   <Route path="/teams" element={<TeamsPage />} />

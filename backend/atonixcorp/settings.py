@@ -101,6 +101,8 @@ INSTALLED_APPS = [
     'resources',
     'contact',
     'dashboard',
+    'static_pages',
+    'scheduling',
 ]
 
 MIDDLEWARE = [

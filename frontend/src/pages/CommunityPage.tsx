@@ -24,7 +24,6 @@ import {
   Group,
   Forum,
   Star,
-  TrendingUp,
   Add,
   ThumbUp,
   Comment,
@@ -33,6 +32,7 @@ import {
   Code,
   GitHub,
   LinkedIn,
+  Settings,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -40,6 +40,7 @@ import { mockCommunityService } from '../services/authService';
 import { CommunityMember, Discussion } from '../types/auth';
 import LoginDialog from '../components/Auth/LoginDialog';
 import SignupDialog from '../components/Auth/SignupDialog';
+import EditProfileDialog from '../components/Auth/EditProfileDialog';
 import CommunityDashboard from './CommunityDashboard';
 
 interface TabPanelProps {
@@ -75,6 +76,8 @@ const CommunityPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -111,15 +114,27 @@ const CommunityPage: React.FC = () => {
     return date.toLocaleDateString();
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'info' } = {
-      general: 'primary',
-      help: 'warning',
-      showcase: 'success',
-      feedback: 'info',
-      ideas: 'secondary',
-    };
-    return colors[category] || 'primary';
+  const handleSaveProfile = (updatedMember: CommunityMember) => {
+    setMembers(prev => prev.map(m => m.id === updatedMember.id ? updatedMember : m));
+    // In a real app, this would make an API call to save the changes
+    console.log('Profile updated:', updatedMember);
+  };
+
+  const getCategoryColor = (category: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+    switch (category.toLowerCase()) {
+      case 'general':
+        return 'default';
+      case 'help & support':
+        return 'info';
+      case 'project showcase':
+        return 'success';
+      case 'feedback':
+        return 'warning';
+      case 'ideas':
+        return 'primary';
+      default:
+        return 'default';
+    }
   };
 
   // Show dashboard if user is authenticated
@@ -468,6 +483,17 @@ const CommunityPage: React.FC = () => {
                       <LinkedIn />
                     </IconButton>
                   )}
+                  {isAuthenticated && user?.id === member.user.id && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setEditProfileOpen(true);
+                      }}
+                    >
+                      <Settings />
+                    </IconButton>
+                  )}
                 </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', textAlign: 'center' }}>
@@ -561,6 +587,12 @@ const CommunityPage: React.FC = () => {
           setSignupOpen(false);
           setLoginOpen(true);
         }}
+      />
+      <EditProfileDialog
+        open={editProfileOpen}
+        onClose={() => setEditProfileOpen(false)}
+        member={selectedMember}
+        onSave={handleSaveProfile}
       />
     </>
   );

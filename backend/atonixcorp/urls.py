@@ -151,6 +151,9 @@ urlpatterns = [
     path('api/', include('resources.urls')),
     path('api/', include('contact.urls')),
     path('api/dashboard/', include('dashboard.urls')),
+    path('api/', include('scheduling.urls')),
+    # Static informational pages accessible via footer links
+    path('pages/', include('static_pages.urls', namespace='static_pages')),
     
     # System and monitoring endpoints
     # path('api/zookeeper/', include('core.zookeeper_urls')),  # Temporarily disabled

@@ -29,6 +29,8 @@ export interface User {
   location?: string;
   skills: string[];
   is_active: boolean;
+  is_admin?: boolean;
+  role?: string;
   date_joined: string;
   last_login?: string;
 }
