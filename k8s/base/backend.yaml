@@ -47,7 +47,7 @@ spec:
     spec:
       initContainers:
       - name: migrate
-        image: atonixcorp/backend:latest
+        image: atonixdev/atonixcorp-backend:1.0.1
         command: ["python", "manage.py", "migrate"]
         envFrom:
         - configMapRef:
@@ -56,7 +56,7 @@ spec:
             name: django-secret
       containers:
       - name: backend
-        image: atonixcorp/backend:latest
+        image: atonixdev/atonixcorp-backend:1.0.1
         ports:
         - containerPort: 8000
         envFrom:

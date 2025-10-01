@@ -1,20 +1,24 @@
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
-
-# Install app dependencies
+# Install dependencies and build static assets
 COPY package*.json ./
-RUN npm ci --silent
-
-# Copy app
+RUN npm install --silent --no-audit --no-fund
 COPY . ./
+RUN npm run build
 
-# Expose port
-EXPOSE 3000
+FROM nginx:alpine
 
-# Start app
-CMD ["npm", "start"]
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built assets from builder
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Expose port 80 for nginx
+EXPOSE 80
+
+# Use default nginx command
+CMD ["nginx", "-g", "daemon off;"]

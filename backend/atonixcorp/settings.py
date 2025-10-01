@@ -109,10 +109,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # 'observability.middleware.OpenTelemetryMiddleware',  # Disabled for development
     # 'observability.middleware.PerformanceMonitoringMiddleware',  # Disabled for development
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    # Custom security middleware should run after sessions are available
     'security.middleware.SecurityMiddleware',  # Custom security middleware
     'security.middleware.IPWhitelistMiddleware',  # IP whitelist for admin
     'security.middleware.RequestValidationMiddleware',  # Request validation
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

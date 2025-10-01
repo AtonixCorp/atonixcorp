@@ -1,17 +1,13 @@
-# Production Environment Configuration
-# Use this file with docker-compose for production deployment
-
-version: '3.8'
-
 services:
   backend:
-    image: atonixdev/atonixcorp-backend:1.0.0
+    image: atonixdev/atonixcorp-backend:1.0.1
     container_name: atonixcorp_backend
     environment:
       - ENVIRONMENT=production
       - DEBUG=False
       - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=api.atonixcorp.org
+      - ALLOWED_HOSTS=api.atonixcorp.org,localhost,127.0.0.1,backend,backend:8000
+      - USE_HTTPS=False
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - EMAIL_HOST=${EMAIL_HOST}
@@ -26,7 +22,7 @@ services:
       - app_logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -42,7 +38,7 @@ services:
       - REACT_APP_ENVIRONMENT=production
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -55,13 +51,8 @@ services:
     container_name: atonixcorp_nginx
     ports:
       - "80:80"
-      - "443:443"
     volumes:
-      - ./docker/nginx-production.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl/atonixcorp.org.crt:/etc/ssl/certs/atonixcorp.org.crt:ro
-      - ./ssl/atonixcorp.org.key:/etc/ssl/private/atonixcorp.org.key:ro
-      - ./ssl/api.atonixcorp.org.crt:/etc/ssl/certs/api.atonixcorp.org.crt:ro
-      - ./ssl/api.atonixcorp.org.key:/etc/ssl/private/api.atonixcorp.org.key:ro
+      - ./docker/nginx-production.conf:/etc/nginx/conf.d/default.conf:ro
       - app_media:/var/www/media
     depends_on:
       backend:

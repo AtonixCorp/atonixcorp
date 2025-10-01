@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: atonixcorp
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: migrate
+        image: atonixdev/atonixcorp-backend:1.0.1

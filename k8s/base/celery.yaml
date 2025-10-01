@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: celery-worker
-        image: atonixcorp/backend:latest
+        image: atonixdev/atonixcorp-backend:1.0.1
         command: ["celery", "-A", "atonixcorp", "worker", "--loglevel=info", "--concurrency=4"]
         envFrom:
         - configMapRef:
@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
       - name: celery-beat
-        image: atonixcorp/backend:latest
+        image: atonixdev/atonixcorp-backend:1.0.1
         command: ["celery", "-A", "atonixcorp", "beat", "--loglevel=info", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
         envFrom:
         - configMapRef:
@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
       - name: flower
-        image: atonixcorp/backend:latest
+        image: atonixdev/atonixcorp-backend:1.0.1
         command: ["celery", "-A", "atonixcorp", "flower", "--port=5555"]
         ports:
         - containerPort: 5555
