@@ -49,7 +49,9 @@ kafka_min_isr = 1
 # Network Configuration
 allowed_hosts = ["localhost", "127.0.0.1", "atonixcorp.org", "api.atonixcorp.org"]
 cors_allowed_origins = ["https://atonixcorp.org", "https://www.atonixcorp.org", "http://localhost:3000"]
-api_url = "https://api.atonixcorp.org"
+api_url = "http://api.atonixcorp.org"
+allowed_hosts = ["localhost", "127.0.0.1", "atonixcorp.org", "api.atonixcorp.org", "www.atonixcorp.org"]
+cors_allowed_origins = ["http://atonixcorp.org", "http://www.atonixcorp.org", "http://localhost:3000"]
 
 # Domain Configuration
 domain_name = "atonixcorp.org"
