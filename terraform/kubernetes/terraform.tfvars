@@ -4,7 +4,7 @@
 project_name = "atonixcorp-platform"
 environment = "dev"
 app_version = "1.0.0"
-namespace = "atonixcorp-platform"
+namespace = "default"
 
 # Kubernetes Configuration
 kubeconfig_path = "~/.kube/config"
@@ -70,3 +70,49 @@ ingress_annotations = {}
 
 # Disable JMX to avoid ServiceMonitor CRD requirement
 zookeeper_enable_jmx = false
+
+# Resource limits for components
+resource_limits = {
+  backend = {
+    cpu_request    = "250m"
+    cpu_limit      = "500m"
+    memory_request = "512Mi"
+    memory_limit   = "1Gi"
+  }
+  frontend = {
+    cpu_request    = "100m"
+    cpu_limit      = "200m"
+    memory_request = "128Mi"
+    memory_limit   = "256Mi"
+  }
+  celery = {
+    cpu_request    = "100m"
+    cpu_limit      = "300m"
+    memory_request = "256Mi"
+    memory_limit   = "512Mi"
+  }
+  postgresql = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "512Mi"
+  }
+  redis = {
+    cpu_request    = "50m"
+    cpu_limit      = "200m"
+    memory_request = "128Mi"
+    memory_limit   = "256Mi"
+  }
+  zookeeper = {
+    cpu_request    = "100m"
+    cpu_limit      = "300m"
+    memory_request = "256Mi"
+    memory_limit   = "512Mi"
+  }
+  kafka = {
+    cpu_request    = "200m"
+    cpu_limit      = "500m"
+    memory_request = "512Mi"
+    memory_limit   = "1Gi"
+  }
+}

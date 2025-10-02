@@ -1,6 +1,15 @@
 # Bitbucket Pipelines Configuration for AtonixCorp Platform
 image: atlassian/default-image:3
 
+pipelines:
+  default:
+      - step:
+          runs-on:
+            - self.hosted
+            - linux
+          script:
+            - echo "This is the default pipeline. Please use branch-specific pipelines."
+
 definitions:
   services:
     postgres:
@@ -69,6 +78,14 @@ definitions:
           - trivy fs --format sarif --output trivy-results.sarif .
         artifacts:
           - trivy-results.sarif
+
+    - step: &harden-firewall
+        name: Harden firewall
+        image: ubuntu:latest
+        script:
+          - apt-get update && apt-get install -y ufw sudo
+          - chmod +x security/ufw-setup.sh
+          - ./security/ufw-setup.sh
 
     - step: &build-backend
         name: Build Backend Image
@@ -152,6 +169,7 @@ pipelines:
           variables:
             ENVIRONMENT: development
             NAMESPACE_SUFFIX: -dev
+      - step: *harden-firewall
 
   # Main branch pipeline
   branches:
@@ -175,13 +193,14 @@ pipelines:
           variables:
             ENVIRONMENT: production
             NAMESPACE_SUFFIX: ""
+      - step: *harden-firewall
       - step:
           name: Smoke Tests
           image: curlimages/curl
           script:
             - sleep 30  # Wait for deployment
-            - curl -f https://api.atonixcorp.com/api/health/ || exit 1
-            - curl -f https://atonixcorp.com/ || exit 1
+            - curl -f https://api.atonixcorp.org/api/health/ || exit 1
+            - curl -f https://atonixcorp.org/ || exit 1
             - echo "[OK] Deployment successful and smoke tests passed"
 
   # Infrastructure pipeline (Kubernetes only - no AWS Terraform)
@@ -212,6 +231,7 @@ pipelines:
           variables:
             ENVIRONMENT: staging
             NAMESPACE_SUFFIX: -staging
+      - step: *harden-firewall
 
     # Removed terraform-apply and terraform-destroy pipelines
     # Infrastructure is now managed through Kubernetes manifests

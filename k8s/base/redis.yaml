@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: redis-secret
-  namespace: atonixcorp
+
 type: Opaque
 data:
   # redis_password (base64)
@@ -12,20 +12,20 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: redis-pvc
-  namespace: atonixcorp
+
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
-  storageClassName: fast-ssd
+  storageClassName: standard
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: atonixcorp
+
   labels:
     app: redis
     component: cache
@@ -92,7 +92,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis
-  namespace: atonixcorp
+
   labels:
     app: redis
     component: cache

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: postgres-pv
-  namespace: atonixcorp
+
 spec:
   capacity:
     storage: 10Gi
@@ -11,13 +11,13 @@ spec:
   hostPath:
     path: /var/lib/atonixcorp/postgres
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: fast-ssd
+  storageClassName: standard
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: redis-pv
-  namespace: atonixcorp
+
 spec:
   capacity:
     storage: 5Gi
@@ -26,13 +26,13 @@ spec:
   hostPath:
     path: /var/lib/atonixcorp/redis
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: fast-ssd
+  storageClassName: standard
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: media-pv
-  namespace: atonixcorp
+
 spec:
   capacity:
     storage: 20Gi
@@ -41,4 +41,4 @@ spec:
   hostPath:
     path: /var/lib/atonixcorp/media
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs
+  storageClassName: standard

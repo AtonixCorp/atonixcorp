@@ -2,7 +2,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: postgres-secret
-  namespace: atonixcorp
 type: Opaque
 data:
   # atonixcorp_user (base64)
@@ -16,20 +15,18 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
-  namespace: atonixcorp
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
-  storageClassName: fast-ssd
+  storageClassName: standard
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: atonixcorp
   labels:
     app: postgres
     component: database
@@ -108,7 +105,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: atonixcorp
   labels:
     app: postgres
     component: database

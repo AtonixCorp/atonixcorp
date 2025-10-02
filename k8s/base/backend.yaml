@@ -2,7 +2,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: django-secret
-  namespace: atonixcorp
 type: Opaque
 data:
   # your-super-secret-key-change-in-production-with-50-chars-min (base64)
@@ -14,7 +13,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: django-config
-  namespace: atonixcorp
 data:
   DEBUG: "False"
   DATABASE_URL: "postgresql://atonixcorp_user:atonixcorp_password@postgres:5432/atonixcorp"
@@ -25,7 +23,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: atonixcorp
   labels:
     app: backend
     component: api
@@ -75,13 +72,13 @@ spec:
           httpGet:
             path: /api/health/
             port: 8000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /api/health/
             port: 8000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 5
         volumeMounts:
         - name: static-files
@@ -99,20 +96,18 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: media-pvc
-  namespace: atonixcorp
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: 20Gi
-  storageClassName: nfs
+  storageClassName: standard
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: atonixcorp
   labels:
     app: backend
     component: api
