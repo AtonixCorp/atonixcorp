@@ -1,0 +1,17 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ipv6-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - fd00:1234:5678:1::/64
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-advertise-ipv6
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - ipv6-pool

@@ -6,8 +6,8 @@ type: Opaque
 data:
   # your-super-secret-key-change-in-production-with-50-chars-min (base64)
   SECRET_KEY: eW91ci1zdXBlci1zZWNyZXQta2V5LWNoYW5nZS1pbi1wcm9kdWN0aW9uLXdpdGgtNTAtY2hhcnMtbWlu
-  # localhost,atonixcorp.org,backend,backend.default.svc.cluster.local,api.atonixcorp.org,www.atonixcorp.org,atonixcorp.org (base64)
-  ALLOWED_HOSTS: bG9jYWxob3N0LGF0b25peGNvcnAub3JnLGJhY2tlbmQsYmFja2VuZC5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsLGFwaS5hdG9uaXhjb3JwLm9yZyx3d3cuYXRvbml4Y29ycC5vcmcsYXRvbml4Y29ycC5vcmc=
+  # wildcard '*' to allow all hosts (base64) - temporary for cluster probes; replace with explicit hostnames for production
+  ALLOWED_HOSTS: Kg==
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -17,6 +17,9 @@ data:
   DEBUG: "False"
   DATABASE_URL: "postgresql://atonixcorp_user:atonixcorp_password@postgres:5432/atonixcorp"
   REDIS_URL: "redis://:redis_password@redis:6379/0"
+  # Celery envs use the same Redis URL for broker and result backend
+  CELERY_BROKER_URL: "redis://:redis_password@redis:6379/0"
+  CELERY_RESULT_BACKEND: "redis://:redis_password@redis:6379/0"
   CORS_ALLOWED_ORIGINS: "https://atonixcorp.org,https://www.atonixcorp.org"
 ---
 apiVersion: apps/v1

@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: celery-worker
-  namespace: atonixcorp
   labels:
     app: celery-worker
     component: worker
@@ -46,7 +45,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: celery-beat
-  namespace: atonixcorp
   labels:
     app: celery-beat
     component: scheduler
@@ -64,7 +62,9 @@ spec:
       containers:
       - name: celery-beat
         image: atonixdev/atonixcorp-backend:1.0.1
-        command: ["celery", "-A", "atonixcorp", "beat", "--loglevel=info", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+  # Avoid importing django_celery_beat at process startup until migrations
+  # are applied; run plain beat here and enable scheduler after migrations.
+  command: ["celery", "-A", "atonixcorp", "beat", "--loglevel=info"]
         envFrom:
         - configMapRef:
             name: django-config
@@ -82,7 +82,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flower
-  namespace: atonixcorp
   labels:
     app: flower
     component: monitor
@@ -101,6 +100,9 @@ spec:
       - name: flower
         image: atonixdev/atonixcorp-backend:1.0.1
         command: ["celery", "-A", "atonixcorp", "flower", "--port=5555"]
+        env:
+        - name: FLOWER_PORT
+          value: "5555"
         ports:
         - containerPort: 5555
         envFrom:
@@ -120,7 +122,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: flower
-  namespace: atonixcorp
   labels:
     app: flower
     component: monitor

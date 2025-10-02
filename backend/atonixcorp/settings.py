@@ -103,6 +103,8 @@ INSTALLED_APPS = [
     'dashboard',
     'static_pages',
     'scheduling',
+    # Celery beat integration for Django (periodic task persistence)
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
