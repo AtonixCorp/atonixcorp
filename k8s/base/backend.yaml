@@ -2,30 +2,27 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: django-secret
-  namespace: atonixcorp
 type: Opaque
 data:
   # your-super-secret-key-change-in-production-with-50-chars-min (base64)
   SECRET_KEY: eW91ci1zdXBlci1zZWNyZXQta2V5LWNoYW5nZS1pbi1wcm9kdWN0aW9uLXdpdGgtNTAtY2hhcnMtbWlu
-  # localhost,atonixcorp.com (base64)
-  ALLOWED_HOSTS: bG9jYWxob3N0LGF0b25peGNvcnAuY29t
+  # localhost,atonixcorp.org,backend,backend.default.svc.cluster.local,api.atonixcorp.org,www.atonixcorp.org,atonixcorp.org (base64)
+  ALLOWED_HOSTS: bG9jYWxob3N0LGF0b25peGNvcnAub3JnLGJhY2tlbmQsYmFja2VuZC5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsLGFwaS5hdG9uaXhjb3JwLm9yZyx3d3cuYXRvbml4Y29ycC5vcmcsYXRvbml4Y29ycC5vcmc=
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: django-config
-  namespace: atonixcorp
 data:
   DEBUG: "False"
   DATABASE_URL: "postgresql://atonixcorp_user:atonixcorp_password@postgres:5432/atonixcorp"
   REDIS_URL: "redis://:redis_password@redis:6379/0"
-  CORS_ALLOWED_ORIGINS: "https://atonixcorp.com,https://www.atonixcorp.com"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org,https://www.atonixcorp.org"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: atonixcorp
   labels:
     app: backend
     component: api
@@ -99,20 +96,18 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: media-pvc
-  namespace: atonixcorp
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: 20Gi
-  storageClassName: nfs
+  storageClassName: standard
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: atonixcorp
   labels:
     app: backend
     component: api
