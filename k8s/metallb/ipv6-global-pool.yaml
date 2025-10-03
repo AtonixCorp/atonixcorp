@@ -1,0 +1,12 @@
+# MetalLB IPv6 IPAddressPool - REPLACE the address block below with your globally-routable IPv6 prefix
+# Example: 2001:db8:abcd:1::/64 (use the prefix your ISP or datacenter assigned)
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ipv6-global
+  namespace: metallb-system
+spec:
+  addresses:
+  - 2001:db8:abcd:1::/64  # <-- REPLACE with your global IPv6 range
+  autoAssign: true
+  avoidBuggyIPs: false

@@ -4,7 +4,7 @@ resources:
   - name: atonixcorp-source
     type: git
     source:
-      uri: https://github.com/atonixdev/atonixcorp-platform.git
+      uri: https://github.com/atonixcorp/atonixcorp-platform.git
       branch: main
       private_key: ((git-private-key))
     webhook_token: ((webhook-token))

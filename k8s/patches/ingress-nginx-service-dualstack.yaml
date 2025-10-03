@@ -13,6 +13,12 @@ metadata:
   #   metallb.universe.tf/address-pool: "ipv6-pool"
 spec:
   type: LoadBalancer
+  # Example ipFamilies/Policy to request dual-stack. NOTE: this will be rejected
+  # unless the cluster is configured for IPv6/double-stack services.
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
+  # ipFamilyPolicy: PreferDualStack
   # NOTE: Dual-stack must be enabled cluster-wide for ipFamilies to be accepted.
   # This cluster does not appear to have IPv6 enabled, so ipFamilies/ipFamilyPolicy
   # are omitted to allow the Service to be applied. To enable dual-stack, update

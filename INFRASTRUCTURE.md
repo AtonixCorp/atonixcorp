@@ -156,7 +156,7 @@ export DATABASE_PASSWORD="your-secure-password"
 ./deploy.sh production-green
 
 # 2. Test green environment
-curl http://green.atonixcorp.com/api/health/
+curl http://green.atonixcorp.org/api/health/
 
 # 3. Switch traffic to green
 ./switch-traffic.sh green

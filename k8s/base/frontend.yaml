@@ -4,7 +4,7 @@ metadata:
   name: frontend-config
   namespace: atonixcorp
 data:
-  REACT_APP_API_URL: "https://api.atonixcorp.com/api"
+  REACT_APP_API_URL: "https://api.atonixcorp.org/api"
   REACT_APP_ENVIRONMENT: "production"
 ---
 apiVersion: apps/v1
@@ -69,6 +69,10 @@ metadata:
     component: ui
 spec:
   type: LoadBalancer
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: PreferDualStack
   ports:
   - port: 80
     targetPort: 80

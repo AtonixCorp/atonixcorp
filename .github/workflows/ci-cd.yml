@@ -296,8 +296,8 @@ jobs:
         sleep 30
         
         # Run smoke tests
-        curl -f https://api.atonixcorp.com/api/health/ || exit 1
-        curl -f https://atonixcorp.com/ || exit 1
+  curl -f https://api.atonixcorp.org/api/health/ || exit 1
+  curl -f https://atonixcorp.org/ || exit 1
         
         echo "✅ Deployment successful and smoke tests passed"
 

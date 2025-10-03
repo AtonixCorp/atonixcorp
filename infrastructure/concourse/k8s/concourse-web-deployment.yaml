@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concourse-web
+  namespace: concourse
+  labels:
+    app: concourse-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concourse-web
+  template:
+    metadata:
+      labels:
+        app: concourse-web
+    spec:
+      containers:
+        - name: concourse-web
+          image: concourse/concourse:7.11.2
+          args: ["web"]
+          ports:
+            - containerPort: 8080
+            - containerPort: 2222
+          env:
+            - name: CONCOURSE_POSTGRES_HOST
+              value: concourse-db
+            - name: CONCOURSE_POSTGRES_PORT
+              value: "5432"
+            - name: CONCOURSE_POSTGRES_DATABASE
+              value: concourse
+            - name: CONCOURSE_POSTGRES_USER
+              value: concourse
+            - name: CONCOURSE_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: concourse-secrets
+                  key: postgres-password
+            - name: CONCOURSE_EXTERNAL_URL
+              value: "https://concourse.example.com"
+            - name: CONCOURSE_ADD_LOCAL_USER
+              value: "admin:$(ADMIN_PASSWORD)"
+            - name: CONCOURSE_MAIN_TEAM_LOCAL_USER
+              value: admin
+            - name: CONCOURSE_SESSION_SIGNING_KEY
+              value: /concourse-keys/session_signing_key
+            - name: CONCOURSE_TSA_HOST_KEY
+              value: /concourse-keys/tsa_host_key
+            - name: CONCOURSE_TSA_AUTHORIZED_KEYS
+              value: /concourse-keys/authorized_worker_keys
+          volumeMounts:
+            - name: concourse-keys
+              mountPath: /concourse-keys
+              readOnly: true
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      volumes:
+        - name: concourse-keys
+          secret:
+            secretName: concourse-keys
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: concourse-web
+  namespace: concourse
+spec:
+  selector:
+    app: concourse-web
+  ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    - name: tsa
+      port: 2222
+      targetPort: 2222

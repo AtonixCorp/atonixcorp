@@ -8,7 +8,7 @@ app_version  = "1.0.0"
 namespace    = "atonixcorp-platform"
 
 # Domain and TLS
-domain_name     = "atonixcorp.com"
+domain_name     = "atonixcorp.org"
 tls_secret_name = "atonixcorp-tls"
 ingress_class   = "nginx"
 
@@ -55,10 +55,10 @@ celery_worker_min_replicas = 2
 celery_worker_max_replicas = 15
 
 # Application Configuration
-allowed_hosts = ["atonixcorp.com", "www.atonixcorp.com", "api.atonixcorp.com"]
+allowed_hosts = ["atonixcorp.org", "www.atonixcorp.org", "api.atonixcorp.org"]
 cors_allowed_origins = [
-  "https://atonixcorp.com",
-  "https://www.atonixcorp.com"
+  "https://atonixcorp.org",
+  "https://www.atonixcorp.org"
 ]
 api_url = "http://atonixcorp-platform-backend:8000"
 

@@ -18,12 +18,12 @@ spec:
   # so it can receive IPv6 traffic. See cluster/provider docs for enabling IPv6.
   tls:
   - hosts:
-    - atonixcorp.com
-    - www.atonixcorp.com
-    - api.atonixcorp.com
+    - atonixcorp.org
+    - www.atonixcorp.org
+    - api.atonixcorp.org
     secretName: atonixcorp-tls
   rules:
-  - host: atonixcorp.com
+  - host: atonixcorp.org
     http:
       paths:
       - path: /
@@ -33,7 +33,7 @@ spec:
             name: frontend
             port:
               number: 80
-  - host: www.atonixcorp.com
+  - host: www.atonixcorp.org
     http:
       paths:
       - path: /
@@ -43,7 +43,7 @@ spec:
             name: frontend
             port:
               number: 80
-  - host: api.atonixcorp.com
+  - host: api.atonixcorp.org
     http:
       paths:
       - path: /
@@ -68,10 +68,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - atonixcorp.com
+    - atonixcorp.org
     secretName: atonixcorp-single-tls
   rules:
-  - host: atonixcorp.com
+  - host: atonixcorp.org
     http:
       paths:
       - path: /api(/|$)(.*)

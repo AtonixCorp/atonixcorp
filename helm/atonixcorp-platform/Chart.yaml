@@ -13,20 +13,20 @@ keywords:
   - postgresql
   - redis
 
-home: https://atonixcorp.com
+home: https://atonixcorp.org
 sources:
   - https://github.com/atonixcorp/platform
 
 maintainers:
   - name: AtonixCorp DevOps Team
-    email: devops@atonixcorp.com
+    email: devops@atonixcorp.org
 
 dependencies:
   - name: postgresql
-    version: "12.x.x"
+    version: ">=10.0.0"
     repository: "https://charts.bitnami.com/bitnami"
     condition: postgresql.enabled
   - name: redis
-    version: "17.x.x"
+    version: ">=16.0.0"
     repository: "https://charts.bitnami.com/bitnami"
     condition: redis.enabled

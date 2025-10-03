@@ -76,21 +76,21 @@ spec:
 - For other DNS providers cert-manager supports many drivers (gcloud, digitalocean, powerdns, etc.). Ask which provider you use if it’s not listed here.
 - After creating ClusterIssuer, create a Certificate resource or annotate an Ingress with `cert-manager.io/cluster-issuer: <issuer-name>` and create an Ingress rule for your hostname. cert-manager will create the challenge.
 
-Example Certificate for domain `api.atonixcorp.com`:
+Example Certificate for domain `api.atonixcorp.org`:
 
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: api-atonixcorp-com-cert
-  namespace: default
+  name: api-atonixcorp-org-cert
+  namespace: atonixcorp
 spec:
   secretName: api-atonixcorp-com-tls
   dnsNames:
-  - api.atonixcorp.com
+  - api.atonixcorp.org
   issuerRef:
     name: letsencrypt-dns-cloudflare-staging
     kind: ClusterIssuer
 
-Once the Certificate resource is submitted, run `kubectl describe certificate api-atonixcorp-com-cert -n default` to view challenge status.
+Once the Certificate resource is submitted, run `kubectl describe certificate api-atonixcorp-org-cert -n atonixcorp` to view challenge status.
 
 If you want me to create the secret and ClusterIssuer directly, paste the provider name and the credential token(s) (or say you'll create the secret and I will just apply the ClusterIssuer YAML).

@@ -1,0 +1,31 @@
+# Caddyfile to provide IPv6 + TLS and proxy to MetalLB IPv4 services
+
+# api.atonixcorp.org -> backend service
+api.atonixcorp.org {
+    reverse_proxy /api/*  http://192.168.1.244:8000 {
+        header_up Host {host}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # optionally serve other backend endpoints
+    reverse_proxy http://192.168.1.244:8000 {
+        header_up Host {host}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# www.atonixcorp.org -> frontend
+www.atonixcorp.org {
+    reverse_proxy http://192.168.1.242 {
+        header_up Host {host}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# root domain - redirect to www
+atonixcorp.org {
+    redir https://www.atonixcorp.org{uri} 308
+}

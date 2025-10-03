@@ -5,11 +5,39 @@
 import os
 import json
 import logging
-from typing import Dict, Any, Optional, List
-from kazoo.client import KazooClient
-from kazoo.exceptions import NodeExistsError, NoNodeError
-from django.conf import settings
-from django.core.cache import cache
+from typing import Dict, Any, Optional, List, Callable
+try:
+    from django.utils import timezone
+    from kazoo.client import KazooClient
+    from kazoo.exceptions import NodeExistsError, NoNodeError
+    from django.conf import settings
+    from django.core.cache import cache
+except Exception:
+    # Fallbacks so module can be imported in test environments without kazoo or django
+    KazooClient = None
+    class NodeExistsError(Exception):
+        pass
+    class NoNodeError(Exception):
+        pass
+
+    class _DummySettings:
+        ENVIRONMENT = os.getenv('ENVIRONMENT', 'dev')
+
+    settings = _DummySettings()
+
+    class _SimpleCache(dict):
+        def set(self, key, value, timeout=None):
+            self[key] = value
+        def get(self, key, default=None):
+            return dict.get(self, key, default)
+
+    cache = _SimpleCache()
+
+    class timezone:
+        @staticmethod
+        def now():
+            import datetime
+            return datetime.datetime.utcnow()
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +55,8 @@ class ZookeeperManager:
     
     def __init__(self):
         self.zk_hosts = os.getenv('ZOOKEEPER_HOSTS', 'localhost:2181')
-        self.app_namespace = f"/atonixcorp/{settings.ENVIRONMENT}"
+        env = getattr(settings, 'ENVIRONMENT', os.getenv('ENVIRONMENT', 'dev'))
+        self.app_namespace = f"/atonixcorp/{env}"
         self.client = None
         self._connected = False
     
@@ -133,8 +162,6 @@ class ZookeeperManager:
         
         try:
             path = f"{self.app_namespace}/config/{key}"
-            
-            @self.client.DataWatch(path)
             def watch_func(data, stat, event):
                 if data:
                     try:
@@ -143,7 +170,10 @@ class ZookeeperManager:
                         callback(key, value)
                     except json.JSONDecodeError:
                         logger.error(f"Invalid JSON in config {key}")
-            
+
+            # Register DataWatch with kazoo
+            # client.DataWatch(path, func) will register the function immediately
+            self.client.DataWatch(path, watch_func)
             return True
             
         except Exception as e:
@@ -161,7 +191,7 @@ class ZookeeperManager:
                 'host': host,
                 'port': port,
                 'metadata': metadata or {},
-                'registered_at': json.dumps(timezone.now(), default=str)
+                'registered_at': timezone.now().isoformat()
             }
             
             path = f"{self.app_namespace}/services/{service_name}"

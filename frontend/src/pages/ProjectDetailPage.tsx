@@ -71,8 +71,8 @@ const ProjectDetailPage: React.FC = () => {
             ],
             start_date: '2024-01-01',
             github_url: 'https://github.com/AtonixCorp/atonixcorp-project',
-            documentation_url: 'https://docs.atonixcorp.com/atonixcorp-project',
-            website_url: 'https://platform.atonixcorp.com',
+            documentation_url: 'https://docs.atonixcorp.org/atonixcorp-project',
+            website_url: 'https://platform.atonixcorp.org',
             created_at: '2024-01-01',
             updated_at: '2024-12-01',
             features: [
@@ -128,7 +128,7 @@ const ProjectDetailPage: React.FC = () => {
             ],
             start_date: '2024-02-01',
             github_url: 'https://github.com/AtonixCorp/tmsvic-discovery',
-            documentation_url: 'https://docs.atonixcorp.com/tmsvic-discovery',
+            documentation_url: 'https://docs.atonixcorp.org/tmsvic-discovery',
             created_at: '2024-02-01',
             updated_at: '2024-11-01',
             features: [
@@ -177,7 +177,7 @@ const ProjectDetailPage: React.FC = () => {
             ],
             start_date: '2024-03-01',
             github_url: 'https://github.com/AtonixCorp/osrovnet',
-            documentation_url: 'https://docs.atonixcorp.com/osrovnet',
+            documentation_url: 'https://docs.atonixcorp.org/osrovnet',
             created_at: '2024-03-01',
             updated_at: '2024-10-01',
             features: [

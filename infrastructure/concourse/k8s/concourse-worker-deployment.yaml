@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concourse-worker
+  namespace: concourse
+  labels:
+    app: concourse-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: concourse-worker
+  template:
+    metadata:
+      labels:
+        app: concourse-worker
+    spec:
+      containers:
+        - name: concourse-worker
+          image: concourse/concourse:7.11.2
+          args: ["worker"]
+          env:
+            - name: CONCOURSE_TSA_HOST
+              value: concourse-web:2222
+            - name: CONCOURSE_TSA_PUBLIC_KEY
+              value: /concourse-keys/tsa_host_key.pub
+            - name: CONCOURSE_TSA_WORKER_PRIVATE_KEY
+              value: /concourse-keys/worker_key
+            - name: CONCOURSE_BIND_IP
+              value: 0.0.0.0
+          volumeMounts:
+            - name: concourse-keys
+              mountPath: /concourse-keys
+              readOnly: true
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      volumes:
+        - name: concourse-keys
+          secret:
+            secretName: concourse-keys

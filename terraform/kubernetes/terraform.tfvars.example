@@ -24,7 +24,7 @@ namespace    = "atonixcorp-platform"
 # ==============================================
 
 # Primary domain for the application
-domain_name = "atonixcorp.com"
+domain_name = "atonixcorp.org"
 
 # TLS certificate secret name (leave empty for HTTP)
 tls_secret_name = "atonixcorp-tls"
@@ -34,15 +34,15 @@ ingress_class = "nginx"
 
 # CORS allowed origins
 cors_allowed_origins = [
-  "https://atonixcorp.com",
-  "https://www.atonixcorp.com"
+  "https://atonixcorp.org",
+  "https://www.atonixcorp.org"
 ]
 
 # Django allowed hosts
 allowed_hosts = [
-  "atonixcorp.com",
-  "www.atonixcorp.com",
-  "api.atonixcorp.com"
+  "atonixcorp.org",
+  "www.atonixcorp.org",
+  "api.atonixcorp.org"
 ]
 
 # ==============================================

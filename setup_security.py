@@ -86,7 +86,7 @@ AUTH_LOCKOUT_TIME=900
 ADMIN_WHITELIST_IPS=127.0.0.1,::1
 
 # Monitoring
-SECURITY_ALERT_EMAIL=admin@atonixcorp.com
+SECURITY_ALERT_EMAIL=security@atonixcorp.org
 
 # Redis for caching
 REDIS_URL=redis://localhost:6379/1

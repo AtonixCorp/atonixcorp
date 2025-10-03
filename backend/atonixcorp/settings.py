@@ -69,7 +69,7 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@atonixcorp.com')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@atonixcorp.org')
 SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '30'))
 
@@ -314,7 +314,7 @@ SPECTACULAR_SETTINGS = {
     },
     'CONTACT': {
         'name': 'AtonixCorp API Team',
-        'email': 'api@atonixcorp.com',
+    'email': 'api@atonixcorp.org',
         'url': 'https://atonixcorp.org/contact'
     },
     'LICENSE': {

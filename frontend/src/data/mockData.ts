@@ -30,9 +30,9 @@ export const mockFocusAreas: FocusArea[] = [
     description: 'Core platform infrastructure and DevOps solutions for scalable, reliable systems',
     detailed_description: 'Building robust, scalable infrastructure solutions that power enterprise applications. Our expertise spans cloud architecture, container orchestration, CI/CD pipelines, and infrastructure automation. We focus on creating resilient systems that can handle massive scale while maintaining security and performance.',
     icon: 'cloud',
-    image: '/images/focus-areas/infrastructure.jpg',
+      website_url: 'https://platform.atonixcorp.org',
     color_theme: '#1976d2',
-    is_active: true,
+      documentation_url: 'https://docs.atonixcorp.org/platform',
     order: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
@@ -58,7 +58,7 @@ export const mockFocusAreas: FocusArea[] = [
         icon: 'terraform',
         website_url: 'https://terraform.io'
       },
-      {
+      documentation_url: 'https://docs.atonixcorp.org/tmsvic-discovery',
         id: 4,
         name: 'AWS/Azure/GCP',
         description: 'Cloud platform services',
@@ -84,7 +84,7 @@ export const mockFocusAreas: FocusArea[] = [
         order: 2
       },
       {
-        id: 3,
+      documentation_url: 'https://docs.atonixcorp.org/osrovnet',
         title: 'Infrastructure Monitoring',
         description: 'Comprehensive monitoring and alerting systems for proactive infrastructure management.',
         benefits: ['Real-time insights', 'Predictive analytics', 'Automated remediation', 'Performance optimization'],
@@ -466,9 +466,9 @@ export const mockProjects: Project[] = [
       { id: 9, name: 'Redis' }
     ],
     status: 'active',
-    website_url: 'https://platform.atonixcorp.com',
-    github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
-    documentation_url: 'https://docs.atonixcorp.com/platform',
+  website_url: 'https://platform.atonixcorp.org',
+  github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
+  documentation_url: 'https://docs.atonixcorp.org/platform',
     is_featured: true,
     focus_areas: [mockFocusAreas[0]],
     start_date: '2024-01-01',
@@ -494,7 +494,7 @@ export const mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/tmsvic-discovery',
-    documentation_url: 'https://docs.atonixcorp.com/tmsvic-discovery',
+  documentation_url: 'https://docs.atonixcorp.org/tmsvic-discovery',
     is_featured: true,
     focus_areas: [mockFocusAreas[1]],
     start_date: '2024-02-01',
@@ -520,7 +520,7 @@ export const mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/osrovnet',
-    documentation_url: 'https://docs.atonixcorp.com/osrovnet',
+  documentation_url: 'https://docs.atonixcorp.org/osrovnet',
     is_featured: true,
     focus_areas: [mockFocusAreas[2]],
     start_date: '2024-03-01',
@@ -543,7 +543,7 @@ export const mockProjects: Project[] = [
       { id: 6, name: 'Docker' }
     ],
     status: 'development',
-    github_url: 'https://github.com/AtonixCorp/agrotech-suite',
+  github_url: 'https://github.com/AtonixCorp/agrotech-suite',
     is_featured: false,
     focus_areas: [mockFocusAreas[3]],
     start_date: '2024-04-01',
@@ -567,7 +567,7 @@ export const mockProjects: Project[] = [
       { id: 3, name: 'TypeScript' }
     ],
     status: 'development',
-    github_url: 'https://github.com/AtonixCorp/finsecure-blockchain',
+  github_url: 'https://github.com/AtonixCorp/finsecure-blockchain',
     is_featured: false,
     focus_areas: [mockFocusAreas[4]],
     start_date: '2024-05-01',

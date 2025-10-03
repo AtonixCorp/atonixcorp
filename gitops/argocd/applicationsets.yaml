@@ -121,7 +121,7 @@ spec:
             - name: frontend.image.tag
               value: pr-{{number}}-{{head_sha}}
             - name: ingress.hosts[0].host
-              value: pr-{{number}}.dev.atonixcorp.com
+              value: pr-{{number}}.dev.atonixcorp.org
       destination:
         server: https://kubernetes.default.svc
         namespace: 'atonixcorp-pr-{{number}}'
