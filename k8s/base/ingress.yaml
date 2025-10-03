@@ -12,6 +12,10 @@ metadata:
     nginx.ingress.kubernetes.io/rate-limit-window: "1m"
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
 spec:
+  # Note: Ingress IPv6 support depends on the Ingress Controller (e.g. nginx-ingress,
+  # ingress-nginx, traefik) and the Service that fronts the controller. Ensure your
+  # ingress controller is deployed with a dual-stack Service (or LoadBalancer)
+  # so it can receive IPv6 traffic. See cluster/provider docs for enabling IPv6.
   tls:
   - hosts:
     - atonixcorp.com

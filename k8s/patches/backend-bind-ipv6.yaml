@@ -1,0 +1,21 @@
+# Strategic merge patch for backend deployment to ensure the app binds to IPv6
+# This patch assumes the Deployment `backend` exists in namespace `atonixcorp`.
+# It changes the container command to use gunicorn binding to [::]:8000.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: atonixcorp
+spec:
+  template:
+    spec:
+      containers:
+      - name: backend
+        # If you already use gunicorn in the image, set args accordingly.
+        # This example uses gunicorn with 3 workers and binds to IPv6/IPv4.
+        command: ["/bin/sh","-c"]
+        args:
+          - |
+            exec gunicorn --bind '[::]:8000' --workers 3 atonixcorp.wsgi:application
+        # Preserve existing ports and env
+  # If your image already starts the server, remove this patch or adapt it.

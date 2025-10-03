@@ -65,6 +65,11 @@ backend:
     port: 8000
     targetPort: http
     annotations: {}
+    # Optional: enable ipFamilies/ipFamilyPolicy for dual-stack. Example:
+    # ipFamilies: ["IPv6","IPv4"]
+    # ipFamilyPolicy: "PreferDualStack"
+    ipFamilies: []
+    ipFamilyPolicy: ""
   
   # Horizontal Pod Autoscaler
   autoscaling:
@@ -127,6 +132,11 @@ frontend:
     port: 80
     targetPort: http
     annotations: {}
+    # Optional: enable ipFamilies/ipFamilyPolicy for dual-stack. Example:
+    # ipFamilies: ["IPv6","IPv4"]
+    # ipFamilyPolicy: "PreferDualStack"
+    ipFamilies: []
+    ipFamilyPolicy: ""
   
   # Horizontal Pod Autoscaler
   autoscaling:

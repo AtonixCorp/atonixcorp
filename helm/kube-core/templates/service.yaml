@@ -6,6 +6,12 @@ metadata:
     {{- include "kube-core.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  {{- if .Values.service.ipFamilies }}
+  # ipFamilies and ipFamilyPolicy allow chart users to opt into dual-stack Services
+  ipFamilies:
+  {{- toYaml .Values.service.ipFamilies | nindent 2 }}
+  ipFamilyPolicy: {{ default "PreferDualStack" .Values.service.ipFamilyPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http

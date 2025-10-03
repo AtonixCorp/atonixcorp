@@ -11,7 +11,7 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/atonixcorp/platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
     targetRevision: develop
     path: helm/atonixcorp-platform
     helm:
@@ -70,7 +70,7 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/atonixcorp/platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
     targetRevision: main
     path: helm/atonixcorp-platform
     helm:
@@ -120,7 +120,7 @@ spec:
   project: production
   
   source:
-    repoURL: https://github.com/atonixcorp/platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
     targetRevision: main
     path: helm/atonixcorp-platform
     helm:

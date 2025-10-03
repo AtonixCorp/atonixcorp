@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: atonixcorp
+spec:
+  template:
+    spec:
+      containers:
+      - name: frontend
+        # Add the nginx config mount only; this merges into existing container spec
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: frontend-nginx-config

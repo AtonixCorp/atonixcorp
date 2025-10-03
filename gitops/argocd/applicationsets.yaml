@@ -47,7 +47,7 @@ spec:
     spec:
       project: '{{project}}'
       source:
-        repoURL: https://github.com/atonixcorp/platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
         targetRevision: '{{branch}}'
         path: helm/atonixcorp-platform
         helm:
@@ -106,7 +106,7 @@ spec:
     spec:
       project: atonixcorp-platform
       source:
-        repoURL: https://github.com/atonixcorp/platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
         targetRevision: '{{head_sha}}'
         path: helm/atonixcorp-platform
         helm:
