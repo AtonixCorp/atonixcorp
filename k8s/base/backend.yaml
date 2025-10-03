@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: django-secret
+  namespace: atonixcorp
 type: Opaque
 data:
   # your-super-secret-key-change-in-production-with-50-chars-min (base64)
@@ -15,6 +16,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: django-config
+  namespace: atonixcorp
 data:
   DEBUG: "False"
   DATABASE_URL: "postgresql://atonixcorp_user:atonixcorp_password@postgres:5432/atonixcorp"
@@ -28,6 +30,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: atonixcorp
   labels:
     app: backend
     component: api
@@ -101,6 +104,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: media-pvc
+  namespace: atonixcorp
 spec:
   accessModes:
     - ReadWriteMany
@@ -113,22 +117,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
+  namespace: atonixcorp
   labels:
     app: backend
     component: api
 spec:
   type: LoadBalancer
-  # Enable dual-stack IP allocation when the cluster and cloud provider support it.
-  # ipFamilies: ["IPv6", "IPv4"] requests IPv6 then IPv4 address when supported.
-  # ipFamilyPolicy: "PreferDualStack" allows the Service to get addresses from both families
-  # (Valid values: "SingleStack", "PreferDualStack", "RequireDualStack").
-  # Note: Your Kubernetes cluster must be configured for dual-stack and your cloud
-  # load balancer provider must support IPv6. If using a cloud provider, you may
-  # need provider-specific annotations to actually provision IPv6 addresses.
-  ipFamilies:
-    - IPv6
-    - IPv4
-  ipFamilyPolicy: PreferDualStack
   ports:
   - port: 8000
     targetPort: 8000

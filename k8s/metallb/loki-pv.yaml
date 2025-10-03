@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-pv
+  labels:
+    app: loki
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  hostPath:
+    path: /var/lib/atonix-storage/loki
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Delete
