@@ -6,8 +6,10 @@ type: Opaque
 data:
   # your-super-secret-key-change-in-production-with-50-chars-min (base64)
   SECRET_KEY: eW91ci1zdXBlci1zZWNyZXQta2V5LWNoYW5nZS1pbi1wcm9kdWN0aW9uLXdpdGgtNTAtY2hhcnMtbWlu
-  # wildcard '*' to allow all hosts (base64) - temporary for cluster probes; replace with explicit hostnames for production
-  ALLOWED_HOSTS: Kg==
+stringData:
+  # replace these hostnames with the hostnames you will use (DNS names preferred)
+  # comma-separated list (the application reads ALLOWED_HOSTS from env and splits by comma)
+  ALLOWED_HOSTS: "atonixcorp.org,www.atonixcorp.org"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -115,6 +117,7 @@ metadata:
     app: backend
     component: api
 spec:
+  type: LoadBalancer
   ports:
   - port: 8000
     targetPort: 8000

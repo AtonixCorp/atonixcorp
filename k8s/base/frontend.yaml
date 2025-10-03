@@ -4,7 +4,7 @@ metadata:
   name: frontend-config
   namespace: atonixcorp
 data:
-  REACT_APP_API_URL: "https://api.atonixcorp.org/api"
+  REACT_APP_API_URL: "https://api.atonixcorp.com/api"
   REACT_APP_ENVIRONMENT: "production"
 ---
 apiVersion: apps/v1
@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: atonixcorp/frontend:1.0.0
+        image: nginx:stable
         ports:
         - containerPort: 80
         envFrom:
@@ -68,6 +68,7 @@ metadata:
     app: frontend
     component: ui
 spec:
+  type: LoadBalancer
   ports:
   - port: 80
     targetPort: 80
