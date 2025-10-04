@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data-atonix-postgresql-0
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/atonix/pvs/data-atonix-postgresql-0
+    type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-postgres-pvc
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/atonix/pvs/postgres-pvc
+    type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-pvc
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/atonix/pvs/redis-pvc
+    type: DirectoryOrCreate
