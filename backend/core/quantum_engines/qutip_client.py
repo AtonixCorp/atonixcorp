@@ -63,16 +63,34 @@ def simulate(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     else:
         return {'status': 'error', 'error': f'Unknown simulation type: {kind}'}
-"""Minimal QuTiP client wrapper (demo)."""
-try:
-    import qutip as qt
-except Exception:
-    qt = None
 
 
-def submit(description: str, **kwargs):
-    if qt is None:
-        raise RuntimeError('QuTiP not installed')
-
-    # Implement QuTiP usage here. For demo, return placeholder.
-    return {'result': 'qutip placeholder'}
+def submit(description: str, shots: int = 1024):
+    """Submit a QuTiP simulation job.
+    
+    The description parameter should be a JSON string describing the simulation,
+    e.g., '{"type": "rabi", "tlist": [0, 1, 2]}' or a dict-like payload.
+    
+    Args:
+        description: JSON string or description of simulation to run
+        shots: Not used for QuTiP simulations (included for API compatibility)
+        
+    Returns:
+        Dict with simulation results
+    """
+    import json
+    
+    # Parse description if it's a string
+    if isinstance(description, str):
+        try:
+            payload = json.loads(description)
+        except json.JSONDecodeError:
+            # If not valid JSON, return error
+            return {'status': 'error', 'error': 'description must be valid JSON'}
+    elif isinstance(description, dict):
+        payload = description
+    else:
+        return {'status': 'error', 'error': 'description must be a JSON string or dict'}
+    
+    # Call the simulate function with the payload
+    return simulate(payload)
