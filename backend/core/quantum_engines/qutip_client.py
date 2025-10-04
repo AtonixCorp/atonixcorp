@@ -70,9 +70,20 @@ except Exception:
     qt = None
 
 
-def submit(description: str, **kwargs):
+def submit(description: str, shots: int = 1024):
     if qt is None:
         raise RuntimeError('QuTiP not installed')
 
-    # Implement QuTiP usage here. For demo, return placeholder.
-    return {'result': 'qutip placeholder'}
+    # Parse description as JSON and pass to simulate
+    import json
+    try:
+        if isinstance(description, str):
+            payload = json.loads(description)
+        elif isinstance(description, dict):
+            payload = description
+        else:
+            return {'status': 'error', 'error': 'description must be a JSON string or dict'}
+        
+        return simulate(payload)
+    except json.JSONDecodeError as e:
+        return {'status': 'error', 'error': f'Invalid JSON: {str(e)}'}
