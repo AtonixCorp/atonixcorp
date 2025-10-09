@@ -38,7 +38,7 @@ variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
   default     = "dev"
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -398,7 +398,7 @@ variable "resource_limits" {
       memory_limit   = string
     })
   })
-  
+
   default = {
     backend = {
       cpu_request    = "250m"
@@ -583,4 +583,11 @@ variable "ruby_sidekiq_password" {
   description = "Password for Sidekiq web interface"
   type        = string
   sensitive   = true
+}
+
+# Optional registry secret to use for pulling private images (kubernetes secret name)
+variable "registry_secret_name" {
+  description = "Kubernetes secret name to use for imagePullSecrets (optional)"
+  type        = string
+  default     = ""
 }

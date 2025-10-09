@@ -87,3 +87,9 @@ variable "node_env" {
   type        = string
   default     = "production"
 }
+
+variable "image_pull_secrets" {
+  description = "Optional list of image pull secret names to attach to the Pod spec"
+  type        = list(string)
+  default     = []
+}

@@ -140,7 +140,7 @@ spec:
         - name: REDIS_URL
           valueFrom:
             secretKeyRef:
-              name: ruby-service-se
+              name: ruby-service-secrets
               key: redis-url
         - name: SECRET_KEY_BASE
           valueFrom:
@@ -160,20 +160,15 @@ spec:
             cpu: "500m"
         volumeMounts:
         - name: logs
-          mountPath
-  selector:
-    app: ruby-service
-    component: web
-  ports:
-  - name: http
-    port: 80
-    targetPort: 3000
-    protocol: TCP
-  - name: https
-    port: 443
-    targetPort: 3000
-    protocol: TCP
-  type: ClusterIP
+          mountPath: /app/log
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: config
+        configMap:
+          name: ruby-service-config
 ---
 apiVersion: v1
 kind: Service

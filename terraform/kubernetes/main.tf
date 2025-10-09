@@ -224,6 +224,8 @@ module "frontend" {
 
   labels      = local.common_labels
   annotations = local.annotations
+  # Forward registry secret name to module so pods can use imagePullSecrets
+  image_pull_secrets = var.registry_secret_name != "" ? [var.registry_secret_name] : []
 }
 
 # Celery Module
@@ -262,26 +264,26 @@ module "celery" {
 # Ingress Module
 module "ingress" {
   source = "./modules/ingress"
-  
+
   namespace   = module.namespace.name
   name_prefix = local.name_prefix
-  
+
   domain_name    = var.domain_name
   tls_secret     = var.tls_secret_name
   ingress_class  = var.ingress_class
-  
+
   backend_service  = module.backend.service_name
   frontend_service = module.frontend.service_name
   ruby_service     = module.ruby_service.service_name
-  
+
   labels      = local.common_labels
   annotations = merge(local.annotations, var.ingress_annotations)
 }# Ruby Service Module
 module "ruby_service" {
   source = "./modules/ruby-service"
-  
+
   namespace   = module.namespace.name
-  
+
   image_registry   = var.image_registry
   image_repository = var.ruby_image_repository
   image_tag        = var.ruby_image_tag

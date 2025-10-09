@@ -7,23 +7,23 @@ locals {
     "nginx.ingress.kubernetes.io/proxy-send-timeout" = "300"
     "nginx.ingress.kubernetes.io/use-regex"          = "true"
   }
-  
+
   ssl_annotations = var.ssl_redirect ? {
     "nginx.ingress.kubernetes.io/ssl-redirect"       = "true"
     "nginx.ingress.kubernetes.io/force-ssl-redirect" = "true"
   } : {}
-  
+
   compression_annotations = var.enable_compression ? {
     "nginx.ingress.kubernetes.io/enable-compression" = "true"
     "nginx.ingress.kubernetes.io/compress-types"     = "text/plain,text/css,application/json,application/javascript,text/xml,application/xml,application/xml+rss,text/javascript"
   } : {}
-  
+
   rate_limit_annotations = var.enable_rate_limiting ? {
     "nginx.ingress.kubernetes.io/rate-limit"            = "100"
     "nginx.ingress.kubernetes.io/rate-limit-window"     = "1m"
     "nginx.ingress.kubernetes.io/rate-limit-connections" = "10"
   } : {}
-  
+
   security_annotations = {
     "nginx.ingress.kubernetes.io/server-snippet" = <<-EOF
       add_header X-Frame-Options "SAMEORIGIN" always;
@@ -33,7 +33,7 @@ locals {
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     EOF
   }
-  
+
   all_annotations = merge(
     local.base_annotations,
     local.ssl_annotations,
@@ -47,7 +47,7 @@ locals {
 # TLS Certificate (if using cert-manager)
 resource "kubernetes_manifest" "certificate" {
   count = var.tls_secret != "" ? 1 : 0
-  
+
   manifest = {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
@@ -84,10 +84,10 @@ resource "kubernetes_ingress_v1" "main" {
     })
     annotations = local.all_annotations
   }
-  
+
   spec {
     ingress_class_name = var.ingress_class
-    
+
     dynamic "tls" {
       for_each = var.tls_secret != "" ? [1] : []
       content {
@@ -95,7 +95,7 @@ resource "kubernetes_ingress_v1" "main" {
         secret_name = var.tls_secret
       }
     }
-    
+
     # API Routes (Backend)
     rule {
       host = var.domain_name
@@ -113,7 +113,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         # Django Admin
         path {
           path      = "/admin"
@@ -127,7 +127,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         # Static files (served by Django in production)
         path {
           path      = "/static"
@@ -141,7 +141,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         # Media files
         path {
           path      = "/media"
@@ -155,7 +155,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         # Ruby service
         path {
           path      = "/api/ruby"
@@ -169,7 +169,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         path {
           path      = "/ready"
           path_type = "Exact"
@@ -182,7 +182,7 @@ resource "kubernetes_ingress_v1" "main" {
             }
           }
         }
-        
+
         # Frontend (React app) - catch all
         path {
           path      = "/"
@@ -198,7 +198,7 @@ resource "kubernetes_ingress_v1" "main" {
         }
       }
     }
-    
+
     # WWW redirect rule
     rule {
       host = "www.${var.domain_name}"
@@ -218,7 +218,7 @@ resource "kubernetes_ingress_v1" "main" {
       }
     }
   }
-  
+
   depends_on = [kubernetes_manifest.certificate]
 }
 
@@ -235,10 +235,10 @@ resource "kubernetes_ingress_v1" "api" {
       "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
     })
   }
-  
+
   spec {
     ingress_class_name = var.ingress_class
-    
+
     dynamic "tls" {
       for_each = var.tls_secret != "" ? [1] : []
       content {
@@ -246,7 +246,7 @@ resource "kubernetes_ingress_v1" "api" {
         secret_name = var.tls_secret
       }
     }
-    
+
     rule {
       host = "api.${var.domain_name}"
       http {
@@ -265,7 +265,7 @@ resource "kubernetes_ingress_v1" "api" {
       }
     }
   }
-  
+
   depends_on = [kubernetes_manifest.certificate]
 }
 
@@ -279,16 +279,16 @@ resource "kubernetes_network_policy" "ingress" {
       "app.kubernetes.io/name"      = "nginx"
     })
   }
-  
+
   spec {
     pod_selector {
       match_labels = {
         "app.kubernetes.io/name" = "nginx"
       }
     }
-    
+
     policy_types = ["Ingress", "Egress"]
-    
+
     # Allow ingress from anywhere on HTTP/HTTPS
     ingress {
       ports {
@@ -300,7 +300,7 @@ resource "kubernetes_network_policy" "ingress" {
         protocol = "TCP"
       }
     }
-    
+
     # Allow egress to backend and frontend services
     egress {
       to {
@@ -315,7 +315,7 @@ resource "kubernetes_network_policy" "ingress" {
         protocol = "TCP"
       }
     }
-    
+
     egress {
       to {
         pod_selector {
@@ -329,7 +329,7 @@ resource "kubernetes_network_policy" "ingress" {
         protocol = "TCP"
       }
     }
-    
+
     egress {
       to {
         pod_selector {
@@ -343,7 +343,7 @@ resource "kubernetes_network_policy" "ingress" {
         protocol = "TCP"
       }
     }
-    
+
     # Allow egress to DNS
     egress {
       to {
