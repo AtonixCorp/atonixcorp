@@ -1,0 +1,174 @@
+# ArgoCD Projects Configuration
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: atonixcorp-platform
+  namespace: argocd
+  labels:
+    project: atonixcorp-platform
+spec:
+  description: AtonixCorp Platform Project
+  
+  sourceRepos:
+    - 'https://github.com/atonixcorp/platform.git'
+    - 'https://charts.bitnami.com/bitnami'
+    - 'https://kubernetes-sigs.github.io/external-dns'
+    - 'https://prometheus-community.github.io/helm-charts'
+  
+  destinations:
+    - namespace: 'atonixcorp*'
+      server: https://kubernetes.default.svc
+    - namespace: 'monitoring'
+      server: https://kubernetes.default.svc
+    - namespace: 'ingress-nginx'
+      server: https://kubernetes.default.svc
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+  
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: '*'
+    - group: apps
+      kind: '*'
+    - group: extensions
+      kind: '*'
+    - group: networking.k8s.io
+      kind: '*'
+    - group: autoscaling
+      kind: '*'
+    - group: policy
+      kind: '*'
+    - group: batch
+      kind: '*'
+    - group: monitoring.coreos.com
+      kind: '*'
+  
+  roles:
+    - name: developer
+      description: Developer role with read access
+      policies:
+        - p, proj:atonixcorp-platform:developer, applications, get, atonixcorp-platform/*, allow
+        - p, proj:atonixcorp-platform:developer, applications, sync, atonixcorp-platform/*-dev, allow
+        - p, proj:atonixcorp-platform:developer, logs, get, atonixcorp-platform/*, allow
+        - p, proj:atonixcorp-platform:developer, exec, create, atonixcorp-platform/*-dev, allow
+      groups:
+        - atonixcorp:developers
+    
+    - name: devops
+      description: DevOps role with full access
+      policies:
+        - p, proj:atonixcorp-platform:devops, applications, *, atonixcorp-platform/*, allow
+        - p, proj:atonixcorp-platform:devops, logs, *, atonixcorp-platform/*, allow
+        - p, proj:atonixcorp-platform:devops, exec, *, atonixcorp-platform/*, allow
+      groups:
+        - atonixcorp:devops
+    
+    - name: admin
+      description: Admin role with cluster-wide access
+      policies:
+        - p, proj:atonixcorp-platform:admin, *, *, */*, allow
+      groups:
+        - atonixcorp:admins
+  
+  syncWindows:
+    - kind: allow
+      schedule: '0 8-18 * * 1-5'  # Monday to Friday, 8 AM to 6 PM
+      duration: 10h
+      applications:
+        - '*-dev'
+        - '*-staging'
+      manualSync: true
+    - kind: deny
+      schedule: '0 18-8 * * *'  # Outside business hours
+      duration: 14h
+      applications:
+        - '*-prod'
+      manualSync: false
+---
+# Production Project (Separate for enhanced security)
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production
+  namespace: argocd
+  labels:
+    project: production
+    environment: production
+spec:
+  description: Production Environment Project
+  
+  sourceRepos:
+    - 'https://github.com/atonixcorp/platform.git'
+    - 'https://charts.bitnami.com/bitnami'
+  
+  destinations:
+    - namespace: 'atonixcorp'
+      server: https://kubernetes.default.svc
+    - namespace: 'monitoring'
+      server: https://kubernetes.default.svc
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: IngressClass
+  
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: '*'
+    - group: apps
+      kind: '*'
+    - group: networking.k8s.io
+      kind: '*'
+    - group: autoscaling
+      kind: '*'
+    - group: policy
+      kind: '*'
+    - group: monitoring.coreos.com
+      kind: '*'
+  
+  roles:
+    - name: production-deployer
+      description: Production deployment role
+      policies:
+        - p, proj:production:production-deployer, applications, get, production/*, allow
+        - p, proj:production:production-deployer, applications, sync, production/*, allow
+        - p, proj:production:production-deployer, applications, override, production/*, deny
+      groups:
+        - atonixcorp:production-deployers
+    
+    - name: production-admin
+      description: Production admin role
+      policies:
+        - p, proj:production:production-admin, *, *, production/*, allow
+      groups:
+        - atonixcorp:production-admins
+  
+  syncWindows:
+    - kind: allow
+      schedule: '0 9-17 * * 1-5'  # Monday to Friday, 9 AM to 5 PM
+      duration: 8h
+      applications:
+        - '*'
+      manualSync: true
+    - kind: deny
+      schedule: '0 17-9 * * *'  # Outside business hours
+      duration: 16h
+      applications:
+        - '*'
+      manualSync: false
+      description: "Production deployments are not allowed outside business hours"

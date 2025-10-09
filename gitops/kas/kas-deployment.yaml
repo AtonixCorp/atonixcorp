@@ -1,0 +1,397 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kas-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+data:
+  kas.yaml: |
+  # KAS (Kubernetes Agent Server) Configuration for AtonixCorp GitOps
+    server:
+      port: 8080
+      host: 0.0.0.0
+      tls:
+        enabled: true
+        certFile: /etc/ssl/certs/kas.crt
+        keyFile: /etc/ssl/private/kas.key
+
+    # GitOps Integration
+    gitops:
+      enabled: true
+      providers:
+        - name: argocd
+          type: argocd
+          endpoint: https://argocd-server.argocd.svc.cluster.local
+          token: ${ARGOCD_TOKEN}
+          insecure: false
+
+        - name: tekton
+          type: tekton
+          endpoint: https://tekton-pipelines-controller.tekton-pipelines.svc.cluster.local
+          token: ${TEKTON_TOKEN}
+          insecure: false
+
+    # Quantum-Safe Module Configuration
+    quantum:
+      enabled: true
+      modules:
+        - name: pennylane
+          path: quantum_engines/pennylane
+          crd: pennylane.atnixcorp.com
+          readinessCheck:
+            endpoint: /health
+            timeout: 30s
+
+        - name: qiskit
+          path: quantum_engines/qiskit
+          crd: qiskit.atnixcorp.com
+          readinessCheck:
+            endpoint: /quantum/status
+            timeout: 45s
+
+        - name: pyquil
+          path: quantum_engines/pyquil
+          crd: pyquil.atnixcorp.com
+          readinessCheck:
+            endpoint: /api/v1/health
+            timeout: 30s
+
+        - name: qutip
+          path: quantum_engines/qutip
+          crd: qutip.atnixcorp.com
+          readinessCheck:
+            endpoint: /status
+            timeout: 20s
+
+    # Security Configuration
+    security:
+      quantumSafe: true
+      encryption:
+        algorithm: AES-256-GCM
+        keyRotation: 24h
+      authentication:
+        method: mTLS
+        caCert: /etc/ssl/certs/ca.crt
+      authorization:
+        rbac: true
+        policies:
+          - resource: quantum-modules
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+            roles: ["quantum-admin", "platform-admin"]
+
+    # Webhook Configuration
+    webhooks:
+      enabled: true
+      secret: ${WEBHOOK_SECRET}
+      endpoints:
+        - path: /webhook/quantum-deploy
+          method: POST
+          handlers:
+            - type: quantum-deployment
+              action: deploy
+            - type: crd-readiness
+              action: check
+            - type: argocd-sync
+              action: trigger
+
+        - path: /webhook/quantum-cleanup
+          method: POST
+          handlers:
+            - type: quantum-cleanup
+              action: cleanup
+            - type: crd-cleanup
+              action: remove
+            - type: argocd-prune
+              action: trigger
+
+    # Monitoring and Observability
+    monitoring:
+      enabled: true
+      metrics:
+        port: 9090
+        path: /metrics
+      health:
+        port: 8081
+        path: /health
+      alerts:
+        enabled: true
+        rules:
+          - name: QuantumModuleDeploymentFailed
+            condition: quantum_deployment_status{status="failed"} > 0
+            severity: critical
+          - name: CRDReadinessTimeout
+            condition: crd_readiness_timeout > 0
+            severity: warning
+
+    # Declarative Workflows
+    workflows:
+      quantum-deployment:
+        steps:
+          - name: validate-manifests
+            type: validation
+            timeout: 30s
+          - name: check-crd-readiness
+            type: readiness
+            timeout: 60s
+            retries: 3
+          - name: deploy-quantum-module
+            type: deployment
+            timeout: 300s
+          - name: verify-deployment
+            type: verification
+            timeout: 60s
+          - name: trigger-argocd-sync
+            type: argocd-sync
+            timeout: 120s
+
+      quantum-cleanup:
+        steps:
+          - name: validate-cleanup
+            type: validation
+            timeout: 30s
+          - name: remove-quantum-resources
+            type: cleanup
+            timeout: 180s
+          - name: cleanup-crds
+            type: crd-cleanup
+            timeout: 60s
+          - name: trigger-argocd-prune
+            type: argocd-prune
+            timeout: 120s
+
+    # Logging Configuration
+    logging:
+      level: info
+      format: json
+      outputs:
+        - type: stdout
+        - type: file
+          path: /var/log/kas/kas.log
+        - type: loki
+          endpoint: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
+          labels:
+            app: kas
+            component: agent-server
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kas-secrets
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+type: Opaque
+data:
+  # Base64 encoded secrets - these should be populated by your secret management system
+  argocd-token: ""  # Base64 encoded ArgoCD token
+  tekton-token: ""  # Base64 encoded Tekton token
+  webhook-secret: ""  # Base64 encoded webhook secret
+  tls-cert: ""  # Base64 encoded TLS certificate
+  tls-key: ""  # Base64 encoded TLS private key
+  ca-cert: ""  # Base64 encoded CA certificate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kas-agent-server
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kas
+      app.kubernetes.io/component: agent-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kas
+        app.kubernetes.io/component: agent-server
+    spec:
+      serviceAccountName: kas-service-account
+      imagePullSecrets:
+      - name: kas-registry-secret
+      containers:
+      - name: kas
+        image: atonixcorp/kas:latest  # Replace with actual KAS image
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        - containerPort: 8081
+          name: health
+        env:
+        - name: KAS_CONFIG_PATH
+          value: /etc/kas/kas.yaml
+        - name: ARGOCD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: kas-secrets
+              key: argocd-token
+        - name: TEKTON_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: kas-secrets
+              key: tekton-token
+        - name: WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: kas-secrets
+              key: webhook-secret
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kas
+        - name: tls-certs
+          mountPath: /etc/ssl/certs
+          readOnly: true
+        - name: tls-keys
+          mountPath: /etc/ssl/private
+          readOnly: true
+        - name: logs
+          mountPath: /var/log/kas
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: kas-config
+      - name: tls-certs
+        secret:
+          secretName: kas-secrets
+          items:
+          - key: tls-cert
+            path: kas.crt
+          - key: ca-cert
+            path: ca.crt
+      - name: tls-keys
+        secret:
+          secretName: kas-secrets
+          items:
+          - key: tls-key
+            path: kas.key
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kas-service
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+spec:
+  selector:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8080
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kas-ingress
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - kas.atonixcorp.com
+    secretName: kas-tls
+  rules:
+  - host: kas.atonixcorp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kas-service
+            port:
+              number: 443
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kas-service-account
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kas-cluster-role
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+rules:
+- apiGroups: ["argoproj.io"]
+  resources: ["applications", "applicationsets", "appprojects"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["tekton.dev"]
+  resources: ["pipelineruns", "taskruns", "pipelines", "tasks"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+  # Limited to quantum-related resources
+  resourceNames: ["pennylane.atnixcorp.com", "qiskit.atnixcorp.com", "pyquil.atnixcorp.com", "qutip.atnixcorp.com"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kas-cluster-role-binding
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: agent-server
+subjects:
+- kind: ServiceAccount
+  name: kas-service-account
+  namespace: argocd
+roleRef:
+  kind: ClusterRole
+  name: kas-cluster-role
+  apiGroup: rbac.authorization.k8s.io

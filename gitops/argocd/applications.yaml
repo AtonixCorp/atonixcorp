@@ -1,0 +1,165 @@
+# ArgoCD Application for AtonixCorp Platform - Development
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atonixcorp-platform-dev
+  namespace: argocd
+  labels:
+    app: atonixcorp-platform
+    environment: development
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    targetRevision: develop
+    path: helm/atonixcorp-platform
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-dev.yaml
+      parameters:
+        - name: backend.image.tag
+          value: develop-latest
+        - name: frontend.image.tag
+          value: develop-latest
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: atonixcorp-dev
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  revisionHistoryLimit: 10
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: ""
+      kind: ConfigMap
+      name: argocd-cm
+      jsonPointers:
+        - /data
+---
+# ArgoCD Application for AtonixCorp Platform - Staging
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atonixcorp-platform-staging
+  namespace: argocd
+  labels:
+    app: atonixcorp-platform
+    environment: staging
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    targetRevision: main
+    path: helm/atonixcorp-platform
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-staging.yaml
+      parameters:
+        - name: backend.image.tag
+          value: staging-latest
+        - name: frontend.image.tag
+          value: staging-latest
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: atonixcorp-staging
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false  # Manual approval for staging
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 2m
+  
+  revisionHistoryLimit: 10
+---
+# ArgoCD Application for AtonixCorp Platform - Production
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: atonixcorp-platform-prod
+  namespace: argocd
+  labels:
+    app: atonixcorp-platform
+    environment: production
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  # Deploy after infrastructure
+spec:
+  project: production
+  
+  source:
+    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    targetRevision: main
+    path: helm/atonixcorp-platform
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+      parameters:
+        - name: backend.image.tag
+          value: prod-latest
+        - name: frontend.image.tag
+          value: prod-latest
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: atonixcorp
+  
+  syncPolicy:
+    automated:
+      prune: false  # Manual pruning for production
+      selfHeal: false  # Manual healing for production
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 2
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  
+  revisionHistoryLimit: 20
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas  # Allow HPA to manage replicas
+    - group: ""
+      kind: Service
+      jsonPointers:
+        - /spec/clusterIP  # Ignore cluster IP changes

@@ -1,0 +1,38 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: node
+    tag: 18-alpine
+
+inputs:
+  - name: atonixcorp-source
+
+run:
+  path: sh
+  args:
+    - -c
+    - |
+      set -e
+      
+      echo "Running frontend tests..."
+      cd atonixcorp-source/frontend
+      
+      # Install dependencies
+      npm ci
+      
+      # Run lint checks
+      echo "Running ESLint..."
+      npm run lint
+      
+      # Run unit tests
+      echo "Running Jest tests..."
+      npm run test -- --coverage --watchAll=false --testTimeout=30000
+      
+      # Run build test
+      echo "Testing production build..."
+      npm run build
+      
+      echo "Frontend tests completed successfully"

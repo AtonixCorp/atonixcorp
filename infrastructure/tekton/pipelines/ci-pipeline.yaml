@@ -1,0 +1,114 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: atonixcorp-ci-pipeline
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: CI/CD
+    tekton.dev/tags: ci, build, test
+    tekton.dev/displayName: "AtonixCorp CI Pipeline"
+spec:
+  description: |
+    Continuous Integration pipeline for AtonixCorp platform that:
+    1. Clones the source code
+    2. Runs comprehensive tests
+    3. Performs security scanning
+    4. Builds and pushes Docker image
+    5. Generates build artifacts
+  params:
+  - name: repo-url
+    type: string
+    description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git revision to checkout.
+    default: main
+  - name: image-reference
+    type: string
+    description: The container image reference to build and push.
+  - name: registry-url
+    type: string
+    description: Container registry URL.
+    default: quay.io/atonixdev
+  - name: test-type
+    type: string
+    description: Type of tests to run (backend, frontend, security, integration, all).
+    default: all
+  - name: security-severity
+    type: string
+    description: Minimum security severity to report.
+    default: MEDIUM
+  workspaces:
+  - name: shared-data
+    description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+  - name: docker-credentials
+    description: Docker registry credentials.
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.revision)
+    - name: deleteExisting
+      value: "true"
+
+  - name: run-tests
+    taskRef:
+      name: run-tests
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: TEST_TYPE
+      value: $(params.test-type)
+
+  - name: security-scan
+    taskRef:
+      name: security-scan
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: SEVERITY
+      value: $(params.security-severity)
+
+  - name: build-push-image
+    taskRef:
+      name: build-docker-image
+    runAfter: ["run-tests", "security-scan"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: dockerconfig
+      workspace: docker-credentials
+    params:
+    - name: IMAGE
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: DOCKERFILE
+      value: ./Dockerfile.fullstack
+    - name: CONTEXT
+      value: ./
+
+  finally:
+  - name: cleanup-workspace
+    taskRef:
+      name: cleanup
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: delete-kind
+      value: "workspace"

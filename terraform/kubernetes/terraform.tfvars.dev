@@ -1,0 +1,117 @@
+# Development Environment Configuration
+# This file contains default values for development environment
+
+# Core Configuration
+project_name = "atonixcorp"
+environment  = "dev"
+app_version  = "1.0.0-dev"
+namespace    = "atonixcorp-dev"
+
+# Domain and TLS
+domain_name     = "dev.atonixcorp.local"
+tls_secret_name = ""  # No TLS for local development
+ingress_class   = "nginx"
+
+# Storage
+storage_class            = "standard"
+postgresql_storage_size  = "10Gi"
+redis_storage_size       = "2Gi"
+zookeeper_storage_size   = "5Gi"
+media_storage_size       = "5Gi"
+
+# Zookeeper Configuration (development)
+zookeeper_client_port                   = 2181
+zookeeper_tick_time                     = 2000
+zookeeper_init_limit                    = 5
+zookeeper_sync_limit                    = 2
+zookeeper_max_client_connections        = 30  # Reduced for dev
+zookeeper_autopurge_snap_retain_count   = 3
+zookeeper_autopurge_purge_interval      = 24
+zookeeper_enable_jmx                    = true
+zookeeper_jmx_port                      = 9999
+
+# Database
+database_name     = "atonixcorp_dev"
+database_username = "atonixuser"
+
+# Container Images
+image_registry            = "ghcr.io"
+backend_image_repository  = "atonixcorp/platform-backend"
+backend_image_tag         = "dev"
+frontend_image_repository = "atonixcorp/atonixcorp-frontend"
+frontend_image_tag        = "dev"
+
+# Scaling (reduced for development)
+backend_replicas     = 1
+backend_min_replicas = 1
+backend_max_replicas = 2
+
+frontend_replicas     = 1
+frontend_min_replicas = 1
+frontend_max_replicas = 2
+
+celery_worker_replicas     = 1
+celery_worker_min_replicas = 1
+celery_worker_max_replicas = 2
+
+# Application Configuration
+allowed_hosts = ["dev.atonixcorp.local", "localhost", "127.0.0.1", "*"]
+cors_allowed_origins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://dev.atonixcorp.local"
+]
+api_url = "http://atonixcorp-dev-backend:8000"
+
+# Feature Toggles
+enable_monitoring      = true
+enable_backup          = false
+enable_autoscaling     = false
+enable_network_policies = false
+
+# Ingress Configuration
+ingress_annotations = {
+  "nginx.ingress.kubernetes.io/ssl-redirect"       = "false"
+  "nginx.ingress.kubernetes.io/force-ssl-redirect" = "false"
+  "nginx.ingress.kubernetes.io/proxy-body-size"    = "10m"
+}
+
+# Resource Limits (reduced for development)
+resource_limits = {
+  backend = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+  frontend = {
+    cpu_request    = "50m"
+    cpu_limit      = "250m"
+    memory_request = "128Mi"
+    memory_limit   = "512Mi"
+  }
+  celery = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+  postgresql = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+  redis = {
+    cpu_request    = "50m"
+    cpu_limit      = "250m"
+    memory_request = "128Mi"
+    memory_limit   = "512Mi"
+  }
+  zookeeper = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+}

@@ -1,0 +1,276 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: atonixcorp-full-pipeline
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: CI/CD
+    tekton.dev/tags: ci, cd, full-pipeline
+    tekton.dev/displayName: "AtonixCorp Full CI/CD Pipeline"
+spec:
+  description: |
+    Complete CI/CD pipeline for AtonixCorp platform that combines build, test, security, and deployment:
+    1. Source code checkout
+    2. Comprehensive testing (unit, integration, security)
+    3. Build and security scan container image
+    4. Deploy to staging environment
+    5. Run staging tests
+    6. Manual approval for production
+    7. Production deployment
+    8. Post-deployment verification
+  params:
+  - name: repo-url
+    type: string
+    description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git revision to build and deploy.
+    default: main
+  - name: image-reference
+    type: string
+    description: The container image reference to build and deploy.
+  - name: registry-url
+    type: string
+    description: Container registry URL.
+    default: quay.io/atonixdev
+  - name: staging-namespace
+    type: string
+    description: Kubernetes namespace for staging deployment.
+    default: atonixcorp-staging
+  - name: production-namespace
+    type: string
+    description: Kubernetes namespace for production deployment.
+    default: atonixcorp-production
+  - name: skip-production
+    type: string
+    description: Skip production deployment (true/false).
+    default: "false"
+  workspaces:
+  - name: shared-data
+    description: Workspace for source code and build artifacts.
+  - name: docker-credentials
+    description: Docker registry credentials.
+  - name: kubeconfig
+    description: Kubernetes configuration for deployments.
+  tasks:
+  # ===== CI PHASE =====
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.revision)
+    - name: deleteExisting
+      value: "true"
+
+  - name: run-unit-tests
+    taskRef:
+      name: run-tests
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: TEST_TYPE
+      value: "backend"
+
+  - name: run-frontend-tests
+    taskRef:
+      name: run-tests
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: TEST_TYPE
+      value: "frontend"
+
+  - name: security-code-scan
+    taskRef:
+      name: security-scan
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: SEVERITY
+      value: "MEDIUM"
+
+  - name: build-push-image
+    taskRef:
+      name: build-docker-image
+    runAfter: ["run-unit-tests", "run-frontend-tests", "security-code-scan"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: dockerconfig
+      workspace: docker-credentials
+    params:
+    - name: IMAGE
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: DOCKERFILE
+      value: ./Dockerfile.fullstack
+
+  - name: security-image-scan
+    taskRef:
+      name: security-scan
+    runAfter: ["build-push-image"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: IMAGE_URL
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: SEVERITY
+      value: "HIGH"
+
+  # ===== STAGING DEPLOYMENT =====
+  - name: deploy-to-staging
+    taskRef:
+      name: deploy-to-kubernetes
+    runAfter: ["security-image-scan"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: IMAGE_URL
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: ENVIRONMENT
+      value: "staging"
+    - name: NAMESPACE
+      value: $(params.staging-namespace)
+
+  - name: staging-integration-tests
+    taskRef:
+      name: run-tests
+    runAfter: ["deploy-to-staging"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: TEST_TYPE
+      value: "integration"
+
+  - name: staging-smoke-tests
+    taskRef:
+      name: smoke-tests
+    runAfter: ["deploy-to-staging"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: BASE_URL
+      value: "http://atonixcorp-staging.$(params.staging-namespace).svc.cluster.local:8080"
+    - name: ENVIRONMENT
+      value: "staging"
+
+  # ===== PRODUCTION DEPLOYMENT =====
+  - name: production-approval
+    taskRef:
+      name: manual-approval
+    runAfter: ["staging-integration-tests", "staging-smoke-tests"]
+    when:
+    - input: "$(params.skip-production)"
+      operator: in
+      values: ["false"]
+    params:
+    - name: message
+      value: "Approve production deployment? Staging tests passed successfully."
+    - name: approvers
+      value: "admin,release-manager"
+    - name: timeout
+      value: "24h"
+
+  - name: deploy-to-production
+    taskRef:
+      name: deploy-to-kubernetes
+    runAfter: ["production-approval"]
+    when:
+    - input: "$(params.skip-production)"
+      operator: in
+      values: ["false"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: IMAGE_URL
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: ENVIRONMENT
+      value: "production"
+    - name: NAMESPACE
+      value: $(params.production-namespace)
+
+  - name: production-smoke-tests
+    taskRef:
+      name: smoke-tests
+    runAfter: ["deploy-to-production"]
+    when:
+    - input: "$(params.skip-production)"
+      operator: in
+      values: ["false"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: BASE_URL
+      value: "http://atonixcorp-production.$(params.production-namespace).svc.cluster.local:8080"
+    - name: ENVIRONMENT
+      value: "production"
+
+  - name: notify-success
+    taskRef:
+      name: send-notification
+    runAfter: ["production-smoke-tests"]
+    when:
+    - input: "$(params.skip-production)"
+      operator: in
+      values: ["false"]
+    params:
+    - name: message
+      value: "🚀 AtonixCorp platform successfully deployed to PRODUCTION!"
+    - name: environment
+      value: "production"
+    - name: image
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: revision
+      value: $(params.revision)
+
+  finally:
+  - name: pipeline-cleanup
+    taskRef:
+      name: cleanup
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: delete-kind
+      value: "pipeline-artifacts"
+
+  - name: failure-notification
+    taskRef:
+      name: send-notification
+    when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed"]
+    params:
+    - name: message
+      value: "❌ AtonixCorp pipeline failed. Check logs for details."
+    - name: environment
+      value: "pipeline"
+    - name: image
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: revision
+      value: $(params.revision)

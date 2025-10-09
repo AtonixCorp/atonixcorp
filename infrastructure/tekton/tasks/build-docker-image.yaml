@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: docker, build
+    tekton.dev/displayName: "Build Docker Image"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: |
+    This task builds the AtonixCorp platform Docker image using the multi-stage Dockerfile.
+    It builds both frontend and backend components in a unified container.
+  workspaces:
+  - name: source
+    description: Workspace containing the source code with Dockerfile.
+  - name: dockerconfig
+    description: Docker config secret for registry authentication.
+    optional: true
+    mountPath: /kaniko/.docker
+  params:
+  - name: IMAGE
+    description: Name (reference) of the image to build.
+  - name: DOCKERFILE
+    description: Path to the Dockerfile to build.
+    default: ./Dockerfile.fullstack
+  - name: CONTEXT
+    description: The build context used by Kaniko.
+    default: ./
+  - name: EXTRA_ARGS
+    type: array
+    description: Extra args for kaniko build.
+    default: []
+  - name: BUILDER_IMAGE
+    description: The image on which builds will run
+    default: gcr.io/kaniko-project/executor:v1.9.1@sha256:07f1f7f1d12dc447d68e5c1bd371b90f7afacea8c4a70afc0dd5dd97b2e3d59b
+  results:
+  - name: IMAGE_DIGEST
+    description: Digest of the image just built.
+  - name: IMAGE_URL
+    description: URL of the image just built.
+  steps:
+  - name: build-and-push
+    workingDir: $(workspaces.source.path)
+    image: $(params.BUILDER_IMAGE)
+    args:
+    - $(params.EXTRA_ARGS)
+    - --dockerfile=$(params.DOCKERFILE)
+    - --context=$(workspaces.source.path)/$(params.CONTEXT)
+    - --destination=$(params.IMAGE)
+    - --digest-file=$(results.IMAGE_DIGEST.path)
+    - --cache=true
+    - --cache-ttl=24h
+    - --cache-repo=$(params.IMAGE)-cache
+    - --build-arg=BUILDKIT_INLINE_CACHE=1
+    securityContext:
+      runAsUser: 0
+  - name: write-url
+    image: docker.io/library/bash:5.1.4@sha256:c523c636b722339f41b6a431b44588ab2f762c5de5ec3bd7964420ff982fb1d9
+    script: |
+      set -e
+      image="$(params.IMAGE)"
+      echo -n "${image}" | tee $(results.IMAGE_URL.path)

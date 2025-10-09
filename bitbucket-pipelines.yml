@@ -1,0 +1,271 @@
+# Bitbucket Pipelines Configuration for AtonixCorp Platform
+image: atlassian/default-image:3
+
+definitions:
+  services:
+    postgres:
+      image: postgres:15
+      variables:
+        POSTGRES_DB: test_db
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+    redis:
+      image: redis:7
+
+  caches:
+    pip: ~/.cache/pip
+    npm: ~/.npm
+
+  steps:
+    - step: &test-backend
+        name: Test Backend
+        image: python:3.11
+        services:
+          - postgres
+          - redis
+        caches:
+          - pip
+        script:
+          - cd backend
+          - pip install --upgrade pip
+          - pip install -r requirements.txt
+          - pip install pytest pytest-django pytest-cov flake8 black isort bandit safety
+          # Linting
+          - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          - black --check .
+          - isort --check-only .
+          # Security checks
+          - bandit -r . -x tests
+          - safety check
+          # Tests
+          - export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db
+          - export REDIS_URL=redis://localhost:6379/0
+          - export SECRET_KEY=test-secret-key
+          - export DEBUG=True
+          - python manage.py collectstatic --noinput
+          - pytest --cov=. --cov-report=xml --cov-report=html
+        artifacts:
+          - backend/coverage.xml
+          - backend/htmlcov/**
+
+    - step: &test-frontend
+        name: Test Frontend
+        image: node:18
+        caches:
+          - npm
+        script:
+          - cd frontend
+          - npm ci
+          - npm run lint
+          - npm run type-check
+          - npm run test:coverage
+        artifacts:
+          - frontend/coverage/**
+
+    - step: &security-scan
+        name: Security Scan
+        image: aquasec/trivy:latest
+        script:
+          - trivy fs --format sarif --output trivy-results.sarif .
+        artifacts:
+          - trivy-results.sarif
+
+    - step: &build-backend
+        name: Build Backend Image
+        image: docker:latest
+        services:
+          - docker
+        script:
+          - export IMAGE_TAG=${BITBUCKET_COMMIT:0:8}
+          - export DOCKER_REGISTRY=${DOCKER_REGISTRY:-ghcr.io}
+          - export IMAGE_NAME="$DOCKER_REGISTRY/atonixdev/atonixcorp/backend"
+          # Build and tag image
+          - cd backend
+          - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+          # Login to registry: prefer GHCR token if provided, fall back to DOCKER_USERNAME/DOCKER_PASSWORD
+          - |
+            if [ -n "$GHCR_TOKEN" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+            else
+              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+            fi
+          # Push image
+          - docker push $IMAGE_NAME:$IMAGE_TAG
+          - docker push $IMAGE_NAME:latest
+
+    - step: &build-frontend
+        name: Build Frontend Image
+        image: docker:latest
+        services:
+          - docker
+        script:
+          - export IMAGE_TAG=${BITBUCKET_COMMIT:0:8}
+          - export DOCKER_REGISTRY=${DOCKER_REGISTRY:-ghcr.io}
+          - export IMAGE_NAME="$DOCKER_REGISTRY/atonixdev/atonixcorp/frontend"
+          # Build and tag image
+          - cd frontend
+          - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+          # Login to registry: prefer GHCR token if provided, fall back to DOCKER_USERNAME/DOCKER_PASSWORD
+          - |
+            if [ -n "$GHCR_TOKEN" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+            else
+              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+            fi
+          # Push image
+          - docker push $IMAGE_NAME:$IMAGE_TAG
+          - docker push $IMAGE_NAME:latest
+
+    - step: &deploy-to-k8s
+        name: Deploy to Kubernetes
+        image: atlassian/pipelines-kubectl
+        script:
+          # Configure kubectl
+          - echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          - export IMAGE_TAG=${BITBUCKET_COMMIT:0:8}
+          # Update image tags
+          - sed -i "s|image:.*backend:.*|image: $DOCKER_REGISTRY/atonixcorp/backend:$IMAGE_TAG|g" k8s/overlays/$ENVIRONMENT/kustomization.yaml
+          - sed -i "s|image:.*frontend:.*|image: $DOCKER_REGISTRY/atonixcorp/frontend:$IMAGE_TAG|g" k8s/overlays/$ENVIRONMENT/kustomization.yaml
+          # Ensure project namespace exists and set as default
+          - kubectl create namespace atonixcorp-platform || true
+          - kubectl config set-context --current --namespace=atonixcorp-platform
+          # Deploy
+          - kubectl apply -k k8s/overlays/$ENVIRONMENT/
+          # Wait for rollout
+          - kubectl rollout status deployment/backend
+          - kubectl rollout status deployment/frontend
+
+    # Removed AWS Terraform steps - no longer using AWS infrastructure
+
+pipelines:
+  # Feature branch pipeline
+  branches:
+    feature/*:
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+          - step: *security-scan
+
+  # Development branch pipeline
+  branches:
+    develop:
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+          - step: *security-scan
+      - parallel:
+          - step:
+              <<: *build-backend
+              name: Build Backend for Dev
+          - step:
+              <<: *build-frontend
+              name: Build Frontend for Dev
+      - step:
+          <<: *deploy-to-k8s
+          name: Deploy to Development
+          deployment: development
+          variables:
+            ENVIRONMENT: development
+            NAMESPACE_SUFFIX: -dev
+
+  # Main branch pipeline
+  branches:
+    main:
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+          - step: *security-scan
+      - parallel:
+          - step:
+              <<: *build-backend
+              name: Build Backend for Prod
+          - step:
+              <<: *build-frontend
+              name: Build Frontend for Prod
+      - step:
+          <<: *deploy-to-k8s
+          name: Deploy to Production
+          deployment: production
+          trigger: manual
+          variables:
+            ENVIRONMENT: production
+            NAMESPACE_SUFFIX: ""
+      - step:
+          name: Smoke Tests
+          image: curlimages/curl
+          script:
+            - sleep 30  # Wait for deployment
+            - curl -f https://api.atonixcorp.org/api/health/ || exit 1
+            - curl -f https://atonixcorp.org/ || exit 1
+            - echo "[OK] Deployment successful and smoke tests passed"
+
+  # Infrastructure pipeline (Kubernetes only - no AWS Terraform)
+  branches:
+    infrastructure/*:
+      # Use Kubernetes manifests instead of Terraform for infrastructure
+      - step:
+          name: Deploy Infrastructure to Kubernetes
+          <<: *deploy-to-k8s
+
+  # Manual deployment pipelines
+  custom:
+    deploy-staging:
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+      - parallel:
+          - step:
+              <<: *build-backend
+              name: Build Backend for Staging
+          - step:
+              <<: *build-frontend
+              name: Build Frontend for Staging
+      - step:
+          <<: *deploy-to-k8s
+          name: Deploy to Staging
+          deployment: staging
+          variables:
+            ENVIRONMENT: staging
+            NAMESPACE_SUFFIX: -staging
+
+    # Removed terraform-apply and terraform-destroy pipelines
+    # Infrastructure is now managed through Kubernetes manifests
+
+  # Pull request pipeline
+  pull-requests:
+    '**':
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+          - step: *security-scan
+
+  # Tag pipeline for releases
+  tags:
+    'v*':
+      - parallel:
+          - step: *test-backend
+          - step: *test-frontend
+          - step: *security-scan
+      - parallel:
+          - step:
+              <<: *build-backend
+              name: Build Backend Release
+          - step:
+              <<: *build-frontend
+              name: Build Frontend Release
+      - step:
+          name: Create GitHub Release
+          image: atlassian/pipelines-awscli
+          script:
+            - |
+              curl -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                https://api.github.com/repos/$BITBUCKET_REPO_FULL_NAME/releases \
+                -d "{
+                  \"tag_name\": \"$BITBUCKET_TAG\",
+                  \"name\": \"Release $BITBUCKET_TAG\",
+                  \"body\": \"Release created from Bitbucket Pipelines\",
+                  \"draft\": false,
+                  \"prerelease\": false
+                }"

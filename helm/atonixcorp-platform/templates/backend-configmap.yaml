@@ -1,0 +1,17 @@
+{{- if .Values.backend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "atonixcorp-platform.fullname" . }}-backend-config
+data:
+  DJANGO_SETTINGS_MODULE: "atonixcorp.settings"
+  ENVIRONMENT: "{{ .Release.Namespace }}"
+  ALLOWED_HOSTS: "{{ .Values.backend.ALLOWED_HOSTS }}"
+  CORS_ALLOWED_ORIGINS: "{{ .Values.backend.CORS_ALLOWED_ORIGINS }}"
+  # Additional env entries
+{{- with .Values.backend.env }}
+{{- range $k, $v := . }}
+  {{ $k }}: "{{ $v }}"
+{{- end }}
+{{- end }}
+{{- end }}

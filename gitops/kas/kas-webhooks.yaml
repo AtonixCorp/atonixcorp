@@ -1,0 +1,304 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kas-webhook-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: webhook-config
+data:
+  webhooks.yaml: |
+    # KAS Webhook Configurations for Quantum Module Deployments
+    webhooks:
+      # Quantum Module Deployment Webhook
+      - name: quantum-deploy-webhook
+        path: /webhook/quantum-deploy
+        method: POST
+        authentication:
+          type: hmac
+          secretRef:
+            name: kas-secrets
+            key: webhook-secret
+        validation:
+          schema: quantum-deployment-schema.json
+        handlers:
+          - type: quantum-deployment
+            action: deploy
+            pipeline: quantum-module-deployment
+            parameters:
+              module-name: "{{ .body.module.name }}"
+              module-version: "{{ .body.module.version }}"
+              environment: "{{ .body.environment }}"
+              namespace: "{{ .body.namespace }}"
+              crd-name: "{{ .body.crd.name }}"
+              repo-url: "{{ .body.source.repo_url }}"
+              revision: "{{ .body.source.revision }}"
+          - type: crd-readiness-check
+            action: validate
+            timeout: 300s
+          - type: argocd-sync
+            action: trigger
+            application: "quantum-{{ .body.module.name }}-{{ .body.environment }}"
+
+      # Quantum Module Cleanup Webhook
+      - name: quantum-cleanup-webhook
+        path: /webhook/quantum-cleanup
+        method: POST
+        authentication:
+          type: hmac
+          secretRef:
+            name: kas-secrets
+            key: webhook-secret
+        validation:
+          schema: quantum-cleanup-schema.json
+        handlers:
+          - type: quantum-cleanup
+            action: cleanup
+            pipeline: quantum-module-cleanup
+            parameters:
+              module-name: "{{ .body.module.name }}"
+              environment: "{{ .body.environment }}"
+              namespace: "{{ .body.namespace }}"
+              crd-name: "{{ .body.crd.name }}"
+              force-cleanup: "{{ .body.force_cleanup }}"
+          - type: crd-cleanup
+            action: remove
+          - type: argocd-prune
+            action: trigger
+            application: "quantum-{{ .body.module.name }}-{{ .body.environment }}"
+
+      # GitOps Sync Webhook
+      - name: gitops-sync-webhook
+        path: /webhook/gitops-sync
+        method: POST
+        authentication:
+          type: token
+          tokenRef:
+            name: kas-secrets
+            key: argocd-token
+        handlers:
+          - type: argocd-sync
+            action: sync
+            applications:
+              - "{{ .body.applications | join(\",\") }}"
+          - type: tekton-trigger
+            action: trigger
+            pipelines:
+              - "{{ .body.pipelines | join(\",\") }}"
+
+      # Security Scan Webhook
+      - name: security-scan-webhook
+        path: /webhook/security-scan
+        method: POST
+        authentication:
+          type: mTLS
+          caCertRef:
+            name: kas-secrets
+            key: ca-cert
+        handlers:
+          - type: security-scan
+            action: scan
+            targets:
+              - images: "{{ .body.images | join(\",\") }}"
+              - repos: "{{ .body.repositories | join(\",\") }}"
+            severity: "{{ .body.severity }}"
+          - type: alert
+            action: send
+            channels:
+              - security-team
+              - devops-team
+
+    # Webhook Schemas
+    schemas:
+      quantum-deployment-schema.json: |
+        {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": ["module", "environment", "source"],
+          "properties": {
+            "module": {
+              "type": "object",
+              "required": ["name", "version"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "enum": ["pennylane", "qiskit", "pyquil", "qutip"]
+                },
+                "version": {
+                  "type": "string",
+                  "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                }
+              }
+            },
+            "environment": {
+              "type": "string",
+              "enum": ["staging", "production"]
+            },
+            "namespace": {
+              "type": "string",
+              "default": "atonixcorp-quantum"
+            },
+            "crd": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "source": {
+              "type": "object",
+              "required": ["repo_url"],
+              "properties": {
+                "repo_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "revision": {
+                  "type": "string",
+                  "default": "main"
+                }
+              }
+            }
+          }
+        }
+
+      quantum-cleanup-schema.json: |
+        {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": ["module", "environment"],
+          "properties": {
+            "module": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "enum": ["pennylane", "qiskit", "pyquil", "qutip"]
+                }
+              }
+            },
+            "environment": {
+              "type": "string",
+              "enum": ["staging", "production"]
+            },
+            "namespace": {
+              "type": "string",
+              "default": "atonixcorp-quantum"
+            },
+            "crd": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "force_cleanup": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kas-webhook-ingress
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: webhook-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "kas-webhook-auth"
+    nginx.ingress.kubernetes.io/auth-realm: "KAS Webhook Authentication"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - kas-webhooks.atonixcorp.com
+    secretName: kas-webhook-tls
+  rules:
+  - host: kas-webhooks.atonixcorp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kas-service
+            port:
+              number: 443
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kas-webhook-auth
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: webhook-auth
+type: Opaque
+data:
+  # Base64 encoded htpasswd format: username:password
+  # Generate with: htpasswd -nb username password | base64 -w 0
+  auth: ""  # Base64 encoded htpasswd string
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kas-webhook-alerts
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: monitoring
+spec:
+  groups:
+  - name: kas-webhook-alerts
+    rules:
+    - alert: KASWebhookAuthenticationFailure
+      expr: rate(kas_webhook_auth_failures_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        team: security
+      annotations:
+        summary: "KAS webhook authentication failures detected"
+        description: "Rate of KAS webhook authentication failures is above threshold"
+
+    - alert: KASWebhookDeploymentFailure
+      expr: rate(kas_quantum_deployment_failures_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "Quantum module deployment failures via KAS webhook"
+        description: "Quantum module deployments are failing through KAS webhooks"
+
+    - alert: KASWebhookCRDReadinessTimeout
+      expr: rate(kas_crd_readiness_timeouts_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "CRD readiness timeouts in KAS webhooks"
+        description: "CRD readiness checks are timing out in quantum deployments"
+
+    - alert: KASWebhookHighRequestRate
+      expr: rate(kas_webhook_requests_total[1m]) > 10
+      for: 2m
+      labels:
+        severity: info
+        team: platform
+      annotations:
+        summary: "High KAS webhook request rate"
+        description: "KAS webhook is receiving a high volume of requests"

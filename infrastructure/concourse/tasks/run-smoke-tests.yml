@@ -1,0 +1,79 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: curlimages/curl
+    tag: latest
+
+params:
+  ENVIRONMENT: development
+  BASE_URL: http://localhost:8080
+
+inputs:
+  - name: atonixcorp-source
+
+run:
+  path: sh
+  args:
+    - -c
+    - |
+      set -e
+      
+      echo "Running smoke tests for environment: $ENVIRONMENT"
+      echo "Base URL: $BASE_URL"
+      
+      # Wait for service to be available
+      echo "Waiting for service to be available..."
+      timeout=300
+      while ! curl -s "$BASE_URL/health/" > /dev/null && [ $timeout -gt 0 ]; do
+        echo "Waiting for service... ($timeout seconds remaining)"
+        sleep 5
+        timeout=$((timeout - 5))
+      done
+      
+      if [ $timeout -le 0 ]; then
+        echo "Service failed to become available within timeout"
+        exit 1
+      fi
+      
+      echo "Service is available, running smoke tests..."
+      
+      # Test health endpoint
+      echo "Testing health endpoint..."
+      response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/health/")
+      if [ "$response" != "200" ]; then
+        echo "Health check failed: HTTP $response"
+        exit 1
+      fi
+      echo "✅ Health check passed"
+      
+      # Test API endpoints
+      echo "Testing API endpoints..."
+      response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/")
+      if [ "$response" != "200" ]; then
+        echo "API endpoint test failed: HTTP $response"
+        exit 1
+      fi
+      echo "✅ API endpoint test passed"
+      
+      # Test static files
+      echo "Testing static files..."
+      response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/static/admin/css/base.css")
+      if [ "$response" != "200" ]; then
+        echo "Static files test failed: HTTP $response"
+        exit 1
+      fi
+      echo "✅ Static files test passed"
+      
+      # Test admin interface
+      echo "Testing admin interface..."
+      response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/admin/")
+      if [ "$response" != "200" ] && [ "$response" != "302" ]; then
+        echo "Admin interface test failed: HTTP $response"
+        exit 1
+      fi
+      echo "✅ Admin interface test passed"
+      
+      echo "All smoke tests passed successfully!"

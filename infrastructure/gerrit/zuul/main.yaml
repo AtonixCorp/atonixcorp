@@ -1,0 +1,205 @@
+# Zuul Configuration for AtonixCorp Platform CI/CD
+
+- tenant:
+    name: atonixcorp
+    source:
+      gerrit:
+        config-projects:
+          - atonixcorp-config
+        untrusted-projects:
+          - atonixcorp-platform
+          - atonixcorp-frontend
+          - atonixcorp-backend
+          - atonixcorp-infrastructure
+
+- connection:
+    driver: gerrit
+    name: gerrit
+    server: gerrit
+    port: 29418
+    baseurl: http://gerrit:8080
+    user: zuul
+    sshkey: /var/lib/zuul/.ssh/id_rsa
+
+- connection:
+    driver: git
+    name: github
+    baseurl: https://github.com
+
+- connection:
+    driver: smtp
+    name: smtp
+    server: localhost
+    port: 25
+    default_from: zuul@atonixcorp.com
+    default_to: dev@atonixcorp.com
+
+# Pipeline definitions
+- pipeline:
+    name: check
+    description: Newly uploaded patchsets enter this pipeline to receive an automated code review
+    manager: IndependentPipelineManager
+    precedence: low
+    require:
+      gerrit:
+        open: True
+        current-patchset: True
+    trigger:
+      gerrit:
+        - event: patchset-created
+        - event: change-restored
+        - event: comment-added
+          comment: (?i)^(Patch Set [0-9]+:)?( [\w\\+-]*)*(\n\n)?\s*recheck
+    start:
+      gerrit:
+        Verified: 0
+    success:
+      gerrit:
+        Verified: 1
+    failure:
+      gerrit:
+        Verified: -1
+    footer-message: |
+      For CI results, see: {check.url}
+
+- pipeline:
+    name: gate
+    description: Changes that have been approved by core reviewers are enqueued in order in this pipeline
+    manager: DependentPipelineManager
+    precedence: high
+    supercedes: check
+    require:
+      gerrit:
+        open: True
+        current-patchset: True
+        approval:
+          - Workflow: 1
+    trigger:
+      gerrit:
+        - event: comment-added
+          approval:
+            - Workflow: 1
+        - event: comment-added
+          comment: (?i)^(Patch Set [0-9]+:)?( [\w\\+-]*)*(\n\n)?\s*regate
+    start:
+      gerrit:
+        Verified: 0
+    success:
+      gerrit:
+        Verified: 2
+        submit: true
+    failure:
+      gerrit:
+        Verified: -2
+    footer-message: |
+      Build succeeded (gate pipeline). For CI results, see: {gate.url}
+
+- pipeline:
+    name: post
+    description: This pipeline runs jobs that operate after each change is merged
+    manager: IndependentPipelineManager
+    precedence: low
+    trigger:
+      gerrit:
+        - event: ref-updated
+          ref: ^refs/heads/.*$
+
+- pipeline:
+    name: tag
+    description: This pipeline runs jobs in response to any tag event
+    manager: IndependentPipelineManager
+    precedence: low
+    trigger:
+      gerrit:
+        - event: ref-updated
+          ref: ^refs/tags/.*$
+
+- pipeline:
+    name: release
+    description: When a commit is tagged as a release, this pipeline runs jobs that publish archives and documentation
+    manager: IndependentPipelineManager
+    precedence: high
+    trigger:
+      gerrit:
+        - event: ref-updated
+          ref: ^refs/tags/[0-9]+(\.[0-9]+)*$
+
+# Job definitions
+- job:
+    name: base
+    parent: null
+    description: The base job for all AtonixCorp jobs
+    pre-run: playbooks/base/pre.yaml
+    post-run: playbooks/base/post.yaml
+    roles:
+      - zuul: atonixcorp-config
+    timeout: 1800
+    attempts: 3
+    secrets:
+      - name: npm_registry
+        secret: npm-registry-credentials
+
+- job:
+    name: atonixcorp-lint
+    parent: base
+    description: Lint check for AtonixCorp platform
+    run: playbooks/lint/run.yaml
+
+- job:
+    name: atonixcorp-test-unit
+    parent: base
+    description: Unit tests for AtonixCorp platform
+    run: playbooks/test/unit.yaml
+
+- job:
+    name: atonixcorp-test-integration
+    parent: base
+    description: Integration tests for AtonixCorp platform
+    run: playbooks/test/integration.yaml
+
+- job:
+    name: atonixcorp-security-scan
+    parent: base
+    description: Security scanning for AtonixCorp platform
+    run: playbooks/security/scan.yaml
+
+- job:
+    name: atonixcorp-build-image
+    parent: base
+    description: Build container image for AtonixCorp platform
+    run: playbooks/build/image.yaml
+
+- job:
+    name: atonixcorp-deploy-staging
+    parent: base
+    description: Deploy to staging environment
+    run: playbooks/deploy/staging.yaml
+
+- job:
+    name: atonixcorp-deploy-production
+    parent: base
+    description: Deploy to production environment
+    run: playbooks/deploy/production.yaml
+
+# Project configurations
+- project:
+    name: atonixcorp-platform
+    check:
+      jobs:
+        - atonixcorp-lint
+        - atonixcorp-test-unit
+        - atonixcorp-security-scan
+        - atonixcorp-build-image
+    gate:
+      jobs:
+        - atonixcorp-lint
+        - atonixcorp-test-unit
+        - atonixcorp-test-integration
+        - atonixcorp-security-scan
+        - atonixcorp-build-image
+    post:
+      jobs:
+        - atonixcorp-deploy-staging
+    release:
+      jobs:
+        - atonixcorp-deploy-production

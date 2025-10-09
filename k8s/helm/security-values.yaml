@@ -1,0 +1,26 @@
+# Example helm values for a security chart
+networkPolicy:
+  enabled: true
+  defaultDeny: true
+  allowEgress: true
+
+istio:
+  enablePeerAuth: true
+  peerAuthMode: STRICT
+
+secretsProvider:
+  provider: vault
+  vault:
+    address: https://vault.example.com
+    roleName: k8s-role
+    objects:
+      - name: db-creds
+        path: secret/data/atonixcorp/db
+        key: database-url
+      - name: redis-creds
+        path: secret/data/atonixcorp/redis
+        key: redis-url
+
+argoCD:
+  enabled: true
+  appName: atonixcorp-security

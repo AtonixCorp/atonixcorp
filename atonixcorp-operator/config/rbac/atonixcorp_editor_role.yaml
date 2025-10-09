@@ -1,0 +1,33 @@
+# This rule is not used by the project atonixcorp-operator itself.
+# It is provided to allow the cluster admin to help manage permissions for users.
+#
+# Grants permissions to create, update, and delete resources within the cache.atonixcorp.org.
+# This role is intended for users who need to manage these resources
+# but should not control RBAC or manage permissions for others.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: atonixcorp-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: atonixcorp-editor-role
+rules:
+- apiGroups:
+  - cache.atonixcorp.org
+  resources:
+  - atonixcorps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cache.atonixcorp.org
+  resources:
+  - atonixcorps/status
+  verbs:
+  - get

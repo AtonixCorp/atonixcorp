@@ -1,0 +1,97 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: bitnami/kubectl
+    tag: latest
+
+params:
+  ENVIRONMENT: development
+  NAMESPACE: atonixcorp-dev
+  IMAGE_TAG: latest
+
+inputs:
+  - name: atonixcorp-source
+
+run:
+  path: bash
+  args:
+    - -c
+    - |
+      set -e
+      
+      echo "Deploying to Kubernetes environment: $ENVIRONMENT"
+      echo "Namespace: $NAMESPACE"
+      echo "Image tag: $IMAGE_TAG"
+      
+      cd atonixcorp-source
+      
+      # Create namespace if it doesn't exist
+      kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+      
+      # Label namespace
+      kubectl label namespace $NAMESPACE environment=$ENVIRONMENT --overwrite
+      
+      # Apply Kubernetes manifests
+      if [ -d "k8s/$ENVIRONMENT" ]; then
+        echo "Applying environment-specific manifests..."
+        kubectl apply -f k8s/$ENVIRONMENT/ -n $NAMESPACE
+      else
+        echo "No environment-specific manifests found, using default..."
+        # Create basic deployment
+        cat > deployment.yaml << EOF
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: atonixcorp-platform
+        namespace: $NAMESPACE
+      spec:
+        replicas: 2
+        selector:
+          matchLabels:
+            app: atonixcorp-platform
+        template:
+          metadata:
+            labels:
+              app: atonixcorp-platform
+          spec:
+            containers:
+            - name: platform
+              image: quay.io/atonixdev/atonixcorp-platform:$IMAGE_TAG
+              ports:
+              - containerPort: 8080
+              env:
+              - name: ENVIRONMENT
+                value: $ENVIRONMENT
+              - name: DATABASE_URL
+                value: postgresql://user:pass@db:5432/atonixcorp
+              - name: REDIS_URL
+                value: redis://redis:6379/0
+      ---
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: atonixcorp-platform-service
+        namespace: $NAMESPACE
+      spec:
+        selector:
+          app: atonixcorp-platform
+        ports:
+        - port: 80
+          targetPort: 8080
+        type: ClusterIP
+      EOF
+        
+        kubectl apply -f deployment.yaml
+      fi
+      
+      # Wait for deployment to be ready
+      kubectl rollout status deployment/atonixcorp-platform -n $NAMESPACE --timeout=300s
+      
+      # Verify deployment
+      kubectl get pods -n $NAMESPACE -l app=atonixcorp-platform
+      kubectl get service -n $NAMESPACE atonixcorp-platform-service
+      
+      echo "Deployment to $ENVIRONMENT completed successfully"

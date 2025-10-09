@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-postgresql
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/postgresql
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-redis
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/redis
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-zookeeper-data
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/zookeeper-data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-zookeeper-logs
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/zookeeper-logs
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-kafka-data
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/kafka-data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: atonix-pv-kafka-logs
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /var/lib/atonix-storage/kafka-logs

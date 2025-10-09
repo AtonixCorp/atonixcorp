@@ -1,0 +1,293 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tekton-dashboard
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-dashboard-minimal
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+- apiGroups:
+  - tekton.dev
+  resources:
+  - clustertasks
+  - tasks
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - tekton.dev
+  resources:
+  - pipelines
+  - pipelineruns
+  - pipelineresources
+  - runs
+  - taskruns
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - tekton.dev
+  resources:
+  - taskruns/finalizers
+  - pipelineruns/finalizers
+  - runs/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - tekton.dev
+  resources:
+  - tasks/status
+  - clustertasks/status
+  - taskruns/status
+  - pipelines/status
+  - pipelineruns/status
+  - pipelineresources/status
+  - runs/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - dashboard.tekton.dev
+  resources:
+  - extensions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - triggers.tekton.dev
+  resources:
+  - clustertriggerbindings
+  - clusterinterceptors
+  - eventlisteners
+  - triggers
+  - triggerbindings
+  - triggertemplates
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tekton-dashboard-minimal
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-dashboard-minimal
+subjects:
+- kind: ServiceAccount
+  name: tekton-dashboard
+  namespace: tekton-dashboard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tekton-dashboard
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+    app: tekton-dashboard
+    dashboard.tekton.dev/release: v0.40.1
+    version: v0.40.1
+spec:
+  ports:
+  - name: http
+    port: 9097
+    protocol: TCP
+    targetPort: 9097
+  selector:
+    app.kubernetes.io/name: tekton-dashboard
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-dashboard
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+    app: tekton-dashboard
+    dashboard.tekton.dev/release: v0.40.1
+    version: v0.40.1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tekton-dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tekton-dashboard
+        app.kubernetes.io/version: v0.40.1
+        app: tekton-dashboard
+        dashboard.tekton.dev/release: v0.40.1
+        version: v0.40.1
+      name: tekton-dashboard
+    spec:
+      containers:
+      - env:
+        - name: PORT
+          value: "9097"
+        - name: READ_ONLY
+          value: "false"
+        - name: CSRF_SECURE_COOKIE
+          value: "false"
+        - name: LOG_LEVEL
+          value: info
+        - name: LOG_FORMAT
+          value: json
+        - name: PIPELINES_NAMESPACE
+          value: atonixcorp-tekton
+        - name: TRIGGERS_NAMESPACE
+          value: atonixcorp-tekton
+        - name: INSTALLED_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.40.1@sha256:dd8b6aa8e2e60e5ac22a5d8ff40bb73680cb9c3b2b93e4bfe3ecd86da83f0ae0
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9097
+        name: tekton-dashboard
+        ports:
+        - containerPort: 9097
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 9097
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 65532
+          runAsNonRoot: true
+          runAsUser: 65532
+          seccompProfile:
+            type: RuntimeDefault
+      securityContext:
+        fsGroup: 65532
+      serviceAccountName: tekton-dashboard
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tekton-dashboard-ingress
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tekton-dashboard.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tekton-dashboard
+            port:
+              number: 9097
+  - host: localhost
+    http:
+      paths:
+      - path: /tekton
+        pathType: Prefix
+        backend:
+          service:
+            name: tekton-dashboard
+            port:
+              number: 9097
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tekton-dashboard-config
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+data:
+  dashboard.yaml: |
+    dashboard:
+      readonly: false
+      logoURL: ""
+      logoAlt: "AtonixCorp Tekton Dashboard"
+      namespaces:
+        - atonixcorp-tekton
+        - atonixcorp-dev
+        - atonixcorp-staging
+        - atonixcorp-production
+      pipelines:
+        namespace: atonixcorp-tekton
+      triggers:
+        namespace: atonixcorp-tekton
+      defaultNamespace: atonixcorp-tekton
+      streaming:
+        enabled: true
+      auth:
+        enabled: false
+      featureFlags:
+        runsV1Alpha1: false
+        tektonAPIVersion: v1beta1

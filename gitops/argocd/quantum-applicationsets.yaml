@@ -1,0 +1,247 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: quantum-safe-modules
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: quantum-modules
+    app.kubernetes.io/component: applicationset
+spec:
+  generators:
+  - list:
+      elements:
+      - module: pennylane
+        path: quantum_engines/pennylane
+        crd: pennylane.atnixcorp.com
+        namespace: atonixcorp-quantum
+        environment: production
+      - module: qiskit
+        path: quantum_engines/qiskit
+        crd: qiskit.atnixcorp.com
+        namespace: atonixcorp-quantum
+        environment: production
+      - module: pyquil
+        path: quantum_engines/pyquil
+        crd: pyquil.atnixcorp.com
+        namespace: atonixcorp-quantum
+        environment: production
+      - module: qutip
+        path: quantum_engines/qutip
+        crd: qutip.atnixcorp.com
+        namespace: atonixcorp-quantum
+        environment: production
+      # Staging environments
+      - module: pennylane
+        path: quantum_engines/pennylane
+        crd: pennylane.atnixcorp.com
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - module: qiskit
+        path: quantum_engines/qiskit
+        crd: qiskit.atnixcorp.com
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - module: pyquil
+        path: quantum_engines/pyquil
+        crd: pyquil.atnixcorp.com
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - module: qutip
+        path: quantum_engines/qutip
+        crd: qutip.atnixcorp.com
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+
+  template:
+    metadata:
+      name: 'quantum-{{module}}-{{environment}}'
+      labels:
+        app.kubernetes.io/name: quantum-{{module}}
+        app.kubernetes.io/component: quantum-module
+        environment: '{{environment}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: "5"
+        kas.atonixcorp.io/managed: "true"
+        kas.atonixcorp.io/crd: '{{crd}}'
+    spec:
+      project: atonixcorp-platform
+      source:
+        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      revisionHistoryLimit: 10
+---
+# ApplicationSet for Quantum CRDs
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: quantum-crds
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: quantum-crds
+    app.kubernetes.io/component: applicationset
+spec:
+  generators:
+  - list:
+      elements:
+      - crd: pennylane
+        path: quantum_engines/pennylane/crds
+        environment: production
+      - crd: qiskit
+        path: quantum_engines/qiskit/crds
+        environment: production
+      - crd: pyquil
+        path: quantum_engines/pyquil/crds
+        environment: production
+      - crd: qutip
+        path: quantum_engines/qutip/crds
+        environment: production
+      # Staging environments
+      - crd: pennylane
+        path: quantum_engines/pennylane/crds
+        environment: staging
+      - crd: qiskit
+        path: quantum_engines/qiskit/crds
+        environment: staging
+      - crd: pyquil
+        path: quantum_engines/pyquil/crds
+        environment: staging
+      - crd: qutip
+        path: quantum_engines/qutip/crds
+        environment: staging
+
+  template:
+    metadata:
+      name: 'quantum-crd-{{crd}}-{{environment}}'
+      labels:
+        app.kubernetes.io/name: quantum-crd-{{crd}}
+        app.kubernetes.io/component: quantum-crd
+        environment: '{{environment}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"  # Deploy CRDs first
+        kas.atonixcorp.io/crd-managed: "true"
+    spec:
+      project: atonixcorp-platform
+      source:
+        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: ''  # CRDs are cluster-scoped
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        syncOptions:
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 2m
+      revisionHistoryLimit: 5
+---
+# ApplicationSet for Quantum Operators
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: quantum-operators
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: quantum-operators
+    app.kubernetes.io/component: applicationset
+spec:
+  generators:
+  - list:
+      elements:
+      - operator: pennylane
+        path: quantum_engines/pennylane/operator
+        namespace: atonixcorp-quantum
+        environment: production
+      - operator: qiskit
+        path: quantum_engines/qiskit/operator
+        namespace: atonixcorp-quantum
+        environment: production
+      - operator: pyquil
+        path: quantum_engines/pyquil/operator
+        namespace: atonixcorp-quantum
+        environment: production
+      - operator: qutip
+        path: quantum_engines/qutip/operator
+        namespace: atonixcorp-quantum
+        environment: production
+      # Staging environments
+      - operator: pennylane
+        path: quantum_engines/pennylane/operator
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - operator: qiskit
+        path: quantum_engines/qiskit/operator
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - operator: pyquil
+        path: quantum_engines/pyquil/operator
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+      - operator: qutip
+        path: quantum_engines/qutip/operator
+        namespace: atonixcorp-quantum-staging
+        environment: staging
+
+  template:
+    metadata:
+      name: 'quantum-operator-{{operator}}-{{environment}}'
+      labels:
+        app.kubernetes.io/name: quantum-operator-{{operator}}
+        app.kubernetes.io/component: quantum-operator
+        environment: '{{environment}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: "3"  # Deploy operators after CRDs
+        kas.atonixcorp.io/operator-managed: "true"
+    spec:
+      project: atonixcorp-platform
+      source:
+        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      revisionHistoryLimit: 10

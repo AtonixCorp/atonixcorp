@@ -1,0 +1,35 @@
+# Patch for ingress-nginx Service to prefer dual-stack (example)
+# Adjust namespace/name to match your ingress controller deployment (common: ingress-nginx/ingress-nginx)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+  # Use annotations if your cloud provider requires them (example placeholders)
+  annotations: {}
+  # Examples of provider-specific annotations (uncomment and edit if needed):
+  # metadata.annotations:
+  #   aws-load-balancer-ipv6-enabled: "true"
+  #   metallb.universe.tf/address-pool: "ipv6-pool"
+spec:
+  type: LoadBalancer
+  # Example ipFamilies/Policy to request dual-stack. NOTE: this will be rejected
+  # unless the cluster is configured for IPv6/double-stack services.
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
+  # ipFamilyPolicy: PreferDualStack
+  # NOTE: Dual-stack must be enabled cluster-wide for ipFamilies to be accepted.
+  # This cluster does not appear to have IPv6 enabled, so ipFamilies/ipFamilyPolicy
+  # are omitted to allow the Service to be applied. To enable dual-stack, update
+  # the control plane and CNI configuration (see instructions in README).
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/component: controller

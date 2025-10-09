@@ -1,0 +1,217 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: atonixcorp-gerrit-listener
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Triggers
+    tekton.dev/tags: gerrit, webhook, code-review
+    tekton.dev/displayName: "Gerrit Event Listener"
+spec:
+  serviceAccountName: tekton-triggers-sa
+  triggers:
+  - name: gerrit-patchset-trigger
+    interceptors:
+    - ref:
+        name: "webhook"
+      params:
+      - name: "filter"
+        value:
+          header:
+            canonical: true
+            name: "X-Gerrit-Event-Type"
+          match: "patchset-created"
+    bindings:
+    - ref: gerrit-patchset-binding
+    template:
+      ref: atonixcorp-gerrit-ci-template
+
+  - name: gerrit-change-merged-trigger
+    interceptors:
+    - ref:
+        name: "webhook"
+      params:
+      - name: "filter"
+        value:
+          header:
+            canonical: true
+            name: "X-Gerrit-Event-Type"
+          match: "change-merged"
+    bindings:
+    - ref: gerrit-merged-binding
+    template:
+      ref: atonixcorp-gerrit-cd-template
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gerrit-patchset-binding
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.patchSet.revision)
+  - name: gitrepositoryurl
+    value: $(body.change.url)
+  - name: gitbranch
+    value: $(body.change.branch)
+  - name: changesubject
+    value: $(body.change.subject)
+  - name: changeowner
+    value: $(body.change.owner.name)
+  - name: changenumber
+    value: $(body.change.number)
+  - name: patchsetnumber
+    value: $(body.patchSet.number)
+  - name: projectname
+    value: $(body.change.project)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gerrit-merged-binding
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.newRev)
+  - name: gitrepositoryurl
+    value: $(body.change.url)
+  - name: gitbranch
+    value: $(body.change.branch)
+  - name: changesubject
+    value: $(body.change.subject)
+  - name: changeowner
+    value: $(body.change.owner.name)
+  - name: changenumber
+    value: $(body.change.number)
+  - name: projectname
+    value: $(body.change.project)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: atonixcorp-gerrit-ci-template
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    description: The git revision
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitbranch
+    description: The git branch
+  - name: changesubject
+    description: Change subject
+  - name: changeowner
+    description: Change owner
+  - name: changenumber
+    description: Change number
+  - name: patchsetnumber
+    description: Patchset number
+  - name: projectname
+    description: Project name
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: atonixcorp-gerrit-ci-$(tt.params.changenumber)-$(tt.params.patchsetnumber)-
+      namespace: atonixcorp-tekton
+      labels:
+        tekton.dev/pipeline: atonixcorp-ci-pipeline
+        git.revision: $(tt.params.gitrevision)
+        git.branch: $(tt.params.gitbranch)
+        gerrit.change: $(tt.params.changenumber)
+        gerrit.patchset: $(tt.params.patchsetnumber)
+        trigger.type: gerrit-patchset
+    spec:
+      pipelineRef:
+        name: atonixcorp-ci-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: revision
+        value: $(tt.params.gitrevision)
+      - name: image-reference
+        value: "atonixcorp-platform:change-$(tt.params.changenumber)-$(tt.params.patchsetnumber)"
+      - name: test-type
+        value: "all"
+      workspaces:
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      - name: docker-credentials
+        secret:
+          secretName: docker-registry-secret
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: atonixcorp-gerrit-cd-template
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    description: The git revision
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitbranch
+    description: The git branch
+  - name: changesubject
+    description: Change subject
+  - name: changeowner
+    description: Change owner
+  - name: changenumber
+    description: Change number
+  - name: projectname
+    description: Project name
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: atonixcorp-gerrit-cd-$(tt.params.changenumber)-
+      namespace: atonixcorp-tekton
+      labels:
+        tekton.dev/pipeline: atonixcorp-cd-pipeline
+        git.revision: $(tt.params.gitrevision)
+        git.branch: $(tt.params.gitbranch)
+        gerrit.change: $(tt.params.changenumber)
+        trigger.type: gerrit-merged
+    spec:
+      pipelineRef:
+        name: atonixcorp-cd-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: revision
+        value: $(tt.params.gitrevision)
+      - name: image-reference
+        value: "atonixcorp-platform:$(tt.params.gitrevision)"
+      - name: target-environment
+        value: "staging"
+      - name: auto-approve
+        value: "true"
+      workspaces:
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret

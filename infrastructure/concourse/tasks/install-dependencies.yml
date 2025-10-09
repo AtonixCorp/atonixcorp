@@ -1,0 +1,41 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: python
+    tag: 3.11-slim
+
+inputs:
+  - name: atonixcorp-source
+
+run:
+  path: bash
+  args:
+    - -c
+    - |
+      set -e
+      
+      echo "Installing system dependencies..."
+      apt-get update
+      apt-get install -y \
+        curl \
+        git \
+        build-essential \
+        libpq-dev \
+        nodejs \
+        npm
+      
+      echo "Installing backend dependencies..."
+      cd atonixcorp-source/backend
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -r requirements-opentelemetry.txt
+      pip install -r security/requirements-security.txt
+      
+      echo "Installing frontend dependencies..."
+      cd ../frontend
+      npm ci
+      
+      echo "Dependencies installed successfully"

@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+
+{% block title %}AtonixCorp Platform API Documentation{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero animate-fade-in">
+    <h1>Professional API Documentation</h1>
+    <p>
+        Comprehensive documentation for the AtonixCorp Platform REST API.
+        Built with Django REST Framework and designed for enterprise applications.
+    </p>
+    <div class="hero-buttons">
+        <a href="#quick-start" class="btn btn-primary">
+            Get Started
+        </a>
+        <a href="/api/docs/" class="btn btn-secondary">
+            Interactive API
+        </a>
+        <a href="#endpoints" class="btn btn-secondary">
+            Browse Endpoints
+        </a>
+    </div>
+</section>
+
+<!-- Quick Start Guide -->
+<section id="quick-start" style="margin: 4rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            Quick Start Guide
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Get up and running with the AtonixCorp Platform API in minutes
+        </p>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>1. Authentication</h3>
+            <p>Most endpoints require authentication. Obtain a JWT token to access protected resources.</p>
+            <div class="code-block">
+# Login to get JWT token
+curl -X POST "{{ request.build_absolute_uri }}/api/auth/login/" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "user@example.com", "password": "password123"}'
+            </div>
+            <div style="margin-top: 1rem;">
+                <strong>Response:</strong>
+                <div class="code-block" style="margin-top: 0.5rem;">
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "user": {
+      "id": 1,
+      "username": "user@example.com",
+      "email": "user@example.com"
+    }
+  }
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>2. Make API Calls</h3>
+            <p>Use your JWT token to authenticate API requests. Include it in the Authorization header.</p>
+            <div class="code-block">
+# Get projects (authenticated)
+curl -X GET "{{ request.build_absolute_uri }}/api/projects/" \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+     -H "Accept: application/json"
+            </div>
+            <div style="margin-top: 1rem;">
+                <strong>Response:</strong>
+                <div class="code-block" style="margin-top: 0.5rem;">
+{
+  "success": true,
+  "message": "Projects retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "name": "Analytics Platform",
+      "slug": "analytics-platform",
+      "status": "active",
+      "is_featured": true
+    }
+  ],
+  "metadata": {
+    "pagination": {
+      "page": 1,
+      "total": 25,
+      "per_page": 20
+    }
+  }
+}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- API Endpoints Overview -->
+<section id="endpoints" style="margin: 4rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            API Endpoints
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Complete reference of all available API endpoints and their capabilities
+        </p>
+    </div>
+
+    <div class="grid grid-1">
+        <!-- Core Endpoints -->
+        <div class="card">
+            <h3 style="font-size: 1.5rem; margin-bottom: 2rem;">Core API Endpoints</h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Projects -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Projects API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">Manage and browse projects with advanced filtering</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">GET /api/projects/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/projects/{slug}/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-success">GET</span>
+                        <span class="status status-info">Optional Auth</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: Filtering, Search, Pagination, Featured Projects
+                    </div>
+                </div>
+
+                <!-- Teams -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Teams API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">Team collaboration and member management</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">GET /api/teams/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/teams/{id}/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-success">GET</span>
+                        <span class="status status-warning">Auth Required</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: Team Listings, Member Management, Role Assignments
+                    </div>
+                </div>
+
+                <!-- Authentication -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Authentication API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">User authentication and session management</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">POST /api/auth/login/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/auth/me/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-warning">POST</span>
+                        <span class="status status-success">GET</span>
+                        <span class="status status-info">Public Access</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: JWT Tokens, Social Login, Session Management
+                    </div>
+                </div>
+
+                <!-- Dashboard -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Dashboard API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">Analytics and dashboard data</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">GET /api/dashboard/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/dashboard/stats/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-success">GET</span>
+                        <span class="status status-warning">Auth Required</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: Real-time Metrics, Performance Analytics, Custom Dashboards
+                    </div>
+                </div>
+
+                <!-- Focus Areas -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Focus Areas API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">Categorize work by focus areas and priorities</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">GET /api/focus-areas/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/focus-areas/{id}/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-success">GET</span>
+                        <span class="status status-info">Optional Auth</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: Category Management, Priority Sorting, Project Associations
+                    </div>
+                </div>
+
+                <!-- Resources -->
+                <div style="border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Resources API</h4>
+                    <p style="color: var(--gray-600); margin-bottom: 1rem;">Resource management and sharing platform</p>
+                    <div style="margin-bottom: 1rem;">
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">GET /api/resources/</code>
+                        <code style="background: var(--gray-100); padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-left: 0.5rem;">GET /api/resources/{id}/</code>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="status status-success">GET</span>
+                        <span class="status status-info">Optional Auth</span>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--gray-500);">
+                        Features: Resource Library, File Management, Sharing Controls
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Authentication Methods -->
+<section style="margin: 4rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            Authentication
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Secure authentication methods supported by the API
+        </p>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>JWT Bearer Token</h3>
+            <p>JSON Web Token authentication for API access. Most secure and recommended method.</p>
+            <div class="code-block">
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+            </div>
+            <div style="margin-top: 1rem;">
+                <strong>Token Lifetime:</strong> 24 hours<br>
+                <strong>Refresh Token:</strong> 7 days<br>
+                <strong>Security:</strong> RSA-256 signed
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>API Key</h3>
+            <p>API key authentication for service-to-service communication and integrations.</p>
+            <div class="code-block">
+X-API-Key: ak_live_1234567890abcdef
+            </div>
+            <div style="margin-top: 1rem;">
+                <strong>Format:</strong> ak_live_{32-character-key}<br>
+                <strong>Scope:</strong> Configurable permissions<br>
+                <strong>Rate Limit:</strong> 1000 requests/hour
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Response Format -->
+<section style="background: var(--gray-900); color: white; padding: 3rem; border-radius: 1rem; margin: 3rem 0;">
+    <h2 style="color: white; margin-bottom: 2rem; text-align: center;">
+        Standardized Response Format
+    </h2>
+    <p style="color: var(--gray-300); text-align: center; margin-bottom: 2rem;">
+        All API responses follow a consistent, professional structure
+    </p>
+
+    <div class="code-block" style="background: var(--gray-800); border: 1px solid var(--gray-700);">
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "timestamp": "2024-09-24T10:30:00.000Z",
+  "status_code": 200,
+  "data": {
+    // Response data here
+  },
+  "metadata": {
+    "pagination": {
+      "page": 1,
+      "pages": 3,
+      "per_page": 20,
+      "total": 45,
+      "has_next": true,
+      "has_previous": false
+    },
+    "request_id": "req_1234567890"
+  }
+}
+    </div>
+
+    <div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+        <div style="text-align: center;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Success Response</h4>
+            <code style="background: var(--success-color); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">success: true</code>
+        </div>
+        <div style="text-align: center;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Error Response</h4>
+            <code style="background: var(--error-color); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">success: false</code>
+        </div>
+        <div style="text-align: center;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Pagination</h4>
+            <code style="background: var(--primary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">metadata.pagination</code>
+        </div>
+        <div style="text-align: center;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Request ID</h4>
+            <code style="background: var(--secondary-color); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">metadata.request_id</code>
+        </div>
+    </div>
+</section>
+
+<!-- Error Handling -->
+<section style="margin: 4rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            Error Handling
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Comprehensive error handling with detailed error messages and status codes
+        </p>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h3>Authentication Error</h3>
+            <p>When authentication is required but not provided or invalid.</p>
+            <div class="code-block">
+{
+  "success": false,
+  "message": "Authentication credentials were not provided",
+  "timestamp": "2024-09-24T10:30:00.000Z",
+  "status_code": 401,
+  "error": {
+    "type": "authentication_error",
+    "code": "AUTH_REQUIRED",
+    "details": "JWT token is required for this endpoint"
+  }
+}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Validation Error</h3>
+            <p>When request data fails validation requirements.</p>
+            <div class="code-block">
+{
+  "success": false,
+  "message": "Validation failed",
+  "timestamp": "2024-09-24T10:30:00.000Z",
+  "status_code": 400,
+  "error": {
+    "type": "validation_error",
+    "code": "INVALID_DATA",
+    "details": {
+      "username": ["This field is required"],
+      "email": ["Enter a valid email address"]
+    }
+  }
+}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rate Limiting -->
+<section style="background: var(--gray-50); padding: 3rem; border-radius: 1rem; margin: 3rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            Rate Limiting
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Fair usage policies to ensure reliable service for all users
+        </p>
+    </div>
+
+    <div class="grid grid-3">
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-color);">⏱️</div>
+            <h3 style="margin-bottom: 0.5rem;">60 requests/minute</h3>
+            <p style="color: var(--gray-600);">Authenticated users</p>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-color);">🚫</div>
+            <h3 style="margin-bottom: 0.5rem;">10 requests/minute</h3>
+            <p style="color: var(--gray-600);">Unauthenticated users</p>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-color);">📊</div>
+            <h3 style="margin-bottom: 0.5rem;">Rate Limit Headers</h3>
+            <p style="color: var(--gray-600);">X-RateLimit-* headers included</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <div class="code-block" style="max-width: 600px; margin: 0 auto;">
+# Rate limit headers in response
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1632499200
+        </div>
+    </div>
+</section>
+
+<!-- SDKs and Tools -->
+<section style="margin: 4rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 1rem;">
+            SDKs & Tools
+        </h2>
+        <p style="font-size: 1.25rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            Official SDKs and tools to accelerate your development
+        </p>
+    </div>
+
+    <div class="grid grid-3">
+        <div class="card">
+            <h3>Python SDK</h3>
+            <p>Official Python client library with full API coverage and async support.</p>
+            <div class="code-block">
+pip install atonixcorp-api
+            </div>
+            <a href="https://github.com/atonixcorp/python-sdk" class="btn btn-secondary" style="margin-top: 1rem;">View on GitHub</a>
+        </div>
+
+        <div class="card">
+            <h3>JavaScript SDK</h3>
+            <p>Modern JavaScript/TypeScript SDK with promise-based API and TypeScript definitions.</p>
+            <div class="code-block">
+npm install @atonixcorp/api-client
+            </div>
+            <a href="https://github.com/atonixcorp/js-sdk" class="btn btn-secondary" style="margin-top: 1rem;">View on GitHub</a>
+        </div>
+
+        <div class="card">
+            <h3>Postman Collection</h3>
+            <p>Complete Postman collection with all endpoints, authentication, and example requests.</p>
+            <div class="code-block">
+Import: AtonixCorp_Platform_API.postman_collection.json
+            </div>
+            <a href="https://github.com/atonixcorp/postman-collection" class="btn btn-secondary" style="margin-top: 1rem;">Download</a>
+        </div>
+    </div>
+</section>
+
+<!-- Support & Resources -->
+<section style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: white; padding: 3rem; border-radius: 1rem; margin: 3rem 0;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="color: white; font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">
+            Support & Resources
+        </h2>
+        <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.25rem;">
+            Get help and stay updated with the latest API developments
+        </p>
+    </div>
+
+    <div class="grid grid-4">
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📚</div>
+            <h4 style="color: white; margin-bottom: 0.5rem;">Documentation</h4>
+            <p style="color: rgba(255, 255, 255, 0.8);">Complete API reference and guides</p>
+            <a href="/api/docs/" style="color: white; text-decoration: underline;">View Docs</a>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">💬</div>
+            <h4 style="color: white; margin-bottom: 0.5rem;">Community</h4>
+            <p style="color: rgba(255, 255, 255, 0.8);">Join discussions and get help</p>
+            <a href="https://community.atonixcorp.org" style="color: white; text-decoration: underline;">Join Community</a>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🆘</div>
+            <h4 style="color: white; margin-bottom: 0.5rem;">Support</h4>
+            <p style="color: rgba(255, 255, 255, 0.8);">Enterprise support available</p>
+            <a href="mailto:api-support@atonixcorp.com" style="color: white; text-decoration: underline;">Contact Support</a>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+            <h4 style="color: white; margin-bottom: 0.5rem;">Changelog</h4>
+            <p style="color: rgba(255, 255, 255, 0.8);">Latest updates and changes</p>
+            <a href="https://changelog.atonixcorp.org" style="color: white; text-decoration: underline;">View Changelog</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

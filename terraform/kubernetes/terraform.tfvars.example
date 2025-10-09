@@ -1,0 +1,206 @@
+# Example Terraform Variables Configuration
+# Copy this file to terraform.tfvars and update the values
+
+# ==============================================
+# REQUIRED VARIABLES
+# ==============================================
+
+# Django secret key - MUST be set for security
+# Generate with: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+django_secret_key = "CHANGE-ME-TO-A-RANDOM-SECRET-KEY"
+
+# ==============================================
+# ENVIRONMENT CONFIGURATION
+# ==============================================
+
+# Project and environment settings
+project_name = "atonixcorp"
+environment  = "dev"  # Options: dev, staging, prod
+app_version  = "1.0.0"
+namespace    = "atonixcorp"
+
+# ==============================================
+# DOMAIN AND NETWORKING
+# ==============================================
+
+# Primary domain for the application
+domain_name = "atonixcorp.org"
+
+# TLS certificate secret name (leave empty for HTTP)
+tls_secret_name = "atonixcorp-tls"
+
+# Ingress class to use
+ingress_class = "nginx"
+
+# CORS allowed origins
+cors_allowed_origins = [
+  "https://atonixcorp.org",
+  "https://www.atonixcorp.org"
+]
+
+# Django allowed hosts
+allowed_hosts = [
+  "atonixcorp.org",
+  "www.atonixcorp.org",
+  "api.atonixcorp.org"
+]
+
+# ==============================================
+# CONTAINER IMAGES
+# ==============================================
+
+# Container registry settings
+image_registry = "ghcr.io"
+
+# Backend image configuration
+backend_image_repository = "atonixcorp/platform-backend"
+backend_image_tag        = "latest"
+
+# Frontend image configuration
+frontend_image_repository = "atonixcorp/atonixcorp-frontend"
+frontend_image_tag         = "1.0.0"
+
+# ==============================================
+# SCALING CONFIGURATION
+# ==============================================
+
+# Backend scaling
+backend_replicas     = 2
+backend_min_replicas = 1
+backend_max_replicas = 10
+
+# Frontend scaling
+frontend_replicas     = 2
+frontend_min_replicas = 1
+frontend_max_replicas = 5
+
+# Celery worker scaling
+celery_worker_replicas     = 2
+celery_worker_min_replicas = 1
+celery_worker_max_replicas = 8
+
+# ==============================================
+# STORAGE CONFIGURATION
+# ==============================================
+
+# Storage class for persistent volumes
+storage_class = "standard"
+
+# Storage sizes
+postgresql_storage_size = "20Gi"
+redis_storage_size      = "5Gi"
+zookeeper_storage_size  = "10Gi"
+media_storage_size      = "10Gi"
+
+# ==============================================
+# ZOOKEEPER CONFIGURATION
+# ==============================================
+
+# Zookeeper client port
+zookeeper_client_port = 2181
+
+# Zookeeper timing configuration
+zookeeper_tick_time  = 2000
+zookeeper_init_limit = 5
+zookeeper_sync_limit = 2
+
+# Connection limits
+zookeeper_max_client_connections = 60
+
+# Data management
+zookeeper_autopurge_snap_retain_count = 3
+zookeeper_autopurge_purge_interval    = 24
+
+# Monitoring
+zookeeper_enable_jmx = true
+zookeeper_jmx_port   = 9999
+
+# ==============================================
+# DATABASE CONFIGURATION
+# ==============================================
+
+# PostgreSQL settings
+database_name     = "atonixcorp_db"
+database_username = "atonixuser"
+
+# ==============================================
+# FEATURE TOGGLES
+# ==============================================
+
+# Enable monitoring stack (Prometheus, Grafana)
+enable_monitoring = true
+
+# Enable database backup
+enable_backup = true
+
+# Enable horizontal pod autoscaling
+enable_autoscaling = true
+
+# Enable network policies for security
+enable_network_policies = false
+
+# ==============================================
+# RESOURCE LIMITS
+# ==============================================
+
+resource_limits = {
+  backend = {
+    cpu_request    = "250m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+  frontend = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+  celery = {
+    cpu_request    = "250m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+  postgresql = {
+    cpu_request    = "250m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+  redis = {
+    cpu_request    = "100m"
+    cpu_limit      = "500m"
+    memory_request = "256Mi"
+    memory_limit   = "1Gi"
+  }
+  zookeeper = {
+    cpu_request    = "250m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+}
+
+# ==============================================
+# INGRESS ANNOTATIONS
+# ==============================================
+
+ingress_annotations = {
+  "cert-manager.io/cluster-issuer"                   = "letsencrypt-prod"
+  "nginx.ingress.kubernetes.io/ssl-redirect"         = "true"
+  "nginx.ingress.kubernetes.io/force-ssl-redirect"   = "true"
+  "nginx.ingress.kubernetes.io/proxy-body-size"      = "10m"
+  "nginx.ingress.kubernetes.io/proxy-read-timeout"   = "300"
+  "nginx.ingress.kubernetes.io/proxy-connect-timeout" = "300"
+}
+
+# ==============================================
+# OPTIONAL VARIABLES
+# ==============================================
+
+# Kubernetes configuration
+kubeconfig_path = "~/.kube/config"
+
+# Internal API URL (usually doesn't need to be changed)
+api_url = "http://atonixcorp-backend:8000"

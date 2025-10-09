@@ -1,0 +1,296 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-to-kubernetes
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Deployment
+    tekton.dev/tags: kubernetes, deploy, helm
+    tekton.dev/displayName: "Deploy to Kubernetes"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: |
+    This task deploys the AtonixCorp platform to Kubernetes using Helm charts.
+    It supports deployment to different environments (dev, staging, production).
+  workspaces:
+  - name: source
+    description: Workspace containing the source code and manifests.
+  - name: kubeconfig
+    description: Kubernetes config for cluster access.
+    optional: true
+    mountPath: /etc/kubeconfig
+  params:
+  - name: IMAGE_URL
+    description: URL of the container image to deploy
+  - name: ENVIRONMENT
+    description: Target environment (dev, staging, production)
+    default: dev
+  - name: NAMESPACE
+    description: Kubernetes namespace to deploy to
+    default: atonixcorp-dev
+  - name: HELM_CHART_PATH
+    description: Path to Helm chart
+    default: ./helm/atonixcorp
+  - name: VALUES_FILE
+    description: Helm values file for the environment
+    default: ""
+  - name: KUBECTL_IMAGE
+    description: Kubectl image to use
+    default: bitnami/kubectl:latest
+  - name: HELM_IMAGE
+    description: Helm image to use
+    default: alpine/helm:latest
+  results:
+  - name: deployment-status
+    description: Deployment status and details
+  steps:
+  - name: validate-environment
+    image: $(params.KUBECTL_IMAGE)
+    workingDir: $(workspaces.source.path)
+    env:
+    - name: KUBECONFIG
+      value: /etc/kubeconfig/config
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Validating deployment environment..."
+      
+      # Check if namespace exists, create if it doesn't
+      if ! kubectl get namespace $(params.NAMESPACE) 2>/dev/null; then
+        echo "Creating namespace: $(params.NAMESPACE)"
+        kubectl create namespace $(params.NAMESPACE)
+      fi
+      
+      # Label namespace for environment
+      kubectl label namespace $(params.NAMESPACE) environment=$(params.ENVIRONMENT) --overwrite
+      
+      # Verify cluster connectivity
+      kubectl cluster-info
+      kubectl get nodes
+      
+      echo "Environment validation completed"
+
+  - name: prepare-manifests
+    image: $(params.HELM_IMAGE)
+    workingDir: $(workspaces.source.path)
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Preparing Kubernetes manifests..."
+      
+      # Create Helm chart if it doesn't exist
+      if [ ! -d "$(params.HELM_CHART_PATH)" ]; then
+        echo "Creating Helm chart..."
+        mkdir -p helm
+        cd helm
+        helm create atonixcorp
+        cd ..
+      fi
+      
+      # Update Chart.yaml with current version
+      cat > $(params.HELM_CHART_PATH)/Chart.yaml << EOF
+      apiVersion: v2
+      name: atonixcorp
+      description: AtonixCorp Platform Helm Chart
+      type: application
+      version: 0.1.0
+      appVersion: "1.0.0"
+      EOF
+      
+      # Create values file for environment if specified
+      if [ -n "$(params.VALUES_FILE)" ] && [ ! -f "$(params.VALUES_FILE)" ]; then
+        echo "Creating values file for $(params.ENVIRONMENT) environment..."
+        cat > $(params.VALUES_FILE) << EOF
+      # AtonixCorp Platform - $(params.ENVIRONMENT) Environment
+      replicaCount: 1
+      
+      image:
+        repository: $(echo $(params.IMAGE_URL) | cut -d':' -f1)
+        tag: $(echo $(params.IMAGE_URL) | cut -d':' -f2)
+        pullPolicy: Always
+      
+      service:
+        type: ClusterIP
+        port: 8080
+      
+      ingress:
+        enabled: true
+        className: nginx
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: /
+        hosts:
+          - host: atonixcorp-$(params.ENVIRONMENT).local
+            paths:
+              - path: /
+                pathType: Prefix
+      
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      
+      env:
+        - name: ENVIRONMENT
+          value: "$(params.ENVIRONMENT)"
+        - name: DEBUG
+          value: "false"
+        - name: DJANGO_SETTINGS_MODULE
+          value: "atonixcorp.settings"
+      
+      postgresql:
+        enabled: true
+        auth:
+          database: atonixcorp
+          username: atonixcorp
+      
+      redis:
+        enabled: true
+        auth:
+          enabled: false
+      EOF
+      fi
+      
+      echo "Manifest preparation completed"
+
+  - name: deploy-with-helm
+    image: $(params.HELM_IMAGE)
+    workingDir: $(workspaces.source.path)
+    env:
+    - name: KUBECONFIG
+      value: /etc/kubeconfig/config
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Deploying to Kubernetes with Helm..."
+      
+      # Add required Helm repositories
+      helm repo add bitnami https://charts.bitnami.com/bitnami
+      helm repo update
+      
+      # Determine values file
+      VALUES_FILE_ARG=""
+      if [ -n "$(params.VALUES_FILE)" ] && [ -f "$(params.VALUES_FILE)" ]; then
+        VALUES_FILE_ARG="-f $(params.VALUES_FILE)"
+      fi
+      
+      # Deploy or upgrade the application
+      helm upgrade --install \
+        atonixcorp-$(params.ENVIRONMENT) \
+        $(params.HELM_CHART_PATH) \
+        --namespace $(params.NAMESPACE) \
+        --set image.repository=$(echo $(params.IMAGE_URL) | cut -d':' -f1) \
+        --set image.tag=$(echo $(params.IMAGE_URL) | cut -d':' -f2) \
+        --set environment=$(params.ENVIRONMENT) \
+        ${VALUES_FILE_ARG} \
+        --wait \
+        --timeout=10m
+      
+      echo "Helm deployment completed"
+
+  - name: verify-deployment
+    image: $(params.KUBECTL_IMAGE)
+    workingDir: $(workspaces.source.path)
+    env:
+    - name: KUBECONFIG
+      value: /etc/kubeconfig/config
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Verifying deployment..."
+      
+      # Wait for deployment to be ready
+      kubectl wait --for=condition=available \
+        deployment/atonixcorp-$(params.ENVIRONMENT) \
+        --namespace $(params.NAMESPACE) \
+        --timeout=300s
+      
+      # Check pod status
+      kubectl get pods -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp
+      
+      # Check service status
+      kubectl get services -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp
+      
+      # Check ingress status
+      kubectl get ingress -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp || true
+      
+      # Test application health
+      POD_NAME=$(kubectl get pods -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp -o jsonpath='{.items[0].metadata.name}')
+      
+      if [ -n "$POD_NAME" ]; then
+        echo "Testing application health..."
+        kubectl exec -n $(params.NAMESPACE) $POD_NAME -- curl -f http://localhost:8080/health/ || true
+      fi
+      
+      echo "Deployment verification completed"
+
+  - name: generate-deployment-report
+    image: $(params.KUBECTL_IMAGE)
+    workingDir: $(workspaces.source.path)
+    env:
+    - name: KUBECONFIG
+      value: /etc/kubeconfig/config
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Generating deployment report..."
+      
+      # Create deployment report
+      cat > deployment-report.txt << EOF
+      AtonixCorp Platform Deployment Report
+      ====================================
+      Date: $(date)
+      Environment: $(params.ENVIRONMENT)
+      Namespace: $(params.NAMESPACE)
+      Image: $(params.IMAGE_URL)
+      
+      Deployment Status: SUCCESS
+      
+      Resources Deployed:
+      ==================
+      EOF
+      
+      # Add resource information
+      echo "Pods:" >> deployment-report.txt
+      kubectl get pods -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp >> deployment-report.txt
+      
+      echo "" >> deployment-report.txt
+      echo "Services:" >> deployment-report.txt
+      kubectl get services -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp >> deployment-report.txt
+      
+      echo "" >> deployment-report.txt
+      echo "Ingress:" >> deployment-report.txt
+      kubectl get ingress -n $(params.NAMESPACE) -l app.kubernetes.io/name=atonixcorp >> deployment-report.txt || echo "No ingress found" >> deployment-report.txt
+      
+      cat >> deployment-report.txt << EOF
+      
+      Access Information:
+      ==================
+      - Internal Service: atonixcorp-$(params.ENVIRONMENT).$(params.NAMESPACE).svc.cluster.local:8080
+      - Health Check: /health/
+      - Admin Interface: /admin/
+      - API Documentation: /api/docs/
+      
+      Next Steps:
+      ===========
+      1. Verify application functionality
+      2. Run integration tests
+      3. Configure monitoring and alerting
+      4. Update DNS if needed for production
+      
+      Deployment completed successfully!
+      EOF
+      
+      # Output to results
+      echo "Deployment completed successfully" | tee $(results.deployment-status.path)
+      echo "Environment: $(params.ENVIRONMENT)" | tee -a $(results.deployment-status.path)
+      echo "Namespace: $(params.NAMESPACE)" | tee -a $(results.deployment-status.path)
+      echo "Image: $(params.IMAGE_URL)" | tee -a $(results.deployment-status.path)
+      cat deployment-report.txt | tee -a $(results.deployment-status.path)
+      
+      echo "Deployment report generation completed"

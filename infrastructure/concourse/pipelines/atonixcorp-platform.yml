@@ -1,0 +1,329 @@
+---
+resources:
+  # Source code resource
+  - name: atonixcorp-source
+    type: git
+    source:
+      uri: https://github.com/atonixcorp/atonixcorp-platform.git
+      branch: main
+      private_key: ((git-private-key))
+    webhook_token: ((webhook-token))
+
+  # Docker image resource for backend
+  - name: atonixcorp-backend-image
+    type: docker-image
+    source:
+      repository: quay.io/atonixdev/atonixcorp-platform
+      username: ((docker-registry-username))
+      password: ((docker-registry-password))
+      tag: latest
+
+  # Version resource for semantic versioning
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: https://github.com/atonixdev/atonixcorp-platform.git
+      branch: version
+      file: version
+      private_key: ((git-private-key))
+      initial_version: 1.0.0
+
+  # Slack notification resource
+  - name: slack-notification
+    type: slack-notification
+    source:
+      url: ((slack-webhook-url))
+
+  # Time resource for nightly builds
+  - name: nightly-trigger
+    type: time
+    source:
+      start: 2:00 AM
+      stop: 3:00 AM
+      location: America/New_York
+
+resource_types:
+  # Slack notification resource type
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: latest
+
+  # Semver resource type
+  - name: semver
+    type: docker-image
+    source:
+      repository: concourse/semver-resource
+      tag: latest
+
+jobs:
+  # Continuous Integration Job
+  - name: ci-pipeline
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        trigger: true
+      
+      - task: install-dependencies
+        file: atonixcorp-source/infrastructure/concourse/tasks/install-dependencies.yml
+
+      - task: lint-code
+        file: atonixcorp-source/infrastructure/concourse/tasks/lint-code.yml
+
+      - task: run-backend-tests
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-backend-tests.yml
+
+      - task: run-frontend-tests
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-frontend-tests.yml
+
+      - task: security-scan
+        file: atonixcorp-source/infrastructure/concourse/tasks/security-scan.yml
+
+      - task: build-application
+        file: atonixcorp-source/infrastructure/concourse/tasks/build-application.yml
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-ci'
+          text: |
+            ✅ CI Pipeline completed successfully for commit $BUILD_NAME
+            Branch: main
+            View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp-platform/jobs/ci-pipeline/builds/$BUILD_NAME
+
+    on_failure:
+      put: slack-notification
+      params:
+        channel: '#atonixcorp-ci'
+        text: |
+          ❌ CI Pipeline failed for commit $BUILD_NAME
+          Branch: main
+          View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp-platform/jobs/ci-pipeline/builds/$BUILD_NAME
+
+  # Build and Push Docker Image Job
+  - name: build-and-push-image
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        passed: [ci-pipeline]
+        trigger: true
+      
+      - get: version
+        params: {bump: patch}
+
+      - task: build-docker-image
+        file: atonixcorp-source/infrastructure/concourse/tasks/build-docker-image.yml
+        vars:
+          image_tag: ((.:version))
+
+      - put: atonixcorp-backend-image
+        params:
+          build: atonixcorp-source
+          dockerfile: atonixcorp-source/Dockerfile.fullstack
+          tag_file: version/version
+          tag_as_latest: true
+
+      - put: version
+        params: {file: version/version}
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-ci'
+          text: |
+            🐳 Docker image built and pushed successfully
+            Version: $(cat version/version)
+            Image: quay.io/atonixdev/atonixcorp-platform:$(cat version/version)
+
+  # Deploy to Development Environment
+  - name: deploy-to-dev
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        passed: [build-and-push-image]
+        trigger: true
+      
+      - get: atonixcorp-backend-image
+        passed: [build-and-push-image]
+        trigger: true
+
+      - get: version
+        passed: [build-and-push-image]
+
+      - task: deploy-to-kubernetes
+        file: atonixcorp-source/infrastructure/concourse/tasks/deploy-to-kubernetes.yml
+        vars:
+          environment: development
+          namespace: atonixcorp-dev
+          image_tag: ((.:version))
+
+      - task: run-smoke-tests
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-smoke-tests.yml
+        vars:
+          environment: development
+          base_url: http://atonixcorp-dev.atonixcorp.local
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-deployments'
+          text: |
+            🚀 Successfully deployed to Development environment
+            Version: $(cat version/version)
+            Environment: atonixcorp-dev
+            URL: http://atonixcorp-dev.atonixcorp.local
+
+  # Deploy to Staging Environment (Manual Trigger)
+  - name: deploy-to-staging
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        passed: [deploy-to-dev]
+      
+      - get: atonixcorp-backend-image
+        passed: [deploy-to-dev]
+
+      - get: version
+        passed: [deploy-to-dev]
+
+      - task: deploy-to-kubernetes
+        file: atonixcorp-source/infrastructure/concourse/tasks/deploy-to-kubernetes.yml
+        vars:
+          environment: staging
+          namespace: atonixcorp-staging
+          image_tag: ((.:version))
+
+      - task: run-integration-tests
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-integration-tests.yml
+        vars:
+          environment: staging
+          base_url: http://atonixcorp-staging.atonixcorp.local
+
+      - task: run-performance-tests
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-performance-tests.yml
+        vars:
+          environment: staging
+          base_url: http://atonixcorp-staging.atonixcorp.local
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-deployments'
+          text: |
+            🎯 Successfully deployed to Staging environment
+            Version: $(cat version/version)
+            Environment: atonixcorp-staging
+            URL: http://atonixcorp-staging.atonixcorp.local
+
+  # Deploy to Production Environment (Manual Trigger with Approval)
+  - name: deploy-to-production
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        passed: [deploy-to-staging]
+      
+      - get: atonixcorp-backend-image
+        passed: [deploy-to-staging]
+
+      - get: version
+        passed: [deploy-to-staging]
+
+      - task: production-readiness-check
+        file: atonixcorp-source/infrastructure/concourse/tasks/production-readiness-check.yml
+
+      - task: backup-production
+        file: atonixcorp-source/infrastructure/concourse/tasks/backup-production.yml
+
+      - task: deploy-to-kubernetes
+        file: atonixcorp-source/infrastructure/concourse/tasks/deploy-to-kubernetes.yml
+        vars:
+          environment: production
+          namespace: atonixcorp-production
+          image_tag: ((.:version))
+
+      - task: verify-production-deployment
+        file: atonixcorp-source/infrastructure/concourse/tasks/verify-production-deployment.yml
+        vars:
+          environment: production
+          base_url: https://atonixcorp.com
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-deployments'
+          text: |
+            🌟 Successfully deployed to Production environment
+            Version: $(cat version/version)
+            Environment: atonixcorp-production
+            URL: https://atonixcorp.com
+
+    on_failure:
+      task: rollback-production
+      file: atonixcorp-source/infrastructure/concourse/tasks/rollback-production.yml
+
+  # Nightly Security Scan Job
+  - name: nightly-security-scan
+    serial: true
+    public: true
+    plan:
+      - get: nightly-trigger
+        trigger: true
+      
+      - get: atonixcorp-source
+
+      - task: comprehensive-security-scan
+        file: atonixcorp-source/infrastructure/concourse/tasks/comprehensive-security-scan.yml
+
+      - task: dependency-vulnerability-scan
+        file: atonixcorp-source/infrastructure/concourse/tasks/dependency-vulnerability-scan.yml
+
+      - task: docker-image-security-scan
+        file: atonixcorp-source/infrastructure/concourse/tasks/docker-image-security-scan.yml
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-security'
+          text: |
+            🔒 Nightly security scan completed
+            Date: $(date)
+            Check detailed results in the build logs
+
+  # Database Migration Job
+  - name: run-migrations
+    serial: true
+    public: true
+    plan:
+      - get: atonixcorp-source
+        trigger: false  # Manual trigger only
+
+      - task: run-database-migrations
+        file: atonixcorp-source/infrastructure/concourse/tasks/run-database-migrations.yml
+        vars:
+          environment: ((target-environment))
+
+      - put: slack-notification
+        params:
+          channel: '#atonixcorp-ops'
+          text: |
+            🗄️ Database migrations completed successfully
+            Environment: ((target-environment))
+            Build: $BUILD_NAME
+
+groups:
+  - name: ci-cd
+    jobs:
+      - ci-pipeline
+      - build-and-push-image
+      - deploy-to-dev
+      - deploy-to-staging
+      - deploy-to-production
+
+  - name: security
+    jobs:
+      - nightly-security-scan
+
+  - name: operations
+    jobs:
+      - run-migrations

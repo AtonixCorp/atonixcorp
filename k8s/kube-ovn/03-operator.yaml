@@ -1,0 +1,355 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-ovn-controller
+  namespace: kube-system
+  labels:
+    app: kube-ovn-controller
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kube-ovn-controller
+  template:
+    metadata:
+      labels:
+        app: kube-ovn-controller
+        component: network
+        type: infra
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: kube-ovn-controller
+            topologyKey: kubernetes.io/hostname
+      serviceAccountName: ovn
+      hostNetwork: true
+      containers:
+        - name: kube-ovn-controller
+          image: kubeovn/kube-ovn:v1.12.1
+          imagePullPolicy: IfNotPresent
+          command:
+          - /kube-ovn/start-controller.sh
+          args:
+          - --default-cidr=10.16.0.0/16
+          - --default-gateway=10.16.0.1
+          - --default-gateway-check=true
+          - --default-logical-gateway=false
+          - --default-exclude-ips=
+          - --node-switch-cidr=100.64.0.0/16
+          - --service-cluster-ip-range=10.96.0.0/12
+          - --network-type=geneve
+          - --default-interface-name=eth0
+          - --default-vlan-id=100
+          - --pod-nic-type=veth-pair
+          - --enable-lb=true
+          - --enable-np=true
+          - --enable-eip-snat=true
+          - --enable-external-vpc=true
+          - --external-gateway-switch=external
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+          - mountPath: /etc/localtime
+            name: localtime
+            readOnly: true
+          - mountPath: /var/run/tls
+            name: kube-ovn-tls
+          - mountPath: /var/run/ovn
+            name: ovn-run
+          - mountPath: /var/run/openvswitch
+            name: ovs-run
+          - mountPath: /etc/ovn
+            name: ovn-config
+          - mountPath: /var/log/ovn
+            name: ovn-log
+          readinessProbe:
+            exec:
+              command:
+                - /kube-ovn/kube-ovn-controller-healthcheck
+            periodSeconds: 3
+            timeoutSeconds: 45
+          livenessProbe:
+            exec:
+              command:
+                - /kube-ovn/kube-ovn-controller-healthcheck
+            initialDelaySeconds: 300
+            periodSeconds: 7
+            failureThreshold: 5
+            timeoutSeconds: 45
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: kube-ovn-tls
+          secret:
+            optional: true
+            secretName: kube-ovn-tls
+        - name: ovn-run
+          hostPath:
+            path: /var/run/ovn
+        - name: ovs-run
+          hostPath:
+            path: /var/run/openvswitch
+        - name: ovn-config
+          configMap:
+            name: ovn-config
+        - name: ovn-log
+          hostPath:
+            path: /var/log/ovn
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-ovn-cni
+  namespace: kube-system
+  labels:
+    app: kube-ovn-cni
+spec:
+  selector:
+    matchLabels:
+      app: kube-ovn-cni
+  template:
+    metadata:
+      labels:
+        app: kube-ovn-cni
+        component: network
+        type: infra
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: ovn
+      hostNetwork: true
+      hostPID: true
+      initContainers:
+      - name: install-cni
+        image: kubeovn/kube-ovn:v1.12.1
+        imagePullPolicy: IfNotPresent
+        command:
+        - /kube-ovn/install-cni.sh
+        securityContext:
+          runAsUser: 0
+          privileged: true
+          capabilities:
+            add: ["SYS_MODULE"]
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - mountPath: /opt/cni/bin
+          name: cni-bin
+        - mountPath: /etc/cni/net.d
+          name: cni-conf
+        - mountPath: /etc/localtime
+          name: localtime
+      containers:
+      - name: cni-server
+        image: kubeovn/kube-ovn:v1.12.1
+        imagePullPolicy: IfNotPresent
+        command:
+        - bash
+        - /kube-ovn/start-cniserver.sh
+        args:
+        - --enable-mirror=false
+        - --enable-ipv6=false
+        - --encap-checksum=true
+        - --service-cluster-ip-range=10.96.0.0/12
+        - --iface=
+        - --dpdk-tunnel-iface=
+        - --network-type=geneve
+        - --default-interface-name=eth0
+        securityContext:
+          runAsUser: 0
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "NET_RAW", "SYS_ADMIN", "SYS_PTRACE", "SYS_MODULE"]
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+        - mountPath: /var/run/netns
+          name: host-ns
+          mountPropagation: HostToContainer
+        - mountPath: /var/run/ovn
+          name: ovn-run
+        - mountPath: /var/run/openvswitch
+          name: ovs-run
+        - mountPath: /var/run/tls
+          name: kube-ovn-tls
+        - mountPath: /etc/cni/net.d
+          name: cni-conf
+        - mountPath: /opt/cni/bin
+          name: cni-bin
+        readinessProbe:
+          exec:
+            command:
+              - nc
+              - -z
+              - -w3
+              - 127.0.0.1
+              - "10665"
+          periodSeconds: 3
+        livenessProbe:
+          exec:
+            command:
+              - nc
+              - -z
+              - -w3
+              - 127.0.0.1
+              - "10665"
+          initialDelaySeconds: 300
+          periodSeconds: 7
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+      volumes:
+      - name: host-ns
+        hostPath:
+          path: /var/run/netns
+      - name: cni-bin
+        hostPath:
+          path: /opt/cni/bin
+      - name: cni-conf
+        hostPath:
+          path: /etc/cni/net.d
+      - name: ovn-run
+        hostPath:
+          path: /var/run/ovn
+      - name: ovs-run
+        hostPath:
+          path: /var/run/openvswitch
+      - name: kube-ovn-tls
+        secret:
+          optional: true
+          secretName: kube-ovn-tls
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-ovn-monitor
+  namespace: kube-system
+  labels:
+    app: kube-ovn-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-ovn-monitor
+  template:
+    metadata:
+      labels:
+        app: kube-ovn-monitor
+        component: network
+        type: infra
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: ovn
+      containers:
+      - name: kube-ovn-monitor
+        image: kubeovn/kube-ovn:v1.12.1
+        imagePullPolicy: IfNotPresent
+        command:
+        - /kube-ovn/start-monitor.sh
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - mountPath: /var/run/ovn
+          name: ovn-run
+        - mountPath: /var/log/ovn
+          name: ovn-log
+        - mountPath: /etc/localtime
+          name: localtime
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /var/run/ovn/ovn-monitor.pid
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /var/run/ovn/ovn-monitor.pid
+          initialDelaySeconds: 200
+          periodSeconds: 30
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+      volumes:
+      - name: ovn-run
+        hostPath:
+          path: /var/run/ovn
+      - name: ovn-log
+        hostPath:
+          path: /var/log/ovn
+      - name: localtime
+        hostPath:
+          path: /etc/localtime

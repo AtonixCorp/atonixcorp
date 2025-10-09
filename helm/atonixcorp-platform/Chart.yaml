@@ -1,0 +1,32 @@
+apiVersion: v2
+name: atonixcorp-platform
+description: A Helm chart for AtonixCorp Platform
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+keywords:
+  - atonixcorp
+  - platform
+  - django
+  - react
+  - postgresql
+  - redis
+
+home: https://atonixcorp.org
+sources:
+  - https://github.com/atonixcorp/platform
+
+maintainers:
+  - name: AtonixCorp DevOps Team
+    email: devops@atonixcorp.org
+
+dependencies:
+  - name: postgresql
+    version: ">=10.0.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: ">=16.0.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled

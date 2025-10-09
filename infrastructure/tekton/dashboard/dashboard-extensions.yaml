@@ -1,0 +1,240 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tekton-dashboard-extensions
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+    dashboard.tekton.dev/extension: "true"
+data:
+  atonixcorp-extension.yaml: |
+    apiVersion: dashboard.tekton.dev/v1alpha1
+    kind: Extension
+    metadata:
+      name: atonixcorp-platform-extension
+    spec:
+      apiVersion: dashboard.tekton.dev/v1alpha1
+      name: atonixcorp-platform
+      displayname: AtonixCorp Platform
+      bundlelocation: ./static/extensions/atonixcorp/
+      source: |
+        import React from 'react';
+        import { 
+          Card, 
+          CardContent, 
+          Typography, 
+          Grid, 
+          Box,
+          Chip,
+          Button
+        } from '@material-ui/core';
+        
+        function AtonixCorpDashboard() {
+          return (
+            <Box p={3}>
+              <Typography variant="h4" gutterBottom>
+                🚀 AtonixCorp Platform Dashboard
+              </Typography>
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Pipeline Status
+                      </Typography>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        <Chip label="CI Pipeline" color="primary" />
+                        <Chip label="CD Pipeline" color="secondary" />
+                        <Chip label="Full Pipeline" color="default" />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Environment Status
+                      </Typography>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        <Chip label="Development" color="primary" variant="outlined" />
+                        <Chip label="Staging" color="secondary" variant="outlined" />
+                        <Chip label="Production" color="default" variant="outlined" />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Quick Actions
+                      </Typography>
+                      <Box display="flex" gap={2} flexWrap="wrap">
+                        <Button variant="contained" color="primary">
+                          Run CI Pipeline
+                        </Button>
+                        <Button variant="contained" color="secondary">
+                          Deploy to Staging
+                        </Button>
+                        <Button variant="outlined">
+                          View Security Reports
+                        </Button>
+                        <Button variant="outlined">
+                          Check Logs
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Recent Activity
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Latest pipeline runs, deployments, and system events will appear here.
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Box>
+          );
+        }
+        
+        export default AtonixCorpDashboard;
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tekton-dashboard-nodeport
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 9097
+    protocol: TCP
+    targetPort: 9097
+    nodePort: 30097
+  selector:
+    app.kubernetes.io/name: tekton-dashboard
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tekton-dashboard-monitoring
+  namespace: tekton-dashboard
+  labels:
+    app.kubernetes.io/name: tekton-dashboard
+    app.kubernetes.io/version: v0.40.1
+data:
+  prometheus-config.yml: |
+    global:
+      scrape_interval: 15s
+    
+    scrape_configs:
+    - job_name: 'tekton-dashboard'
+      static_configs:
+      - targets: ['tekton-dashboard:9097']
+      metrics_path: /metrics
+      scrape_interval: 30s
+      
+    - job_name: 'tekton-pipelines'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - atonixcorp-tekton
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: tekton-pipelines-controller
+        
+    - job_name: 'tekton-triggers'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - atonixcorp-tekton
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: tekton-triggers-controller
+
+  grafana-dashboard.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "AtonixCorp Tekton Dashboard",
+        "tags": ["tekton", "atonixcorp", "ci-cd"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Pipeline Runs Success Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(tekton_pipelinerun_count{status=\"succeeded\"}[5m]) / rate(tekton_pipelinerun_count[5m]) * 100"
+              }
+            ],
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": 2,
+            "title": "Pipeline Run Duration",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "tekton_pipelinerun_duration_seconds"
+              }
+            ],
+            "gridPos": {
+              "h": 8,
+              "w": 12,
+              "x": 12,
+              "y": 0
+            }
+          },
+          {
+            "id": 3,
+            "title": "Active Pipeline Runs",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "tekton_pipelinerun_count{status=\"running\"}"
+              }
+            ],
+            "gridPos": {
+              "h": 8,
+              "w": 24,
+              "x": 0,
+              "y": 8
+            }
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-platform
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atonixcorp-platform
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-platform
+    spec:
+      imagePullSecrets:
+        - name: ghcr-regcred
+      containers:
+        - name: platform
+          image: ghcr.io/atonixdev/atonixcorp-platform:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: atonixcorp-secrets
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: DEBUG
+              value: "False"
+            - name: REDIS_URL
+              value: "redis://atonixcorp-redis:6379/0"
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@atonixcorp-db:5432/$(POSTGRES_DB)"
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          volumeMounts:
+            - name: app-media
+              mountPath: /app/media
+            - name: app-logs
+              mountPath: /app/logs
+      volumes:
+        - name: app-media
+          persistentVolumeClaim:
+            claimName: atonixcorp-media-pvc
+        - name: app-logs
+          emptyDir: {}

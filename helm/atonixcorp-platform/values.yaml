@@ -1,0 +1,350 @@
+# Default values for atonixcorp-platform
+# This is a YAML-formatted file.
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Application metadata
+nameOverride: ""
+fullnameOverride: ""
+
+# Common labels
+commonLabels: {}
+commonAnnotations: {}
+
+# Backend (Django) configuration
+backend:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: atonixcorp/platform/backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 3
+  
+  # Environment variables
+  env:
+    DEBUG: "False"
+    SECRET_KEY: ""
+  ALLOWED_HOSTS: "localhost,atonixcorp.org"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org"
+  
+  # Resources
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  
+  # Probes
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /api/health/
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /api/health/
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  
+  # Service
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: http
+    annotations: {}
+    # Optional: enable ipFamilies/ipFamilyPolicy for dual-stack. Example:
+    # ipFamilies: ["IPv6","IPv4"]
+    # ipFamilyPolicy: "PreferDualStack"
+    ipFamilies: []
+    ipFamilyPolicy: ""
+  
+  # Horizontal Pod Autoscaler
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  
+  # Pod Disruption Budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Frontend (React) configuration
+frontend:
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: atonixcorp/platform/frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 3
+  
+  # Environment variables
+  env:
+    REACT_APP_API_URL: "https://api.atonixcorp.org/api"
+    REACT_APP_ENVIRONMENT: "production"
+  
+  # Resources
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Probes
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  
+  # Service
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: http
+    annotations: {}
+    # Optional: enable ipFamilies/ipFamilyPolicy for dual-stack. Example:
+    # ipFamilies: ["IPv6","IPv4"]
+    # ipFamilyPolicy: "PreferDualStack"
+    ipFamilies: []
+    ipFamilyPolicy: ""
+  
+  # Horizontal Pod Autoscaler
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+  
+  # Pod Disruption Budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Celery Worker configuration
+celery:
+  worker:
+    enabled: true
+    replicaCount: 2
+    
+    # Resources
+    resources:
+      limits:
+        cpu: 400m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    
+    # Autoscaling
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 80
+  
+  beat:
+    enabled: true
+    replicaCount: 1
+    
+    # Resources
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  
+  flower:
+    enabled: true
+    replicaCount: 1
+    
+    # Service
+    service:
+      type: ClusterIP
+      port: 5555
+      targetPort: flower
+    
+    # Resources
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# PostgreSQL configuration (uses Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    username: "atonixcorp_user"
+    password: ""
+    database: "atonixcorp"
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: ""
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+# Redis configuration (uses Bitnami chart)
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: ""
+  
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+  
+  hosts:
+  - host: atonixcorp.org
+    paths:
+      - path: /
+        pathType: Prefix
+        service: frontend
+  - host: api.atonixcorp.org
+    paths:
+      - path: /
+        pathType: Prefix
+        service: backend
+  
+  tls:
+    - secretName: atonixcorp-tls
+      hosts:
+        - atonixcorp.org
+        - api.atonixcorp.org
+
+# Persistent Volume Claims
+persistence:
+  media:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+    accessMode: ReadWriteMany
+
+# Security Context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# RBAC
+rbac:
+  create: true
+
+# Network Policy
+networkPolicy:
+  enabled: false
+
+# Pod Anti-Affinity
+podAntiAffinity:
+  enabled: true
+  type: soft
+
+# Node Affinity
+nodeAffinity:
+  enabled: false
+
+# Tolerations
+tolerations: []
+
+# Node Selector
+nodeSelector: {}
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+
+# External secrets
+externalSecrets:
+  enabled: false
+  secretStore:
+    provider: aws
+    region: us-west-2
+  
+  secrets:
+    - name: django-secrets
+      keys:
+        - secretKey: secret-key
+          key: SECRET_KEY
+        - secretKey: database-password
+          key: DATABASE_PASSWORD

@@ -1,0 +1,181 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-system
+  labels:
+    control-plane: controller-manager
+    pod-security.kubernetes.io/enforce: privileged
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovn
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.k8s.io/system-only: "true"
+  name: system:ovn
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  - nodes
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - controllerrevisions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+- apiGroups:
+  - kubeovn.io
+  resources:
+  - subnets
+  - subnets/status
+  - ips
+  - vpcs
+  - vpcs/status
+  - vlans
+  - vlans/status
+  - provider-networks
+  - provider-networks/status
+  - security-groups
+  - security-groups/status
+  - htbqoses
+  - htbqoses/status
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ovn
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:ovn
+subjects:
+- kind: ServiceAccount
+  name: ovn
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ovn-config
+  namespace: kube-system
+data:
+  default-cidr: "10.16.0.0/16"
+  default-gateway: "10.16.0.1"
+  default-gateway-check: "true"
+  default-logical-gateway: "false"
+  default-exclude-ips: ""
+  default-interface-name: "eth0"
+  default-exchange-link-name: "false"
+  default-vlan-id: "100"
+  default-vlan-range: "1,4095"
+  ls-dnat-mod-dl-dst: "true"
+  ls-ct-skip-dst-lport-ips: "true"
+  pod-nic-type: "veth-pair"
+  enable-mirror: "false"
+  mirror-iface: ""
+  enable-lb: "true"
+  enable-np: "true"
+  enable-eip-snat: "true"
+  enable-external-vpc: "true"
+  external-gateway-switch: "external"
+  enable-ecmp: "false"
+  enable-keep-vm-ip: "false"
+  enable-subnet-lb-vpc: "false"
+  enable-ovn-ipsec: "false"
+  ovn-ssl: "false"
+  hw-offload: "false"
+  perfctl: "false"

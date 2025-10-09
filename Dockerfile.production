@@ -1,0 +1,139 @@
+# Production Dockerfile for AtonixCorp Platform
+# Optimized for production deployment with SSL and security features
+
+# Multi-stage build for production optimization
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_FACTOR=10 \
+    NPM_CONFIG_FETCH_TIMEOUT=60000
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy frontend source code
+COPY frontend/ ./
+
+# Build the React application for production
+ENV NODE_ENV=production
+RUN npm run build
+
+# Backend build stage
+FROM python:3.11-slim AS backend-builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY backend/requirements*.txt ./
+COPY backend/security/requirements-security.txt ./security/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip cache purge
+
+# Copy backend source code
+COPY backend/ ./
+
+# Copy built frontend from previous stage
+COPY --from=frontend-builder /app/frontend/build ./static/
+
+# Collect static files
+RUN python manage.py collectstatic --noinput --clear || true
+
+# Final production stage
+FROM python:3.11-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    nginx \
+    supervisor \
+    curl \
+    netcat-openbsd \
+    openssl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create app user with specific UID/GID for security (group name 'app' matches start.sh expectations)
+RUN groupadd -r app && useradd -r -g app -u 1000 app
+
+# Set work directory
+WORKDIR /app
+
+# Copy Python dependencies from builder
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=backend-builder /usr/local/bin/ /usr/local/bin/
+
+# Copy application code and static files
+COPY --from=backend-builder /app/ /app/
+
+# Create necessary directories with proper permissions
+RUN mkdir -p \
+    /var/log/supervisor \
+    /app/logs \
+    /app/static \
+    /app/media \
+    /app/staticfiles \
+    /etc/ssl/certs \
+    /etc/ssl/private \
+    /run/nginx \
+    && chown -R app:app /app \
+    && chown -R app:app /var/log/supervisor \
+    && chmod -R 755 /app \
+    && chmod -R 750 /app/logs
+
+# Copy configuration files
+COPY docker/nginx-production.conf /etc/nginx/sites-available/production
+COPY docker/nginx.conf /etc/nginx/sites-available/development
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/start.sh /app/start.sh
+
+# Make start script executable
+RUN chmod +x /app/start.sh
+
+# Create nginx configuration link (will be set by start script based on environment)
+RUN rm -f /etc/nginx/sites-enabled/default
+
+# Generate self-signed certificates for default server (fallback)
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/default.key \
+    -out /etc/ssl/certs/default.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=default"
+
+# Set proper permissions for SSL directory
+RUN chown -R root:root /etc/ssl && \
+    chmod 755 /etc/ssl/certs && \
+    chmod 710 /etc/ssl/private && \
+    chmod 644 /etc/ssl/certs/* && \
+    chmod 600 /etc/ssl/private/* || true
+
+# Expose ports (80 for HTTP, 443 for HTTPS, 8080 for development)
+EXPOSE 80 443 8080 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health/ || \
+        curl -f https://localhost/health/ || \
+        curl -f http://localhost:8000/health/ || exit 1
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV DJANGO_SETTINGS_MODULE=atonixcorp.settings
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Security: Run as root initially to allow supervisor to manage services
+# Supervisor will switch to appropriate users for individual services
+USER root
+
+# Start command
+CMD ["/app/start.sh"]

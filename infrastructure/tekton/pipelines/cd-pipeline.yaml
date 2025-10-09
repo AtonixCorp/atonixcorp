@@ -1,0 +1,161 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: atonixcorp-cd-pipeline
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: CI/CD
+    tekton.dev/tags: cd, deploy, kubernetes
+    tekton.dev/displayName: "AtonixCorp CD Pipeline"
+spec:
+  description: |
+    Continuous Deployment pipeline for AtonixCorp platform that:
+    1. Clones the source code
+    2. Runs quick validation tests
+    3. Performs security scanning of the deployment image
+    4. Deploys to target environment
+    5. Runs post-deployment verification
+  params:
+  - name: repo-url
+    type: string
+    description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git revision to deploy.
+    default: main
+  - name: image-reference
+    type: string
+    description: The container image reference to deploy.
+  - name: target-environment
+    type: string
+    description: Target environment (dev, staging, production).
+    default: dev
+  - name: namespace
+    type: string
+    description: Kubernetes namespace to deploy to.
+    default: atonixcorp-dev
+  - name: registry-url
+    type: string
+    description: Container registry URL.
+    default: quay.io/atonixdev
+  - name: auto-approve
+    type: string
+    description: Auto-approve deployment (true/false).
+    default: "false"
+  workspaces:
+  - name: shared-data
+    description: Workspace for source code and deployment manifests.
+  - name: kubeconfig
+    description: Kubernetes configuration for deployment.
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.revision)
+    - name: deleteExisting
+      value: "true"
+
+  - name: validate-environment
+    taskRef:
+      name: validate-deployment
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: ENVIRONMENT
+      value: $(params.target-environment)
+    - name: NAMESPACE
+      value: $(params.namespace)
+
+  - name: security-scan-image
+    taskRef:
+      name: security-scan
+    runAfter: ["fetch-source"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: IMAGE_URL
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: SEVERITY
+      value: HIGH
+
+  - name: approval-gate
+    taskRef:
+      name: manual-approval
+    runAfter: ["validate-environment", "security-scan-image"]
+    when:
+    - input: "$(params.auto-approve)"
+      operator: in
+      values: ["false"]
+    params:
+    - name: message
+      value: "Approve deployment to $(params.target-environment) environment?"
+    - name: approvers
+      value: "admin,devops"
+
+  - name: deploy-to-kubernetes
+    taskRef:
+      name: deploy-to-kubernetes
+    runAfter: ["approval-gate"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: IMAGE_URL
+      value: $(params.registry-url)/$(params.image-reference)
+    - name: ENVIRONMENT
+      value: $(params.target-environment)
+    - name: NAMESPACE
+      value: $(params.namespace)
+
+  - name: post-deployment-tests
+    taskRef:
+      name: integration-tests
+    runAfter: ["deploy-to-kubernetes"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: ENVIRONMENT
+      value: $(params.target-environment)
+    - name: NAMESPACE
+      value: $(params.namespace)
+    - name: BASE_URL
+      value: "http://atonixcorp-$(params.target-environment).$(params.namespace).svc.cluster.local:8080"
+
+  - name: notify-deployment
+    taskRef:
+      name: send-notification
+    runAfter: ["post-deployment-tests"]
+    params:
+    - name: message
+      value: "✅ AtonixCorp platform deployed successfully to $(params.target-environment)"
+    - name: environment
+      value: $(params.target-environment)
+    - name: image
+      value: $(params.registry-url)/$(params.image-reference)
+
+  finally:
+  - name: deployment-cleanup
+    taskRef:
+      name: cleanup
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: delete-kind
+      value: "deployment-artifacts"

@@ -1,0 +1,313 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: atonixcorp-github-listener
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Triggers
+    tekton.dev/tags: github, webhook, git
+    tekton.dev/displayName: "GitHub Event Listener"
+spec:
+  serviceAccountName: tekton-triggers-sa
+  triggers:
+  - name: github-push-trigger
+    interceptors:
+    - ref:
+        name: "github"
+      params:
+      - name: "secretRef"
+        value:
+          secretName: github-secret
+          secretKey: secretToken
+      - name: "eventTypes"
+        value: ["push"]
+    bindings:
+    - ref: github-push-binding
+    template:
+      ref: atonixcorp-ci-template
+
+  - name: github-pr-trigger
+    interceptors:
+    - ref:
+        name: "github"
+      params:
+      - name: "secretRef"
+        value:
+          secretName: github-secret
+          secretKey: secretToken
+      - name: "eventTypes"
+        value: ["pull_request"]
+    bindings:
+    - ref: github-pr-binding
+    template:
+      ref: atonixcorp-pr-template
+
+  - name: github-release-trigger
+    interceptors:
+    - ref:
+        name: "github"
+      params:
+      - name: "secretRef"
+        value:
+          secretName: github-secret
+          secretKey: secretToken
+      - name: "eventTypes"
+        value: ["release"]
+    bindings:
+    - ref: github-release-binding
+    template:
+      ref: atonixcorp-release-template
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.head_commit.id)
+  - name: gitrepositoryurl
+    value: $(body.repository.clone_url)
+  - name: gitrepositoryname
+    value: $(body.repository.name)
+  - name: gitbranch
+    value: $(body.ref)
+  - name: gitcommitmessage
+    value: $(body.head_commit.message)
+  - name: gitcommitter
+    value: $(body.head_commit.committer.name)
+  - name: timestamp
+    value: $(body.head_commit.timestamp)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-pr-binding
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.pull_request.head.sha)
+  - name: gitrepositoryurl
+    value: $(body.pull_request.head.repo.clone_url)
+  - name: gitrepositoryname
+    value: $(body.pull_request.head.repo.name)
+  - name: gitbranch
+    value: $(body.pull_request.head.ref)
+  - name: prnumber
+    value: $(body.pull_request.number)
+  - name: prtitle
+    value: $(body.pull_request.title)
+  - name: prauthor
+    value: $(body.pull_request.user.login)
+  - name: action
+    value: $(body.action)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-release-binding
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.release.tag_name)
+  - name: gitrepositoryurl
+    value: $(body.repository.clone_url)
+  - name: gitrepositoryname
+    value: $(body.repository.name)
+  - name: releasename
+    value: $(body.release.name)
+  - name: releasetag
+    value: $(body.release.tag_name)
+  - name: releaseauthor
+    value: $(body.release.author.login)
+  - name: releaseprerelease
+    value: $(body.release.prerelease)
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: atonixcorp-ci-template
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    description: The git revision
+    default: main
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitrepositoryname
+    description: The git repository name
+  - name: gitbranch
+    description: The git branch
+    default: refs/heads/main
+  - name: gitcommitmessage
+    description: The git commit message
+    default: ""
+  - name: gitcommitter
+    description: The git committer
+    default: ""
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: atonixcorp-ci-$(tt.params.gitrepositoryname)-
+      namespace: atonixcorp-tekton
+      labels:
+        tekton.dev/pipeline: atonixcorp-ci-pipeline
+        git.revision: $(tt.params.gitrevision)
+        git.branch: $(tt.params.gitbranch)
+        trigger.type: github-push
+    spec:
+      pipelineRef:
+        name: atonixcorp-ci-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: revision
+        value: $(tt.params.gitrevision)
+      - name: image-reference
+        value: "atonixcorp-platform:$(tt.params.gitrevision)"
+      workspaces:
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      - name: docker-credentials
+        secret:
+          secretName: docker-registry-secret
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: atonixcorp-pr-template
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    description: The git revision
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitrepositoryname
+    description: The git repository name
+  - name: gitbranch
+    description: The git branch
+  - name: prnumber
+    description: Pull request number
+  - name: prtitle
+    description: Pull request title
+  - name: prauthor
+    description: Pull request author
+  - name: action
+    description: PR action (opened, synchronize, closed)
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: atonixcorp-pr-$(tt.params.gitrepositoryname)-$(tt.params.prnumber)-
+      namespace: atonixcorp-tekton
+      labels:
+        tekton.dev/pipeline: atonixcorp-ci-pipeline
+        git.revision: $(tt.params.gitrevision)
+        git.branch: $(tt.params.gitbranch)
+        pr.number: $(tt.params.prnumber)
+        trigger.type: github-pr
+    spec:
+      pipelineRef:
+        name: atonixcorp-ci-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: revision
+        value: $(tt.params.gitrevision)
+      - name: image-reference
+        value: "atonixcorp-platform:pr-$(tt.params.prnumber)"
+      - name: test-type
+        value: "all"
+      workspaces:
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      - name: docker-credentials
+        secret:
+          secretName: docker-registry-secret
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: atonixcorp-release-template
+  namespace: atonixcorp-tekton
+spec:
+  params:
+  - name: gitrevision
+    description: The git revision
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitrepositoryname
+    description: The git repository name
+  - name: releasename
+    description: Release name
+  - name: releasetag
+    description: Release tag
+  - name: releaseauthor
+    description: Release author
+  - name: releaseprerelease
+    description: Is prerelease
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: atonixcorp-release-$(tt.params.releasetag)-
+      namespace: atonixcorp-tekton
+      labels:
+        tekton.dev/pipeline: atonixcorp-full-pipeline
+        git.revision: $(tt.params.gitrevision)
+        release.tag: $(tt.params.releasetag)
+        trigger.type: github-release
+    spec:
+      pipelineRef:
+        name: atonixcorp-full-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: revision
+        value: $(tt.params.gitrevision)
+      - name: image-reference
+        value: "atonixcorp-platform:$(tt.params.releasetag)"
+      - name: skip-production
+        value: $(tt.params.releaseprerelease)
+      workspaces:
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+      - name: docker-credentials
+        secret:
+          secretName: docker-registry-secret
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret

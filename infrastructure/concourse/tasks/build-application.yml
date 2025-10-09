@@ -1,0 +1,49 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: docker
+    tag: dind
+
+inputs:
+  - name: atonixcorp-source
+
+outputs:
+  - name: build-output
+
+run:
+  path: sh
+  args:
+    - -c
+    - |
+      set -e
+      
+      echo "Building AtonixCorp Platform application..."
+      cd atonixcorp-source
+      
+      # Build Docker image
+      echo "Building Docker image..."
+      docker build -f Dockerfile.fullstack -t atonixcorp-platform:build .
+      
+      # Create build artifacts
+      echo "Creating build artifacts..."
+      mkdir -p ../build-output
+      
+      # Save build info
+      cat > ../build-output/build-info.json << EOF
+      {
+        "build_time": "$(date -Iseconds)",
+        "git_commit": "$(git rev-parse HEAD)",
+        "git_branch": "$(git branch --show-current)",
+        "docker_image": "atonixcorp-platform:build",
+        "build_number": "${BUILD_NAME:-unknown}"
+      }
+      EOF
+      
+      # Export image (optional)
+      echo "Exporting Docker image..."
+      docker save atonixcorp-platform:build | gzip > ../build-output/atonixcorp-platform.tar.gz
+      
+      echo "Build completed successfully"

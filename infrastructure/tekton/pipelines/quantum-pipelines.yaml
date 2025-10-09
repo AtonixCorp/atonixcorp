@@ -1,0 +1,406 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: quantum-module-deployment
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: CI/CD, Quantum
+    tekton.dev/tags: quantum, deployment, crd
+    tekton.dev/displayName: "Quantum Module Deployment Pipeline"
+spec:
+  description: |
+    Secure CI/CD pipeline for quantum-safe module deployment with CRD readiness checks:
+    1. Validate quantum module manifests
+    2. Check CRD readiness and dependencies
+    3. Deploy quantum module with security validation
+    4. Run quantum-specific tests
+    5. Verify deployment health
+    6. Trigger ArgoCD sync for GitOps integration
+  params:
+  - name: module-name
+    type: string
+    description: Name of the quantum module to deploy (pennylane, qiskit, pyquil, qutip)
+  - name: module-version
+    type: string
+    description: Version of the quantum module
+  - name: environment
+    type: string
+    description: Target environment (staging, production)
+    default: staging
+  - name: namespace
+    type: string
+    description: Target Kubernetes namespace
+  - name: crd-name
+    type: string
+    description: Custom Resource Definition name for the module
+  - name: repo-url
+    type: string
+    description: Git repository URL containing the quantum module
+  - name: revision
+    type: string
+    description: Git revision to deploy
+    default: main
+  workspaces:
+  - name: shared-data
+    description: Workspace for module source code and manifests
+  - name: kubeconfig
+    description: Kubernetes configuration for deployments
+  tasks:
+  # ===== VALIDATION PHASE =====
+  - name: fetch-quantum-module
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.revision)
+    - name: subdirectory
+      value: quantum-module
+
+  - name: validate-quantum-manifests
+    taskRef:
+      name: validate-kubernetes-manifests
+    runAfter: ["fetch-quantum-module"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+      subPath: quantum-module
+    params:
+    - name: manifests-path
+      value: "."
+    - name: strict-validation
+      value: "true"
+    - name: schema-validation
+      value: "true"
+
+  - name: security-scan-quantum
+    taskRef:
+      name: security-scan
+    runAfter: ["fetch-quantum-module"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+      subPath: quantum-module
+    params:
+    - name: SCAN_TYPE
+      value: "quantum-code"
+    - name: SEVERITY
+      value: "HIGH"
+
+  # ===== CRD READINESS CHECK =====
+  - name: check-crd-readiness
+    taskRef:
+      name: check-crd-readiness
+    runAfter: ["validate-quantum-manifests"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: crd-name
+      value: $(params.crd-name)
+    - name: timeout
+      value: "300"  # 5 minutes timeout
+    - name: check-established
+      value: "true"
+    - name: check-names-accepted
+      value: "true"
+
+  - name: check-crd-dependencies
+    taskRef:
+      name: check-crd-dependencies
+    runAfter: ["check-crd-readiness"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: module-name
+      value: $(params.module-name)
+    - name: crd-name
+      value: $(params.crd-name)
+    - name: namespace
+      value: $(params.namespace)
+
+  # ===== DEPLOYMENT PHASE =====
+  - name: deploy-quantum-module
+    taskRef:
+      name: deploy-kubernetes-manifests
+    runAfter: ["check-crd-dependencies", "security-scan-quantum"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+      subPath: quantum-module
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: manifests-path
+      value: "."
+    - name: namespace
+      value: $(params.namespace)
+    - name: wait-for-readiness
+      value: "true"
+    - name: timeout
+      value: "600"  # 10 minutes timeout
+
+  # ===== VERIFICATION PHASE =====
+  - name: run-quantum-tests
+    taskRef:
+      name: run-quantum-tests
+    runAfter: ["deploy-quantum-module"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+      subPath: quantum-module
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: module-name
+      value: $(params.module-name)
+    - name: namespace
+      value: $(params.namespace)
+    - name: test-type
+      value: "integration"
+
+  - name: verify-quantum-health
+    taskRef:
+      name: verify-deployment-health
+    runAfter: ["run-quantum-tests"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: namespace
+      value: $(params.namespace)
+    - name: app-label
+      value: "app.kubernetes.io/name=quantum-$(params.module-name)"
+    - name: health-endpoint
+      value: "/health"
+    - name: timeout
+      value: "120"
+
+  # ===== GITOPS INTEGRATION =====
+  - name: trigger-argocd-sync
+    taskRef:
+      name: trigger-argocd-sync
+    runAfter: ["verify-quantum-health"]
+    params:
+    - name: application-name
+      value: "quantum-$(params.module-name)-$(params.environment)"
+    - name: argocd-server
+      value: "https://argocd-server.argocd.svc.cluster.local"
+    - name: revision
+      value: $(params.revision)
+
+  - name: notify-deployment-success
+    taskRef:
+      name: send-notification
+    runAfter: ["trigger-argocd-sync"]
+    params:
+    - name: message
+      value: "🚀 Quantum module $(params.module-name) v$(params.module-version) successfully deployed to $(params.environment)!"
+    - name: environment
+      value: $(params.environment)
+    - name: module
+      value: $(params.module-name)
+    - name: version
+      value: $(params.module-version)
+
+  finally:
+  - name: cleanup-artifacts
+    taskRef:
+      name: cleanup
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: delete-kind
+      value: "quantum-artifacts"
+
+  - name: failure-notification
+    taskRef:
+      name: send-notification
+    when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed"]
+    params:
+    - name: message
+      value: "❌ Quantum module $(params.module-name) deployment failed in $(params.environment). Check logs for details."
+    - name: environment
+      value: $(params.environment)
+    - name: module
+      value: $(params.module-name)
+    - name: version
+      value: $(params.module-version)
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: quantum-module-cleanup
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: CI/CD, Quantum
+    tekton.dev/tags: quantum, cleanup, crd
+    tekton.dev/displayName: "Quantum Module Cleanup Pipeline"
+spec:
+  description: |
+    Secure cleanup pipeline for quantum-safe modules with CRD cleanup logic:
+    1. Validate cleanup request
+    2. Remove quantum module resources
+    3. Clean up CRDs and dependencies
+    4. Trigger ArgoCD prune
+    5. Verify cleanup completion
+  params:
+  - name: module-name
+    type: string
+    description: Name of the quantum module to cleanup
+  - name: environment
+    type: string
+    description: Target environment (staging, production)
+    default: staging
+  - name: namespace
+    type: string
+    description: Target Kubernetes namespace
+  - name: crd-name
+    type: string
+    description: Custom Resource Definition name for the module
+  - name: force-cleanup
+    type: string
+    description: Force cleanup even if resources exist
+    default: "false"
+  workspaces:
+  - name: kubeconfig
+    description: Kubernetes configuration for cleanup operations
+  tasks:
+  # ===== VALIDATION PHASE =====
+  - name: validate-cleanup-request
+    taskRef:
+      name: validate-cleanup-request
+    params:
+    - name: module-name
+      value: $(params.module-name)
+    - name: environment
+      value: $(params.environment)
+    - name: namespace
+      value: $(params.namespace)
+    - name: force-cleanup
+      value: $(params.force-cleanup)
+
+  # ===== CLEANUP PHASE =====
+  - name: remove-quantum-resources
+    taskRef:
+      name: remove-kubernetes-resources
+    runAfter: ["validate-cleanup-request"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: namespace
+      value: $(params.namespace)
+    - name: label-selector
+      value: "app.kubernetes.io/name=quantum-$(params.module-name)"
+    - name: resource-types
+      value: "deployment,configmap,secret,service,ingress"
+    - name: wait-for-deletion
+      value: "true"
+    - name: timeout
+      value: "300"
+
+  - name: cleanup-custom-resources
+    taskRef:
+      name: cleanup-custom-resources
+    runAfter: ["remove-quantum-resources"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: crd-name
+      value: $(params.crd-name)
+    - name: namespace
+      value: $(params.namespace)
+    - name: wait-for-deletion
+      value: "true"
+    - name: timeout
+      value: "180"
+
+  - name: cleanup-crds
+    taskRef:
+      name: cleanup-crds
+    runAfter: ["cleanup-custom-resources"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: crd-name
+      value: $(params.crd-name)
+    - name: force-delete
+      value: $(params.force-cleanup)
+    - name: wait-for-deletion
+      value: "true"
+    - name: timeout
+      value: "120"
+
+  # ===== GITOPS INTEGRATION =====
+  - name: trigger-argocd-prune
+    taskRef:
+      name: trigger-argocd-prune
+    runAfter: ["cleanup-crds"]
+    params:
+    - name: application-name
+      value: "quantum-$(params.module-name)-$(params.environment)"
+    - name: argocd-server
+      value: "https://argocd-server.argocd.svc.cluster.local"
+
+  - name: verify-cleanup-completion
+    taskRef:
+      name: verify-cleanup-completion
+    runAfter: ["trigger-argocd-prune"]
+    workspaces:
+    - name: kubeconfig
+      workspace: kubeconfig
+    params:
+    - name: namespace
+      value: $(params.namespace)
+    - name: module-name
+      value: $(params.module-name)
+    - name: timeout
+      value: "60"
+
+  - name: notify-cleanup-success
+    taskRef:
+      name: send-notification
+    runAfter: ["verify-cleanup-completion"]
+    params:
+    - name: message
+      value: "🧹 Quantum module $(params.module-name) successfully cleaned up from $(params.environment)!"
+    - name: environment
+      value: $(params.environment)
+    - name: module
+      value: $(params.module-name)
+
+  finally:
+  - name: failure-notification
+    taskRef:
+      name: send-notification
+    when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed"]
+    params:
+    - name: message
+      value: "❌ Quantum module $(params.module-name) cleanup failed in $(params.environment). Check logs for details."
+    - name: environment
+      value: $(params.environment)
+    - name: module
+      value: $(params.module-name)

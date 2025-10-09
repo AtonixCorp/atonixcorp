@@ -1,0 +1,63 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@atonixcorp.com'
+  smtp_auth_username: 'alerts@atonixcorp.com'
+  smtp_auth_password: 'your-smtp-password'
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'atonixcorp-ops'
+  routes:
+  - match:
+      severity: critical
+    receiver: 'atonixcorp-critical'
+  - match:
+      team: editorial
+    receiver: 'editorial-ops'
+
+receivers:
+- name: 'atonixcorp-ops'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#atonixcorp-alerts'
+    send_resolved: true
+    title: '{{ template "slack.title" . }}'
+    text: '{{ template "slack.text" . }}'
+  email_configs:
+  - to: 'ops@atonixcorp.com'
+    send_resolved: true
+
+- name: 'atonixcorp-critical'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/CRITICAL/SLACK/WEBHOOK'
+    channel: '#atonixcorp-critical'
+    send_resolved: true
+    title: '[CRITICAL] {{ template "slack.title" . }}'
+    text: '{{ template "slack.text" . }}'
+  pagerduty_configs:
+  - service_key: 'your-pagerduty-service-key'
+    send_resolved: true
+
+- name: 'editorial-ops'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/EDITORIAL/SLACK/WEBHOOK'
+    channel: '#editorial-ops'
+    send_resolved: true
+    title: '{{ template "slack.title" . }}'
+    text: '{{ template "slack.text" . }}'
+  email_configs:
+  - to: 'editorial@atonixcorp.com'
+    send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']

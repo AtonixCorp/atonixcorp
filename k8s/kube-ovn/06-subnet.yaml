@@ -1,0 +1,19 @@
+apiVersion: kubeovn.io/v1
+kind: Subnet
+metadata:
+  name: ovn-default
+spec:
+  cidrBlock: 10.16.0.0/16
+  gateway: 10.16.0.1
+  excludeIps:
+  - 10.16.0.0..10.16.0.10
+---
+apiVersion: kubeovn.io/v1
+kind: Subnet
+metadata:
+  name: join
+spec:
+  cidrBlock: 100.64.0.0/16
+  gateway: 100.64.0.1
+  excludeIps:
+  - 100.64.0.0..100.64.0.10

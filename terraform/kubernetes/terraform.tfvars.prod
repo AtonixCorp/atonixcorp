@@ -1,0 +1,130 @@
+# Production Environment Configuration
+# This file contains default values for production environment
+
+# Core Configuration
+project_name = "atonixcorp"
+environment  = "prod"
+app_version  = "1.0.0"
+namespace    = "atonixcorp"
+
+# Domain and TLS
+domain_name     = "atonixcorp.org"
+tls_secret_name = "atonixcorp-tls"
+ingress_class   = "nginx"
+
+# Storage
+storage_class            = "fast-ssd"  # Use high-performance storage class
+postgresql_storage_size  = "100Gi"
+redis_storage_size       = "20Gi"
+zookeeper_storage_size   = "50Gi"
+media_storage_size       = "50Gi"
+
+# Zookeeper Configuration (production)
+zookeeper_client_port                   = 2181
+zookeeper_tick_time                     = 2000
+zookeeper_init_limit                    = 10  # Higher for production
+zookeeper_sync_limit                    = 5   # Higher for production
+zookeeper_max_client_connections        = 200 # Higher for production
+zookeeper_autopurge_snap_retain_count   = 5   # Keep more snapshots
+zookeeper_autopurge_purge_interval      = 12  # More frequent cleanup
+zookeeper_enable_jmx                    = true
+zookeeper_jmx_port                      = 9999
+
+# Database
+database_name     = "atonixcorp_prod"
+database_username = "atonixuser"
+
+# Container Images
+image_registry            = "ghcr.io"
+backend_image_repository  = "atonixcorp/platform-backend"
+backend_image_tag         = "1.0.0"
+frontend_image_repository = "atonixcorp/atonixcorp-frontend"
+frontend_image_tag        = "1.0.0"
+
+# Scaling (production ready)
+backend_replicas     = 3
+backend_min_replicas = 2
+backend_max_replicas = 10
+
+frontend_replicas     = 3
+frontend_min_replicas = 2
+frontend_max_replicas = 8
+
+celery_worker_replicas     = 3
+celery_worker_min_replicas = 2
+celery_worker_max_replicas = 15
+
+# Application Configuration
+allowed_hosts = ["atonixcorp.org", "www.atonixcorp.org", "api.atonixcorp.org"]
+cors_allowed_origins = [
+  "https://atonixcorp.org",
+  "https://www.atonixcorp.org"
+]
+api_url = "http://atonixcorp-backend:8000"
+
+# Feature Toggles
+enable_monitoring       = true
+enable_backup          = true
+enable_autoscaling     = true
+enable_network_policies = true
+
+# Ingress Configuration
+ingress_annotations = {
+  "cert-manager.io/cluster-issuer"                   = "letsencrypt-prod"
+  "nginx.ingress.kubernetes.io/ssl-redirect"         = "true"
+  "nginx.ingress.kubernetes.io/force-ssl-redirect"   = "true"
+  "nginx.ingress.kubernetes.io/proxy-body-size"      = "50m"
+  "nginx.ingress.kubernetes.io/proxy-read-timeout"   = "300"
+  "nginx.ingress.kubernetes.io/proxy-connect-timeout" = "300"
+  "nginx.ingress.kubernetes.io/rate-limit"           = "1000"
+  "nginx.ingress.kubernetes.io/rate-limit-window"    = "1m"
+  "nginx.ingress.kubernetes.io/enable-compression"   = "true"
+  "nginx.ingress.kubernetes.io/server-snippet"       = <<-EOF
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';" always;
+  EOF
+}
+
+# Resource Limits (production optimized)
+resource_limits = {
+  backend = {
+    cpu_request    = "500m"
+    cpu_limit      = "2000m"
+    memory_request = "1Gi"
+    memory_limit   = "4Gi"
+  }
+  frontend = {
+    cpu_request    = "200m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+  celery = {
+    cpu_request    = "500m"
+    cpu_limit      = "2000m"
+    memory_request = "1Gi"
+    memory_limit   = "4Gi"
+  }
+  postgresql = {
+    cpu_request    = "1000m"
+    cpu_limit      = "4000m"
+    memory_request = "2Gi"
+    memory_limit   = "8Gi"
+  }
+  redis = {
+    cpu_request    = "200m"
+    cpu_limit      = "1000m"
+    memory_request = "512Mi"
+    memory_limit   = "2Gi"
+  }
+  zookeeper = {
+    cpu_request    = "500m"
+    cpu_limit      = "2000m"
+    memory_request = "1Gi"
+    memory_limit   = "4Gi"
+  }
+}

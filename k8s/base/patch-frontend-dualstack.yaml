@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: atonixcorp
+  labels:
+    app: frontend
+    component: ui
+spec:
+  type: LoadBalancer
+  ipFamilies:
+    - IPv6
+    - IPv4
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  selector:
+    app: frontend

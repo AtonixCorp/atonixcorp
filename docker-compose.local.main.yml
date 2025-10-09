@@ -1,0 +1,209 @@
+version: '3.8'
+
+networks:
+  atonixcorp-net:
+    external: true
+    name: atonixcorp-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  backend_data:
+  ruby_service_data:
+  sidekiq_data:
+  frontend_data:
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment:
+      POSTGRES_DB: atonixcorp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  ruby_service:
+    image: ghcr.io/atonixcorp/atonixcorp-ruby-service:1.0.0
+    container_name: ruby_service
+    environment:
+      RACK_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/atonixcorp_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: development-secret-key
+      LOG_LEVEL: info
+      ENABLE_SIDEKIQ_SCHEDULER: 'true'
+    expose:
+      - "3000"
+    # Use the image's baked-in code and gems (do not bind-mount ./ruby_service)
+    volumes:
+      - ruby_service_data:/app/data
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  sidekiq:
+    image: ghcr.io/atonixcorp/atonixcorp-ruby-service:1.0.0
+    container_name: sidekiq
+    # Require the app.rb file so Sidekiq loads the job classes and application environment
+    command: bundle exec sidekiq -r ./app.rb
+    environment:
+      RACK_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/atonixcorp_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: development-secret-key
+      LOG_LEVEL: info
+      ENABLE_SIDEKIQ_SCHEDULER: 'true'
+    ports:
+      - "3000:3000"
+    # Use image-baked code and gems for Sidekiq to avoid host/guest gem mismatches
+    volumes:
+      - sidekiq_data:/app/data
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  backend:
+    image: ghcr.io/atonixcorp/atonixcorp-backend:1.0.0
+    container_name: atonixcorp_backend
+    environment:
+      ALLOWED_HOSTS: "0.0.0.0,localhost,127.0.0.1,backend,nginx"
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/atonixcorp_db
+      REDIS_URL: redis://redis:6379/0
+      RUBY_SERVICE_HOST: ruby_service
+      RUBY_SERVICE_PORT: "3000"
+      RABBITMQ_URL: amqp://user:password@rabbitmq:5672/
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_data:/app/data
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  frontend:
+    image: ghcr.io/atonixcorp/atonixcorp-frontend:1.0.0
+    container_name: atonixcorp_frontend
+    environment:
+      REACT_APP_API_URL: http://127.0.0.1:3000
+      REACT_APP_RUBY_URL: http://ruby_service:3000
+    ports:
+      - "3001:80"
+    volumes:
+      - frontend_data:/usr/share/nginx/html
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+  nginx:
+    image: nginx:stable
+    container_name: nginx
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8085:80"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+  # Spark-related services (added from user's snippet)
+  spark-master:
+    image: apache/spark:3.4.1
+    container_name: spark-master
+    environment:
+      - SPARK_MASTER_WEBUI_PORT=8080
+    ports:
+      - "7077:7077"
+      - "8090:8080"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    user: root
+    command: ["bash", "-lc", "apt-get update -y >/dev/null && apt-get install -y rsync >/dev/null && exec /opt/spark/sbin/start-master.sh -h 0.0.0.0"]
+
+  spark-worker:
+    image: apache/spark:3.4.1
+    container_name: spark-worker
+    environment:
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_MASTER=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    ports:
+      - "8091:8081"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+    user: root
+    command: ["bash", "-lc", "apt-get update -y >/dev/null && apt-get install -y rsync >/dev/null && exec /opt/spark/sbin/start-worker.sh spark://spark-master:7077"]
+
+  zookeeper:
+    image: zookeeper:3.8
+    container_name: zookeeper
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
+    ports:
+      - "2181:2181"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+  apache-proxy:
+    image: httpd:2.4
+    container_name: apache-proxy
+    volumes:
+      - ./docker/apache-spark.conf:/usr/local/apache2/conf/httpd.conf:ro
+    depends_on:
+      - spark-master
+    ports:
+      - "8088:80"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped

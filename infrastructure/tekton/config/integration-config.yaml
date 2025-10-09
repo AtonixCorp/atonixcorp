@@ -1,0 +1,342 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tekton-integration-config
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/name: tekton-integration
+    app.kubernetes.io/version: "0.1"
+data:
+  puppet-integration.yaml: |
+    # Puppet integration configuration for Tekton
+    integration:
+      puppet:
+        enabled: true
+        server: "puppet.atonixcorp.local"
+        environment: "production"
+        manifests_path: "/etc/puppetlabs/code/environments/production/manifests"
+        modules_path: "/etc/puppetlabs/code/environments/production/modules"
+        
+        # Puppet tasks to run during pipeline
+        tasks:
+          pre_deployment:
+            - name: "Configure deployment environment"
+              command: "puppet apply"
+              manifest: "atonixcorp::platform::pre_deploy"
+              
+          post_deployment:
+            - name: "Verify deployment configuration"
+              command: "puppet apply"
+              manifest: "atonixcorp::platform::post_deploy"
+              
+          security_hardening:
+            - name: "Apply security configurations"
+              command: "puppet apply"
+              manifest: "atonixcorp::security"
+              
+        # Puppet facts to collect
+        facts:
+          - "networking"
+          - "os"
+          - "memory"
+          - "processors"
+          - "atonixcorp_environment"
+
+  gerrit-integration.yaml: |
+    # Gerrit integration configuration for Tekton
+    integration:
+      gerrit:
+        enabled: true
+        server_url: "http://gerrit.atonixcorp.local:8081"
+        username: "tekton-bot"
+        ssh_key_secret: "gerrit-ssh-key"
+        
+        # Project configuration
+        projects:
+          - name: "atonixcorp-platform"
+            branch_patterns:
+              - "main"
+              - "develop"
+              - "release/*"
+              - "hotfix/*"
+              
+        # Review configuration
+        review:
+          verified_label: "Verified"
+          code_review_label: "Code-Review"
+          submit_requirements:
+            - "Code-Review+2"
+            - "Verified+1"
+            
+        # Webhook configuration
+        webhooks:
+          patchset_created:
+            pipeline: "atonixcorp-ci-pipeline"
+            trigger_conditions:
+              - "branch:main OR branch:develop"
+              
+          change_merged:
+            pipeline: "atonixcorp-cd-pipeline"
+            trigger_conditions:
+              - "branch:main"
+
+  docker-integration.yaml: |
+    # Docker and container registry integration
+    integration:
+      docker:
+        registry:
+          url: "quay.io"
+          namespace: "atonixdev"
+          credentials_secret: "docker-registry-secret"
+          
+        image_config:
+          base_name: "atonixcorp-platform"
+          tag_strategy: "git-commit-sha"
+          additional_tags:
+            - "latest"
+            - "staging"
+            - "production"
+            
+        build_config:
+          dockerfile: "Dockerfile.fullstack"
+          context: "."
+          build_args:
+            - "BUILDKIT_INLINE_CACHE=1"
+            - "ENVIRONMENT={{.ENVIRONMENT}}"
+            
+        security:
+          scan_enabled: true
+          vulnerability_threshold: "HIGH"
+          scan_tools:
+            - "trivy"
+            - "clair"
+
+  kubernetes-integration.yaml: |
+    # Kubernetes integration configuration
+    integration:
+      kubernetes:
+        clusters:
+          development:
+            context: "atonixcorp-dev"
+            namespace: "atonixcorp-dev"
+            config_secret: "kubeconfig-dev"
+            
+          staging:
+            context: "atonixcorp-staging"
+            namespace: "atonixcorp-staging"
+            config_secret: "kubeconfig-staging"
+            
+          production:
+            context: "atonixcorp-production"
+            namespace: "atonixcorp-production"
+            config_secret: "kubeconfig-production"
+            
+        deployment:
+          strategy: "rolling"
+          helm:
+            chart_path: "./helm/atonixcorp"
+            values_files:
+              development: "./helm/values-dev.yaml"
+              staging: "./helm/values-staging.yaml"
+              production: "./helm/values-production.yaml"
+              
+        monitoring:
+          prometheus:
+            enabled: true
+            namespace: "monitoring"
+            
+          grafana:
+            enabled: true
+            namespace: "monitoring"
+            dashboard_config: "tekton-grafana-dashboard"
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: puppet-integration
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Integration
+    tekton.dev/tags: puppet, configuration
+    tekton.dev/displayName: "Puppet Integration"
+spec:
+  description: |
+    This task integrates with Puppet for configuration management during CI/CD pipeline execution.
+  workspaces:
+  - name: source
+    description: Workspace containing the source code.
+  params:
+  - name: PUPPET_ACTION
+    description: Puppet action to perform (apply, validate, test)
+    default: "apply"
+  - name: PUPPET_MANIFEST
+    description: Puppet manifest to apply
+    default: "atonixcorp::platform"
+  - name: ENVIRONMENT
+    description: Target environment
+    default: "development"
+  - name: PUPPET_SERVER
+    description: Puppet server URL
+    default: "puppet.atonixcorp.local"
+  results:
+  - name: puppet-status
+    description: Puppet execution status
+  steps:
+  - name: puppet-integration
+    image: puppet/puppet-agent:latest
+    workingDir: $(workspaces.source.path)
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Running Puppet integration for $(params.ENVIRONMENT) environment..."
+      
+      # Configure Puppet agent
+      puppet config set server $(params.PUPPET_SERVER)
+      puppet config set environment $(params.ENVIRONMENT)
+      
+      case "$(params.PUPPET_ACTION)" in
+        "apply")
+          echo "Applying Puppet manifest: $(params.PUPPET_MANIFEST)"
+          puppet apply --noop --detailed-exitcodes \
+            infrastructure/puppet/manifests/site.pp \
+            --modulepath infrastructure/puppet/modules || true
+          
+          # Apply for real if dry run succeeds
+          puppet apply \
+            infrastructure/puppet/manifests/site.pp \
+            --modulepath infrastructure/puppet/modules
+          ;;
+          
+        "validate")
+          echo "Validating Puppet manifests..."
+          puppet parser validate infrastructure/puppet/manifests/*.pp
+          puppet parser validate infrastructure/puppet/modules/atonixcorp/manifests/*.pp
+          ;;
+          
+        "test")
+          echo "Testing Puppet configuration..."
+          puppet apply --noop --detailed-exitcodes \
+            infrastructure/puppet/manifests/site.pp \
+            --modulepath infrastructure/puppet/modules
+          ;;
+          
+        *)
+          echo "Unknown Puppet action: $(params.PUPPET_ACTION)"
+          exit 1
+          ;;
+      esac
+      
+      echo "Puppet integration completed successfully" | tee $(results.puppet-status.path)
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: gerrit-integration
+  namespace: atonixcorp-tekton
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.29.0"
+    tekton.dev/categories: Integration
+    tekton.dev/tags: gerrit, code-review
+    tekton.dev/displayName: "Gerrit Integration"
+spec:
+  description: |
+    This task integrates with Gerrit for code review workflow during CI/CD pipeline execution.
+  workspaces:
+  - name: source
+    description: Workspace containing the source code.
+  - name: gerrit-credentials
+    description: Gerrit SSH credentials
+    optional: true
+    mountPath: /etc/gerrit-ssh
+  params:
+  - name: GERRIT_ACTION
+    description: Gerrit action to perform (review, submit, abandon)
+    default: "review"
+  - name: CHANGE_NUMBER
+    description: Gerrit change number
+    default: ""
+  - name: PATCHSET_NUMBER
+    description: Gerrit patchset number
+    default: ""
+  - name: REVIEW_MESSAGE
+    description: Review message
+    default: "Automated pipeline review"
+  - name: VERIFIED_SCORE
+    description: Verified score (-1, 0, +1)
+    default: "0"
+  - name: GERRIT_SERVER
+    description: Gerrit server URL
+    default: "gerrit.atonixcorp.local:29418"
+  results:
+  - name: gerrit-status
+    description: Gerrit integration status
+  steps:
+  - name: gerrit-integration
+    image: alpine/git:latest
+    workingDir: $(workspaces.source.path)
+    script: |
+      #!/bin/sh
+      set -e
+      echo "Running Gerrit integration..."
+      
+      # Install SSH and curl
+      apk add --no-cache openssh-client curl jq
+      
+      # Configure SSH for Gerrit
+      if [ -d "/etc/gerrit-ssh" ]; then
+        mkdir -p ~/.ssh
+        cp /etc/gerrit-ssh/* ~/.ssh/
+        chmod 600 ~/.ssh/*
+        ssh-keyscan -p 29418 $(echo $(params.GERRIT_SERVER) | cut -d':' -f1) >> ~/.ssh/known_hosts
+      fi
+      
+      case "$(params.GERRIT_ACTION)" in
+        "review")
+          if [ -n "$(params.CHANGE_NUMBER)" ]; then
+            echo "Posting review for change $(params.CHANGE_NUMBER)"
+            ssh -p 29418 tekton-bot@$(params.GERRIT_SERVER) \
+              gerrit review $(params.CHANGE_NUMBER),$(params.PATCHSET_NUMBER) \
+              --verified $(params.VERIFIED_SCORE) \
+              --message "$(params.REVIEW_MESSAGE)"
+          else
+            echo "No change number provided, skipping review"
+          fi
+          ;;
+          
+        "submit")
+          if [ -n "$(params.CHANGE_NUMBER)" ]; then
+            echo "Submitting change $(params.CHANGE_NUMBER)"
+            ssh -p 29418 tekton-bot@$(params.GERRIT_SERVER) \
+              gerrit review $(params.CHANGE_NUMBER),$(params.PATCHSET_NUMBER) \
+              --submit
+          else
+            echo "No change number provided, skipping submit"
+          fi
+          ;;
+          
+        "abandon")
+          if [ -n "$(params.CHANGE_NUMBER)" ]; then
+            echo "Abandoning change $(params.CHANGE_NUMBER)"
+            ssh -p 29418 tekton-bot@$(params.GERRIT_SERVER) \
+              gerrit review $(params.CHANGE_NUMBER),$(params.PATCHSET_NUMBER) \
+              --abandon \
+              --message "$(params.REVIEW_MESSAGE)"
+          else
+            echo "No change number provided, skipping abandon"
+          fi
+          ;;
+          
+        *)
+          echo "Unknown Gerrit action: $(params.GERRIT_ACTION)"
+          exit 1
+          ;;
+      esac
+      
+      echo "Gerrit integration completed successfully" | tee $(results.gerrit-status.path)

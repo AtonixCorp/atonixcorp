@@ -1,0 +1,11 @@
+# Additional Python requirements for Zookeeper integration
+# Add these to your requirements.txt or requirements/production.txt
+
+# Zookeeper Python client
+kazoo>=2.9.0
+
+# Optional: For enhanced coordination patterns
+zake>=0.2.2  # Fake Zookeeper for testing
+
+# Example usage in requirements.txt:
+# kazoo==2.9.0

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pvc-binding
+  namespace: atonixcorp
+spec:
+  containers:
+  - name: test
+    image: busybox
+    command: ['sleep', '300']
+    volumeMounts:
+    - name: postgresql-data
+      mountPath: /data
+    - name: redis-data
+      mountPath: /redis
+  volumes:
+  - name: postgresql-data
+    persistentVolumeClaim:
+      claimName: atonixcorp-dev-postgresql-data
+  - name: redis-data
+    persistentVolumeClaim:
+      claimName: atonixcorp-dev-redis-data
