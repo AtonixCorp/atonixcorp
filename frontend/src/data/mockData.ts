@@ -19,19 +19,19 @@ export const mockTechnologies: Technology[] = [
   { id: 13, name: 'Go', description: 'Programming language' },
   { id: 14, name: 'Rust', description: 'Systems programming language' },
   { id: 15, name: 'Blockchain', description: 'Distributed ledger technology' },
+];
+
+// Mock Focus Areas
+export const mockFocusAreas: FocusArea[] = [
   {
-    id: 3,
-    name: 'Osrovnet',
-    slug: 'atonixcorp-security',
-    overview: 'Osrovnet: advanced network security, threat intelligence, and resilient infrastructure.',
-    description: 'Osrovnet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
-    image: '/images/projects/atonixcorp-security.jpg',
+    id: 1,
+    name: 'Infrastructure & DevOps',
     slug: 'infrastructure',
     description: 'Core platform infrastructure and DevOps solutions for scalable, reliable systems',
     detailed_description: 'Building robust, scalable infrastructure solutions that power enterprise applications. Our expertise spans cloud architecture, container orchestration, CI/CD pipelines, and infrastructure automation. We focus on creating resilient systems that can handle massive scale while maintaining security and performance.',
     icon: 'cloud',
     color_theme: '#1976d2',
-  is_active: true,
+    is_active: true,
     order: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',

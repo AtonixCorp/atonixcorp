@@ -277,14 +277,41 @@ module "ingress" {
   annotations = merge(local.annotations, var.ingress_annotations)
 }
 
-# Monitoring Module (Optional)
-module "monitoring" {
-  source = "./modules/monitoring"
-  count  = var.enable_monitoring ? 1 : 0
-  
+# Ruby Service Module
+module "ruby_service" {
+  source = "./modules/ruby-service"
+
   namespace   = module.namespace.name
   name_prefix = local.name_prefix
-  
+
+  image_registry   = var.image_registry
+  image_repository = var.ruby_image_repository
+  image_tag        = var.ruby_image_tag
+
+  replicas         = var.ruby_replicas
+  min_replicas     = var.ruby_min_replicas
+  max_replicas     = var.ruby_max_replicas
+  sidekiq_replicas = var.ruby_sidekiq_replicas
+
+  database_url    = module.postgresql.connection_url
+  redis_url       = module.redis.connection_url
+  zookeeper_url   = module.zookeeper.connection_string
+
+  secret_key_base  = var.ruby_secret_key_base
+  sidekiq_username = var.ruby_sidekiq_username
+  sidekiq_password = var.ruby_sidekiq_password
+
+  resource_limits = var.resource_limits.ruby_service
+  sidekiq_resources = var.resource_limits.ruby_sidekiq
+
+  environment = var.environment
+
   labels      = local.common_labels
   annotations = local.annotations
+
+  depends_on = [
+    module.postgresql,
+    module.redis,
+    module.zookeeper
+  ]
 }

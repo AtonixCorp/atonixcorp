@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'dashboard',
     'static_pages',
     'scheduling',
+    'chat',  # Chat functionality with WebSocket support
     # Celery beat integration for Django (periodic task persistence)
     'django_celery_beat',
     # Role-based access control and audit logging
@@ -273,7 +274,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'AtonixCorp Platform API',
     'DESCRIPTION': '''
     Professional API for AtonixCorp Platform - A comprehensive project management and collaboration platform.
-    
+
     ## Features
     - 🚀 **Project Management** - Create, manage, and track projects
     - 👥 **Team Collaboration** - Manage teams and team members
@@ -283,17 +284,17 @@ SPECTACULAR_SETTINGS = {
     - 🔒 **Enterprise Security** - JWT authentication, API keys, rate limiting
     - ⚡ **High Performance** - Redis caching, optimized queries
     - 📡 **Real-time Features** - WebSocket support, live updates
-    
+
     ## Authentication
     The API supports multiple authentication methods:
     - **JWT Tokens** - Bearer token authentication
     - **API Keys** - For service-to-service communication
     - **Session Authentication** - For web browser clients
-    
+
     ## Rate Limiting
     - **Authenticated Users**: 1000 requests/hour
     - **Anonymous Users**: 100 requests/hour
-    
+
     ## Support
     For technical support, contact: support@atonixcorp.com
     ''',
@@ -382,10 +383,10 @@ class Config:
         elif cast == list and isinstance(value, str):
             return value.split(',') if value else []
         return cast(value) if value is not None else default
-    
+
     def list(self, key, default=None):
         return self(key, default or [], cast=list)
-    
+
     def bool(self, key, default=False):
         return self(key, default, cast=bool)
 

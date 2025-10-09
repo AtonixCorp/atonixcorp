@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from drf_spectacular.utils import extend_schema
 from .auth_views import LoginView, SignupView, LogoutView, MeView
-from observability.views import telemetry_endpoint
+# from observability.views import telemetry_endpoint  # Temporarily disabled
 from core.health import health_check
 from core.api_utils import APIRootSerializer
 from core.views import landing_page, api_info, api_documentation
@@ -48,16 +48,16 @@ from .views_ruby import ruby_health
 def api_root(request):
     """
     API Root Endpoint
-    
-    Welcome to the AtonixCorp Platform API! This endpoint provides an overview 
+
+    Welcome to the AtonixCorp Platform API! This endpoint provides an overview
     of all available API endpoints and their capabilities.
-    
+
     ## Quick Start
     1. **Authentication**: Obtain a JWT token via `/api/auth/login/`
     2. **Explore**: Browse available endpoints below
     3. **Documentation**: Visit `/api/docs/` for interactive API documentation
     4. **Health Check**: Monitor API status at `/health/`
-    
+
     ## Features
     - 🔒 **Secure**: JWT authentication and API key support
     - 📊 **Comprehensive**: Full CRUD operations for all resources
@@ -65,7 +65,7 @@ def api_root(request):
     - 📖 **Well Documented**: Complete OpenAPI 3.0 specifications
     """
     base_url = request.build_absolute_uri('/').rstrip('/')
-    
+
     return Response({
         'message': 'Welcome to AtonixCorp Platform API',
         'version': '1.0.0',
@@ -123,36 +123,36 @@ def api_root(request):
 urlpatterns = [
     # Landing Page - Professional welcome page
     path('', landing_page, name='landing-page'),
-    
+
     # Professional Admin interface
     path('admin/', admin.site.urls),
-    
+
     # API Documentation - Professional Swagger UI and ReDoc
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    
+
     # API Root - Welcome endpoint with full API overview
     path('api/', api_root, name='api-root'),
-    
+
     # API Information endpoint
     path('api/info/', api_info, name='api-info'),
-    
+
     # Professional API Documentation page
     path('api/documentation/', api_documentation, name='api-documentation'),
-    
+
     # Health check endpoints
     path('api/health/', health_check, name='api-health-check'),
     path('health/', health_check, name='health-check'),
-    
-    # Authentication endpoints  
+
+    # Authentication endpoints
     path('api/auth/login/', LoginView.as_view(), name='api-login'),
     path('api/auth/signup/', SignupView.as_view(), name='api-signup'),
     path('api/auth/logout/', LogoutView.as_view(), name='api-logout'),
     path('api/auth/me/', MeView.as_view(), name='api-me'),
     # Telemetry ingest endpoint for development
-    path('api/telemetry/', telemetry_endpoint, name='api-telemetry'),
-    
+    # path('api/telemetry/', telemetry_endpoint, name='api-telemetry'),  # Temporarily disabled
+
     # Core application endpoints
     path('api/', include('projects.urls')),
     path('api/', include('teams.urls')),
@@ -163,7 +163,7 @@ urlpatterns = [
     path('api/', include('scheduling.urls')),
     # Static informational pages accessible via footer links
     path('pages/', include('static_pages.urls', namespace='static_pages')),
-    
+
     # System and monitoring endpoints
     # path('api/zookeeper/', include('core.zookeeper_urls')),  # Temporarily disabled
 
