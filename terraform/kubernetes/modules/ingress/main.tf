@@ -156,15 +156,15 @@ resource "kubernetes_ingress_v1" "main" {
           }
         }
         
-        # Health checks
+        # Ruby service
         path {
-          path      = "/health"
-          path_type = "Exact"
+          path      = "/api/ruby"
+          path_type = "Prefix"
           backend {
             service {
-              name = var.backend_service
+              name = var.ruby_service
               port {
-                number = 8000
+                number = 80
               }
             }
           }
@@ -321,6 +321,20 @@ resource "kubernetes_network_policy" "ingress" {
         pod_selector {
           match_labels = {
             "app.kubernetes.io/component" = "frontend"
+          }
+        }
+      }
+      ports {
+        port     = "80"
+        protocol = "TCP"
+      }
+    }
+    
+    egress {
+      to {
+        pod_selector {
+          match_labels = {
+            app = "ruby-service"
           }
         }
       }

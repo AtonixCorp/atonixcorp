@@ -442,6 +442,18 @@ variable "resource_limits" {
       memory_request = "1Gi"
       memory_limit   = "4Gi"
     }
+    ruby_service = {
+      cpu_request    = "250m"
+      cpu_limit      = "1000m"
+      memory_request = "256Mi"
+      memory_limit   = "512Mi"
+    }
+    ruby_sidekiq = {
+      cpu_request    = "100m"
+      cpu_limit      = "500m"
+      memory_request = "256Mi"
+      memory_limit   = "1Gi"
+    }
   }
 }
 
@@ -513,4 +525,62 @@ variable "kafka_external_node_port" {
   description = "NodePort for external Kafka access"
   type        = number
   default     = 30092
+}
+
+# ==========================
+# Ruby Service Variables
+# ==========================
+
+variable "ruby_image_repository" {
+  description = "Docker repository for the Ruby service image"
+  type        = string
+  default     = "atonixcorp/atonixcorp-ruby-service"
+}
+
+variable "ruby_image_tag" {
+  description = "Docker image tag for the Ruby service"
+  type        = string
+  default     = "latest"
+}
+
+variable "ruby_replicas" {
+  description = "Number of Ruby service web replicas"
+  type        = number
+  default     = 2
+}
+
+variable "ruby_min_replicas" {
+  description = "Minimum number of Ruby service replicas for HPA"
+  type        = number
+  default     = 2
+}
+
+variable "ruby_max_replicas" {
+  description = "Maximum number of Ruby service replicas for HPA"
+  type        = number
+  default     = 10
+}
+
+variable "ruby_sidekiq_replicas" {
+  description = "Number of Sidekiq worker replicas"
+  type        = number
+  default     = 1
+}
+
+variable "ruby_secret_key_base" {
+  description = "Secret key base for Rails sessions"
+  type        = string
+  sensitive   = true
+}
+
+variable "ruby_sidekiq_username" {
+  description = "Username for Sidekiq web interface"
+  type        = string
+  sensitive   = true
+}
+
+variable "ruby_sidekiq_password" {
+  description = "Password for Sidekiq web interface"
+  type        = string
+  sensitive   = true
 }

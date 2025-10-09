@@ -35,6 +35,11 @@ variable "frontend_service" {
   type        = string
 }
 
+variable "ruby_service" {
+  description = "Ruby service name"
+  type        = string
+}
+
 variable "labels" {
   description = "Labels to apply to resources"
   type        = map(string)

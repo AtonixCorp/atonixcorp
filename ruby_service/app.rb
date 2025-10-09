@@ -17,6 +17,7 @@ require 'dotenv/load'
 require_relative 'config/database'
 require_relative 'config/redis'
 require_relative 'config/sidekiq'
+require_relative 'config/zookeeper'
 require_relative 'lib/workers/editorial_worker'
 require_relative 'lib/workers/ci_worker'
 require_relative 'api/editorial_api'
@@ -40,6 +41,22 @@ class AtonixCorpRubyService < Sinatra::Base
     set :port, ENV.fetch('PORT', 3000).to_i
     set :show_exceptions, development?
     set :dump_errors, development?
+
+    # Register service with Zookeeper
+    begin
+      AtonixCorp::Zookeeper.register_service(
+        'ruby-service',
+        ENV.fetch('BIND', '0.0.0.0'),
+        ENV.fetch('PORT', 3000).to_i,
+        {
+          version: ENV.fetch('APP_VERSION', '1.0.0'),
+          environment: ENV.fetch('RACK_ENV', 'development'),
+          type: 'web'
+        }
+      )
+    rescue => e
+      puts "Failed to register service with Zookeeper: #{e.message}"
+    end
 
     # Enable logging if SemanticLogger Rack middleware is available
     begin
@@ -66,7 +83,9 @@ class AtonixCorpRubyService < Sinatra::Base
         status: 'healthy',
         timestamp: Time.now.iso8601,
         version: ENV.fetch('APP_VERSION', '1.0.0'),
-        environment: ENV.fetch('RACK_ENV', 'development')
+        environment: ENV.fetch('RACK_ENV', 'development'),
+        redis_connected: redis_connected?,
+        zookeeper_connected: AtonixCorp::Zookeeper.connected?
       }.to_json
     end
 

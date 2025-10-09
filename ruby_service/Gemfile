@@ -18,6 +18,9 @@ gem 'pg', '~> 1.5'
 gem 'redis', '~> 5.0'
 gem 'sequel', '~> 5.70'
 
+# Distributed coordination
+gem 'zookeeper', '~> 1.5'
+
 # API and serialization
 gem 'grape', '~> 2.0'
 gem 'grape-entity', '~> 1.0'
