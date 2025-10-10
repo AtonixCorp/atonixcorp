@@ -21,8 +21,12 @@ RUN apt-get update \
 
 # Install Python dependencies
 COPY requirements.txt requirements-opentelemetry.txt /app/
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt -r requirements-opentelemetry.txt
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PIP_DEFAULT_TIMEOUT=120
+
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir --timeout 120 -r requirements.txt -r requirements-opentelemetry.txt
 
 # Copy project
 COPY . /app/

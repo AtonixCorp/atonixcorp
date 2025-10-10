@@ -218,7 +218,7 @@ spec:
       - name: kas-registry-secret
       containers:
       - name: kas
-        image: atonixcorp/kas:latest  # Replace with actual KAS image
+        image: ghcr.io/atonixcorp/atonixcorp-kas:1.0.0
         ports:
         - containerPort: 8080
           name: http
