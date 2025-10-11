@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   gerrit:
-    image: gerritcodereview/gerrit:3.8
+    image: gerritcodereview/gerrit:3.8.0
     ports:
       - "8081:8080"  # Gerrit web interface
       - "29418:29418"  # Gerrit SSH
@@ -55,6 +55,7 @@ services:
       - "4730:4730"  # Gearman
     volumes:
       - ./zuul/main.yaml:/etc/zuul/main.yaml:ro
+        - ./zuul/main.yaml:/etc/zuul/zuul.conf:ro
       - ./zuul/scheduler.yaml:/etc/zuul/scheduler.yaml:ro
       - zuul_scheduler_data:/var/lib/zuul
     networks:
@@ -69,6 +70,7 @@ services:
       - "9000:9000"  # Zuul web interface
     volumes:
       - ./zuul/main.yaml:/etc/zuul/main.yaml:ro
+        - ./zuul/main.yaml:/etc/zuul/zuul.conf:ro
       - ./zuul/web.yaml:/etc/zuul/web.yaml:ro
     networks:
       - gerrit-network
@@ -80,6 +82,7 @@ services:
     privileged: true
     volumes:
       - ./zuul/main.yaml:/etc/zuul/main.yaml:ro
+        - ./zuul/main.yaml:/etc/zuul/zuul.conf:ro
       - ./zuul/executor.yaml:/etc/zuul/executor.yaml:ro
       - zuul_executor_data:/var/lib/zuul
       - /var/run/docker.sock:/var/run/docker.sock

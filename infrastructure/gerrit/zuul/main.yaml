@@ -31,8 +31,8 @@
     name: smtp
     server: localhost
     port: 25
-    default_from: zuul@atonixcorp.com
-    default_to: dev@atonixcorp.com
+    default_from: zuul@atonixcorp.org
+    default_to: dev@atonixcorp.org
 
 # Pipeline definitions
 - pipeline:
