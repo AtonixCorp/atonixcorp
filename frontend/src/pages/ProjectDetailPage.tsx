@@ -279,9 +279,9 @@ const ProjectDetailPage: React.FC = () => {
           </Typography>
           {project.is_featured && <StarIcon color="primary" fontSize="large" />}
         </Box>
-        
+
         <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-          <Chip 
+          <Chip
             label={project.status}
             color={getStatusColor(project.status) as any}
           />
@@ -404,7 +404,7 @@ const ProjectDetailPage: React.FC = () => {
                 <ListItemText
                   primary="Status"
                   secondary={
-                    <Chip 
+                    <Chip
                       label={project.status}
                       size="small"
                       color={getStatusColor(project.status) as any}

@@ -1,4 +1,4 @@
-# Osrovnet Security module
+# Atoni Security module
 # Manages security configuration and hardening
 
 class atonixcorp::security (

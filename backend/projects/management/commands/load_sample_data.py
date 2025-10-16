@@ -152,7 +152,7 @@ class Command(BaseCommand):
         CommunityLink.objects.create(
             platform='Twitter',
             name='@AtonixCorp',
-            url='https://twitter.com/AtonixCorp',
+            url='https://x.com/AtonixCorp',
             icon='twitter',
             order=1
         )
