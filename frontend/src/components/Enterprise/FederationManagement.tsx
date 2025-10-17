@@ -1,7 +1,7 @@
 import React from 'react';
 
-const FederationManagement: React.FC = () => {
+const _FederationManagement: React.FC = () => {
 	return <div />;
 };
 
-export default FederationManagement;
+export default _FederationManagement;

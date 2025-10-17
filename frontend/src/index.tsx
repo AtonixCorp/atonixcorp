@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeOpenTelemetry } from './observability/telemetry';
@@ -8,10 +7,10 @@ import { initializeOpenTelemetry } from './observability/telemetry';
 // Initialize OpenTelemetry before anything else
 initializeOpenTelemetry();
 
-const root = ReactDOM.createRoot(
+const _root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
-root.render(
+_root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

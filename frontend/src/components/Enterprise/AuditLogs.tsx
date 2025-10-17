@@ -5,7 +5,7 @@ import AuditLogTable from './AuditLogTable';
 import LoadingSpinner from '../Shared/LoadingSpinner';
 import ErrorBanner from '../Shared/ErrorBanner';
 
-const AuditLogs: React.FC = () => {
+const _AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,4 +28,4 @@ const AuditLogs: React.FC = () => {
   );
 };
 
-export default AuditLogs;
+export default _AuditLogs;

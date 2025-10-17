@@ -1,7 +1,7 @@
 import React from 'react';
 
-const DataMigration: React.FC = () => {
+const _DataMigration: React.FC = () => {
 	return <div />;
 };
 
-export default DataMigration;
+export default _DataMigration;

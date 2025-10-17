@@ -65,7 +65,7 @@ interface TaskItemProps {
   dueTime: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, color }) => {
+const _StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, color }) => {
   return (
     <Card
       sx={{
@@ -138,7 +138,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, 
   );
 };
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDate, team }) => {
+const _ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDate, team }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return '#3b82f6';
@@ -241,7 +241,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDa
   );
 };
 
-const TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTime }) => {
+const _TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTime }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return '#ef4444';
@@ -436,7 +436,7 @@ const Dashboard: React.FC = () => {
           }}
         >
           {stats.map((stat, index) => (
-            <StatCard key={index} {...stat} />
+            <_StatCard key={index} {...stat} />
           ))}
         </Box>
 
@@ -476,7 +476,7 @@ const Dashboard: React.FC = () => {
                   }}
                 >
                   {recentProjects.map((project, index) => (
-                    <ProjectCard key={index} {...project} />
+                    <_ProjectCard key={index} {...project} />
                   ))}
                 </Box>
               </Box>
@@ -513,7 +513,7 @@ const Dashboard: React.FC = () => {
                 </Box>
                 <List sx={{ p: 0 }}>
                   {todayTasks.map((task, index) => (
-                    <TaskItem key={index} {...task} />
+                    <_TaskItem key={index} {...task} />
                   ))}
                 </List>
               </Box>

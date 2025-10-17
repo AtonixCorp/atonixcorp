@@ -1,7 +1,7 @@
 import React from 'react';
 
-const DataReports: React.FC = () => {
+const _DataReports: React.FC = () => {
 	return <div />;
 };
 
-export default DataReports;
+export default _DataReports;

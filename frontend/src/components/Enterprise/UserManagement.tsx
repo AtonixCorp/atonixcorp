@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Placeholder UserManagement component.
  */
-const UserManagement: React.FC = () => {
+const _UserManagement: React.FC = () => {
 	return (
 		<div className="user-management">
 			<h2>User Management</h2>
@@ -12,4 +12,4 @@ const UserManagement: React.FC = () => {
 	);
 };
 
-export default UserManagement;
+export default _UserManagement;

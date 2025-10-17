@@ -1,7 +1,7 @@
 import React from 'react';
 
-const ModelRepository: React.FC = () => {
+const _ModelRepository: React.FC = () => {
 	return <div />;
 };
 
-export default ModelRepository;
+export default _ModelRepository;

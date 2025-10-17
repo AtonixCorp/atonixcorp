@@ -35,7 +35,7 @@ interface TabPanelProps {
   value: number;
 }
 
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
+const _TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
   <div role="tabpanel" hidden={value !== index}>
     {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
   </div>
@@ -138,7 +138,7 @@ const SettingsPage: React.FC = () => {
           </Tabs>
 
           {/* Profile Tab */}
-          <TabPanel value={tabValue} index={0}>
+          <_TabPanel value={tabValue} index={0}>
             <Box sx={{ maxWidth: 600 }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Profile Information
@@ -233,10 +233,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Notifications Tab */}
-          <TabPanel value={tabValue} index={1}>
+          <_TabPanel value={tabValue} index={1}>
             <Box sx={{ maxWidth: 600 }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Notification Preferences
@@ -313,10 +313,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Security Tab */}
-          <TabPanel value={tabValue} index={2}>
+          <_TabPanel value={tabValue} index={2}>
             <Box sx={{ maxWidth: 600 }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Security Settings
@@ -383,10 +383,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Appearance Tab */}
-          <TabPanel value={tabValue} index={3}>
+          <_TabPanel value={tabValue} index={3}>
             <Box sx={{ maxWidth: 600 }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Appearance Settings
@@ -404,7 +404,7 @@ const SettingsPage: React.FC = () => {
                 </Alert>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
         </Paper>
       </Box>
     </DashboardLayout>

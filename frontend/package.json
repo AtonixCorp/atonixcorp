@@ -26,6 +26,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "codemod:rename-unused": "node ./tools/codemods/rename-unused.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -49,5 +50,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.org"
+  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.org",
+  "devDependencies": {
+    "ts-morph": "^16.0.0"
+  }
 }

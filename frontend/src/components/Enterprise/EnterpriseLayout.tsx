@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography, Avatar, Divider, Collapse, ListItem } from '@mui/material';
-import { Dashboard as DashboardIcon, People as PeopleIcon, Settings as SettingsIcon, Storage as StorageIcon, ExpandLess, ExpandMore, Group as GroupIcon, TrackChanges as FocusIcon, Storefront as StorefrontIcon } from '@mui/icons-material';
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography, Avatar, Divider, Collapse } from '@mui/material';
+import { Dashboard as DashboardIcon, People as PeopleIcon, Settings as SettingsIcon, Storage as StorageIcon, ExpandLess, ExpandMore, Group as GroupIcon, Storefront as StorefrontIcon, Analytics as AnalyticsIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 interface Props {
@@ -12,9 +12,14 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
   const navigate = useNavigate();
 
   const items = [
-    { text: 'Overview', icon: <DashboardIcon />, path: `/enterprise/${enterpriseId}/dashboard` },
+    { text: 'Overview', icon: <DashboardIcon />, path: `/enterprise/${enterpriseId}/overview` },
     { text: 'Users', icon: <PeopleIcon />, path: `/enterprise/${enterpriseId}/users` },
+    // Workspace will render here (so it appears above Data)
     { text: 'Data', icon: <StorageIcon />, path: `/enterprise/${enterpriseId}/data` },
+  { text: 'AI Analytics', icon: <AnalyticsIcon />, path: `/enterprise/${enterpriseId}/ai-analytics` },
+    { text: 'Cloud Migration', icon: <StorefrontIcon />, path: `/enterprise/${enterpriseId}/cloud-migration` },
+    { text: 'Security', icon: <SettingsIcon />, path: `/enterprise/${enterpriseId}/security` },
+    { text: 'Help & Support', icon: <PeopleIcon />, path: `/enterprise/${enterpriseId}/help` },
     { text: 'Settings', icon: <SettingsIcon />, path: `/enterprise/${enterpriseId}/settings` },
   ];
 
@@ -37,20 +42,19 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
         </Box>
         <Divider sx={{ mb: 2 }} />
         <List>
-          {items.map((it) => (
+          {items.slice(0, 2).map((it) => (
             <ListItemButton key={it.text} onClick={() => navigate(it.path)}>
               <ListItemIcon>{it.icon}</ListItemIcon>
               <ListItemText primary={it.text} />
             </ListItemButton>
           ))}
 
-          <ListItem>
-            <ListItemButton onClick={() => setWorkspaceOpen(s => !s)}>
-              <ListItemIcon><GroupIcon /></ListItemIcon>
-              <ListItemText primary="Workspace" />
-              {workspaceOpen ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-          </ListItem>
+          {/* Workspace block placed here so it appears above Data */}
+          <ListItemButton onClick={() => setWorkspaceOpen(s => !s)}>
+            <ListItemIcon><GroupIcon /></ListItemIcon>
+            <ListItemText primary="Workspace" />
+            {workspaceOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
           <Collapse in={workspaceOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {workspaceItems.map((it) => (
@@ -61,6 +65,13 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
               ))}
             </List>
           </Collapse>
+
+          {items.slice(2).map((it) => (
+            <ListItemButton key={it.text} onClick={() => navigate(it.path)}>
+              <ListItemIcon>{it.icon}</ListItemIcon>
+              <ListItemText primary={it.text} />
+            </ListItemButton>
+          ))}
         </List>
       </Box>
 

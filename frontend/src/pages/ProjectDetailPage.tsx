@@ -17,6 +17,7 @@ import {
   Skeleton,
   Alert,
 } from '@mui/material';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   GitHub as GitHubIcon,
   Launch as LaunchIcon,
@@ -27,7 +28,6 @@ import {
   Code as CodeIcon,
   Architecture as ArchIcon,
 } from '@mui/icons-material';
-import { useParams, Link as RouterLink } from 'react-router-dom';
 import { projectsApi } from '../services/api';
 import { Project } from '../types/api';
 

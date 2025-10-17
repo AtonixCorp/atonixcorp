@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, LoginRequest, SignupRequest, AuthContextType, SocialProvider } from '../types/auth';
 import { authService } from '../services/authService';
+import { setAuthToken, clearAuthToken } from '../services/apiClient';
 import { SocialAuthService } from '../services/socialAuthService';
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const _AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -19,6 +20,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
+          // Apply token to shared api client
+          setAuthToken(token);
           // Verify the token with the backend
           const userData = await authService.getCurrentUser();
           setUser(userData);
@@ -26,6 +29,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         localStorage.removeItem('authToken');
+        clearAuthToken();
       } finally {
         setIsLoading(false);
       }
@@ -42,7 +46,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Login response:', response);
       
       // Store token
-      localStorage.setItem('authToken', response.token);
+  localStorage.setItem('authToken', response.token);
+  setAuthToken(response.token);
       
       setUser(response.user);
       console.log('Login successful, user set:', response.user);
@@ -62,7 +67,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Signup response:', response);
       
       // Automatically log in after successful signup
-      localStorage.setItem('authToken', response.token);
+  localStorage.setItem('authToken', response.token);
+  setAuthToken(response.token);
       
       setUser(response.user);
       console.log('Signup successful, user set:', response.user);
@@ -81,9 +87,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(true);
         const response = await SocialAuthService.handleCallback();
         
-        // Store token
-        localStorage.setItem('authToken', response.token);
-        setUser(response.user);
+  // Store token
+  localStorage.setItem('authToken', response.token);
+  setAuthToken(response.token);
+  setUser(response.user);
         
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -101,6 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = (): void => {
     localStorage.removeItem('authToken');
+    clearAuthToken();
     setUser(null);
   };
 
@@ -127,14 +135,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <_AuthContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
+    </_AuthContext.Provider>
   );
 };
 
 export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
+  const context = useContext(_AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

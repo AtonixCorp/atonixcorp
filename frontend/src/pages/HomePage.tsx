@@ -6,13 +6,13 @@ import {
   Button,
   Paper,
 } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Rocket as RocketIcon,
   Group as GroupIcon,
   TrackChanges as TargetIcon,
   FlashOn as FlashIcon,
 } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();

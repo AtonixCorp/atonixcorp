@@ -15,7 +15,6 @@ import {
   LinkedIn,
   Business as BusinessIcon,
   Email,
-  Phone,
   LocationOn,
   ArrowUpward,
 } from '@mui/icons-material';

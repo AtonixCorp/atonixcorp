@@ -3,7 +3,6 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import { CodemirrorBinding } from 'y-codemirror'
 import CodeMirror from 'codemirror'
-import 'codemirror/lib/codemirror.css'
 
 export default function CollaborativeEditorYjs({ docId }) {
   const editorRef = useRef(null)

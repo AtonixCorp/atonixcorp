@@ -3,7 +3,7 @@
 import { Project, Team, Technology, FocusArea } from '../types/api';
 
 // Mock Technologies
-export const mockTechnologies: Technology[] = [
+export const _mockTechnologies: Technology[] = [
   { id: 1, name: 'React', description: 'Frontend framework' },
   { id: 2, name: 'Django', description: 'Backend framework' },
   { id: 3, name: 'TypeScript', description: 'Programming language' },
@@ -22,7 +22,7 @@ export const mockTechnologies: Technology[] = [
 ];
 
 // Mock Focus Areas
-export const mockFocusAreas: FocusArea[] = [
+export const _mockFocusAreas: FocusArea[] = [
   {
     id: 1,
     name: 'Infrastructure & DevOps',
@@ -448,7 +448,7 @@ export const mockFocusAreas: FocusArea[] = [
 ];
 
 // Mock Projects
-export const mockProjects: Project[] = [
+export const _mockProjects: Project[] = [
   {
     id: 1,
     name: 'AtonixCorp Platform',
@@ -472,7 +472,7 @@ export const mockProjects: Project[] = [
   github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
   documentation_url: 'https://docs.atonixcorp.org/platform',
     is_featured: true,
-    focus_areas: [mockFocusAreas[0]],
+    focus_areas: [_mockFocusAreas[0]],
     start_date: '2024-01-01',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -498,7 +498,7 @@ export const mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/tmsvic-discovery',
   documentation_url: 'https://docs.atonixcorp.org/tmsvic-discovery',
     is_featured: true,
-    focus_areas: [mockFocusAreas[1]],
+    focus_areas: [_mockFocusAreas[1]],
     start_date: '2024-02-01',
     created_at: '2024-02-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -526,7 +526,7 @@ export const mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
     documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
     is_featured: true,
-    focus_areas: [mockFocusAreas[2]],
+    focus_areas: [_mockFocusAreas[2]],
     start_date: '2024-03-01',
     created_at: '2024-03-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -549,7 +549,7 @@ export const mockProjects: Project[] = [
     status: 'development',
   github_url: 'https://github.com/AtonixCorp/agrotech-suite',
     is_featured: false,
-    focus_areas: [mockFocusAreas[3]],
+    focus_areas: [_mockFocusAreas[3]],
     start_date: '2024-04-01',
     created_at: '2024-04-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -573,7 +573,7 @@ export const mockProjects: Project[] = [
     status: 'development',
   github_url: 'https://github.com/AtonixCorp/finsecure-blockchain',
     is_featured: false,
-    focus_areas: [mockFocusAreas[4]],
+    focus_areas: [_mockFocusAreas[4]],
     start_date: '2024-05-01',
     created_at: '2024-05-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -583,7 +583,7 @@ export const mockProjects: Project[] = [
 ];
 
 // Mock Teams
-export const mockTeams: Team[] = [
+export const _mockTeams: Team[] = [
   {
     id: 1,
     name: 'Pioneers',
@@ -761,40 +761,40 @@ export const mockTeams: Team[] = [
 export const mockProjectService = {
   getProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-    return mockProjects;
+    return _mockProjects;
   },
   getFeaturedProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockProjects.filter(project => project.is_featured);
+    return _mockProjects.filter(project => project.is_featured);
   },
   getProjectBySlug: async (slug: string): Promise<Project | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockProjects.find(project => project.slug === slug) || null;
+    return _mockProjects.find(project => project.slug === slug) || null;
   }
 };
 
 export const mockTeamService = {
   getTeams: async (): Promise<Team[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return mockTeams;
+    return _mockTeams;
   },
   getTeamBySlug: async (slug: string): Promise<Team | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockTeams.find(team => team.slug === slug) || null;
+    return _mockTeams.find(team => team.slug === slug) || null;
   }
 };
 
 export const mockTechnologyService = {
   getTechnologies: async (): Promise<Technology[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    return mockTechnologies;
+    return _mockTechnologies;
   }
 };
 
 export const mockFocusAreaService = {
   getFocusAreas: async (): Promise<FocusArea[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockFocusAreas;
+    return _mockFocusAreas;
   }
 };
 

@@ -50,12 +50,20 @@ import EnterpriseFocusAreas from './pages/EnterpriseFocusAreas';
 import EnterpriseResources from './pages/EnterpriseResources';
 import EnterpriseMarketplace from './pages/EnterpriseMarketplace';
 import MarketplacePage from './pages/MarketplacePage';
+// enterprise prototypes (import specific pages where needed)
+import EnterpriseSecurity from './pages/enterprise/EnterpriseSecurity';
+import EnterpriseOverview from './pages/enterprise/EnterpriseOverview';
+import EnterpriseHelp from './pages/enterprise/EnterpriseHelp';
+import EnterpriseAIAnalyticsPrototype from './pages/enterprise/EnterpriseAIAnalyticsPrototype';
+import EnterpriseCloudMigrationChecklist from './pages/enterprise/EnterpriseCloudMigrationChecklist';
+import EnterpriseCloudMigrationRuns from './pages/enterprise/EnterpriseCloudMigrationRuns';
+import EnterpriseMigrationRunDetails from './pages/enterprise/EnterpriseMigrationRunDetails';
 
 // Auth Components
 import SocialCallback from './components/Auth/SocialCallback';
 
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const _ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -76,7 +84,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return isAuthenticated ? <>{children}</> : null;
 };
 
-const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const _AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
@@ -98,7 +106,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 // Create premium professional theme for AtonixCorp
-const theme = createTheme({
+const _theme = createTheme({
   palette: {
     primary: {
       main: '#1e293b', // Modern dark slate
@@ -375,7 +383,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={_theme}>
       <CssBaseline />
       <TelemetryErrorBoundary componentName="App">
         <AuthProvider>
@@ -386,129 +394,164 @@ function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/dashboard" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <Dashboard />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/analytics" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <AnalyticsPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/tasks" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <TasksPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/teams" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <DashboardTeamsPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/settings" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <SettingsPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/schedule" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <SchedulePage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/security" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <SecurityPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/profile" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <ProfilePage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/projects" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <MyProjectsPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/project-analytics" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <ProjectAnalyticsPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/register" element={<EnterpriseRegisterPage />} />
                   <Route path="/enterprise/:id/dashboard" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseHome />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/overview" element={
+                    <_ProtectedRoute>
+                      <EnterpriseOverview />
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/users" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseHome />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/groups" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseGroups />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/ai-analytics" element={
+                    <_ProtectedRoute>
+                      <EnterpriseAIAnalyticsPrototype />
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/cloud-migration" element={
+                    <_ProtectedRoute>
+                      <EnterpriseCloudMigrationChecklist />
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/migration" element={
+                    <_ProtectedRoute>
+                      <EnterpriseCloudMigrationRuns />
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/migration/run/:runId" element={
+                    <_ProtectedRoute>
+                      <EnterpriseMigrationRunDetails />
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/security" element={
+                    <_ProtectedRoute>
+                      <EnterpriseSecurity />
+                    </_ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/help" element={
+                    <_ProtectedRoute>
+                      <EnterpriseHelp />
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/teams" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseTeams />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/focus-areas" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseFocusAreas />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/resources" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseResources />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/marketplace" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <EnterpriseMarketplace />
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/marketplace" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <MarketplacePage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/dashboard/help" element={
-                    <ProtectedRoute>
+                    <_ProtectedRoute>
                       <DashboardLayout>
                         <HelpPage />
                       </DashboardLayout>
-                    </ProtectedRoute>
+                    </_ProtectedRoute>
                   } />
                   <Route path="/admin" element={
-                    <AdminRoute>
+                    <_AdminRoute>
                       <DashboardLayout>
                         <ManagementDashboard />
                       </DashboardLayout>
-                    </AdminRoute>
+                    </_AdminRoute>
                   } />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />

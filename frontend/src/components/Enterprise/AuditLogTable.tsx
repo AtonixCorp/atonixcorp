@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AuditLogEntry } from '../../types/audit';
 
-const formatTimestamp = (iso?: string) => {
+const _formatTimestamp = (iso?: string) => {
   if (!iso) return '';
   try {
     return new Date(iso).toLocaleString();
@@ -27,7 +27,7 @@ const AuditLogTable: React.FC<{ entries: AuditLogEntry[] }> = ({ entries }) => {
       <tbody>
         {entries.map((e) => (
           <tr key={e.id}>
-            <td>{formatTimestamp(e.timestamp)}</td>
+            <td>{_formatTimestamp(e.timestamp)}</td>
             <td>{e.user?.displayName ?? e.user?.username ?? 'System'}</td>
             <td>{e.action}</td>
             <td>{e.resourceType ? `${e.resourceType} ${e.resourceId ?? ''}` : ''}</td>

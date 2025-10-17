@@ -4,7 +4,7 @@ import React from 'react';
  * Placeholder MonitoringModule component.
  * This ensures the file is a module so TypeScript can compile with --isolatedModules.
  */
-const MonitoringModule: React.FC = () => {
+const _MonitoringModule: React.FC = () => {
 	return (
 		<div className="monitoring-module">
 			<h2>Monitoring Module</h2>
@@ -13,4 +13,4 @@ const MonitoringModule: React.FC = () => {
 	);
 };
 
-export default MonitoringModule;
+export default _MonitoringModule;
