@@ -156,21 +156,14 @@ const ProjectDetailPage: React.FC = () => {
             ],
             images: []
           },
-<<<<<<< HEAD
-          'osrovnet': {
-            id: 3,
-            name: 'Osrovnet',
-            slug: 'osrovnet',
-            overview: 'AtonixCorp\'s flagship platform for advanced network security.',
-            description: 'Osrovnet is built for sovereign systems and mission-critical environments. It empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.\n\nThe platform provides comprehensive threat intelligence, real-time network monitoring, and automated response capabilities. With advanced machine learning algorithms for anomaly detection and a robust API for integration with existing security infrastructure, Osrovnet represents the next generation of cybersecurity solutions.',
-=======
+
           'atonixcorp-security': {
             id: 3,
             name: 'Osrovnet',
             slug: 'atonixcorp-security',
             overview: 'Osrovnet is built for sovereign systems and mission-critical environments. It empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
             description: 'Osrovnet provides comprehensive threat intelligence, real-time network monitoring, and automated response capabilities. With advanced machine learning algorithms for anomaly detection and a robust API for integration with existing security infrastructure, Osrovnet represents the next generation of cybersecurity solutions.',
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
+
             status: 'active',
             is_featured: true,
             technologies: [
@@ -185,13 +178,9 @@ const ProjectDetailPage: React.FC = () => {
               { id: 3, name: 'Security', slug: 'security', description: 'Cybersecurity and network protection', icon: '', image: '', color_theme: '#f44336', is_active: true, order: 3, created_at: '2024-01-01', updated_at: '2024-01-01', technologies: [], solutions: [] }
             ],
             start_date: '2024-03-01',
-<<<<<<< HEAD
-            github_url: 'https://github.com/AtonixCorp/osrovnet',
-            documentation_url: 'https://docs.atonixcorp.org/osrovnet',
-=======
+
             github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
             documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
             created_at: '2024-03-01',
             updated_at: '2024-10-01',
             features: [
@@ -293,15 +282,10 @@ const ProjectDetailPage: React.FC = () => {
           </Typography>
           {project.is_featured && <StarIcon color="primary" fontSize="large" />}
         </Box>
-<<<<<<< HEAD
-        
-        <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-          <Chip 
-=======
+
 
         <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
           <Chip
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
             label={project.status}
             color={getStatusColor(project.status) as any}
           />
@@ -424,11 +408,8 @@ const ProjectDetailPage: React.FC = () => {
                 <ListItemText
                   primary="Status"
                   secondary={
-<<<<<<< HEAD
-                    <Chip 
-=======
+
                     <Chip
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
                       label={project.status}
                       size="small"
                       color={getStatusColor(project.status) as any}
@@ -540,8 +521,5 @@ const ProjectDetailPage: React.FC = () => {
   );
 };
 
-<<<<<<< HEAD
+
 export default ProjectDetailPage;
-=======
-export default ProjectDetailPage;
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

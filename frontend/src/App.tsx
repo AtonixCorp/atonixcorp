@@ -42,6 +42,7 @@ import HelpPage from './pages/HelpPage';
 import DashboardTeamsPage from './pages/DashboardTeamsPage';
 import ManagementDashboard from './pages/ManagementDashboard';
 import AdminLoginPage from './pages/AdminLoginPage';
+import MarketplacePage from './pages/MarketplacePage';
 
 // Auth Components
 import SocialCallback from './components/Auth/SocialCallback';
@@ -442,6 +443,13 @@ function App() {
                     <ProtectedRoute>
                       <DashboardLayout>
                         <ProjectAnalyticsPage />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dashboard/marketplace" element={
+                    <ProtectedRoute>
+                      <DashboardLayout>
+                        <MarketplacePage />
                       </DashboardLayout>
                     </ProtectedRoute>
                   } />
