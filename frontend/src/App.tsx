@@ -42,6 +42,13 @@ import HelpPage from './pages/HelpPage';
 import DashboardTeamsPage from './pages/DashboardTeamsPage';
 import ManagementDashboard from './pages/ManagementDashboard';
 import AdminLoginPage from './pages/AdminLoginPage';
+import EnterpriseRegisterPage from './pages/EnterpriseRegisterPage';
+import EnterpriseHome from './pages/EnterpriseHome';
+import EnterpriseGroups from './pages/EnterpriseGroups';
+import EnterpriseTeams from './pages/EnterpriseTeams';
+import EnterpriseFocusAreas from './pages/EnterpriseFocusAreas';
+import EnterpriseResources from './pages/EnterpriseResources';
+import EnterpriseMarketplace from './pages/EnterpriseMarketplace';
 import MarketplacePage from './pages/MarketplacePage';
 
 // Auth Components
@@ -444,6 +451,42 @@ function App() {
                       <DashboardLayout>
                         <ProjectAnalyticsPage />
                       </DashboardLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/register" element={<EnterpriseRegisterPage />} />
+                  <Route path="/enterprise/:id/dashboard" element={
+                    <ProtectedRoute>
+                      <EnterpriseHome />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/users" element={
+                    <ProtectedRoute>
+                      <EnterpriseHome />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/groups" element={
+                    <ProtectedRoute>
+                      <EnterpriseGroups />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/teams" element={
+                    <ProtectedRoute>
+                      <EnterpriseTeams />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/focus-areas" element={
+                    <ProtectedRoute>
+                      <EnterpriseFocusAreas />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/resources" element={
+                    <ProtectedRoute>
+                      <EnterpriseResources />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise/:id/marketplace" element={
+                    <ProtectedRoute>
+                      <EnterpriseMarketplace />
                     </ProtectedRoute>
                   } />
                   <Route path="/dashboard/marketplace" element={

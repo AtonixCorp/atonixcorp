@@ -158,31 +158,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       ],
     },
     {
-      text: 'Workspace',
-      icon: <TeamsIcon />,
-      children: [
-        {
-          text: 'Teams',
-          icon: <People />,
-          path: '/dashboard/teams',
-        },
-        {
-          text: 'Focus Areas',
-          icon: <FocusAreasIcon />,
-          path: '/dashboard/focus-areas',
-        },
-        {
-          text: 'Resources',
-          icon: <ResourcesIcon />,
-          path: '/dashboard/resources',
-        },
-        {
-          text: 'Marketplace',
-          icon: <StorefrontIcon />,
-          path: '/dashboard/marketplace',
-        },
-      ],
+      text: 'Enterprise',
+      icon: <StorefrontIcon />,
+      path: '/enterprise/register',
     },
+      {
+        text: 'Focus Areas',
+        icon: <FocusAreasIcon />,
+        path: '/dashboard/focus-areas',
+      },
+      {
+        text: 'Resources',
+        icon: <ResourcesIcon />,
+        path: '/dashboard/resources',
+      },
+      {
+        text: 'Marketplace',
+        icon: <StorefrontIcon />,
+        path: '/dashboard/marketplace',
+      },
+    // Workspace moved inside Enterprise for enterprise-scoped access
     {
       text: 'Community',
       icon: <CommunityIcon />,
