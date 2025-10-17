@@ -31,14 +31,22 @@ variable "kubernetes_cluster_ca_certificate" {
 variable "project_name" {
   description = "Name of the project"
   type        = string
+<<<<<<< HEAD
   default     = "atonixcorp-platform"
+=======
+  default     = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
   default     = "dev"
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -54,7 +62,11 @@ variable "app_version" {
 variable "namespace" {
   description = "Kubernetes namespace"
   type        = string
+<<<<<<< HEAD
   default     = "atonixcorp-platform"
+=======
+  default     = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 # ==========================
@@ -190,7 +202,11 @@ variable "backend_image_tag" {
 variable "frontend_image_repository" {
   description = "Frontend image repository"
   type        = string
+<<<<<<< HEAD
   default     = "atonixcorp/platform-frontend"
+=======
+  default     = "atonixcorp/atonixcorp-frontend"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 variable "frontend_image_tag" {
@@ -398,7 +414,11 @@ variable "resource_limits" {
       memory_limit   = string
     })
   })
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   default = {
     backend = {
       cpu_request    = "250m"
@@ -442,6 +462,21 @@ variable "resource_limits" {
       memory_request = "1Gi"
       memory_limit   = "4Gi"
     }
+<<<<<<< HEAD
+=======
+    ruby_service = {
+      cpu_request    = "250m"
+      cpu_limit      = "1000m"
+      memory_request = "256Mi"
+      memory_limit   = "512Mi"
+    }
+    ruby_sidekiq = {
+      cpu_request    = "100m"
+      cpu_limit      = "500m"
+      memory_request = "256Mi"
+      memory_limit   = "1Gi"
+    }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   }
 }
 
@@ -513,4 +548,73 @@ variable "kafka_external_node_port" {
   description = "NodePort for external Kafka access"
   type        = number
   default     = 30092
+<<<<<<< HEAD
 }
+=======
+}
+
+# ==========================
+# Ruby Service Variables
+# ==========================
+
+variable "ruby_image_repository" {
+  description = "Docker repository for the Ruby service image"
+  type        = string
+  default     = "atonixcorp/atonixcorp-ruby-service"
+}
+
+variable "ruby_image_tag" {
+  description = "Docker image tag for the Ruby service"
+  type        = string
+  default     = "latest"
+}
+
+variable "ruby_replicas" {
+  description = "Number of Ruby service web replicas"
+  type        = number
+  default     = 2
+}
+
+variable "ruby_min_replicas" {
+  description = "Minimum number of Ruby service replicas for HPA"
+  type        = number
+  default     = 2
+}
+
+variable "ruby_max_replicas" {
+  description = "Maximum number of Ruby service replicas for HPA"
+  type        = number
+  default     = 10
+}
+
+variable "ruby_sidekiq_replicas" {
+  description = "Number of Sidekiq worker replicas"
+  type        = number
+  default     = 1
+}
+
+variable "ruby_secret_key_base" {
+  description = "Secret key base for Rails sessions"
+  type        = string
+  sensitive   = true
+}
+
+variable "ruby_sidekiq_username" {
+  description = "Username for Sidekiq web interface"
+  type        = string
+  sensitive   = true
+}
+
+variable "ruby_sidekiq_password" {
+  description = "Password for Sidekiq web interface"
+  type        = string
+  sensitive   = true
+}
+
+# Optional registry secret to use for pulling private images (kubernetes secret name)
+variable "registry_secret_name" {
+  description = "Kubernetes secret name to use for imagePullSecrets (optional)"
+  type        = string
+  default     = ""
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

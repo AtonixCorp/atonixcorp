@@ -1,0 +1,119 @@
+groups:
+  - name: atonixcorp.rules
+    rules:
+    # Django Backend Alerts
+    - alert: DjangoBackendDown
+      expr: up{job="atonixcorp-backend"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "Django backend is down"
+        description: "Django backend has been down for more than 5 minutes."
+
+    - alert: DjangoHighResponseTime
+      expr: histogram_quantile(0.95, rate(django_http_requests_total_bucket[5m])) > 2
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "High Django response time"
+        description: "95th percentile response time is above 2 seconds for 5 minutes."
+
+    # Database Alerts
+    - alert: DatabaseConnectionIssues
+      expr: rate(django_db_errors_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "Database connection issues"
+        description: "Rate of database errors is above threshold."
+
+    # System Resource Alerts
+    - alert: HighCPUUsage
+      expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "High CPU usage"
+        description: "CPU usage is above 90% for 5 minutes."
+
+    - alert: HighMemoryUsage
+      expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "High memory usage"
+        description: "Memory usage is above 90% for 5 minutes."
+
+    - alert: LowDiskSpace
+      expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "Low disk space"
+        description: "Disk space is below 10% available."
+
+    # Container/Kubernetes Alerts
+    - alert: PodCrashLooping
+      expr: increase(kube_pod_container_status_restarts_total[10m]) > 5
+      for: 2m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "Pod crash looping"
+        description: "Pod has restarted more than 5 times in 10 minutes."
+
+    # Redis Alerts
+    - alert: RedisDown
+      expr: up{job="redis"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        team: platform
+      annotations:
+        summary: "Redis is down"
+        description: "Redis has been down for more than 5 minutes."
+
+    # Editorial/Content Alerts (example)
+    - alert: ContentProcessingQueueHigh
+      expr: redis_queue_length{queue="content_processing"} > 1000
+      for: 5m
+      labels:
+        severity: warning
+        team: editorial
+      annotations:
+        summary: "Content processing queue is high"
+        description: "Content processing queue has more than 1000 items."
+
+    # Prometheus Alerts
+    - alert: PrometheusConfigReloadFailed
+      expr: prometheus_config_last_reload_successful != 1
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "Prometheus configuration reload failed"
+        description: "Prometheus failed to reload configuration."
+
+    - alert: PrometheusNotConnectedToAlertmanager
+      expr: prometheus_notifications_alertmanagers_discovered < 1
+      for: 5m
+      labels:
+        severity: warning
+        team: platform
+      annotations:
+        summary: "Prometheus not connected to Alertmanager"
+        description: "Prometheus is not connected to any Alertmanager instance."

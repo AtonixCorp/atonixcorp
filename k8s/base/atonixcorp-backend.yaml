@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: django-secret
+  namespace: atonixcorp
+type: Opaque
+data:
+  # your-super-secret-key-change-in-production-with-50-chars-min (base64)
+  SECRET_KEY: eW91ci1zdXBlci1zZWNyZXQta2V5LWNoYW5nZS1pbi1wcm9kdWN0aW9uLXdpdGgtNTAtY2hhcnMtbWlu
+stringData:
+  # replace these hostnames with the hostnames you will use (DNS names preferred)
+  # comma-separated list (the application reads ALLOWED_HOSTS from env and splits by comma)
+  # Allow all hosts in development so kube liveness/readiness probes (which use pod IPs)
+  # don't trigger Django's DisallowedHost error. Replace with a stricter list for prod.
+  ALLOWED_HOSTS: "*,atonixcorp.org,www.atonixcorp.org"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: django-config
+  namespace: atonixcorp
+data:
+  DEBUG: "False"
+  DATABASE_URL: "postgresql://atonixcorp_user:atonixcorp_password@postgres:5432/atonixcorp"
+  REDIS_URL: "redis://:redis_password@redis:6379/0"
+  # Celery envs use the same Redis URL for broker and result backend
+  CELERY_BROKER_URL: "redis://:redis_password@redis:6379/0"
+  CELERY_RESULT_BACKEND: "redis://:redis_password@redis:6379/0"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org,https://www.atonixcorp.org,http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp-frontend:80,http://atonixcorp.org"
+  # OpenTelemetry settings (enable and export to in-cluster collector)
+  OTEL_ENABLED: "True"
+  OTEL_ENABLE_OTLP: "True"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+  OTEL_SERVICE_NAME: "atonixcorp-backend"
+  OTEL_SERVICE_VERSION: "1.0.0"
+  # Leave Prometheus exporter disabled in-app (Prometheus will scrape collector metrics)
+  OTEL_ENABLE_PROMETHEUS: "False"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-backend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-backend
+    component: api
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        component: api
+    spec:
+      initContainers:
+      - name: migrate
+        image:  ghcr.io/atonixcorp/atonixcorp-backend:1.0.0
+        command: ["python", "manage.py", "migrate"]
+        envFrom:
+        - configMapRef:
+            name: django-config
+        - secretRef:
+            name: django-secret
+      containers:
+      - name: atonixcorp-backend
+        image: ghcr.io/atonixcorp/atonixcorp-backend:1.0.0
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: django-config
+        - secretRef:
+            name: django-secret
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health/
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: static-files
+          mountPath: /app/staticfiles
+        - name: media-files
+          mountPath: /app/media
+      volumes:
+      - name: static-files
+        emptyDir: {}
+      - name: media-files
+        persistentVolumeClaim:
+          claimName: media-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-pvc
+  namespace: atonixcorp
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-backend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-backend
+    component: api
+spec:
+  type: LoadBalancer
+  # Cluster does not appear to support IPv6 in this environment; use IPv4 only
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+  selector:
+    app: backend

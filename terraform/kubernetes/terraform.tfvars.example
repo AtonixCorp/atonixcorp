@@ -14,10 +14,17 @@ django_secret_key = "CHANGE-ME-TO-A-RANDOM-SECRET-KEY"
 # ==============================================
 
 # Project and environment settings
+<<<<<<< HEAD
 project_name = "atonixcorp-platform"
 environment  = "dev"  # Options: dev, staging, prod
 app_version  = "1.0.0"
 namespace    = "atonixcorp-platform"
+=======
+project_name = "atonixcorp"
+environment  = "dev"  # Options: dev, staging, prod
+app_version  = "1.0.0"
+namespace    = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # ==============================================
 # DOMAIN AND NETWORKING
@@ -57,8 +64,13 @@ backend_image_repository = "atonixcorp/platform-backend"
 backend_image_tag        = "latest"
 
 # Frontend image configuration
+<<<<<<< HEAD
 frontend_image_repository = "atonixcorp/platform-frontend"
 frontend_image_tag         = "latest"
+=======
+frontend_image_repository = "atonixcorp/atonixcorp-frontend"
+frontend_image_tag         = "1.0.0"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # ==============================================
 # SCALING CONFIGURATION
@@ -203,4 +215,8 @@ ingress_annotations = {
 kubeconfig_path = "~/.kube/config"
 
 # Internal API URL (usually doesn't need to be changed)
+<<<<<<< HEAD
 api_url = "http://atonixcorp-platform-backend:8000"
+=======
+api_url = "http://atonixcorp-backend:8000"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

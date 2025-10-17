@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kas-registry-secret
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: registry
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJvc3Jvdm5ldC5yZWdpc3RyeS5jb20iOnsidXNlcm5hbWUiOiJhdG9uaXhkZXYiLCJwYXNzd29yZCI6ImRja3JfcGF0X2xuYTR6YTIyWGdma1pkSVBWLWxfSG5WODlrMCIsImVtYWlsIjoieW91ci1vZmlkb2h1YkBnbWFpbC5jb20iLCJhdXRoIjoiYldGa2MyVmpkR0Z6YzNkdmNtUT0ifX19

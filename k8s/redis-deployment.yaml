@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-redis
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atonixcorp-redis
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          command: ["redis-server", "--appendonly", "yes"]
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-redis
+  namespace: atonixcorp
+spec:
+  selector:
+    app: atonixcorp-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP

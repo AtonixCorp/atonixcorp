@@ -243,7 +243,11 @@ resource "kubernetes_config_map" "prometheus_rules" {
     "alert-rules.yml" = yamlencode({
       groups = [
         {
+<<<<<<< HEAD
           name = "atonixcorp-platform"
+=======
+          name = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
           rules = [
             {
               alert = "HighErrorRate"

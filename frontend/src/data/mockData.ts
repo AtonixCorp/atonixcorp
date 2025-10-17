@@ -30,9 +30,14 @@ export const mockFocusAreas: FocusArea[] = [
     description: 'Core platform infrastructure and DevOps solutions for scalable, reliable systems',
     detailed_description: 'Building robust, scalable infrastructure solutions that power enterprise applications. Our expertise spans cloud architecture, container orchestration, CI/CD pipelines, and infrastructure automation. We focus on creating resilient systems that can handle massive scale while maintaining security and performance.',
     icon: 'cloud',
+<<<<<<< HEAD
       website_url: 'https://platform.atonixcorp.org',
     color_theme: '#1976d2',
       documentation_url: 'https://docs.atonixcorp.org/platform',
+=======
+    color_theme: '#1976d2',
+    is_active: true,
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     order: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
@@ -58,7 +63,11 @@ export const mockFocusAreas: FocusArea[] = [
         icon: 'terraform',
         website_url: 'https://terraform.io'
       },
+<<<<<<< HEAD
       documentation_url: 'https://docs.atonixcorp.org/tmsvic-discovery',
+=======
+      {
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
         id: 4,
         name: 'AWS/Azure/GCP',
         description: 'Cloud platform services',
@@ -84,7 +93,11 @@ export const mockFocusAreas: FocusArea[] = [
         order: 2
       },
       {
+<<<<<<< HEAD
       documentation_url: 'https://docs.atonixcorp.org/osrovnet',
+=======
+        id: 3,
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
         title: 'Infrastructure Monitoring',
         description: 'Comprehensive monitoring and alerting systems for proactive infrastructure management.',
         benefits: ['Real-time insights', 'Predictive analytics', 'Automated remediation', 'Performance optimization'],
@@ -505,11 +518,19 @@ export const mockProjects: Project[] = [
   },
   {
     id: 3,
+<<<<<<< HEAD
     name: 'OSRovNet',
     slug: 'osrovnet',
     overview: 'Open-source network security and threat analysis platform.',
     description: 'OSRovNet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
     image: '/images/projects/osrovnet.jpg',
+=======
+      name: 'Osrovnet',
+      slug: 'atonixcorp-security',
+      overview: 'Osrovnet: advanced network security and threat analysis platform.',
+      description: 'Osrovnet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
+      image: '/images/projects/atonixcorp-security.jpg',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     technologies: [
       { id: 4, name: 'Python' },
       { id: 13, name: 'Go' },
@@ -519,8 +540,13 @@ export const mockProjects: Project[] = [
       { id: 7, name: 'Kubernetes' }
     ],
     status: 'active',
+<<<<<<< HEAD
     github_url: 'https://github.com/AtonixCorp/osrovnet',
   documentation_url: 'https://docs.atonixcorp.org/osrovnet',
+=======
+    github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
+    documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     is_featured: true,
     focus_areas: [mockFocusAreas[2]],
     start_date: '2024-03-01',
@@ -792,4 +818,8 @@ export const mockFocusAreaService = {
     await new Promise(resolve => setTimeout(resolve, 300));
     return mockFocusAreas;
   }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

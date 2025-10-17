@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-nginx
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atonixcorp-nginx
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+            - name: app-media
+              mountPath: /var/www/media
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: atonixcorp-nginx-config
+            items:
+              - key: default.conf
+                path: default.conf
+        - name: app-media
+          persistentVolumeClaim:
+            claimName: atonixcorp-media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-nginx
+  namespace: atonixcorp
+spec:
+  selector:
+    app: atonixcorp-nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

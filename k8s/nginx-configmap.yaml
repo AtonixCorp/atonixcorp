@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atonixcorp-nginx-config
+  namespace: atonixcorp
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name atonixcorp.org www.atonixcorp.org;
+
+        location / {
+            proxy_pass http://atonixcorp-platform:8000/;
+            proxy_set_header Host atonixcorp.org;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location = /robots.txt { access_log off; }
+        location = /sitemap.xml { access_log off; }
+        location ~ /\.|/\.|/\.|/\.|/\.? { deny all; access_log off; }
+    }
+
+    server {
+        listen 80;
+        server_name api.atonixcorp.org;
+
+        location / {
+            proxy_pass http://atonixcorp-platform:8000/;
+            proxy_set_header Host api.atonixcorp.org;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /static/ { proxy_pass http://atonixcorp-platform:8000/static/; }
+        location /media/ { proxy_pass http://atonixcorp-platform:8000/media/; }
+        location /health/ { proxy_pass http://atonixcorp-platform:8000/health/; access_log off; }
+        location /docs/ { proxy_pass http://atonixcorp-platform:8000/docs/; }
+
+        location ~ /\.|/\.|/\.|/\.|/\.? { deny all; access_log off; }
+    }

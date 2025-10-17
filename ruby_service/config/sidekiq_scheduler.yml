@@ -1,0 +1,120 @@
+# Sidekiq Scheduler Configuration
+# frozen_string_literal: true
+
+# Editorial Tasks
+editorial_tasks:
+  # Article indexing - every 5 minutes
+  article_indexing:
+    cron: '*/5 * * * *'
+    class: EditorialWorker
+    args: ['index_articles']
+    queue: editorial
+    description: 'Index new and updated articles for search'
+
+  # Feed updates - every 15 minutes
+  feed_updates:
+    cron: '*/15 * * * *'
+    class: EditorialWorker
+    args: ['update_feeds']
+    queue: editorial
+    description: 'Update RSS feeds and external content sources'
+
+  # Content cleanup - daily at 2 AM
+  content_cleanup:
+    cron: '0 2 * * *'
+    class: EditorialWorker
+    args: ['cleanup_content']
+    queue: editorial
+    description: 'Clean up old drafts and temporary content'
+
+  # SEO optimization - hourly
+  seo_optimization:
+    cron: '0 * * * *'
+    class: EditorialWorker
+    args: ['optimize_seo']
+    queue: editorial
+    description: 'Update SEO metadata and sitemaps'
+
+# CI/CD Tasks
+ci_tasks:
+  # Build queue processing - every minute
+  process_build_queue:
+    cron: '* * * * *'
+    class: CIWorker
+    args: ['process_build_queue']
+    queue: ci
+    description: 'Process pending CI builds'
+
+  # Deployment status checks - every 2 minutes
+  check_deployments:
+    cron: '*/2 * * * *'
+    class: CIWorker
+    args: ['check_deployments']
+    queue: ci
+    description: 'Check status of ongoing deployments'
+
+  # Test result aggregation - every 5 minutes
+  aggregate_test_results:
+    cron: '*/5 * * * *'
+    class: CIWorker
+    args: ['aggregate_test_results']
+    queue: ci
+    description: 'Aggregate and report test results'
+
+  # Infrastructure health checks - every 10 minutes
+  infrastructure_health:
+    cron: '*/10 * * * *'
+    class: CIWorker
+    args: ['check_infrastructure']
+    queue: ci
+    description: 'Monitor infrastructure health'
+
+  # Security scans - daily at 3 AM
+  security_scans:
+    cron: '0 3 * * *'
+    class: CIWorker
+    args: ['run_security_scans']
+    queue: ci
+    description: 'Run scheduled security scans'
+
+  # Backup verification - daily at 4 AM
+  backup_verification:
+    cron: '0 4 * * *'
+    class: CIWorker
+    args: ['verify_backups']
+    queue: ci
+    description: 'Verify backup integrity and completeness'
+
+# System Maintenance Tasks
+maintenance_tasks:
+  # Log rotation - daily at 1 AM
+  log_rotation:
+    cron: '0 1 * * *'
+    class: SystemWorker
+    args: ['rotate_logs']
+    queue: default
+    description: 'Rotate and archive application logs'
+
+  # Database maintenance - weekly on Sunday at 2 AM
+  database_maintenance:
+    cron: '0 2 * * 0'
+    class: SystemWorker
+    args: ['maintenance_db']
+    queue: default
+    description: 'Perform database maintenance tasks'
+
+  # Cache cleanup - every 30 minutes
+  cache_cleanup:
+    cron: '*/30 * * * *'
+    class: SystemWorker
+    args: ['cleanup_cache']
+    queue: default
+    description: 'Clean up expired cache entries'
+
+  # Metrics aggregation - every 15 minutes
+  metrics_aggregation:
+    cron: '*/15 * * * *'
+    class: SystemWorker
+    args: ['aggregate_metrics']
+    queue: default
+    description: 'Aggregate and store metrics data'

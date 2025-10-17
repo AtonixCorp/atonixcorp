@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 version: '3.8'
+=======
+version: "3.8"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Extended Docker Compose for Monitoring and Logging
 
@@ -13,12 +17,21 @@ services:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
+<<<<<<< HEAD
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+=======
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     networks:
       - atonixcorp_network
     restart: unless-stopped
@@ -28,7 +41,11 @@ services:
     image: grafana/grafana:latest
     container_name: atonixcorp_grafana
     ports:
+<<<<<<< HEAD
       - "3001:3000"
+=======
+      - "3002:3000"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -108,4 +125,8 @@ volumes:
 
 networks:
   atonixcorp_network:
+<<<<<<< HEAD
     external: true
+=======
+    external: true
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

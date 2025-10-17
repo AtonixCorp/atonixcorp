@@ -2,7 +2,11 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: test-pvc-binding
+<<<<<<< HEAD
   namespace: atonixcorp-platform
+=======
+  namespace: atonixcorp
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 spec:
   containers:
   - name: test
@@ -16,7 +20,14 @@ spec:
   volumes:
   - name: postgresql-data
     persistentVolumeClaim:
+<<<<<<< HEAD
       claimName: atonixcorp-platform-dev-postgresql-data
   - name: redis-data
     persistentVolumeClaim:
       claimName: atonixcorp-platform-dev-redis-data
+=======
+      claimName: atonixcorp-dev-postgresql-data
+  - name: redis-data
+    persistentVolumeClaim:
+      claimName: atonixcorp-dev-redis-data
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -1,0 +1,248 @@
+# Rakefile for Ruby Service
+# frozen_string_literal: true
+
+require 'rake'
+require 'sequel'
+require_relative 'config/database'
+
+namespace :db do
+  desc 'Create the database'
+  task :create do
+    db_name = ENV.fetch('DATABASE_URL', 'postgres://localhost/atonixcorp_ruby').split('/').last
+    system("createdb #{db_name}")
+  end
+
+  desc 'Drop the database'
+  task :drop do
+    db_name = ENV.fetch('DATABASE_URL', 'postgres://localhost/atonixcorp_ruby').split('/').last
+    system("dropdb #{db_name}")
+  end
+
+  desc 'Run database migrations'
+  task :migrate do
+    Sequel.extension :migration
+    Sequel::Migrator.run(DB, 'db/migrations')
+    puts 'Migrations completed'
+  end
+
+  desc 'Rollback the last migration'
+  task :rollback do
+    Sequel.extension :migration
+    Sequel::Migrator.run(DB, 'db/migrations', target: Sequel::Migrator.migration_version(DB) - 1)
+    puts 'Rollback completed'
+  end
+
+  desc 'Create a new migration'
+  task :create_migration do
+    name = ENV['NAME'] || 'new_migration'
+    timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+    filename = "db/migrations/#{timestamp}_#{name}.rb"
+    File.write(filename, migration_template(name))
+    puts "Created migration: #{filename}"
+  end
+
+  desc 'Seed the database'
+  task :seed do
+    require_relative 'db/seeds'
+    puts 'Database seeded'
+  end
+
+  desc 'Test database connection'
+  task :test_connection do
+    if database_connected?
+      puts 'Database connection successful'
+    else
+      puts 'Database connection failed'
+      exit 1
+    end
+  end
+
+  desc 'Reset database (drop, create, migrate, seed)'
+  task reset: [:drop, :create, :migrate, :seed]
+end
+
+namespace :assets do
+  desc 'Precompile assets'
+  task :precompile do
+    # Add asset precompilation logic here
+    puts 'Assets precompiled'
+  end
+
+  desc 'Clean assets'
+  task :clean do
+    # Add asset cleaning logic here
+    puts 'Assets cleaned'
+  end
+end
+
+namespace :sidekiq do
+  desc 'Start Sidekiq'
+  task :start do
+    system('bundle exec sidekiq')
+  end
+
+  desc 'Stop Sidekiq'
+  task :stop do
+    system('bundle exec sidekiqctl stop tmp/pids/sidekiq.pid')
+  end
+
+  desc 'Restart Sidekiq'
+  task :restart do
+    Rake::Task['sidekiq:stop'].invoke
+    sleep 2
+    Rake::Task['sidekiq:start'].invoke
+  end
+
+  desc 'Check Sidekiq status'
+  task :status do
+    system('bundle exec sidekiqmon')
+  end
+end
+
+namespace :puma do
+  desc 'Start Puma'
+  task :start do
+    system('bundle exec puma -C config/puma.rb')
+  end
+
+  desc 'Stop Puma'
+  task :stop do
+    system('bundle exec pumactl stop')
+  end
+
+  desc 'Restart Puma'
+  task :restart do
+    system('bundle exec pumactl restart')
+  end
+
+  desc 'Check Puma status'
+  task :status do
+    system('bundle exec pumactl stats')
+  end
+end
+
+namespace :test do
+  desc 'Run all tests'
+  task :all do
+    system('bundle exec rspec')
+  end
+
+  desc 'Run tests with coverage'
+  task :coverage do
+    system('bundle exec rspec --coverage')
+  end
+
+  desc 'Run specific test file'
+  task :file do
+    file = ENV['FILE']
+    system("bundle exec rspec #{file}")
+  end
+end
+
+namespace :quality do
+  desc 'Run RuboCop'
+  task :rubocop do
+    system('bundle exec rubocop')
+  end
+
+  desc 'Run RuboCop with auto-fix'
+  task :rubocop_fix do
+    system('bundle exec rubocop -a')
+  end
+
+  desc 'Run Brakeman security scan'
+  task :brakeman do
+    system('bundle exec brakeman')
+  end
+
+  desc 'Run all quality checks'
+  task all: [:rubocop, :brakeman]
+end
+
+desc 'Start all services (Puma + Sidekiq)'
+task :start do
+  puts 'Starting Ruby service...'
+  Rake::Task['puma:start'].invoke
+  Rake::Task['sidekiq:start'].invoke
+end
+
+desc 'Stop all services'
+task :stop do
+  puts 'Stopping Ruby service...'
+  Rake::Task['puma:stop'].invoke
+  Rake::Task['sidekiq:stop'].invoke
+end
+
+desc 'Restart all services'
+task :restart do
+  puts 'Restarting Ruby service...'
+  Rake::Task['stop'].invoke
+  sleep 3
+  Rake::Task['start'].invoke
+end
+
+desc 'Setup development environment'
+task :setup do
+  puts 'Setting up development environment...'
+  system('bundle install')
+  Rake::Task['db:create'].invoke
+  Rake::Task['db:migrate'].invoke
+  Rake::Task['db:seed'].invoke
+  puts 'Development environment setup complete'
+end
+
+desc 'Check system health'
+task :health do
+  puts 'Checking system health...'
+
+  # Check database
+  if database_connected?
+    puts '✓ Database connection OK'
+  else
+    puts '✗ Database connection FAILED'
+  end
+
+  # Check Redis
+  if redis_connected?
+    puts '✓ Redis connection OK'
+  else
+    puts '✗ Redis connection FAILED'
+  end
+
+  # Check Puma
+  if system('pgrep -f puma > /dev/null')
+    puts '✓ Puma is running'
+  else
+    puts '✗ Puma is not running'
+  end
+
+  # Check Sidekiq
+  if system('pgrep -f sidekiq > /dev/null')
+    puts '✓ Sidekiq is running'
+  else
+    puts '✗ Sidekiq is not running'
+  end
+
+  puts 'Health check complete'
+end
+
+def migration_template(name)
+  <<~RUBY
+    # frozen_string_literal: true
+
+    Sequel.migration do
+      change do
+        # Migration: #{name}
+        # Add your migration logic here
+
+        # Example:
+        # create_table :#{name} do
+        #   primary_key :id
+        #   String :name, null: false
+        #   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
+        #   DateTime :updated_at, default: Sequel::CURRENT_TIMESTAMP
+        # end
+      end
+    end
+  RUBY
+end

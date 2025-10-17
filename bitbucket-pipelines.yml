@@ -77,12 +77,27 @@ definitions:
           - docker
         script:
           - export IMAGE_TAG=${BITBUCKET_COMMIT:0:8}
+<<<<<<< HEAD
           - export IMAGE_NAME="$DOCKER_REGISTRY/atonixcorp/backend"
           # Build and tag image
           - cd backend
           - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
           # Login to registry
           - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
+=======
+          - export DOCKER_REGISTRY=${DOCKER_REGISTRY:-ghcr.io}
+          - export IMAGE_NAME="$DOCKER_REGISTRY/atonixdev/atonixcorp/backend"
+          # Build and tag image
+          - cd backend
+          - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+          # Login to registry: prefer GHCR token if provided, fall back to DOCKER_USERNAME/DOCKER_PASSWORD
+          - |
+            if [ -n "$GHCR_TOKEN" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+            else
+              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+            fi
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
           # Push image
           - docker push $IMAGE_NAME:$IMAGE_TAG
           - docker push $IMAGE_NAME:latest
@@ -94,12 +109,27 @@ definitions:
           - docker
         script:
           - export IMAGE_TAG=${BITBUCKET_COMMIT:0:8}
+<<<<<<< HEAD
           - export IMAGE_NAME="$DOCKER_REGISTRY/atonixcorp/frontend"
           # Build and tag image
           - cd frontend
           - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
           # Login to registry
           - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
+=======
+          - export DOCKER_REGISTRY=${DOCKER_REGISTRY:-ghcr.io}
+          - export IMAGE_NAME="$DOCKER_REGISTRY/atonixdev/atonixcorp/frontend"
+          # Build and tag image
+          - cd frontend
+          - docker build -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest .
+          # Login to registry: prefer GHCR token if provided, fall back to DOCKER_USERNAME/DOCKER_PASSWORD
+          - |
+            if [ -n "$GHCR_TOKEN" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+            else
+              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+            fi
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
           # Push image
           - docker push $IMAGE_NAME:$IMAGE_TAG
           - docker push $IMAGE_NAME:latest

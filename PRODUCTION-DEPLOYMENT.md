@@ -2,7 +2,11 @@
 
 ## [PACKAGE] Main Production Image
 
+<<<<<<< HEAD
 **Image to push to production:** `atonixcorp-platform:latest` or `quay.io/atonixdev/atonixcorp-platform:latest`
+=======
+**Image to push to production:** `atonixcorpvm:latest` or `quay.io/atonixdev/atonixcorp-platform:latest`
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 ## [DOMAINS] Production Domains
 
@@ -59,7 +63,11 @@ This container includes:
 ### Option 1: Deploy Unified Container Only
 ```bash
 # Export the main image
+<<<<<<< HEAD
 nerdctl save atonixcorp-platform:latest -o atonixcorp-platform.tar
+=======
+nerdctl save atonixcorpvm:latest -o atonixcorp-platform.tar
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # On production server
 docker load -i atonixcorp-platform.tar
@@ -67,7 +75,11 @@ docker run -d -p 8080:8080 \
   -e DATABASE_URL="postgresql://user:pass@your-db:5432/dbname" \
   -e REDIS_URL="redis://your-redis:6379" \
   --name atonixcorp-app \
+<<<<<<< HEAD
   atonixcorp-platform:latest
+=======
+  atonixcorpvm:latest
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 ```
 
 ### Option 2: Deploy Full Stack with Docker Compose
@@ -164,7 +176,11 @@ EMAIL_HOST_PASSWORD=your-email-password
 ## [PERFORMANCE] Container Size and Performance
 
 ```
+<<<<<<< HEAD
 Image: atonixcorp-platform:latest
+=======
+Image: atonixcorpvm:latest
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 Size: ~505 MB
 Components:
 - Python 3.11 base: ~140 MB
@@ -201,7 +217,11 @@ docker logs atonixcorp-platform-app-1
 ## [NOTES] Important Notes
 
 - The **frontend is NOT running as a separate server** - it's built into static files and served by Nginx
+<<<<<<< HEAD
 - The **main container** (`atonixcorp-platform:latest`) is what you deploy to production  
+=======
+-- The **main container** (`atonixcorpvm:latest`) is what you deploy to production  
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 - Database and Redis can be external managed services or separate containers
 - The container runs on port 8080 to avoid requiring root privileges
 - Health checks are built-in at `/health/` endpoint

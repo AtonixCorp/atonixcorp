@@ -239,7 +239,11 @@ resource "kubernetes_deployment" "celery_worker" {
           resources {
             requests = {
               cpu    = "50m"
+<<<<<<< HEAD
               memory = "64Mi"
+=======
+              memory = "128Mi"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
             }
             limits = {
               cpu    = "200m"

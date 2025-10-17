@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run backend module",
+      "type": "shell",
+      "command": "bash scripts/run-backend.sh",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Deploy operator",
+      "type": "shell",
+      "command": "kubectl apply -f manifests/operator.yaml",
+      "group": "build",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Cleanup containers",
+      "type": "shell",
+      "command": "docker container prune -f && docker image prune -f",
+      "group": "none",
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

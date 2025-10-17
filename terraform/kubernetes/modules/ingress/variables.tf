@@ -35,6 +35,14 @@ variable "frontend_service" {
   type        = string
 }
 
+<<<<<<< HEAD
+=======
+variable "ruby_service" {
+  description = "Ruby service name"
+  type        = string
+}
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 variable "labels" {
   description = "Labels to apply to resources"
   type        = map(string)
@@ -69,4 +77,8 @@ variable "ssl_redirect" {
   description = "Enable SSL redirect"
   type        = bool
   default     = true
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

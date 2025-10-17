@@ -17,10 +17,19 @@ services:
       - OTEL_ENABLED=True
       - OTEL_SERVICE_NAME=atonixcorp-backend
       - PROMETHEUS_METRICS_PORT=8001
+<<<<<<< HEAD
     volumes:
       - app_media:/app/media
       - app_logs:/app/logs
     restart: unless-stopped
+=======
+    ports:
+      - "8000:8000"
+    volumes:
+      - app_media:/app/media
+      - app_logs:/app/logs
+    restart: always
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health/ || exit 1"]
       interval: 30s
@@ -36,7 +45,13 @@ services:
     environment:
       - REACT_APP_API_URL=https://api.atonixcorp.org
       - REACT_APP_ENVIRONMENT=production
+<<<<<<< HEAD
     restart: unless-stopped
+=======
+    ports:
+      - "3000:80"
+    restart: always
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
       interval: 30s

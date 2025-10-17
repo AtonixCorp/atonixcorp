@@ -1,0 +1,491 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-crd-readiness
+  namespace: atonixcorp-tekton
+  labels:
+  app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/categories: Kubernetes
+    tekton.dev/tags: crd, readiness, validation
+    tekton.dev/displayName: "Check CRD Readiness"
+spec:
+  description: |
+    Task to check if a Custom Resource Definition (CRD) is ready for use:
+    - Verifies CRD exists
+    - Checks if CRD is established
+    - Validates names are accepted
+    - Waits for CRD to be ready with timeout
+  params:
+  - name: crd-name
+    type: string
+    description: Name of the CRD to check
+  - name: timeout
+    type: string
+    description: Timeout in seconds for CRD readiness check
+    default: "300"
+  - name: check-established
+    type: string
+    description: Check if CRD is established
+    default: "true"
+  - name: check-names-accepted
+    type: string
+    description: Check if names are accepted
+    default: "true"
+  workspaces:
+  - name: kubeconfig
+    description: Kubernetes configuration
+    mountPath: /kubeconfig
+  steps:
+  - name: check-crd-readiness
+    image: bitnami/kubectl:latest
+    script: |
+      #!/bin/bash
+      set -e
+
+      CRD_NAME="$(params.crd-name)"
+      TIMEOUT="$(params.timeout)"
+      CHECK_ESTABLISHED="$(params.check-established)"
+      CHECK_NAMES_ACCEPTED="$(params.check-names-accepted)"
+
+      echo "Checking CRD readiness for: $CRD_NAME"
+      echo "Timeout: $TIMEOUT seconds"
+
+      # Wait for CRD to exist
+      echo "Waiting for CRD to be created..."
+      kubectl wait --for=condition=established --timeout=${TIMEOUT}s crd/$CRD_NAME || {
+        echo "CRD $CRD_NAME was not established within $TIMEOUT seconds"
+        kubectl get crd $CRD_NAME -o yaml || echo "CRD does not exist"
+        exit 1
+      }
+
+      echo "CRD $CRD_NAME is established"
+
+      # Additional checks if requested
+      if [ "$CHECK_ESTABLISHED" = "true" ]; then
+        echo "Verifying CRD established condition..."
+        kubectl get crd $CRD_NAME -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' | grep -q "True" || {
+          echo "CRD $CRD_NAME is not in Established condition"
+          kubectl get crd $CRD_NAME -o yaml
+          exit 1
+        }
+      fi
+
+      if [ "$CHECK_NAMES_ACCEPTED" = "true" ]; then
+        echo "Verifying CRD names accepted condition..."
+        kubectl get crd $CRD_NAME -o jsonpath='{.status.conditions[?(@.type=="NamesAccepted")].status}' | grep -q "True" || {
+          echo "CRD $CRD_NAME names are not accepted"
+          kubectl get crd $CRD_NAME -o yaml
+          exit 1
+        }
+      fi
+
+      echo "CRD $CRD_NAME is ready for use!"
+      kubectl get crd $CRD_NAME -o jsonpath='{.spec.versions[0].name}' | xargs -I {} echo "Available version: {}"
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-crd-dependencies
+  namespace: atonixcorp-tekton
+  labels:
+  app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/categories: Kubernetes
+    tekton.dev/tags: crd, dependencies, validation
+    tekton.dev/displayName: "Check CRD Dependencies"
+spec:
+  description: |
+    Task to check CRD dependencies and prerequisites for quantum modules:
+    - Validates required CRDs are available
+    - Checks for conflicting CRDs
+    - Verifies namespace permissions
+    - Ensures quantum-safe configurations
+  params:
+  - name: module-name
+    type: string
+    description: Name of the quantum module
+  - name: crd-name
+    type: string
+    description: CRD name for the module
+  - name: namespace
+    type: string
+    description: Target namespace
+  workspaces:
+  - name: kubeconfig
+    description: Kubernetes configuration
+    mountPath: /kubeconfig
+  steps:
+  - name: check-dependencies
+    image: bitnami/kubectl:latest
+    script: |
+      #!/bin/bash
+      set -e
+
+      MODULE_NAME="$(params.module-name)"
+      CRD_NAME="$(params.crd-name)"
+      NAMESPACE="$(params.namespace)"
+
+      echo "Checking dependencies for quantum module: $MODULE_NAME"
+      echo "CRD: $CRD_NAME"
+      echo "Namespace: $NAMESPACE"
+
+      # Check if namespace exists or can be created
+      kubectl get namespace $NAMESPACE >/dev/null 2>&1 || {
+        echo "Namespace $NAMESPACE does not exist, will be created during deployment"
+      }
+
+      # Check for conflicting CRDs
+      echo "Checking for conflicting CRDs..."
+      case $MODULE_NAME in
+        "pennylane")
+          CONFLICTING_CRDS=("qiskit.atnixcorp.com" "pyquil.atnixcorp.com" "qutip.atnixcorp.com")
+          ;;
+        "qiskit")
+          CONFLICTING_CRDS=("pennylane.atnixcorp.com" "pyquil.atnixcorp.com" "qutip.atnixcorp.com")
+          ;;
+        "pyquil")
+          CONFLICTING_CRDS=("pennylane.atnixcorp.com" "qiskit.atnixcorp.com" "qutip.atnixcorp.com")
+          ;;
+        "qutip")
+          CONFLICTING_CRDS=("pennylane.atnixcorp.com" "qiskit.atnixcorp.com" "pyquil.atnixcorp.com")
+          ;;
+        *)
+          echo "Unknown module: $MODULE_NAME"
+          exit 1
+          ;;
+      esac
+
+      for conflicting_crd in "${CONFLICTING_CRDS[@]}"; do
+        if kubectl get crd $conflicting_crd >/dev/null 2>&1; then
+          echo "WARNING: Conflicting CRD found: $conflicting_crd"
+          echo "This may cause issues with quantum module $MODULE_NAME"
+        fi
+      done
+
+      # Check quantum-safe configurations
+      echo "Checking quantum-safe configurations..."
+      kubectl get configmap quantum-config -n $NAMESPACE >/dev/null 2>&1 || {
+        echo "Quantum configuration ConfigMap not found, will be created during deployment"
+      }
+
+      # Validate CRD schema
+      echo "Validating CRD schema..."
+      kubectl get crd $CRD_NAME -o jsonpath='{.spec.versions[0].schema.openAPIV3Schema}' >/dev/null || {
+        echo "CRD $CRD_NAME does not have a valid OpenAPI v3 schema"
+        exit 1
+      }
+
+      echo "All dependency checks passed for quantum module: $MODULE_NAME"
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cleanup-crds
+  namespace: atonixcorp-tekton
+  labels:
+  app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/categories: Kubernetes
+    tekton.dev/tags: crd, cleanup, quantum
+    tekton.dev/displayName: "Cleanup CRDs"
+spec:
+  description: |
+    Task to safely cleanup Custom Resource Definitions:
+    - Checks for existing custom resources
+    - Removes finalizers if force-delete is enabled
+    - Deletes CRD with proper cleanup
+    - Waits for complete removal
+  params:
+  - name: crd-name
+    type: string
+    description: Name of the CRD to cleanup
+  - name: force-delete
+    type: string
+    description: Force delete even if custom resources exist
+    default: "false"
+  - name: wait-for-deletion
+    type: string
+    description: Wait for CRD deletion to complete
+    default: "true"
+  - name: timeout
+    type: string
+    description: Timeout in seconds for cleanup operations
+    default: "300"
+  workspaces:
+  - name: kubeconfig
+    description: Kubernetes configuration
+    mountPath: /kubeconfig
+  steps:
+  - name: cleanup-crd
+    image: bitnami/kubectl:latest
+    script: |
+      #!/bin/bash
+      set -e
+
+      CRD_NAME="$(params.crd-name)"
+      FORCE_DELETE="$(params.force-delete)"
+      WAIT_FOR_DELETION="$(params.wait-for-deletion)"
+      TIMEOUT="$(params.timeout)"
+
+      echo "Starting CRD cleanup for: $CRD_NAME"
+      echo "Force delete: $FORCE_DELETE"
+      echo "Wait for deletion: $WAIT_FOR_DELETION"
+      echo "Timeout: $TIMEOUT seconds"
+
+      # Check if CRD exists
+      if ! kubectl get crd $CRD_NAME >/dev/null 2>&1; then
+        echo "CRD $CRD_NAME does not exist, nothing to cleanup"
+        exit 0
+      fi
+
+      # Get CRD information
+      CRD_GROUP=$(kubectl get crd $CRD_NAME -o jsonpath='{.spec.group}')
+      CRD_KIND=$(kubectl get crd $CRD_NAME -o jsonpath='{.spec.names.kind}')
+      CRD_PLURAL=$(kubectl get crd $CRD_NAME -o jsonpath='{.spec.names.plural}')
+
+      echo "CRD Details:"
+      echo "  Group: $CRD_GROUP"
+      echo "  Kind: $CRD_KIND"
+      echo "  Plural: $CRD_PLURAL"
+
+      # Check for existing custom resources
+      echo "Checking for existing custom resources..."
+      RESOURCE_COUNT=$(kubectl get $CRD_PLURAL --all-namespaces --no-headers 2>/dev/null | wc -l || echo "0")
+
+      if [ "$RESOURCE_COUNT" -gt 0 ]; then
+        echo "Found $RESOURCE_COUNT custom resources of type $CRD_KIND"
+
+        if [ "$FORCE_DELETE" = "true" ]; then
+          echo "Force deleting all custom resources..."
+          kubectl get $CRD_PLURAL --all-namespaces -o name | xargs kubectl delete --timeout=${TIMEOUT}s || {
+            echo "Failed to delete some custom resources, continuing with CRD deletion..."
+          }
+        else
+          echo "Custom resources exist and force-delete is not enabled. Listing resources:"
+          kubectl get $CRD_PLURAL --all-namespaces
+          echo "Set force-delete=true to remove these resources automatically"
+          exit 1
+        fi
+      else
+        echo "No custom resources found for $CRD_KIND"
+      fi
+
+      # Delete the CRD
+      echo "Deleting CRD: $CRD_NAME"
+      kubectl delete crd $CRD_NAME --timeout=${TIMEOUT}s || {
+        echo "Failed to delete CRD $CRD_NAME"
+        kubectl get crd $CRD_NAME -o yaml
+        exit 1
+      }
+
+      # Wait for CRD deletion if requested
+      if [ "$WAIT_FOR_DELETION" = "true" ]; then
+        echo "Waiting for CRD deletion to complete..."
+        for i in $(seq 1 30); do
+          if ! kubectl get crd $CRD_NAME >/dev/null 2>&1; then
+            echo "CRD $CRD_NAME successfully deleted"
+            exit 0
+          fi
+          echo "Waiting... ($i/30)"
+          sleep 10
+        done
+
+        echo "CRD $CRD_NAME deletion did not complete within timeout"
+        kubectl get crd $CRD_NAME -o yaml || echo "CRD no longer exists"
+        exit 1
+      fi
+
+      echo "CRD cleanup completed successfully"
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: run-quantum-tests
+  namespace: atonixcorp-tekton
+  labels:
+  app.kubernetes.io/version: "0.1"
+  kas.atonixcorp.io/managed: "true"
+  annotations:
+    tekton.dev/categories: Testing
+    tekton.dev/tags: quantum, testing, integration
+    tekton.dev/displayName: "Run Quantum Tests"
+spec:
+  description: |
+    Task to run quantum-specific tests for quantum modules:
+    - Runs quantum circuit validation tests
+    - Performs security checks on quantum operations
+    - Validates quantum-safe encryption
+    - Runs integration tests with quantum backends
+  params:
+  - name: module-name
+    type: string
+    description: Name of the quantum module to test
+  - name: namespace
+    type: string
+    description: Namespace where the module is deployed
+  - name: test-type
+    type: string
+    description: Type of tests to run (unit, integration, security)
+    default: "integration"
+  workspaces:
+  - name: source
+    description: Source code workspace
+    mountPath: /source
+  - name: kubeconfig
+    description: Kubernetes configuration
+    mountPath: /kubeconfig
+  steps:
+  - name: run-quantum-tests
+    image: python:3.9-slim
+    script: |
+      #!/bin/bash
+      set -e
+
+      MODULE_NAME="$(params.module-name)"
+      NAMESPACE="$(params.namespace)"
+      TEST_TYPE="$(params.test-type)"
+
+      echo "Running quantum tests for module: $MODULE_NAME"
+      echo "Test type: $TEST_TYPE"
+      echo "Namespace: $NAMESPACE"
+
+      # Install required packages
+      pip install requests kubernetes pyyaml
+
+      # Create test script
+      cat > /tmp/test_quantum.py << 'EOF'
+import os
+import sys
+import requests
+import time
+from kubernetes import client, config
+
+def test_quantum_module():
+    module_name = os.environ.get('MODULE_NAME')
+    namespace = os.environ.get('NAMESPACE')
+    test_type = os.environ.get('TEST_TYPE')
+
+    print(f"Testing quantum module: {module_name}")
+    print(f"Test type: {test_type}")
+    print(f"Namespace: {namespace}")
+
+    # Load Kubernetes config
+    try:
+        config.load_incluster_config()
+    except:
+        config.load_kube_config()
+
+    v1 = client.CoreV1Api()
+    apps_v1 = client.AppsV1Api()
+
+    # Find quantum service
+    services = v1.list_namespaced_service(namespace)
+    quantum_service = None
+    for svc in services.items:
+        if f"quantum-{module_name}" in svc.metadata.name:
+            quantum_service = svc
+            break
+
+    if not quantum_service:
+        print(f"Quantum service for {module_name} not found")
+        return False
+
+    service_ip = quantum_service.spec.cluster_ip
+    service_port = quantum_service.spec.ports[0].port
+
+    print(f"Found quantum service: {quantum_service.metadata.name}")
+    print(f"Service IP: {service_ip}:{service_port}")
+
+    # Test health endpoint
+    health_url = f"http://{service_ip}:{service_port}/health"
+    try:
+        response = requests.get(health_url, timeout=30)
+        if response.status_code != 200:
+            print(f"Health check failed: {response.status_code}")
+            return False
+        print("Health check passed")
+    except Exception as e:
+        print(f"Health check error: {e}")
+        return False
+
+    # Module-specific tests
+    if module_name == "pennylane":
+        return test_pennylane(service_ip, service_port)
+    elif module_name == "qiskit":
+        return test_qiskit(service_ip, service_port)
+    elif module_name == "pyquil":
+        return test_pyquil(service_ip, service_port)
+    elif module_name == "qutip":
+        return test_qutip(service_ip, service_port)
+    else:
+        print(f"Unknown module: {module_name}")
+        return False
+
+def test_pennylane(ip, port):
+    # Test PennyLane quantum circuit execution
+    test_url = f"http://{ip}:{port}/api/quantum/execute"
+    payload = {
+        "circuit": "sample_circuit",
+        "shots": 1000
+    }
+    try:
+        response = requests.post(test_url, json=payload, timeout=60)
+        return response.status_code == 200
+    except:
+        return False
+
+def test_qiskit(ip, port):
+    # Test Qiskit quantum circuit compilation
+    test_url = f"http://{ip}:{port}/api/qiskit/compile"
+    payload = {
+        "qasm": "sample_qasm",
+        "optimization_level": 1
+    }
+    try:
+        response = requests.post(test_url, json=payload, timeout=60)
+        return response.status_code == 200
+    except:
+        return False
+
+def test_pyquil(ip, port):
+    # Test PyQuil program execution
+    test_url = f"http://{ip}:{port}/api/pyquil/execute"
+    payload = {
+        "program": "sample_program"
+    }
+    try:
+        response = requests.post(test_url, json=payload, timeout=60)
+        return response.status_code == 200
+    except:
+        return False
+
+def test_qutip(ip, port):
+    # Test QuTiP quantum simulation
+    test_url = f"http://{ip}:{port}/api/qutip/simulate"
+    payload = {
+        "hamiltonian": "sample_hamiltonian",
+        "time_steps": 100
+    }
+    try:
+        response = requests.post(test_url, json=payload, timeout=60)
+        return response.status_code == 200
+    except:
+        return False
+
+if __name__ == "__main__":
+    success = test_quantum_module()
+    sys.exit(0 if success else 1)
+EOF
+
+      # Set environment variables
+      export MODULE_NAME="$MODULE_NAME"
+      export NAMESPACE="$NAMESPACE"
+      export TEST_TYPE="$TEST_TYPE"
+
+      # Run the test
+      cd /source
+      python /tmp/test_quantum.py

@@ -280,6 +280,15 @@ resource "kubernetes_deployment" "zookeeper" {
             name       = "zookeeper-config"
             mount_path = "/etc/zookeeper"
           }
+<<<<<<< HEAD
+=======
+
+            # Writable directory for runtime-generated secrets (avoid writing into ConfigMap)
+            volume_mount {
+              name       = "zookeeper-secrets"
+              mount_path = "/etc/zookeeper/secrets"
+            }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
           
           resources {
             requests = {
@@ -358,7 +367,11 @@ resource "kubernetes_deployment" "zookeeper" {
             resources {
               requests = {
                 cpu    = "50m"
+<<<<<<< HEAD
                 memory = "64Mi"
+=======
+                memory = "128Mi"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
               }
               limits = {
                 cpu    = "200m"
@@ -397,6 +410,15 @@ resource "kubernetes_deployment" "zookeeper" {
             name = kubernetes_config_map.zookeeper.metadata[0].name
           }
         }
+<<<<<<< HEAD
+=======
+
+        # Writable emptyDir for runtime-generated secrets under /etc/zookeeper/secrets
+        volume {
+          name = "zookeeper-secrets"
+          empty_dir {}
+        }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
         
         # JMX exporter configuration
         dynamic "volume" {

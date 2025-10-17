@@ -1,0 +1,131 @@
+# Backend Deployment, Service, ConfigMap and Secret for a demo k8s deploy
+# Replace SECRET_KEY and any production credentials with real Secrets in your cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: atonixcorp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atonixcorp-backend-config
+  namespace: atonixcorp
+data:
+  ALLOWED_HOSTS: "0.0.0.0,localhost,127.0.0.1"
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/atonixcorp_db"
+  REDIS_URL: "redis://redis:6379/0"
+  RABBITMQ_URL: "amqp://user:password@rabbitmq:5672/"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: atonixcorp-backend-secret
+  namespace: atonixcorp
+type: Opaque
+stringData:
+  SECRET_KEY: "change-this-before-prod"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-backend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: atonixcorp-backend
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-backend
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: backend
+          # Use a local/present image on the cluster for testing; replace with GHCR image/pull secrets for production
+          image: atonixdev/atonixcorp-backend:1.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: ALLOWED_HOSTS
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: REDIS_URL
+            - name: RABBITMQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: RABBITMQ_URL
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: atonixcorp-backend-secret
+                  key: SECRET_KEY
+          # Minimal production resources - tune to your workload
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+          readinessProbe:
+            httpGet:
+              path: /api/health/
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/health/
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          volumeMounts:
+            - name: static-files
+              mountPath: /app/staticfiles
+            - name: media-files
+              mountPath: /app/media
+      volumes:
+        - name: static-files
+          emptyDir: {}
+        - name: media-files
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-backend
+  namespace: atonixcorp
+spec:
+  selector:
+    app: atonixcorp-backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: http
+  type: ClusterIP

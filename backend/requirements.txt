@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 # Django Core
 Django==5.2.6
+=======
+djangorestframework==3.16.1
+# Django Core
+# Use Django 4.2 LTS series which is compatible with Python 3.11 and widely available on PyPI.
+Django>=4.2,<5.0
+djangorestframework==3.16.1
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 djangorestframework==3.16.1
 django-cors-headers==4.9.0
 django-filter==25.1
@@ -76,7 +84,14 @@ python-dateutil==2.9.0
 # Apache Spark
 pyspark>=3.5.0
 findspark>=2.0.1
+<<<<<<< HEAD
  
 # Monitoring
 prometheus-client>=0.17.0
 influxdb>=5.3.1
+=======
+
+# Monitoring
+prometheus-client>=0.17.0
+influxdb>=5.3.1
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

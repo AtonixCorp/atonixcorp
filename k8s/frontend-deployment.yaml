@@ -1,0 +1,65 @@
+# Frontend Deployment and Service for AtonixCorp platform
+# Frontend Deployment and Service for AtonixCorp platform
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-frontend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atonixcorp-frontend
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-frontend
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: atonixcorp-frontend
+          image: ghcr.io/atonixcorp/atonixcorp-frontend:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: REACT_APP_API_URL
+              # use the Kubernetes service DNS (service name and namespace)
+              value: "http://atonixcorp-backend:8000"
+            - name: REACT_APP_RUBY_URL
+              value: "http://ruby-service:3001"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # Minimal resource requests/limits for production safety; tune as needed
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-frontend
+  namespace: atonixcorp
+spec:
+  selector:
+    app: atonixcorp-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http
+  type: ClusterIP

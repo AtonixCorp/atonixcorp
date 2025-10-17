@@ -1,0 +1,26 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+metadata:
+  creationTimestamp: null
+rules:
+  - level: Metadata
+    resources:
+      - group: "*"
+        resources: ["pods", "services", "deployments", "statefulsets", "persistentvolumeclaims", "secrets", "configmaps"]
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: "*"
+        resources: ["secrets", "persistentvolumeclaims"]
+  - level: Metadata
+    nonResourceURLs:
+      - "/api*"
+  - level: None
+    users: ["system:anonymous"]
+  - level: RequestResponse
+    omitStages:
+      - "RequestReceived"
+    verbs: ["delete"]
+    resources:
+      - group: "*"
+        resources: ["namespaces"]

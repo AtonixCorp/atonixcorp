@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "circleci.filters.branchFilter": "allBranches",
     "circleci.filters.statusFilter": {
         "canceled": true,
@@ -22,3 +23,36 @@
         "gh/AtonixCorp/atonixcorp-platform"
     ]
 }
+=======
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.associations": {
+        "*.js": "javascriptreact"
+    },
+    "javascript.format.enable": false,
+    "typescript.format.enable": false,
+    "prettier.requireConfig": true,
+    "prettier.trailingComma": "all",
+    "prettier.singleQuote": true,
+    "prettier.printWidth": 80,
+    "prettier.tabWidth": 2,
+    "prettier.useTabs": false,
+    "prettier.semi": true,
+    "prettier.arrowParens": "always",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.alwaysShowStatus": true,
+    "chat.showWelcomeMessage": false,
+  "chat.notifyWindowOnConfirmation": false
+
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -45,7 +45,11 @@ show_usage() {
 # Function to build the container
 build_container() {
     echo "📦 Building unified container..."
+<<<<<<< HEAD
     nerdctl build -f Dockerfile.fullstack -t atonixcorp-platform:latest .
+=======
+    nerdctl build -f Dockerfile.fullstack -t atonixcorpvm:latest .
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     echo "✅ Container built successfully!"
 }
 
@@ -102,6 +106,10 @@ clean_up() {
     echo "🧹 Cleaning up..."
     nerdctl compose -f docker-compose.unified.yml down -v
     nerdctl image rm atonixcorp-platform:latest 2>/dev/null || true
+<<<<<<< HEAD
+=======
+    nerdctl image rm atonixcorpvm:latest 2>/dev/null || true
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     echo "✅ Cleanup completed!"
 }
 

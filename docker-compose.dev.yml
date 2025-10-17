@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:6
+    container_name: atonixcorp-redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:13
+    container_name: atonixcorp-postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: atonixcorp_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  y-websocket:
+    image: yjs/y-websocket
+    container_name: atonixcorp-y-websocket
+    ports:
+      - '1234:1234'
+    environment:
+      # optional settings
+      - PORT=1234
+
+volumes:
+  pgdata:

@@ -2,7 +2,11 @@
 # This file contains default values for development environment
 
 # Core Configuration
+<<<<<<< HEAD
 project_name = "atonixcorp-platform"
+=======
+project_name = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 environment  = "dev"
 app_version  = "1.0.0-dev"
 namespace    = "atonixcorp-dev"
@@ -38,7 +42,11 @@ database_username = "atonixuser"
 image_registry            = "ghcr.io"
 backend_image_repository  = "atonixcorp/platform-backend"
 backend_image_tag         = "dev"
+<<<<<<< HEAD
 frontend_image_repository = "atonixcorp/platform-frontend"
+=======
+frontend_image_repository = "atonixcorp/atonixcorp-frontend"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 frontend_image_tag        = "dev"
 
 # Scaling (reduced for development)
@@ -61,7 +69,11 @@ cors_allowed_origins = [
   "http://127.0.0.1:3000",
   "http://dev.atonixcorp.local"
 ]
+<<<<<<< HEAD
 api_url = "http://atonixcorp-platform-dev-backend:8000"
+=======
+api_url = "http://atonixcorp-dev-backend:8000"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Feature Toggles
 enable_monitoring      = true
@@ -114,4 +126,14 @@ resource_limits = {
     memory_request = "256Mi"
     memory_limit   = "1Gi"
   }
+<<<<<<< HEAD
 }
+=======
+  kafka = {
+    cpu_request    = "500m"
+    cpu_limit      = "2000m"
+    memory_request = "1Gi"
+    memory_limit   = "4Gi"
+  }
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -1,0 +1,3 @@
+ruby_secret_key_base = "889c0275afecb5e46ce105449ad6d791510e8b01ef208f3aaebac5e94d2fa369e5e1ccb84e42a57d3daa39b6ce721cbae808936abbd9c1c6074202c49eccb798"
+ruby_sidekiq_username = "sidekiq_auto_user"
+ruby_sidekiq_password = "wiR/C8/un7Y8qvUnVK29Sg=="

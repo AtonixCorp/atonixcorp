@@ -1,0 +1,182 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ovn-central
+  namespace: kube-system
+  labels:
+    app: ovn-central
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ovn-central
+  template:
+    metadata:
+      labels:
+        app: ovn-central
+        component: network
+        type: infra
+    spec:
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: ovn-central
+            topologyKey: kubernetes.io/hostname
+      serviceAccountName: ovn
+      hostNetwork: true
+      initContainers:
+      - name: ovn-central-init
+        image: kubeovn/kube-ovn:v1.12.1
+        command:
+          - /bin/sh
+          - -c
+          - |
+            cp -r /etc/ovn-source/* /etc/ovn/
+        volumeMounts:
+          - name: ovn-config
+            mountPath: /etc/ovn
+          - name: ovn-config-source
+            mountPath: /etc/ovn-source
+            readOnly: true
+      containers:
+        - name: ovn-central
+          image: kubeovn/kube-ovn:v1.12.1
+          imagePullPolicy: IfNotPresent
+          command:
+          - /kube-ovn/start-db.sh
+          securityContext:
+            capabilities:
+              add: ["SYS_NICE"]
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: PROBE_INTERVAL
+              value: "60"
+            - name: OVN_LEADER_PROBE_INTERVAL
+              value: "30"
+            - name: INACTIVITY_PROBE
+              value: "60"
+          volumeMounts:
+          - mountPath: /var/run/ovn
+            name: ovn-run
+          - mountPath: /etc/ovn
+            name: ovn-config
+          - mountPath: /var/log/ovn
+            name: ovn-log
+          - mountPath: /etc/localtime
+            name: localtime
+          readinessProbe:
+            exec:
+              command:
+              - nc
+              - -z
+              - -w3
+              - 127.0.0.1
+              - "6641"
+            periodSeconds: 3
+          livenessProbe:
+            exec:
+              command:
+              - nc
+              - -z
+              - -w3
+              - 127.0.0.1
+              - "6641"
+            initialDelaySeconds: 30
+            periodSeconds: 7
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 300m
+              memory: 300Mi
+            limits:
+              cpu: 3
+              memory: 4Gi
+      volumes:
+        - name: ovn-run
+          hostPath:
+            path: /var/run/ovn
+        - name: ovn-config
+          hostPath:
+            path: /var/lib/ovn
+        - name: ovn-config-source
+          configMap:
+            name: ovn-config
+        - name: ovn-log
+          hostPath:
+            path: /var/log/ovn
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ovn-nb
+  namespace: kube-system
+  labels:
+    app: ovn-central
+spec:
+  ports:
+    - name: ovn-nb
+      port: 6641
+      protocol: TCP
+      targetPort: 6641
+  selector:
+    app: ovn-central
+  sessionAffinity: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ovn-sb
+  namespace: kube-system
+  labels:
+    app: ovn-central
+spec:
+  ports:
+    - name: ovn-sb
+      port: 6642
+      protocol: TCP
+      targetPort: 6642
+  selector:
+    app: ovn-central
+  sessionAffinity: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ovn-northd
+  namespace: kube-system
+  labels:
+    app: ovn-central
+spec:
+  ports:
+    - name: ovn-northd
+      port: 6643
+      protocol: TCP
+      targetPort: 6643
+  selector:
+    app: ovn-central
+  sessionAffinity: None

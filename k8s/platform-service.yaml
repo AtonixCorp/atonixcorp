@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-platform
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-platform
+spec:
+  selector:
+    app: atonixcorp-platform
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP

@@ -86,4 +86,14 @@ variable "node_env" {
   description = "Node.js environment"
   type        = string
   default     = "production"
+<<<<<<< HEAD
 }
+=======
+}
+
+variable "image_pull_secrets" {
+  description = "Optional list of image pull secret names to attach to the Pod spec"
+  type        = list(string)
+  default     = []
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # AtonixCorp Security module
+=======
+# Atoni Security module
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 # Manages security configuration and hardening
 
 class atonixcorp::security (
@@ -153,4 +157,8 @@ class atonixcorp::security (
     command     => 'sysctl -p /etc/sysctl.d/99-atonixcorp-security.conf',
     refreshonly => true,
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

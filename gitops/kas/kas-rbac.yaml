@@ -1,0 +1,205 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kas-service-account
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: rbac
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kas-cluster-role
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: rbac
+rules:
+# ArgoCD permissions
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  - applicationsets
+  - appprojects
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Tekton permissions
+- apiGroups:
+  - tekton.dev
+  resources:
+  - pipelineruns
+  - taskruns
+  - pipelines
+  - tasks
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Kubernetes core resources
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - configmaps
+  - services
+  - pods
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - statefulsets
+  - daemonsets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Custom Resource Definitions
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Quantum module CRDs (example)
+- apiGroups:
+  - quantum.atonixcorp.com
+  resources:
+  - pennylane
+  - qiskit
+  - pyquil
+  - qutip
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Monitoring permissions
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheusrules
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+# Certificate management
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  - issuers
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kas-cluster-role-binding
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: rbac
+subjects:
+- kind: ServiceAccount
+  name: kas-service-account
+  namespace: argocd
+roleRef:
+  kind: ClusterRole
+  name: kas-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Namespace-scoped role for argocd namespace specific resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kas-namespace-role
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: rbac
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - configmaps
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kas-namespace-role-binding
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kas
+    app.kubernetes.io/component: rbac
+subjects:
+- kind: ServiceAccount
+  name: kas-service-account
+  namespace: argocd
+roleRef:
+  kind: Role
+  name: kas-namespace-role
+  apiGroup: rbac.authorization.k8s.io

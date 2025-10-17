@@ -1,0 +1,8 @@
+# Alert Rules for AtonixCorp Platform
+# This file includes all alert rule files
+
+groups:
+  - name: atonixcorp-alerts
+    rules:
+      # Include rules from the infrastructure/observability setup
+      # These will be loaded when using the docker-compose observability stack

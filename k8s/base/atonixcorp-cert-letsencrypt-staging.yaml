@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: atonixcorp-tls-staging
+  namespace: atonixcorp
+spec:
+  secretName: atonixcorp-tls-staging
+  dnsNames:
+  - atonixcorp.org
+  - www.atonixcorp.org
+  - api.atonixcorp.org
+  issuerRef:
+    name: letsencrypt-staging-dns-cloudflare
+    kind: ClusterIssuer

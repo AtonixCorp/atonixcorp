@@ -49,8 +49,18 @@ API_DOMAIN = os.getenv('API_DOMAIN', 'https://api.atonixcorp.org')
 
 
 # Redis Configuration
+<<<<<<< HEAD
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
+=======
+
+# Redis Configuration
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+
+# RabbitMQ Configuration
+RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://user:password@localhost:5672/')
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 # Zookeeper Configuration
 ZOOKEEPER_HOSTS = os.getenv('ZOOKEEPER_HOSTS', 'localhost:2181')
 ZOOKEEPER_ENABLED = os.getenv('ZOOKEEPER_ENABLED', 'false').lower() == 'true'
@@ -103,8 +113,16 @@ INSTALLED_APPS = [
     'dashboard',
     'static_pages',
     'scheduling',
+<<<<<<< HEAD
     # Celery beat integration for Django (periodic task persistence)
     'django_celery_beat',
+=======
+    'chat',  # Chat functionality with WebSocket support
+    # Celery beat integration for Django (periodic task persistence)
+    'django_celery_beat',
+    # Role-based access control and audit logging
+    'access_control',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 ]
 
 MIDDLEWARE = [
@@ -132,6 +150,23 @@ if ZOOKEEPER_ENABLED:
 if KAFKA_ENABLED:
     MIDDLEWARE.insert(-1, 'core.kafka_middleware.KafkaMiddleware')
 
+<<<<<<< HEAD
+=======
+# Defensive check: ensure SessionMiddleware appears before CsrfViewMiddleware
+# Some auxiliary code may reorder or prepend middleware; enforce correct order
+try:
+    _SM = 'django.contrib.sessions.middleware.SessionMiddleware'
+    _CSRF = 'django.middleware.csrf.CsrfViewMiddleware'
+    if _SM in MIDDLEWARE and _CSRF in MIDDLEWARE:
+        if MIDDLEWARE.index(_SM) > MIDDLEWARE.index(_CSRF):
+            # move SessionMiddleware to immediately before CsrfViewMiddleware
+            MIDDLEWARE.remove(_SM)
+            MIDDLEWARE.insert(MIDDLEWARE.index(_CSRF), _SM)
+except Exception:
+    # If MIDDLEWARE is undefined or something unexpected happens, skip silently
+    pass
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 ROOT_URLCONF = 'atonixcorp.urls'
 
 TEMPLATES = [
@@ -252,7 +287,11 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'AtonixCorp Platform API',
     'DESCRIPTION': '''
     Professional API for AtonixCorp Platform - A comprehensive project management and collaboration platform.
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     ## Features
     - 🚀 **Project Management** - Create, manage, and track projects
     - 👥 **Team Collaboration** - Manage teams and team members
@@ -262,17 +301,29 @@ SPECTACULAR_SETTINGS = {
     - 🔒 **Enterprise Security** - JWT authentication, API keys, rate limiting
     - ⚡ **High Performance** - Redis caching, optimized queries
     - 📡 **Real-time Features** - WebSocket support, live updates
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     ## Authentication
     The API supports multiple authentication methods:
     - **JWT Tokens** - Bearer token authentication
     - **API Keys** - For service-to-service communication
     - **Session Authentication** - For web browser clients
+<<<<<<< HEAD
     
     ## Rate Limiting
     - **Authenticated Users**: 1000 requests/hour
     - **Anonymous Users**: 100 requests/hour
     
+=======
+
+    ## Rate Limiting
+    - **Authenticated Users**: 1000 requests/hour
+    - **Anonymous Users**: 100 requests/hour
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     ## Support
     For technical support, contact: support@atonixcorp.com
     ''',
@@ -325,8 +376,14 @@ SPECTACULAR_SETTINGS = {
 
 # CORS settings for React frontend
 CORS_ALLOWED_ORIGINS = [
+<<<<<<< HEAD
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+=======
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://0.0.0.0:3001",
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     "https://atonixcorp.org",
     "https://www.atonixcorp.org",
     "http://atonixcorp.org",  # Allow HTTP for development
@@ -360,10 +417,17 @@ class Config:
         elif cast == list and isinstance(value, str):
             return value.split(',') if value else []
         return cast(value) if value is not None else default
+<<<<<<< HEAD
     
     def list(self, key, default=None):
         return self(key, default or [], cast=list)
     
+=======
+
+    def list(self, key, default=None):
+        return self(key, default or [], cast=list)
+
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     def bool(self, key, default=False):
         return self(key, default, cast=bool)
 
@@ -421,8 +485,14 @@ CSRF_USE_SESSIONS = True
 # Update CORS settings
 CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
 cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[
+<<<<<<< HEAD
     'http://localhost:3000', 
     'http://127.0.0.1:3000',
+=======
+    'http://localhost:3001',
+    'http://0.0.0.0:3001',
+    'http://127.0.0.1:3001',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     'https://atonixcorp.org',
     'https://www.atonixcorp.org'
 ])

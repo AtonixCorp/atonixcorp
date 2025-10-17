@@ -1,0 +1,43 @@
+{
+    "circleci.filters.branchFilter": "allBranches",
+    "circleci.filters.statusFilter": {
+        "canceled": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true
+    },
+    "circleci.notifications.statusFilter": {
+        "canceled": true,
+        "error": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true,
+        "unauthorized": true
+    },
+    "circleci.persistedProjectSelection": [
+        "gh/AtonixCorp/atonixcorp-platform"
+    ],
+    "github.copilot.chat.enableTerminalIntegration": true,
+    "github.copilot.terminal.executeCommands": true,
+    "github.copilot.enableTerminalActions": true,
+    "github.copilot.advanced": {
+        "debug.testOverrides": {
+            "enableTerminalActions": true,
+            "enableTerminalExecution": true
+        }
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false
+    },
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "terminal.integrated.allowChords": false,
+    "workbench.experimental.enableNewProfilePicker": true
+}

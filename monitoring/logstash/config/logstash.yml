@@ -1,0 +1,4 @@
+node.name: logstash
+path.data: /usr/share/logstash/data
+path.logs: /usr/share/logstash/logs
+path.config: /usr/share/logstash/pipeline
