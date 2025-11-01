@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class Team(models.Model):
@@ -63,3 +64,55 @@ class TeamSkill(models.Model):
 
     def __str__(self):
         return f"{self.team.name} - {self.name}"
+
+
+class TeamMembership(models.Model):
+    """User membership in teams"""
+    MEMBERSHIP_TYPES = [
+        ('free', 'Free Member'),
+        ('premium', 'Premium Member'),
+        ('lead', 'Team Lead'),
+        ('admin', 'Team Admin'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_memberships')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='memberships')
+    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_TYPES, default='free')
+    joined_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+    last_login = models.DateTimeField(null=True, blank=True)
+    role = models.CharField(max_length=200, blank=True)  # User's role in the team
+    bio = models.TextField(blank=True)  # User's bio for this team
+
+    class Meta:
+        unique_together = ['user', 'team']
+        ordering = ['-joined_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.team.name} ({self.membership_type})"
+
+
+class TeamInvitation(models.Model):
+    """Invitations to join teams"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+        ('expired', 'Expired'),
+    ]
+
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='invitations')
+    invited_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
+    email = models.EmailField()
+    membership_type = models.CharField(max_length=20, choices=TeamMembership.MEMBERSHIP_TYPES, default='free')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    invited_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    token = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        ordering = ['-invited_at']
+
+    def __str__(self):
+        return f"Invitation to {self.team.name} for {self.email}"

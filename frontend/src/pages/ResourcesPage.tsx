@@ -79,7 +79,7 @@ const ResourcesPage: React.FC = () => {
           resourcesApi.getCommunityLinks(),
           resourcesApi.getFAQs(),
         ]);
-        
+
         setResources(resourcesRes.data);
         setCategories(categoriesRes.data);
         setCommunityLinks(communityRes.data);
@@ -150,7 +150,7 @@ const ResourcesPage: React.FC = () => {
         <Typography variant={isDashboardMode ? "body1" : "h6"} color="text.secondary" sx={{ mb: 4 }}>
           Everything you need to build with AtonixCorp
         </Typography>
-        
+
         <Alert severity="info" sx={{ mb: 4 }}>
           Welcome to the AtonixCorp Developer Hub! Find documentation, tutorials, tools, and connect with our community.
         </Alert>
@@ -206,9 +206,9 @@ const ResourcesPage: React.FC = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       {resource.description}
                     </Typography>
-                    <Chip 
-                      label={resource.type} 
-                      size="small" 
+                    <Chip
+                      label={resource.type}
+                      size="small"
                       variant="outlined"
                       color="primary"
                     />
@@ -230,18 +230,18 @@ const ResourcesPage: React.FC = () => {
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
               {[
-                'Atonixcorp-project',
-                'Tmsvic-Discovery', 
+                'Atonixcorp-Platform',
+                'Planivar',
+                'Voltoraiq',
                 'Osrovnet',
-                'Hydrpetro',
-                'SmartTech Integration'
+                'TujengePay'
               ].map((project, index) => (
-                <Paper 
+                <Paper
                   key={index}
-                  sx={{ 
-                    p: 2, 
+                  sx={{
+                    p: 2,
                     cursor: 'pointer',
-                    '&:hover': { 
+                    '&:hover': {
                       backgroundColor: 'action.hover',
                       transform: 'translateY(-2px)',
                       transition: 'all 0.2s ease'
@@ -362,7 +362,7 @@ const ResourcesPage: React.FC = () => {
               {
                 name: 'Project Templates',
                 description: 'Starter templates for different project types',
-                version: 'v2.0.1', 
+                version: 'v2.0.1',
                 downloads: '1.8k'
               },
               {

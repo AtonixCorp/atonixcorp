@@ -13,54 +13,56 @@ class Command(BaseCommand):
         self.stdout.write('Loading sample data...')
 
         # Create Projects
-        atonixcorp_project, created = Project.objects.get_or_create(
-            slug='atonixcorp-project',
+        atonixcorp_platform, created = Project.objects.get_or_create(
+            slug='atonixcorp-platform',
             defaults={
-                'name': 'Atonixcorp-project',
-                'overview': 'The backbone of AtonixCorp\'s infrastructure strategy. This modular stack powers scalable services, persistent data layers, and distributed orchestration across domains like medicine, agriculture, security, and advanced analytics.',
-                'description': 'It\'s not just a system—it\'s the foundation of our technical sovereignty.',
+                'name': 'Atonixcorp-Platform',
+                'overview': 'The backbone of AtonixCorp\'s infrastructure strategy.',
+                'description': 'This modular stack powers scalable services, persistent data layers, and distributed orchestration across domains like medicine, agriculture, security, and advanced analytics. It\'s not just a system—it\'s the foundation of our technical sovereignty.',
                 'status': 'active',
                 'is_featured': True,
-                'technologies': ['Python', 'Django', 'React', 'Docker', 'Kubernetes', 'PostgreSQL']
+                'technologies': ['Python', 'Django', 'React', 'TypeScript', 'Docker', 'Kubernetes', 'PostgreSQL', 'Redis', 'Nginx']
             }
         )
 
-        tmsvic_discovery = Project.objects.create(
-            name='Tmsvic-Discovery',
-            slug='tmsvic-discovery',
-            overview='A storytelling engine for the future. Tmsvic Discovery explores the cosmos, technology, and sovereign infrastructure through deep science and motivational insight.',
-            description='From quantum physics to climate resilience, it\'s a portal to bold ideas and timeless truths that shape tomorrow.',
+        planivar = Project.objects.create(
+            name='Planivar',
+            slug='planivar',
+            overview='A comprehensive space research platform pioneering sovereign space technologies.',
+            description='Planivar is AtonixCorp\'s flagship platform for advanced space research, pioneering sovereign space technologies that advance human understanding, interstellar exploration, and real-time scientific communication.',
             status='active',
             is_featured=True,
-            technologies=['Python', 'AI/ML', 'Natural Language Processing', 'Data Analytics']
+            technologies=['Python', 'AI/ML', 'TensorFlow', 'PyTorch', 'Go', 'Docker', 'Kubernetes']
         )
 
-        atonixcorp_security = Project.objects.create(
+        voltoraiq = Project.objects.create(
+            name='Voltoraiq',
+            slug='voltoraiq',
+            overview='A comprehensive full-stack web application for monitoring and managing solar energy systems.',
+            description='Voltoraiq is a comprehensive full-stack web application for monitoring and managing solar energy systems with IoT integration. This system provides real-time monitoring, remote control capabilities, and advanced analytics for solar panels, battery banks, and IoT devices.',
+            status='active',
+            is_featured=True,
+            technologies=['React', 'TypeScript', 'Python', 'Django', 'PostgreSQL', 'Docker', 'AI/ML']
+        )
+
+        osrovnet = Project.objects.create(
             name='Osrovnet',
-            slug='atonixcorp-security',
-            overview='Osrovnet: flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
-            description='Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
+            slug='osrovnet',
+            overview='Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
+            description='Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design. Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
             status='active',
             is_featured=True,
-            technologies=['Cybersecurity', 'Network Analysis', 'Threat Intelligence', 'DevSecOps']
+            technologies=['Python', 'Go', 'Rust', 'PostgreSQL', 'Docker', 'Kubernetes', 'AI/ML']
         )
 
-        hydrpetro = Project.objects.create(
-            name='Hydrpetro',
-            slug='hydrpetro',
-            overview='Precision engineering for energy evolution. Hydrpetro delivers advanced solutions for oil and gas operations.',
-            description='Enhancing safety, efficiency, and sustainability through quantum-aware analytics and intelligent automation.',
-            status='development',
-            technologies=['IoT', 'Industrial Analytics', 'Energy Systems', 'Automation']
-        )
-
-        smarttech = Project.objects.create(
-            name='SmartTech Integration',
-            slug='smarttech-integration',
-            overview='Seamless intelligence in motion. This project develops adaptive systems that integrate with legacy and emerging technologies.',
-            description='Boosting operational efficiency, interoperability, and real-time responsiveness across sectors.',
+        tujengepay = Project.objects.create(
+            name='TujengePay',
+            slug='tujengepay',
+            overview='A comprehensive, modern financial platform built with cutting-edge technologies.',
+            description='TujengePay is a comprehensive, modern financial platform built with cutting-edge technologies. It provides a seamless experience for digital transactions, currency exchange, and wallet management across web and mobile platforms.',
             status='active',
-            technologies=['Systems Integration', 'API Development', 'Legacy Modernization', 'IoT']
+            is_featured=True,
+            technologies=['React', 'TypeScript', 'Python', 'Django', 'Blockchain', 'PostgreSQL', 'Docker', 'Kubernetes']
         )
 
         # Create Teams

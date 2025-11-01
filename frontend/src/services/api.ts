@@ -67,6 +67,12 @@ export const teamsApi = {
   getBySlug: (slug: string) => api.get<Team>(`/teams/${slug}/`),
   getMembers: (slug: string) => api.get(`/teams/${slug}/members/`),
   getSkills: (slug: string) => api.get(`/teams/${slug}/skills/`),
+  join: (slug: string, data?: { membership_type?: string; role?: string; bio?: string }) =>
+    api.post(`/teams/${slug}/join/`, data),
+  getMembership: (slug: string) => api.get(`/teams/${slug}/membership/`),
+  leave: (slug: string) => api.post(`/teams/${slug}/leave/`),
+  teamLogin: (data: { username: string; password: string; team_slug: string }) =>
+    api.post('/auth/team-login/', data),
 };
 
 // Focus Areas API

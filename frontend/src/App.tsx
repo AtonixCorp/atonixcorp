@@ -43,6 +43,12 @@ import DashboardTeamsPage from './pages/DashboardTeamsPage';
 import ManagementDashboard from './pages/ManagementDashboard';
 import AdminLoginPage from './pages/AdminLoginPage';
 
+// Team Pages
+import TeamDashboardPage from './pages/TeamDashboardPage';
+import TeamAdminPage from './pages/TeamAdminPage';
+import TeamLoginPage from './pages/TeamLoginPage';
+import TeamUpgradePage from './pages/TeamUpgradePage';
+
 // Auth Components
 import SocialCallback from './components/Auth/SocialCallback';
 
@@ -464,12 +470,28 @@ function App() {
                   <Route path="/projects/:slug" element={<ProjectDetailPage />} />
                   <Route path="/teams" element={<TeamsPage />} />
                   <Route path="/teams/:slug" element={<TeamDetailPage />} />
+                  <Route path="/teams/:slug/dashboard" element={
+                    <ProtectedRoute>
+                      <TeamDashboardPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/teams/:slug/admin" element={
+                    <ProtectedRoute>
+                      <TeamAdminPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/teams/:slug/login" element={<TeamLoginPage />} />
+                  <Route path="/teams/:slug/upgrade" element={
+                    <ProtectedRoute>
+                      <TeamUpgradePage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/focus-areas" element={<FocusAreasPage />} />
                   <Route path="/focus-areas/:slug" element={<FocusAreaDetailPage />} />
                   <Route path="/resources" element={<ResourcesPage />} />
                   <Route path="/community" element={<CommunityPage />} />
                   <Route path="/contact" element={<ContactPage />} />
-                  
+
                   {/* OAuth Callback Routes */}
                   <Route path="/auth/github/callback" element={<SocialCallback provider="github" />} />
                   <Route path="/auth/google/callback" element={<SocialCallback provider="google" />} />

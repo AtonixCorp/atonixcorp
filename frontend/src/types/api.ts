@@ -59,6 +59,66 @@ export interface Team {
   updated_at: string;
   members: TeamMember[];
   skills: TeamSkill[];
+  membership_count?: number;
+}
+
+export interface TeamMembership {
+  id: number;
+  user: number;
+  user_username: string;
+  user_email: string;
+  team: number;
+  team_name: string;
+  team_slug: string;
+  membership_type: 'free' | 'premium' | 'lead' | 'admin';
+  joined_at: string;
+  is_active: boolean;
+  last_login?: string;
+  role?: string;
+  bio?: string;
+}
+
+export interface UserTeamMembership {
+  id: number;
+  team: number;
+  team_name: string;
+  team_slug: string;
+  team_mission: string;
+  team_color_theme: string;
+  membership_type: 'free' | 'premium' | 'lead' | 'admin';
+  joined_at: string;
+  is_active: boolean;
+  last_login?: string;
+  role?: string;
+  bio?: string;
+}
+
+export interface TeamJoinRequest {
+  membership_type?: 'free' | 'premium' | 'lead' | 'admin';
+  role?: string;
+  bio?: string;
+}
+
+export interface TeamLoginRequest {
+  username: string;
+  password: string;
+  team_slug: string;
+}
+
+export interface TeamLoginResponse {
+  token: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+  };
+  team: {
+    id: number;
+    name: string;
+    slug: string;
+    membership_type: 'free' | 'premium' | 'lead' | 'admin';
+    role?: string;
+  };
 }
 
 export interface TeamMember {
