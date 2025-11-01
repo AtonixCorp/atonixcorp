@@ -255,12 +255,12 @@ const TeamsPage: React.FC = () => {
     return (
       <Box sx={{ py: isDashboardMode ? 0 : 4 }}>
         {!isDashboardMode && (
-          <Container maxWidth="lg">
+          <Box sx={{ px: 3, py: 4 }}>
             <Box sx={{ textAlign: 'center', mb: 6 }}>
               <Skeleton variant="text" height={60} sx={{ mb: 2 }} />
               <Skeleton variant="text" height={40} />
             </Box>
-          </Container>
+          </Box>
         )}
         {isDashboardMode && (
           <Box sx={{ mb: 3 }}>
@@ -311,7 +311,7 @@ const TeamsPage: React.FC = () => {
           }
         }}
       >
-        <Container maxWidth="lg">
+        <Box sx={{ px: 3 }}>
           <Box sx={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
             <Fade in={true} timeout={1000}>
               <Box>
@@ -401,7 +401,7 @@ const TeamsPage: React.FC = () => {
               </Box>
             </Slide>
           </Box>
-        </Container>
+        </Box>
       </Box>
 
       {/* Teams Grid */}
@@ -869,9 +869,9 @@ const TeamsPage: React.FC = () => {
           {content}
         </Box>
       ) : (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ px: 3, py: 4 }}>
           {content}
-        </Container>
+        </Box>
       )}
 
       {/* Join Team Dialog */}

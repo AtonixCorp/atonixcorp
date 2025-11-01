@@ -36,7 +36,7 @@ const HomePage: React.FC = () => {
 
       {/* Mission Section */}
       <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
-        <Container maxWidth="lg">
+        <Box sx={{ px: 3 }}>
           <Box className="fade-in-up" sx={{ textAlign: 'center', mb: 8 }}>
             <Typography
               variant="h2"
@@ -87,7 +87,7 @@ const HomePage: React.FC = () => {
               in connectivity and computation.
             </Typography>
           </Box>
-        </Container>
+        </Box>
       </Box>
 
       {/* Enhanced Stats Section */}
@@ -98,7 +98,7 @@ const HomePage: React.FC = () => {
           position: 'relative',
         }}
       >
-        <Container maxWidth="lg">
+        <Box sx={{ px: 3 }}>
           <Box
             sx={{
               display: 'grid',
@@ -171,12 +171,12 @@ const HomePage: React.FC = () => {
               </Paper>
             ))}
           </Box>
-        </Container>
+        </Box>
       </Box>
 
       {/* Enhanced Call to Action */}
       <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
-        <Container maxWidth="lg">
+        <Box sx={{ px: 3 }}>
           <Paper
             elevation={0}
             sx={{
@@ -283,7 +283,7 @@ const HomePage: React.FC = () => {
               </Box>
             </Box>
           </Paper>
-        </Container>
+        </Box>
       </Box>
     </Box>
   );

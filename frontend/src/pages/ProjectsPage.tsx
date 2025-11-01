@@ -478,7 +478,7 @@ const ProjectsPage: React.FC = () => {
       {content}
     </Box>
   ) : (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       <Typography variant="h3" component="h1" gutterBottom>
         Projects
       </Typography>
@@ -486,7 +486,7 @@ const ProjectsPage: React.FC = () => {
         Explore our innovative projects and initiatives
       </Typography>
       {content}
-    </Container>
+    </Box>
   );
 };
 

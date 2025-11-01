@@ -490,7 +490,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Toolbar sx={{ display: { lg: 'none' } }} />
         
         {/* Content */}
-        <Box sx={{ p: 3 }}>
+        <Box>
           {children}
         </Box>
       </Box>

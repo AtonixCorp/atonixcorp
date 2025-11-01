@@ -215,7 +215,7 @@ const TeamAdminPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         {/* Header */}
         <Paper
           sx={{
@@ -666,7 +666,7 @@ const TeamAdminPage: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Container>
+      </Box>
     </DashboardLayout>
   );
 

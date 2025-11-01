@@ -256,7 +256,7 @@ const TeamDashboardPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         {/* Team Header */}
         <Paper
           sx={{
@@ -590,7 +590,7 @@ const TeamDashboardPage: React.FC = () => {
             )}
           </Box>
         </Paper>
-      </Container>
+      </Box>
     </DashboardLayout>
   );
 

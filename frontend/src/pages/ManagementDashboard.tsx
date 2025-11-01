@@ -23,7 +23,7 @@ const ManagementDashboard: React.FC = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       <Typography variant="h3" fontWeight="bold" gutterBottom>
         Management Dashboard
       </Typography>
@@ -82,7 +82,7 @@ const ManagementDashboard: React.FC = () => {
           </Box>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

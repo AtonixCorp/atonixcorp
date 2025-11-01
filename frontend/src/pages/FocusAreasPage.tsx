@@ -112,12 +112,12 @@ const FocusAreasPage: React.FC = () => {
     return (
       <Box sx={{ py: isDashboardMode ? 0 : 4 }}>
         {!isDashboardMode && (
-          <Container maxWidth="lg">
+          <Box sx={{ px: 3, py: 4 }}>
             <Box sx={{ textAlign: 'center', mb: 6 }}>
               <Skeleton variant="text" height={60} sx={{ mb: 2 }} />
               <Skeleton variant="text" height={40} />
             </Box>
-          </Container>
+          </Box>
         )}
         {isDashboardMode && (
           <Box sx={{ mb: 3 }}>
@@ -480,9 +480,9 @@ const FocusAreasPage: React.FC = () => {
       {content}
     </Box>
   ) : (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {content}
-    </Container>
+    </Box>
   );
 };
 

@@ -122,9 +122,9 @@ const ResourcesPage: React.FC = () => {
     return (
       <Box sx={{ py: isDashboardMode ? 0 : 4 }}>
         {!isDashboardMode && (
-          <Container maxWidth="lg">
+          <Box sx={{ px: 3, py: 4 }}>
             <Typography>Loading resources...</Typography>
-          </Container>
+          </Box>
         )}
         {isDashboardMode && (
           <Box sx={{ mb: 3 }}>
@@ -456,9 +456,9 @@ const ResourcesPage: React.FC = () => {
       {content}
     </Box>
   ) : (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {content}
-    </Container>
+    </Box>
   );
 };
 

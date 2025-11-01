@@ -193,7 +193,7 @@ const ContactPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           Contact Us
         </Typography>
@@ -209,13 +209,13 @@ const ContactPage: React.FC = () => {
             <Skeleton variant="rectangular" height={300} />
           </Box>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           Contact Us
         </Typography>
@@ -231,12 +231,12 @@ const ContactPage: React.FC = () => {
         >
           Try Again
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
@@ -531,7 +531,7 @@ const ContactPage: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Button,
@@ -146,10 +145,10 @@ const CommunityPage: React.FC = () => {
     return (
       <Box sx={{ py: isDashboardMode ? 0 : 4 }}>
         {!isDashboardMode && (
-          <Container maxWidth="lg">
+          <Box sx={{ px: 3, py: 4 }}>
             <Skeleton variant="text" height={60} sx={{ mb: 2 }} />
             <Skeleton variant="text" height={40} sx={{ mb: 4 }} />
-          </Container>
+          </Box>
         )}
         {isDashboardMode && (
           <Box sx={{ mb: 3 }}>
@@ -610,9 +609,9 @@ const CommunityPage: React.FC = () => {
       {content}
     </Box>
   ) : (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {content}
-    </Container>
+    </Box>
   );
 };
 

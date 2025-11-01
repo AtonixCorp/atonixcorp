@@ -98,7 +98,7 @@ const TeamDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Skeleton variant="text" height={40} sx={{ mb: 2 }} />
         <Skeleton variant="rectangular" height={300} sx={{ mb: 4 }} />
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 4 }}>
@@ -133,13 +133,13 @@ const TeamDetailPage: React.FC = () => {
             </Card>
           </Box>
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (error || !team) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Alert severity="error" sx={{ mb: 4 }}>
           {error || 'Team not found'}
         </Alert>
@@ -151,12 +151,12 @@ const TeamDetailPage: React.FC = () => {
         >
           Back to Teams
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {/* Back Button */}
       <Button
         onClick={() => navigate('/teams')}
@@ -413,7 +413,7 @@ const TeamDetailPage: React.FC = () => {
           </Card>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

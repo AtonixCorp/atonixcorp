@@ -233,7 +233,7 @@ const ProjectDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Skeleton variant="text" width="200px" height={30} sx={{ mb: 2 }} />
         <Skeleton variant="text" width="400px" height={60} sx={{ mb: 2 }} />
         <Skeleton variant="rectangular" height={300} sx={{ mb: 4 }} />
@@ -241,25 +241,25 @@ const ProjectDetailPage: React.FC = () => {
           <Skeleton variant="rectangular" height={400} />
           <Skeleton variant="rectangular" height={400} />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   if (error || !project) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         <Alert severity="error" sx={{ mb: 4 }}>
           {error || 'Project not found'}
         </Alert>
         <Button component={RouterLink} to="/projects" variant="contained">
           Back to Projects
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ px: 3, py: 4 }}>
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 3 }}>
         <Link component={RouterLink} to="/" underline="hover">
@@ -512,7 +512,7 @@ const ProjectDetailPage: React.FC = () => {
           </Paper>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

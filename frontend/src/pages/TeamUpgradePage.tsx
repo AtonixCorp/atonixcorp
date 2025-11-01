@@ -214,9 +214,9 @@ const TeamUpgradePage: React.FC = () => {
   if (loading) {
     return (
       <DashboardLayout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ px: 3, py: 4 }}>
           <Typography variant="h4" sx={{ mb: 4 }}>Loading Team Upgrade...</Typography>
-        </Container>
+        </Box>
       </DashboardLayout>
     );
   }
@@ -224,7 +224,7 @@ const TeamUpgradePage: React.FC = () => {
   if (error || !team) {
     return (
       <DashboardLayout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ px: 3, py: 4 }}>
           <Alert severity="error" sx={{ mb: 4 }}>
             {error || 'Team not found'}
           </Alert>
@@ -234,7 +234,7 @@ const TeamUpgradePage: React.FC = () => {
           >
             Back to Team Dashboard
           </Button>
-        </Container>
+        </Box>
       </DashboardLayout>
     );
   }
@@ -243,7 +243,7 @@ const TeamUpgradePage: React.FC = () => {
   if (membership?.membership_type === 'premium' || membership?.membership_type === 'admin' || membership?.membership_type === 'lead') {
     return (
       <DashboardLayout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ px: 3, py: 4 }}>
           <Alert severity="success" sx={{ mb: 4 }}>
             You already have premium access to {team.name}!
           </Alert>
@@ -253,14 +253,14 @@ const TeamUpgradePage: React.FC = () => {
           >
             Go to Team Dashboard
           </Button>
-        </Container>
+        </Box>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ px: 3, py: 4 }}>
         {/* Header */}
         <Paper
           sx={{
@@ -619,7 +619,7 @@ const TeamUpgradePage: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Container>
+      </Box>
     </DashboardLayout>
   );
 };
