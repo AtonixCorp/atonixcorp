@@ -141,6 +141,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signupOrganization = async (userData: SignupRequest, orgData: OrganizationRegistrationRequest): Promise<void> => {
+    setIsLoading(true);
+    try {
+      console.log('Attempting organization signup with:', { userData, orgData });
+
+      // First create the user account
+      const signupResponse = await authService.signup(userData);
+      console.log('User signup response:', signupResponse);
+
+      // Store token and set user
+      localStorage.setItem('authToken', signupResponse.token);
+      setUser(signupResponse.user);
+
+      // Then register the organization
+      const mockOrg: Organization = {
+        id: Date.now(),
+        name: orgData.name,
+        domain: orgData.domain,
+        description: orgData.description,
+        website: orgData.website,
+        industry: orgData.industry,
+        size: orgData.size,
+        location: orgData.location,
+        is_registered: true,
+        registration_date: new Date().toISOString(),
+        subscription_plan: 'enterprise',
+        features_enabled: ['dashboard', 'analytics', 'security', 'compliance', 'enterprise-features'],
+      };
+
+      setOrganization(mockOrg);
+
+      // Update user with organization info
+      setUser({ ...signupResponse.user, organization: mockOrg });
+
+      console.log('Organization signup successful, user and org set:', { user: signupResponse.user, org: mockOrg });
+    } catch (error) {
+      console.error('Organization signup failed:', error);
+      // Clean up on failure
+      localStorage.removeItem('authToken');
+      setUser(null);
+      setOrganization(null);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const refreshToken = async (): Promise<void> => {
     try {
       const token = localStorage.getItem('authToken');
@@ -163,6 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     signup,
+    signupOrganization,
     socialLogin,
     registerOrganization,
     logout,

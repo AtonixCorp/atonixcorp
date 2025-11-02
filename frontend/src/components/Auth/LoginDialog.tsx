@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 interface LoginDialogProps {
   open: boolean;
   onClose: () => void;
-  onSwitchToSignup: () => void;
+  onSwitchToSignup?: () => void;
 }
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSignup }) => {
@@ -53,7 +53,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -91,10 +91,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={handleClose}
-      maxWidth="sm" 
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: { borderRadius: 2 }
@@ -219,7 +219,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
                 type="button"
                 variant="body2"
                 sx={{ textDecoration: 'none', fontWeight: 'bold' }}
-                onClick={onSwitchToSignup}
+                onClick={() => {
+                  onClose();
+                  onSwitchToSignup ? onSwitchToSignup() : navigate('/signup');
+                }}
               >
                 Sign Up
               </Link>

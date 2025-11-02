@@ -11,7 +11,7 @@ import {
   TrackChanges as TargetIcon,
   FlashOn as FlashIcon,
 } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import DynamicHeroSection from '../components/Hero/DynamicHeroSection';
 
 const HomePage: React.FC = () => {
@@ -224,56 +224,45 @@ const HomePage: React.FC = () => {
                 }}
               >
                 Discover our cutting-edge projects and join us in shaping the future of technology.
-                Let's build something extraordinary together.
               </Typography>
               <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Button
-                  component={Link}
+                  component={RouterLink}
                   to="/contact"
-                  variant="contained"
+                  variant="text"
                   size="large"
                   sx={{
-                    px: 6,
+                    px: 4,
                     py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    color: 'white',
-                    borderRadius: '16px',
-                    boxShadow: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      transform: 'translateY(-3px)',
-                      background: 'rgba(255, 255, 255, 0.3)',
-                      boxShadow: '0 16px 40px rgba(0, 0, 0, 0.3)',
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     },
                   }}
                 >
                   Get In Touch
                 </Button>
                 <Button
-                  component={Link}
+                  component={RouterLink}
                   to="/projects"
-                  variant="outlined"
+                  variant="text"
                   size="large"
                   sx={{
-                    px: 6,
+                    px: 4,
                     py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    color: 'white',
-                    borderRadius: '16px',
-                    borderWidth: '2px',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      transform: 'translateY(-3px)',
-                      borderColor: 'white',
+                      color: 'white',
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderWidth: '2px',
-                      boxShadow: '0 16px 40px rgba(0, 0, 0, 0.2)',
                     },
                   }}
                 >

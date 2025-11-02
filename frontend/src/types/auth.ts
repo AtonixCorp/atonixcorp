@@ -99,6 +99,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
   signup: (userData: SignupRequest) => Promise<void>;
+  signupOrganization: (userData: SignupRequest, orgData: OrganizationRegistrationRequest) => Promise<void>;
   socialLogin: (provider: SocialProvider) => Promise<void>;
   registerOrganization: (orgData: OrganizationRegistrationRequest) => Promise<void>;
   logout: () => void;

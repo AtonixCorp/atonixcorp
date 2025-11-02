@@ -67,7 +67,7 @@ interface NavItem {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const { user, logout } = useAuth();
+  const { user, logout, isOrganizationRegistered } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -118,11 +118,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       icon: <DashboardIcon />,
       path: '/dashboard',
     },
-    {
+    ...(isOrganizationRegistered ? [{
       text: 'Enterprise',
       icon: <EnterpriseIcon />,
       path: '/dashboard/enterprise',
-    },
+    }] : []),
     {
       text: 'Analytics',
       icon: <AnalyticsIcon />,

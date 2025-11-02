@@ -28,7 +28,6 @@ import {
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
-import SignupDialog from '../Auth/SignupDialog';
 import ThemeToggle from '../ThemeToggle';
 
 const Header: React.FC = () => {
@@ -37,7 +36,6 @@ const Header: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [signupOpen, setSignupOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
@@ -63,26 +61,8 @@ const Header: React.FC = () => {
     setLoginOpen(true);
   };
 
-  const handleSignupOpen = () => {
-    setSignupOpen(true);
-  };
-
   const handleLoginClose = () => {
     setLoginOpen(false);
-  };
-
-  const handleSignupClose = () => {
-    setSignupOpen(false);
-  };
-
-  const handleSwitchToSignup = () => {
-    setLoginOpen(false);
-    setSignupOpen(true);
-  };
-
-  const handleSwitchToLogin = () => {
-    setSignupOpen(false);
-    setLoginOpen(true);
   };
 
   const navigation = [
@@ -411,7 +391,8 @@ const Header: React.FC = () => {
                     Sign In
                   </Button>
                   <Button
-                    onClick={handleSignupOpen}
+                    component={Link}
+                    to="/signup"
                     variant="contained"
                     sx={{
                       background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
@@ -461,12 +442,6 @@ const Header: React.FC = () => {
       <LoginDialog
         open={loginOpen}
         onClose={handleLoginClose}
-        onSwitchToSignup={handleSwitchToSignup}
-      />
-      <SignupDialog
-        open={signupOpen}
-        onClose={handleSignupClose}
-        onSwitchToLogin={handleSwitchToLogin}
       />
     </>
   );

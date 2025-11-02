@@ -27,6 +27,9 @@ import ResourcesPage from './pages/ResourcesPage';
 import CommunityPage from './pages/CommunityPage';
 import ContactPage from './pages/ContactPage';
 import Dashboard from './pages/Dashboard';
+import UnifiedRegistrationPage from './pages/UnifiedRegistrationPage';
+import SignupPage from './pages/SignupPage';
+import LoginPage from './pages/LoginPage';
 
 // Dashboard Pages
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -121,7 +124,7 @@ const DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 // Organization Route Component
 const OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isOrganizationRegistered, isLoading, organization } = useAuth();
+  const { isAuthenticated, isOrganizationRegistered, isLoading } = useAuth();
   const navigate = useNavigate();
   const [showRegistration, setShowRegistration] = useState(false);
 
@@ -225,6 +228,11 @@ function App() {
               <Box component="main" sx={{ flex: 1 }}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<UnifiedRegistrationPage />} />
+                  <Route path="/register/individual" element={<UnifiedRegistrationPage />} />
+                  <Route path="/register/organization" element={<UnifiedRegistrationPage />} />
                   <Route path="/dashboard" element={
                     <DashboardRoute>
                       <Dashboard />

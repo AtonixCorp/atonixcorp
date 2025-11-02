@@ -38,7 +38,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { mockCommunityService } from '../services/authService';
 import { CommunityMember, Discussion } from '../types/auth';
 import LoginDialog from '../components/Auth/LoginDialog';
-import SignupDialog from '../components/Auth/SignupDialog';
 import EditProfileDialog from '../components/Auth/EditProfileDialog';
 import CommunityDashboard from './CommunityDashboard';
 
@@ -74,7 +73,6 @@ const CommunityPage: React.FC = () => {
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [signupOpen, setSignupOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
 
@@ -202,7 +200,7 @@ const CommunityPage: React.FC = () => {
               variant="contained"
               size="large"
               startIcon={<Person />}
-              onClick={() => setSignupOpen(true)}
+              href="/signup"
             >
               Join Community
             </Button>
@@ -574,18 +572,6 @@ const CommunityPage: React.FC = () => {
       <LoginDialog
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        onSwitchToSignup={() => {
-          setLoginOpen(false);
-          setSignupOpen(true);
-        }}
-      />
-      <SignupDialog
-        open={signupOpen}
-        onClose={() => setSignupOpen(false)}
-        onSwitchToLogin={() => {
-          setSignupOpen(false);
-          setLoginOpen(true);
-        }}
       />
       <EditProfileDialog
         open={editProfileOpen}
