@@ -99,21 +99,23 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ghcr.io/atonixcorp/atonixcorp-backend:1.0.0
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     container_name: atonixcorp_backend
     environment:
-      ENVIRONMENT: production
-      DEBUG: "False"
-      SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: atonixcorp.org,www.atonixcorp.org,localhost:3001,127.0.0.1:3001,0.0.0.0:3001
+      ENVIRONMENT: development
+      DEBUG: "True"
+      SECRET_KEY: ${SECRET_KEY:-development-secret-key}
+      ALLOWED_HOSTS: atonixcorp.org,api.atonixcorp.org,www.atonixcorp.org,localhost:3001,127.0.0.1:3001,0.0.0.0:3001,localhost:8000,127.0.0.1:8000
       USE_HTTPS: "False"
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      EMAIL_HOST: ${EMAIL_HOST}
-      EMAIL_PORT: ${EMAIL_PORT}
-      EMAIL_USE_TLS: "True"
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/atonixcorp_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      EMAIL_HOST: ${EMAIL_HOST:-mailhog}
+      EMAIL_PORT: ${EMAIL_PORT:-1025}
+      EMAIL_USE_TLS: "False"
       DEFAULT_FROM_EMAIL: noreply@atonixcorp.org
-      OTEL_ENABLED: "True"
+      OTEL_ENABLED: "False"
       OTEL_SERVICE_NAME: atonixcorp-backend
       PROMETHEUS_METRICS_PORT: 8001
     ports:
@@ -138,23 +140,25 @@ services:
       # frontend does not need to be a dependency of backend (avoids circular depends_on)
 
   frontend:
-    image: ghcr.io/atonixcorp/atonixcorp-frontend:1.0.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: atonixcorp_frontend
     environment:
-      REACT_APP_API_URL: http://localhost:8000/api
+      REACT_APP_API_URL: http://atonixcorp.org/api
       REACT_APP_ENVIRONMENT: development
       CHOKIDAR_USEPOLLING: "true"
       GENERATE_SOURCEMAP: "true"
-      REACT_APP_FRONTEND_URL: http://localhost:3001
+      REACT_APP_FRONTEND_URL: http://atonixcorp.org
       REACT_APP_RUBY_URL: http://ruby_service:3000
-      REACT_APP_GITHUB_AUTH_URL: http://localhost:8000/api/auth/github/
-      REACT_APP_GOOGLE_AUTH_URL: http://localhost:8000/api/auth/google/
-      REACT_APP_GITLAB_AUTH_URL: http://localhost:8000/api/auth/gitlab/
-      REACT_APP_LINKEDIN_AUTH_URL: http://localhost:8000/api/auth/linkedin/
+      REACT_APP_GITHUB_AUTH_URL: http://atonixcorp.org/api/auth/github/
+      REACT_APP_GOOGLE_AUTH_URL: http://atonixcorp.org/api/auth/google/
+      REACT_APP_GITLAB_AUTH_URL: http://atonixcorp.org/api/auth/gitlab/
+      REACT_APP_LINKEDIN_AUTH_URL: http://atonixcorp.org/api/auth/linkedin/
     ports:
-      - "3001:80"
+      - "3001:3000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -167,7 +171,8 @@ services:
       - redis
       - rabbitmq
     volumes:
-      - frontend_data:/usr/share/nginx/html
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
     networks:
       - atonixcorp_net
     stdin_open: true
@@ -193,6 +198,31 @@ services:
       - production
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Apache2 Reverse Proxy for atonixcorp.org and api.atonixcorp.org
+  apache-proxy:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.apache2
+    container_name: atonixcorp_apache_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/apache2/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./docker/apache2/vhosts.conf:/usr/local/apache2/conf.d/vhosts.conf:ro
+      - ./docker/apache2/certs:/etc/apache2/certs:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - atonixcorp_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -263,19 +293,6 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
     ports:
       - "2181:2181"
-    networks:
-      - atonixcorp_net
-    restart: unless-stopped
-
-  apache-proxy:
-    image: httpd:2.4
-    container_name: apache-proxy
-    volumes:
-      - ./docker/apache-spark.conf:/usr/local/apache2/conf/httpd.conf:ro
-    depends_on:
-      - spark-master
-    ports:
-      - "8088:80"
     networks:
       - atonixcorp_net
     restart: unless-stopped

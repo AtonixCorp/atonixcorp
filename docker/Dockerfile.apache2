@@ -1,0 +1,32 @@
+FROM httpd:2.4
+
+# Install mod_proxy, mod_rewrite, and SSL modules (usually pre-loaded in httpd:2.4)
+# Install curl for health checks
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy custom Apache configuration
+COPY docker/apache2/httpd.conf /usr/local/apache2/conf/httpd.conf
+COPY docker/apache2/vhosts.conf /usr/local/apache2/conf.d/vhosts.conf
+
+# Enable required modules
+RUN echo "LoadModule proxy_module modules/mod_proxy.so" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "LoadModule proxy_http_module modules/mod_proxy_http.so" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "LoadModule rewrite_module modules/mod_rewrite.so" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "LoadModule headers_module modules/mod_headers.so" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "LoadModule ssl_module modules/mod_ssl.so" >> /usr/local/apache2/conf/httpd.conf
+
+# Create directory for SSL certificates (for production)
+RUN mkdir -p /etc/apache2/certs
+
+# Expose ports
+EXPOSE 80 443
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
+
+# Start Apache in foreground
+CMD ["httpd-foreground"]
