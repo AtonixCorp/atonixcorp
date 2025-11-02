@@ -1,3 +1,4 @@
+
 FROM python:3.11-slim
 
 # Set environment variables
@@ -7,17 +8,18 @@ ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt /app/
+# Install system dependencies needed for building packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies without system packages (for development)
-RUN pip install --no-cache-dir --upgrade pip
+# Copy all requirements files
+COPY requirements.txt requirements-opentelemetry.txt /app/
 
-# Try to install psycopg2-binary instead of psycopg2 to avoid compilation
-RUN pip install --no-cache-dir psycopg2-binary
-
-# Install remaining requirements
-RUN pip install --no-cache-dir -r requirements.txt || pip install --no-cache-dir django djangorestframework django-cors-headers python-decouple
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . /app/

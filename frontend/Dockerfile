@@ -6,10 +6,11 @@ WORKDIR /app
 # Install dependencies and build static assets
 # Copy package files first to leverage Docker cache
 COPY package*.json ./
-# Use npm ci for reproducible installs (uses package-lock.json if present)
-# keep CI=true for install caching behavior but override during build to avoid
-# react-scripts treating warnings as errors in CI mode.
-RUN CI=true npm ci --silent --no-audit --no-fund
+
+# Install dependencies with fallback to npm install if npm ci fails
+# This handles cases where package-lock.json might be out of sync
+RUN npm ci --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps
+
 COPY . ./
 RUN CI=false npm run build
 
