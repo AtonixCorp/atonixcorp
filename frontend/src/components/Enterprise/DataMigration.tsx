@@ -1,4 +1,5 @@
 import React from 'react';
+<<<<<<< HEAD
 import {
   Box,
   Typography,
@@ -64,3 +65,11 @@ const DataMigration: React.FC = () => {
 };
 
 export default DataMigration;
+=======
+
+const _DataMigration: React.FC = () => {
+	return <div />;
+};
+
+export default _DataMigration;
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992

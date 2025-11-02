@@ -1,0 +1,9 @@
+# L2Advertisement for MetalLB IPv6 global pool
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-advertise-ipv6-global
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - ipv6-global

@@ -1,8 +1,10 @@
+
 djangorestframework==3.16.1
 # Django Core
 # Use Django 4.2 LTS series which is compatible with Python 3.11 and widely available on PyPI.
 Django>=4.2,<5.0
 djangorestframework==3.16.1
+
 djangorestframework==3.16.1
 django-cors-headers==4.9.0
 django-filter==25.1
@@ -83,3 +85,4 @@ findspark>=2.0.1
 # Monitoring
 prometheus-client>=0.17.0
 influxdb>=5.3.1
+

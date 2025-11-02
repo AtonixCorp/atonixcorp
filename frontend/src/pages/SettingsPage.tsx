@@ -30,7 +30,7 @@ interface TabPanelProps {
   value: number;
 }
 
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
+const _TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
   <div role="tabpanel" hidden={value !== index}>
     {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
   </div>
@@ -134,8 +134,13 @@ const SettingsPage: React.FC = () => {
           </Tabs>
 
           {/* Profile Tab */}
+<<<<<<< HEAD
           <TabPanel value={tabValue} index={0}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
+=======
+          <_TabPanel value={tabValue} index={0}>
+            <Box sx={{ maxWidth: 600 }}>
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Profile Information
               </Typography>
@@ -229,11 +234,16 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Notifications Tab */}
+<<<<<<< HEAD
           <TabPanel value={tabValue} index={1}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
+=======
+          <_TabPanel value={tabValue} index={1}>
+            <Box sx={{ maxWidth: 600 }}>
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Notification Preferences
               </Typography>
@@ -309,11 +319,16 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Security Tab */}
+<<<<<<< HEAD
           <TabPanel value={tabValue} index={2}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
+=======
+          <_TabPanel value={tabValue} index={2}>
+            <Box sx={{ maxWidth: 600 }}>
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Security Settings
               </Typography>
@@ -379,11 +394,16 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
 
           {/* Appearance Tab */}
+<<<<<<< HEAD
           <TabPanel value={tabValue} index={3}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
+=======
+          <_TabPanel value={tabValue} index={3}>
+            <Box sx={{ maxWidth: 600 }}>
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Appearance Settings
               </Typography>
@@ -400,7 +420,7 @@ const SettingsPage: React.FC = () => {
                 </Alert>
               </Stack>
             </Box>
-          </TabPanel>
+          </_TabPanel>
         </Paper>
       </Box>
   );

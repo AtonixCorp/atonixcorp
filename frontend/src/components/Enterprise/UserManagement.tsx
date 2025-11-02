@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -332,3 +333,20 @@ const UserManagement: React.FC = () => {
 };
 
 export default UserManagement;
+=======
+import React from 'react';
+
+/**
+ * Placeholder UserManagement component.
+ */
+const _UserManagement: React.FC = () => {
+	return (
+		<div className="user-management">
+			<h2>User Management</h2>
+			<p>Placeholder — implement user list, roles, and controls.</p>
+		</div>
+	);
+};
+
+export default _UserManagement;
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992

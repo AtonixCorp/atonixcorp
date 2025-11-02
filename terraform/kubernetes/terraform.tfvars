@@ -1,10 +1,17 @@
 # Terraform variables for AtonixCorp Platform on single-node Kubernetes
 
 # Core Configuration
+<<<<<<< HEAD
+project_name = "atonixcorp-platform"
+environment = "dev"
+app_version = "1.0.0"
+namespace = "atonixcorp-platform"
+=======
 project_name = "atonixcorp"
 environment = "dev"
 app_version = "1.0.0"
 namespace = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Kubernetes Configuration
 kubeconfig_path = "~/.kube/config"
@@ -47,10 +54,18 @@ kafka_replication_factor = 1
 kafka_min_isr = 1
 
 # Network Configuration
+<<<<<<< HEAD
+allowed_hosts = ["localhost", "127.0.0.1", "atonixcorp.org", "api.atonixcorp.org"]
+cors_allowed_origins = ["https://atonixcorp.org", "https://www.atonixcorp.org", "http://localhost:3000"]
+api_url = "http://api.atonixcorp.org"
+allowed_hosts = ["localhost", "127.0.0.1", "atonixcorp.org", "api.atonixcorp.org", "www.atonixcorp.org"]
+cors_allowed_origins = ["http://atonixcorp.org", "http://www.atonixcorp.org", "http://localhost:3000"]
+=======
 # Consolidated allowed hosts and CORS origins (deduplicated). Keep both https origins and http localhost for dev.
 allowed_hosts = ["localhost", "127.0.0.1", "atonixcorp.org", "api.atonixcorp.org", "www.atonixcorp.org"]
 cors_allowed_origins = ["https://atonixcorp.org", "https://www.atonixcorp.org", "http://atonixcorp.org", "http://www.atonixcorp.org", "http://localhost:3000"]
 api_url = "http://api.atonixcorp.org"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Domain Configuration
 domain_name = "atonixcorp.org"

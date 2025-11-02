@@ -1,4 +1,5 @@
 import React from 'react';
+<<<<<<< HEAD
 import {
   Box,
   Typography,
@@ -64,3 +65,11 @@ const FederationManagement: React.FC = () => {
 };
 
 export default FederationManagement;
+=======
+
+const _FederationManagement: React.FC = () => {
+	return <div />;
+};
+
+export default _FederationManagement;
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992

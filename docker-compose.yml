@@ -236,7 +236,10 @@ services:
         condition: service_healthy
     networks:
       - atonixcorp_network
+<<<<<<< HEAD
+=======
     restart: always
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
       interval: 30s
@@ -261,7 +264,10 @@ services:
       - backend
     networks:
       - atonixcorp_network
+<<<<<<< HEAD
+=======
     restart: always
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
   # Nginx Reverse Proxy
   nginx:

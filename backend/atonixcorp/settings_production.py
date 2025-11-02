@@ -18,8 +18,12 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+<<<<<<< HEAD
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+=======
 _raw_allowed_hosts = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0')
 ALLOWED_HOSTS = [h.strip() for h in _raw_allowed_hosts.split(',') if h.strip()]
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Application definition
 DJANGO_APPS = [
@@ -63,6 +67,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+<<<<<<< HEAD
+=======
 # Defensive check: ensure SessionMiddleware appears before CsrfViewMiddleware
 try:
     _SM = 'django.contrib.sessions.middleware.SessionMiddleware'
@@ -74,6 +80,7 @@ try:
 except Exception:
     pass
 
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 ROOT_URLCONF = 'atonixcorp.urls'
 
 TEMPLATES = [
@@ -199,7 +206,11 @@ SPECTACULAR_SETTINGS = {
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
+<<<<<<< HEAD
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:8080',
+=======
     default='http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp.org,http://www.atonixcorp.org,',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True

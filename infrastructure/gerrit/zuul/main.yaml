@@ -31,8 +31,13 @@
     name: smtp
     server: localhost
     port: 25
+<<<<<<< HEAD
+    default_from: zuul@atonixcorp.com
+    default_to: dev@atonixcorp.com
+=======
     default_from: zuul@atonixcorp.org
     default_to: dev@atonixcorp.org
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Pipeline definitions
 - pipeline:
@@ -202,4 +207,8 @@
         - atonixcorp-deploy-staging
     release:
       jobs:
+<<<<<<< HEAD
         - atonixcorp-deploy-production
+=======
+        - atonixcorp-deploy-production
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -31,14 +31,22 @@ variable "kubernetes_cluster_ca_certificate" {
 variable "project_name" {
   description = "Name of the project"
   type        = string
+<<<<<<< HEAD
+  default     = "atonixcorp-platform"
+=======
   default     = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
   default     = "dev"
+<<<<<<< HEAD
+  
+=======
 
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -54,7 +62,11 @@ variable "app_version" {
 variable "namespace" {
   description = "Kubernetes namespace"
   type        = string
+<<<<<<< HEAD
+  default     = "atonixcorp-platform"
+=======
   default     = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 # ==========================
@@ -190,7 +202,11 @@ variable "backend_image_tag" {
 variable "frontend_image_repository" {
   description = "Frontend image repository"
   type        = string
+<<<<<<< HEAD
+  default     = "atonixcorp/platform-frontend"
+=======
   default     = "atonixcorp/atonixcorp-frontend"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 }
 
 variable "frontend_image_tag" {
@@ -398,7 +414,11 @@ variable "resource_limits" {
       memory_limit   = string
     })
   })
+<<<<<<< HEAD
+  
+=======
 
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   default = {
     backend = {
       cpu_request    = "250m"
@@ -442,6 +462,8 @@ variable "resource_limits" {
       memory_request = "1Gi"
       memory_limit   = "4Gi"
     }
+<<<<<<< HEAD
+=======
     ruby_service = {
       cpu_request    = "250m"
       cpu_limit      = "1000m"
@@ -454,6 +476,7 @@ variable "resource_limits" {
       memory_request = "256Mi"
       memory_limit   = "1Gi"
     }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
   }
 }
 
@@ -525,6 +548,9 @@ variable "kafka_external_node_port" {
   description = "NodePort for external Kafka access"
   type        = number
   default     = 30092
+<<<<<<< HEAD
+}
+=======
 }
 
 # ==========================
@@ -591,3 +617,4 @@ variable "registry_secret_name" {
   type        = string
   default     = ""
 }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -2,7 +2,11 @@ version: '3.8'
 
 services:
   app:
+<<<<<<< HEAD
+    image: atonixcorp-platform:latest
+=======
     image: atonixcorpvm:latest
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     ports:
       - "8080:8080"
     environment:

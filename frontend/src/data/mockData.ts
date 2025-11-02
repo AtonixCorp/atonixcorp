@@ -3,7 +3,7 @@
 import { Project, Team, Technology, FocusArea } from '../types/api';
 
 // Mock Technologies
-export const mockTechnologies: Technology[] = [
+export const _mockTechnologies: Technology[] = [
   { id: 1, name: 'React', description: 'Frontend framework' },
   { id: 2, name: 'Django', description: 'Backend framework' },
   { id: 3, name: 'TypeScript', description: 'Programming language' },
@@ -22,7 +22,7 @@ export const mockTechnologies: Technology[] = [
 ];
 
 // Mock Focus Areas
-export const mockFocusAreas: FocusArea[] = [
+export const _mockFocusAreas: FocusArea[] = [
   {
     id: 1,
     name: 'Infrastructure & DevOps',
@@ -30,7 +30,11 @@ export const mockFocusAreas: FocusArea[] = [
     description: 'Core platform infrastructure and DevOps solutions for scalable, reliable systems',
     detailed_description: 'Building robust, scalable infrastructure solutions that power enterprise applications. Our expertise spans cloud architecture, container orchestration, CI/CD pipelines, and infrastructure automation. We focus on creating resilient systems that can handle massive scale while maintaining security and performance.',
     icon: 'cloud',
+<<<<<<< HEAD
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+=======
+
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
     color_theme: '#1976d2',
     is_active: true,
     order: 1,
@@ -58,6 +62,7 @@ export const mockFocusAreas: FocusArea[] = [
         icon: 'terraform',
         website_url: 'https://terraform.io'
       },
+
       {
         id: 4,
         name: 'AWS/Azure/GCP',
@@ -84,6 +89,7 @@ export const mockFocusAreas: FocusArea[] = [
         order: 2
       },
       {
+
         id: 3,
         title: 'Infrastructure Monitoring',
         description: 'Comprehensive monitoring and alerting systems for proactive infrastructure management.',
@@ -446,7 +452,7 @@ export const mockFocusAreas: FocusArea[] = [
 ];
 
 // Mock Projects
-export const mockProjects: Project[] = [
+export const _mockProjects: Project[] = [
   {
     id: 1,
     name: 'Atonixcorp-Platform',
@@ -470,7 +476,7 @@ export const mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
     documentation_url: 'https://docs.atonixcorp.org/platform',
     is_featured: true,
-    focus_areas: [mockFocusAreas[0]],
+    focus_areas: [_mockFocusAreas[0]],
     start_date: '2024-01-01',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -497,7 +503,11 @@ export const mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/planivar',
     documentation_url: 'https://docs.atonixcorp.org/planivar',
     is_featured: true,
+<<<<<<< HEAD
     focus_areas: [mockFocusAreas[5]], // Big Data & Analytics
+=======
+    focus_areas: [_mockFocusAreas[1]],
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
     start_date: '2024-02-01',
     created_at: '2024-02-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -506,6 +516,7 @@ export const mockProjects: Project[] = [
   },
   {
     id: 3,
+<<<<<<< HEAD
     name: 'Voltoraiq',
     slug: 'voltoraiq',
     overview: 'A comprehensive full-stack web application for monitoring and managing solar energy systems.',
@@ -538,6 +549,14 @@ export const mockProjects: Project[] = [
     overview: 'Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
     description: 'Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design. Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+=======
+
+      name: 'Osrovnet',
+      slug: 'atonixcorp-security',
+      overview: 'Osrovnet: advanced network security and threat analysis platform.',
+      description: 'Osrovnet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
+      image: '/images/projects/atonixcorp-security.jpg',
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
     technologies: [
       { id: 4, name: 'Python' },
       { id: 13, name: 'Go' },
@@ -548,10 +567,41 @@ export const mockProjects: Project[] = [
       { id: 10, name: 'AI/ML' }
     ],
     status: 'active',
+<<<<<<< HEAD
     github_url: 'https://github.com/AtonixCorp/osrovnet',
     documentation_url: 'https://docs.atonixcorp.org/osrovnet',
     is_featured: true,
     focus_areas: [mockFocusAreas[2]], // Cybersecurity & Network Protection
+=======
+
+    github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
+    documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
+    is_featured: true,
+    focus_areas: [_mockFocusAreas[2]],
+    start_date: '2024-03-01',
+    created_at: '2024-03-01T00:00:00Z',
+    updated_at: '2025-09-20T00:00:00Z',
+    features: [],
+    images: []
+  },
+  {
+    id: 4,
+    name: 'AgroTech Suite',
+    slug: 'agrotech-suite',
+    overview: 'Smart farming and agricultural management platform.',
+    description: 'Comprehensive IoT-enabled agricultural management system that helps farmers optimize crop yields, monitor soil conditions, and manage resources efficiently using data-driven insights.',
+    image: '/images/projects/agrotech-suite.jpg',
+    technologies: [
+      { id: 4, name: 'Python' },
+      { id: 1, name: 'React' },
+      { id: 10, name: 'AI/ML' },
+      { id: 6, name: 'Docker' }
+    ],
+    status: 'development',
+  github_url: 'https://github.com/AtonixCorp/agrotech-suite',
+    is_featured: false,
+    focus_areas: [_mockFocusAreas[3]],
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
     start_date: '2024-04-01',
     created_at: '2024-04-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -575,11 +625,18 @@ export const mockProjects: Project[] = [
       { id: 6, name: 'Docker' },
       { id: 7, name: 'Kubernetes' }
     ],
+<<<<<<< HEAD
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/tujengepay',
     documentation_url: 'https://docs.atonixcorp.org/tujengepay',
     is_featured: true,
     focus_areas: [mockFocusAreas[4]], // Fintech & Blockchain
+=======
+    status: 'development',
+  github_url: 'https://github.com/AtonixCorp/finsecure-blockchain',
+    is_featured: false,
+    focus_areas: [_mockFocusAreas[4]],
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
     start_date: '2024-05-01',
     created_at: '2024-05-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -589,7 +646,7 @@ export const mockProjects: Project[] = [
 ];
 
 // Mock Teams
-export const mockTeams: Team[] = [
+export const _mockTeams: Team[] = [
   {
     id: 1,
     name: 'Planivarum',
@@ -991,39 +1048,40 @@ export const mockTeams: Team[] = [
 export const mockProjectService = {
   getProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-    return mockProjects;
+    return _mockProjects;
   },
   getFeaturedProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockProjects.filter(project => project.is_featured);
+    return _mockProjects.filter(project => project.is_featured);
   },
   getProjectBySlug: async (slug: string): Promise<Project | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockProjects.find(project => project.slug === slug) || null;
+    return _mockProjects.find(project => project.slug === slug) || null;
   }
 };
 
 export const mockTeamService = {
   getTeams: async (): Promise<Team[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return mockTeams;
+    return _mockTeams;
   },
   getTeamBySlug: async (slug: string): Promise<Team | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockTeams.find(team => team.slug === slug) || null;
+    return _mockTeams.find(team => team.slug === slug) || null;
   }
 };
 
 export const mockTechnologyService = {
   getTechnologies: async (): Promise<Technology[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    return mockTechnologies;
+    return _mockTechnologies;
   }
 };
 
 export const mockFocusAreaService = {
   getFocusAreas: async (): Promise<FocusArea[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return mockFocusAreas;
+    return _mockFocusAreas;
   }
 };
+

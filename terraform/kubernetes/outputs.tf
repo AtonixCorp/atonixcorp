@@ -145,6 +145,25 @@ output "monitoring_enabled" {
   value       = var.enable_monitoring
 }
 
+<<<<<<< HEAD
+output "prometheus_service_name" {
+  description = "Prometheus service name"
+  value       = var.enable_monitoring ? module.monitoring[0].prometheus_service_name : null
+}
+
+output "grafana_service_name" {
+  description = "Grafana service name"
+  value       = var.enable_monitoring ? module.monitoring[0].grafana_service_name : null
+}
+
+output "grafana_admin_secret" {
+  description = "Grafana admin secret name"
+  value       = var.enable_monitoring ? module.monitoring[0].grafana_admin_secret : null
+  sensitive   = true
+}
+
+=======
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 # ==========================
 # Application Info Outputs
 # ==========================
@@ -249,4 +268,8 @@ output "health_check_endpoints" {
     database_health   = "internal"
     redis_health      = "internal"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

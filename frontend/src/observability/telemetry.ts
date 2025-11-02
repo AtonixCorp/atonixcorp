@@ -4,7 +4,7 @@
  */
 
 // Configuration
-const config = {
+const _config = {
   serviceName: process.env.REACT_APP_OTEL_SERVICE_NAME || 'atonixcorp-frontend',
   serviceVersion: process.env.REACT_APP_OTEL_SERVICE_VERSION || '1.0.0',
   environment: process.env.REACT_APP_ENVIRONMENT || 'development',
@@ -91,7 +91,7 @@ class SimpleTelemetry {
 
     this.events.push(event);
 
-    if (config.enableConsole) {
+    if (_config.enableConsole) {
       console.log('[Telemetry]', event);
     }
 
@@ -105,7 +105,7 @@ class SimpleTelemetry {
   }
 
   private async sendToBackend(event: TelemetryEvent) {
-    if (!config.enabled) return;
+    if (!_config.enabled) return;
 
     try {
       await fetch('/api/telemetry/', {
@@ -117,7 +117,7 @@ class SimpleTelemetry {
       });
     } catch (error) {
       // Silently fail - don't disrupt user experience
-      if (config.enableConsole) {
+      if (_config.enableConsole) {
         console.warn('Failed to send telemetry:', error);
       }
     }
@@ -133,20 +133,20 @@ class SimpleTelemetry {
 }
 
 // Global telemetry instance
-let telemetryInstance: SimpleTelemetry | null = null;
+let _telemetryInstance: SimpleTelemetry | null = null;
 
 export function initializeOpenTelemetry(): void {
-  if (!config.enabled) {
+  if (!_config.enabled) {
     console.log('Telemetry is disabled');
     return;
   }
 
   try {
-    telemetryInstance = new SimpleTelemetry();
+    _telemetryInstance = new SimpleTelemetry();
     console.log('Simple telemetry initialized successfully');
     
     // Track page load
-    telemetryInstance.trackEvent('page-load', {
+    _telemetryInstance.trackEvent('page-load', {
       path: window.location.pathname,
       search: window.location.search,
       title: document.title,
@@ -157,16 +157,16 @@ export function initializeOpenTelemetry(): void {
 }
 
 export function shutdownOpenTelemetry(): Promise<void> {
-  if (telemetryInstance) {
-    telemetryInstance.clearEvents();
-    telemetryInstance = null;
+  if (_telemetryInstance) {
+    _telemetryInstance.clearEvents();
+    _telemetryInstance = null;
   }
   return Promise.resolve();
 }
 
 export function trackEvent(type: string, data: Record<string, any> = {}): void {
-  if (telemetryInstance) {
-    telemetryInstance.trackEvent(type, data);
+  if (_telemetryInstance) {
+    _telemetryInstance.trackEvent(type, data);
   }
 }
 
@@ -204,4 +204,4 @@ export function trackError(error: Error, context: string = 'unknown'): void {
 }
 
 // Export configuration for use in other modules
-export { config };
+export { _config };

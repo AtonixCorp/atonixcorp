@@ -16,6 +16,7 @@ import {
   Skeleton,
   Alert,
 } from '@mui/material';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   GitHub as GitHubIcon,
   Launch as LaunchIcon,
@@ -26,7 +27,6 @@ import {
   Code as CodeIcon,
   Architecture as ArchIcon,
 } from '@mui/icons-material';
-import { useParams, Link as RouterLink } from 'react-router-dom';
 import { projectsApi } from '../services/api';
 import { Project } from '../types/api';
 
@@ -155,12 +155,14 @@ const ProjectDetailPage: React.FC = () => {
             ],
             images: []
           },
+
           'atonixcorp-security': {
             id: 3,
             name: 'Osrovnet',
             slug: 'atonixcorp-security',
             overview: 'Osrovnet is built for sovereign systems and mission-critical environments. It empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
             description: 'Osrovnet provides comprehensive threat intelligence, real-time network monitoring, and automated response capabilities. With advanced machine learning algorithms for anomaly detection and a robust API for integration with existing security infrastructure, Osrovnet represents the next generation of cybersecurity solutions.',
+
             status: 'active',
             is_featured: true,
             technologies: [
@@ -175,6 +177,7 @@ const ProjectDetailPage: React.FC = () => {
               { id: 3, name: 'Security', slug: 'security', description: 'Cybersecurity and network protection', icon: '', image: '', color_theme: '#f44336', is_active: true, order: 3, created_at: '2024-01-01', updated_at: '2024-01-01', technologies: [], solutions: [] }
             ],
             start_date: '2024-03-01',
+
             github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
             documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
             created_at: '2024-03-01',
@@ -278,6 +281,7 @@ const ProjectDetailPage: React.FC = () => {
           </Typography>
           {project.is_featured && <StarIcon color="primary" fontSize="large" />}
         </Box>
+
 
         <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
           <Chip
@@ -403,6 +407,7 @@ const ProjectDetailPage: React.FC = () => {
                 <ListItemText
                   primary="Status"
                   secondary={
+
                     <Chip
                       label={project.status}
                       size="small"
@@ -514,5 +519,6 @@ const ProjectDetailPage: React.FC = () => {
     </Box>
   );
 };
+
 
 export default ProjectDetailPage;

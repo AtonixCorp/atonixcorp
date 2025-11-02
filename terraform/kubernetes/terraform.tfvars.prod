@@ -2,10 +2,17 @@
 # This file contains default values for production environment
 
 # Core Configuration
+<<<<<<< HEAD
+project_name = "atonixcorp-platform"
+environment  = "prod"
+app_version  = "1.0.0"
+namespace    = "atonixcorp-platform"
+=======
 project_name = "atonixcorp"
 environment  = "prod"
 app_version  = "1.0.0"
 namespace    = "atonixcorp"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Domain and TLS
 domain_name     = "atonixcorp.org"
@@ -37,9 +44,15 @@ database_username = "atonixuser"
 # Container Images
 image_registry            = "ghcr.io"
 backend_image_repository  = "atonixcorp/platform-backend"
+<<<<<<< HEAD
+backend_image_tag         = "latest"
+frontend_image_repository = "atonixcorp/platform-frontend"
+frontend_image_tag        = "latest"
+=======
 backend_image_tag         = "1.0.0"
 frontend_image_repository = "atonixcorp/atonixcorp-frontend"
 frontend_image_tag        = "1.0.0"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Scaling (production ready)
 backend_replicas     = 3
@@ -60,7 +73,11 @@ cors_allowed_origins = [
   "https://atonixcorp.org",
   "https://www.atonixcorp.org"
 ]
+<<<<<<< HEAD
+api_url = "http://atonixcorp-platform-backend:8000"
+=======
 api_url = "http://atonixcorp-backend:8000"
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Feature Toggles
 enable_monitoring       = true

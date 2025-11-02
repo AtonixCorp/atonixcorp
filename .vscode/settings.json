@@ -1,4 +1,29 @@
 {
+<<<<<<< HEAD
+    "circleci.filters.branchFilter": "allBranches",
+    "circleci.filters.statusFilter": {
+        "canceled": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true
+    },
+    "circleci.notifications.statusFilter": {
+        "canceled": true,
+        "error": true,
+        "failed": true,
+        "failing": true,
+        "not_run": true,
+        "on_hold": true,
+        "success": true,
+        "unauthorized": true
+    },
+    "circleci.persistedProjectSelection": [
+        "gh/AtonixCorp/atonixcorp-platform"
+    ]
+}
+=======
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "files.trimTrailingWhitespace": true,
@@ -30,3 +55,4 @@
   "chat.notifyWindowOnConfirmation": false
 
 }
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

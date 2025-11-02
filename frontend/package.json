@@ -20,12 +20,13 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1",
-    "react-scripts": "^5.0.0",
+    "react-scripts": "^5.0.1",
     "recharts": "^3.2.1",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "codemod:rename-unused": "node ./tools/codemods/rename-unused.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -49,5 +50,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.org"
+  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.org",
+  "devDependencies": {
+    "ts-morph": "^16.0.0"
+  }
 }

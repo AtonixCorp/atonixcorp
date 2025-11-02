@@ -35,6 +35,7 @@ class Command(BaseCommand):
             technologies=['Python', 'AI/ML', 'TensorFlow', 'PyTorch', 'Go', 'Docker', 'Kubernetes']
         )
 
+<<<<<<< HEAD
         voltoraiq = Project.objects.create(
             name='Voltoraiq',
             slug='voltoraiq',
@@ -50,6 +51,20 @@ class Command(BaseCommand):
             slug='osrovnet',
             overview='Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
             description='Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design. Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
+=======
+<<<<<<< HEAD
+        osrovnet = Project.objects.create(
+            name='Osrovnet',
+            slug='osrovnet',
+            overview='AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
+=======
+        atonixcorp_security = Project.objects.create(
+            name='Osrovnet',
+            slug='atonixcorp-security',
+            overview='Osrovnet: flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
+            description='Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
+>>>>>>> cf817c2f425914921dfacd00e49554c630584992
             status='active',
             is_featured=True,
             technologies=['Python', 'Go', 'Rust', 'PostgreSQL', 'Docker', 'Kubernetes', 'AI/ML']
@@ -154,7 +169,11 @@ class Command(BaseCommand):
         CommunityLink.objects.create(
             platform='Twitter',
             name='@AtonixCorp',
+<<<<<<< HEAD
+            url='https://twitter.com/AtonixCorp',
+=======
             url='https://x.com/AtonixCorp',
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
             icon='twitter',
             order=1
         )
@@ -194,4 +213,8 @@ class Command(BaseCommand):
             order=1
         )
 
+<<<<<<< HEAD
         self.stdout.write(self.style.SUCCESS('Successfully loaded sample data!'))
+=======
+        self.stdout.write(self.style.SUCCESS('Successfully loaded sample data!'))
+>>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -1,16 +1,16 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+const _api = axios.create({ baseURL: '/api' });
 
-export const quantumService = {
+export const _quantumService = {
   submit: async (circuit: string, shots = 1024, backend = 'simulator') => {
-    const resp = await api.post('/quantum/submit/', { circuit, shots, backend });
+    const resp = await _api.post('/quantum/submit/', { circuit, shots, backend });
     return resp.data;
   },
   status: async (jobId: string) => {
-    const resp = await api.get(`/quantum/status/${jobId}/`);
+    const resp = await _api.get(`/quantum/status/${jobId}/`);
     return resp.data;
   }
 };
 
-export default quantumService;
+export default _quantumService;

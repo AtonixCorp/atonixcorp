@@ -49,8 +49,6 @@ API_DOMAIN = os.getenv('API_DOMAIN', 'https://api.atonixcorp.org')
 
 
 # Redis Configuration
-
-# Redis Configuration
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
 # RabbitMQ Configuration
@@ -108,6 +106,7 @@ INSTALLED_APPS = [
     'dashboard',
     'static_pages',
     'scheduling',
+
     'chat',  # Chat functionality with WebSocket support
     # Celery beat integration for Django (periodic task persistence)
     'django_celery_beat',
@@ -140,6 +139,7 @@ if ZOOKEEPER_ENABLED:
 if KAFKA_ENABLED:
     MIDDLEWARE.insert(-1, 'core.kafka_middleware.KafkaMiddleware')
 
+
 # Defensive check: ensure SessionMiddleware appears before CsrfViewMiddleware
 # Some auxiliary code may reorder or prepend middleware; enforce correct order
 try:
@@ -153,6 +153,7 @@ try:
 except Exception:
     # If MIDDLEWARE is undefined or something unexpected happens, skip silently
     pass
+
 
 ROOT_URLCONF = 'atonixcorp.urls'
 
@@ -285,18 +286,21 @@ SPECTACULAR_SETTINGS = {
     - ⚡ **High Performance** - Redis caching, optimized queries
     - 📡 **Real-time Features** - WebSocket support, live updates
 
+
     ## Authentication
     The API supports multiple authentication methods:
     - **JWT Tokens** - Bearer token authentication
     - **API Keys** - For service-to-service communication
     - **Session Authentication** - For web browser clients
 
+
     ## Rate Limiting
     - **Authenticated Users**: 1000 requests/hour
     - **Anonymous Users**: 100 requests/hour
 
+
     ## Support
-    For technical support, contact: support@atonixcorp.com
+    For technical support, contact: support@atonixcorp.org
     ''',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
@@ -347,6 +351,7 @@ SPECTACULAR_SETTINGS = {
 
 # CORS settings for React frontend
 CORS_ALLOWED_ORIGINS = [
+
     "http://localhost:3001",
     "http://127.0.0.1:3001",
     "http://0.0.0.0:3001",
@@ -384,8 +389,10 @@ class Config:
             return value.split(',') if value else []
         return cast(value) if value is not None else default
 
+
     def list(self, key, default=None):
         return self(key, default or [], cast=list)
+
 
     def bool(self, key, default=False):
         return self(key, default, cast=bool)
@@ -444,6 +451,7 @@ CSRF_USE_SESSIONS = True
 # Update CORS settings
 CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
 cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[
+
     'http://localhost:3001',
     'http://0.0.0.0:3001',
     'http://127.0.0.1:3001',
