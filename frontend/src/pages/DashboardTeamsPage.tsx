@@ -28,7 +28,6 @@ import {
   AccessTime,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 
 interface TeamMember {
   id: string;
@@ -228,11 +227,21 @@ const DashboardTeamsPage: React.FC = () => {
   );
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+            }}
+          >
             Workplace Teams
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -249,11 +258,12 @@ const DashboardTeamsPage: React.FC = () => {
               sm: 'repeat(2, 1fr)',
               md: 'repeat(4, 1fr)',
             },
-            gap: 3,
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
-          <Paper sx={{ p: 3, borderRadius: '16px', textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: '16px', textAlign: 'center' }}>
             <Group sx={{ fontSize: 48, color: '#3b82f6', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {teamMembers.length}
@@ -263,7 +273,7 @@ const DashboardTeamsPage: React.FC = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, borderRadius: '16px', textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: '16px', textAlign: 'center' }}>
             <Work sx={{ fontSize: 48, color: '#10b981', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {teamProjects.filter(p => p.status === 'active').length}
@@ -273,7 +283,7 @@ const DashboardTeamsPage: React.FC = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, borderRadius: '16px', textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: '16px', textAlign: 'center' }}>
             <Business sx={{ fontSize: 48, color: '#f59e0b', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {departments.length}
@@ -283,7 +293,7 @@ const DashboardTeamsPage: React.FC = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, borderRadius: '16px', textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, sm: 2.5, md: 3 }, borderRadius: '16px', textAlign: 'center' }}>
             <TrendingUp sx={{ fontSize: 48, color: '#8b5cf6', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               94%
@@ -337,7 +347,8 @@ const DashboardTeamsPage: React.FC = () => {
                   md: 'repeat(2, 1fr)',
                   lg: 'repeat(3, 1fr)',
                 },
-                gap: 3,
+                gap: { xs: 2, sm: 2.5, md: 3 },
+                width: '100%',
               }}
             >
               {teamMembers.map((member) => (
@@ -354,7 +365,7 @@ const DashboardTeamsPage: React.FC = () => {
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Badge
                         variant="dot"
@@ -446,7 +457,8 @@ const DashboardTeamsPage: React.FC = () => {
                   xs: '1fr',
                   md: 'repeat(2, 1fr)',
                 },
-                gap: 3,
+                gap: { xs: 2, sm: 2.5, md: 3 },
+                width: '100%',
               }}
             >
               {teamProjects.map((project) => (
@@ -537,7 +549,8 @@ const DashboardTeamsPage: React.FC = () => {
                   xs: '1fr',
                   md: 'repeat(2, 1fr)',
                 },
-                gap: 3,
+                gap: { xs: 2, sm: 2.5, md: 3 },
+                width: '100%',
               }}
             >
               {departments.map((dept) => (
@@ -613,7 +626,6 @@ const DashboardTeamsPage: React.FC = () => {
           </TabPanel>
         </Paper>
       </Box>
-    </DashboardLayout>
   );
 };
 

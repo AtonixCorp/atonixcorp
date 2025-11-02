@@ -16,7 +16,7 @@ import {
   Skeleton,
   SelectChangeEvent,
 } from '@mui/material';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Project, Technology, FocusArea } from '../types/api';
 import { mockProjectService, mockTechnologyService, mockFocusAreaService } from '../data/mockData';
 import { projectsApi } from '../services/api';
@@ -27,14 +27,13 @@ const ProjectsPage: React.FC = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [technologies, setTechnologies] = useState<Technology[]>([]);
-  const [focusAreas, setFocusAreas] = useState<FocusArea[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTechnology, setSelectedTechnology] = useState('');
   const [selectedFocusArea, setSelectedFocusArea] = useState('');
-  const navigate = useNavigate();
+  const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [focusAreas, setFocusAreas] = useState<FocusArea[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +48,15 @@ const ProjectsPage: React.FC = () => {
           console.warn('Failed to fetch from API, using mock data:', apiError);
           projectsData = await mockProjectService.getProjects();
         }
-        
+
         setProjects(projectsData);
+
+        // Fetch technologies and focus areas
+        const techData = await mockTechnologyService.getTechnologies();
+        setTechnologies(techData);
+
+        const focusData = await mockFocusAreaService.getFocusAreas();
+        setFocusAreas(focusData);
       } catch (error) {
         console.error('Error fetching projects:', error);
         setError('Failed to load projects');
@@ -202,8 +208,8 @@ const ProjectsPage: React.FC = () => {
           <Typography variant="body1" color="text.secondary" paragraph>
             We're having trouble loading the projects. Please try again.
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => {
               setError(null);
               setLoading(true);
@@ -219,6 +225,13 @@ const ProjectsPage: React.FC = () => {
                     projectsData = await mockProjectService.getProjects();
                   }
                   setProjects(projectsData);
+
+                  // Fetch technologies and focus areas
+                  const techData = await mockTechnologyService.getTechnologies();
+                  setTechnologies(techData);
+
+                  const focusData = await mockFocusAreaService.getFocusAreas();
+                  setFocusAreas(focusData);
                 } catch (err) {
                   console.error('Error fetching projects:', err);
                   setError('Failed to load projects');
@@ -251,7 +264,7 @@ const ProjectsPage: React.FC = () => {
             value={searchTerm}
             onChange={handleSearchChange}
           />
-          
+
           <FormControl fullWidth>
             <InputLabel>Technology</InputLabel>
             <Select
@@ -351,11 +364,11 @@ const ProjectsPage: React.FC = () => {
                     sx={{ mb: 1 }}
                   />
                 </Box>
-                
+
                 <Typography variant="h6" component="h3" gutterBottom>
                   {project.name}
                 </Typography>
-                
+
                 <Typography variant="body2" color="text.secondary" paragraph>
                   {project.description.length > 150
                     ? `${project.description.substring(0, 150)}...`
@@ -450,7 +463,7 @@ const ProjectsPage: React.FC = () => {
             variant="contained"
             color="inherit"
             size="large"
-            sx={{ 
+            sx={{
               color: 'primary.main',
               backgroundColor: 'white',
               '&:hover': {

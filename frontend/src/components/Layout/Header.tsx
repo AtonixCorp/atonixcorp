@@ -29,9 +29,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
 import SignupDialog from '../Auth/SignupDialog';
+import ThemeToggle from '../ThemeToggle';
 
 const Header: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isOrganizationRegistered } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -124,8 +125,8 @@ const Header: React.FC = () => {
               },
             }}
           >
-            <ListItemText 
-              primary={item.name} 
+            <ListItemText
+              primary={item.name}
               primaryTypographyProps={{
                 fontWeight: isActivePath(item.path) ? 600 : 400,
               }}
@@ -138,8 +139,8 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <AppBar 
-        position="sticky" 
+      <AppBar
+        position="sticky"
         elevation={0}
         sx={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -247,7 +248,9 @@ const Header: React.FC = () => {
                   {item.name}
                 </Button>
               ))}
-              
+
+              <ThemeToggle />
+
               {isAuthenticated && user ? (
                 <Box sx={{ ml: 2 }}>
                   <IconButton
@@ -267,10 +270,10 @@ const Header: React.FC = () => {
                       },
                     }}
                   >
-                    <Avatar 
-                      src={user.avatar} 
-                      sx={{ 
-                        width: 36, 
+                    <Avatar
+                      src={user.avatar}
+                      sx={{
+                        width: 36,
                         height: 36,
                         background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
                         fontWeight: 600,
@@ -316,10 +319,10 @@ const Header: React.FC = () => {
                       </Box>
                     </MenuItem>
                     <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />
-                    <MenuItem 
+                    <MenuItem
                       onClick={() => {
                         handleClose();
-                        navigate('/dashboard');
+                        navigate(isOrganizationRegistered ? '/dashboard/enterprise' : '/dashboard');
                       }}
                       sx={{
                         borderRadius: '8px',
@@ -332,9 +335,11 @@ const Header: React.FC = () => {
                       }}
                     >
                       <BusinessIcon sx={{ mr: 2, color: '#64748b' }} />
-                      <Typography variant="body2">Dashboard</Typography>
+                      <Typography variant="body2">
+                        {isOrganizationRegistered ? 'Enterprise Dashboard' : 'Dashboard'}
+                      </Typography>
                     </MenuItem>
-                    <MenuItem 
+                    <MenuItem
                       onClick={handleClose}
                       sx={{
                         borderRadius: '8px',
@@ -349,7 +354,7 @@ const Header: React.FC = () => {
                       <AccountCircle sx={{ mr: 2, color: '#64748b' }} />
                       <Typography variant="body2">Profile</Typography>
                     </MenuItem>
-                    <MenuItem 
+                    <MenuItem
                       onClick={handleClose}
                       sx={{
                         borderRadius: '8px',
@@ -365,7 +370,7 @@ const Header: React.FC = () => {
                       <Typography variant="body2">Settings</Typography>
                     </MenuItem>
                     <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />
-                    <MenuItem 
+                    <MenuItem
                       onClick={handleLogout}
                       sx={{
                         borderRadius: '8px',
@@ -388,7 +393,7 @@ const Header: React.FC = () => {
                     onClick={handleLoginOpen}
                     startIcon={<Person />}
                     variant="outlined"
-                    sx={{ 
+                    sx={{
                       borderColor: '#3b82f6',
                       color: '#3b82f6',
                       borderRadius: '12px',
@@ -408,7 +413,7 @@ const Header: React.FC = () => {
                   <Button
                     onClick={handleSignupOpen}
                     variant="contained"
-                    sx={{ 
+                    sx={{
                       background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
                       borderRadius: '12px',
                       px: 3,

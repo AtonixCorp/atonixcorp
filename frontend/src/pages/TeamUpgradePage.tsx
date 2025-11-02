@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
   CardContent,
   Button,
   Paper,
-  Chip,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   Divider,
-  Avatar,
   Stepper,
   Step,
   StepLabel,
@@ -29,16 +22,13 @@ import {
   DialogActions,
 } from '@mui/material';
 import {
-  Group,
   Check,
   Star,
   Payment,
   CreditCard,
   Security,
   ArrowBack,
-  Info,
   CheckCircle,
-  Cancel,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Team, TeamMembership } from '../types/api';
@@ -59,7 +49,6 @@ interface PricingPlan {
 const TeamUpgradePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const [team, setTeam] = useState<Team | null>(null);
   const [membership, setMembership] = useState<TeamMembership | null>(null);
@@ -260,11 +249,11 @@ const TeamUpgradePage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Box sx={{ px: 3, py: 4 }}>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Paper
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
             background: `linear-gradient(135deg, ${team.color_theme} 0%, ${team.color_theme}CC 100%)`,
             color: 'white',
@@ -272,7 +261,7 @@ const TeamUpgradePage: React.FC = () => {
           }}
         >
           <Star sx={{ fontSize: 48, mb: 2 }} />
-          <Typography variant="h3" component="h1" fontWeight="bold" sx={{ mb: 2 }}>
+          <Typography variant="h3" component="h1" fontWeight="bold" sx={{ mb: 2, fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' } }}>
             Upgrade {team.name}
           </Typography>
           <Typography variant="h6" sx={{ opacity: 0.9 }}>

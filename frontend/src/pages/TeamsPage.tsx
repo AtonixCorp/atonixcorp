@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -45,7 +44,6 @@ import {
   Public,
   Support,
   Login,
-  ExitToApp,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { Team, TeamJoinRequest, TeamMembership } from '../types/api';
@@ -168,11 +166,6 @@ const TeamsPage: React.FC = () => {
   // Check if user is a member of a team
   const isTeamMember = (teamSlug: string) => {
     return !!teamMemberships[teamSlug];
-  };
-
-  // Get membership type for a team
-  const getMembershipType = (teamSlug: string) => {
-    return teamMemberships[teamSlug]?.membership_type || null;
   };
 
   // Handle opening join dialog

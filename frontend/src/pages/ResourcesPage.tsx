@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -64,34 +63,15 @@ const ResourcesPage: React.FC = () => {
   const isDashboardMode = location.pathname.startsWith('/dashboard');
 
   const [tabValue, setTabValue] = useState(0);
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [categories, setCategories] = useState<ResourceCategory[]>([]);
-  const [communityLinks, setCommunityLinks] = useState<CommunityLink[]>([]);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [resourcesRes, categoriesRes, communityRes, faqsRes] = await Promise.all([
-          resourcesApi.getResources(),
-          resourcesApi.getCategories(),
-          resourcesApi.getCommunityLinks(),
-          resourcesApi.getFAQs(),
-        ]);
+    // Simulate loading delay for demo purposes
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
 
-        setResources(resourcesRes.data);
-        setCategories(categoriesRes.data);
-        setCommunityLinks(communityRes.data);
-        setFaqs(faqsRes.data);
-      } catch (error) {
-        console.error('Error fetching resources:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    return () => clearTimeout(timer);
   }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

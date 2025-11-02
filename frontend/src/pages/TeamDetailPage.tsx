@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -167,9 +166,9 @@ const TeamDetailPage: React.FC = () => {
       </Button>
 
       {/* Team Header */}
-      <Paper 
-        sx={{ 
-          p: 4, 
+      <Paper
+        sx={{
+          p: 4,
           mb: 4,
           background: `linear-gradient(135deg, ${team.color_theme} 0%, ${team.color_theme}CC 100%)`,
           color: 'white',

@@ -28,7 +28,6 @@ import {
   Schedule,
   Warning,
 } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 
 interface MetricCardProps {
   title: string;
@@ -55,7 +54,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend, ic
         },
       }}
     >
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <Box sx={{ flex: 1 }}>
             <Typography
@@ -183,8 +182,7 @@ const AnalyticsPage: React.FC = () => {
   ];
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
@@ -196,6 +194,7 @@ const AnalyticsPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Analytics Dashboard
@@ -209,9 +208,10 @@ const AnalyticsPage: React.FC = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-            gap: 3,
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
           {metrics.map((metric, index) => (
@@ -222,7 +222,7 @@ const AnalyticsPage: React.FC = () => {
         </Box>
 
         {/* Charts and Progress */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: { xs: 2.5, sm: 3, md: 3 }, width: '100%' }}>
           {/* Project Progress */}
           <Box sx={{ flex: { xs: '1', lg: '2' } }}>
             <Paper
@@ -231,7 +231,7 @@ const AnalyticsPage: React.FC = () => {
                 border: '1px solid #e2e8f0',
                 background: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
-                p: 3,
+                p: { xs: 2, sm: 2.5, md: 3 },
               }}
             >
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
@@ -295,7 +295,7 @@ const AnalyticsPage: React.FC = () => {
                 border: '1px solid #e2e8f0',
                 background: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
-                p: 3,
+                p: { xs: 2, sm: 2.5, md: 3 },
                 height: 'fit-content',
               }}
             >
@@ -347,8 +347,9 @@ const AnalyticsPage: React.FC = () => {
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: 3,
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mt: 2,
+            width: '100%',
           }}
         >
           <Paper
@@ -357,7 +358,7 @@ const AnalyticsPage: React.FC = () => {
               border: '1px solid #e2e8f0',
               background: 'rgba(255, 255, 255, 0.8)',
               backdropFilter: 'blur(20px)',
-              p: 3,
+              p: { xs: 2, sm: 2.5, md: 3 },
               textAlign: 'center',
             }}
           >
@@ -376,7 +377,7 @@ const AnalyticsPage: React.FC = () => {
               border: '1px solid #e2e8f0',
               background: 'rgba(255, 255, 255, 0.8)',
               backdropFilter: 'blur(20px)',
-              p: 3,
+              p: { xs: 2, sm: 2.5, md: 3 },
               textAlign: 'center',
             }}
           >
@@ -390,7 +391,6 @@ const AnalyticsPage: React.FC = () => {
           </Paper>
         </Box>
       </Box>
-    </DashboardLayout>
   );
 };
 

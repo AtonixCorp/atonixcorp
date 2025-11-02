@@ -34,6 +34,35 @@ export interface User {
   role?: string;
   date_joined: string;
   last_login?: string;
+  organization?: Organization;
+}
+
+export interface Organization {
+  id: number;
+  name: string;
+  domain: string;
+  description?: string;
+  website?: string;
+  industry?: string;
+  size?: string;
+  location?: string;
+  is_registered: boolean;
+  registration_date?: string;
+  subscription_plan?: string;
+  features_enabled: string[];
+}
+
+export interface OrganizationRegistrationRequest {
+  name: string;
+  domain: string;
+  description?: string;
+  website?: string;
+  industry?: string;
+  size?: string;
+  location?: string;
+  admin_email: string;
+  admin_first_name: string;
+  admin_last_name: string;
 }
 
 export interface LoginRequest {
@@ -64,11 +93,14 @@ export interface SignupResponse {
 
 export interface AuthContextType {
   user: User | null;
+  organization: Organization | null;
   isAuthenticated: boolean;
+  isOrganizationRegistered: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
   signup: (userData: SignupRequest) => Promise<void>;
   socialLogin: (provider: SocialProvider) => Promise<void>;
+  registerOrganization: (orgData: OrganizationRegistrationRequest) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
 }

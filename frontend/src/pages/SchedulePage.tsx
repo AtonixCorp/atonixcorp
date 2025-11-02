@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Container, Button, List, ListItem, ListItemText, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
+import { Box, Typography, Paper, Button, List, ListItem, ListItemText, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
 import { Add, Edit, Delete, CalendarToday } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 import { scheduleService } from '../services/scheduleService';
 import { ScheduleItem } from '../types/schedule';
 
@@ -55,17 +54,25 @@ const SchedulePage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Container maxWidth="md">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 4 }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>Schedule Management</Typography>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                mb: 1,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+              }}
+            >
+              Schedule Management
+            </Typography>
             <Typography variant="body2" color="text.secondary">Manage your calendar, appointments, and deadlines.</Typography>
           </Box>
           <Button variant="contained" startIcon={<Add />} onClick={handleOpenNew}>Add Item</Button>
         </Box>
 
-        <Paper sx={{ p: 2 }}>
+        <Paper sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
           {loading ? (
             <Box sx={{ textAlign: 'center', py: 6 }}>
               <Typography>Loading...</Typography>
@@ -105,8 +112,7 @@ const SchedulePage: React.FC = () => {
             <Button variant="contained" onClick={handleSave}>Save</Button>
           </DialogActions>
         </Dialog>
-      </Container>
-    </DashboardLayout>
+      </Box>
   );
 };
 

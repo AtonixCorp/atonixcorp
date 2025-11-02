@@ -16,10 +16,8 @@ import {
   Menu,
   MenuItem,
   Badge,
-  Chip,
   useTheme,
   useMediaQuery,
-  Collapse,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -28,31 +26,25 @@ import {
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   Logout as LogoutIcon,
-  Business as ProjectsIcon,
-  Group as TeamsIcon,
-  TrackChanges as FocusAreasIcon,
-  LibraryBooks as ResourcesIcon,
-  Forum as CommunityIcon,
-  ContactMail as ContactIcon,
-  Analytics as AnalyticsIcon,
-  Task as TasksIcon,
-  Schedule as ScheduleIcon,
+  Business as BusinessIcon,
+  Assessment as AssessmentIcon,
   Security as SecurityIcon,
-  ExpandLess,
-  ExpandMore,
-  Folder,
-  Assignment,
-  People,
-  Timeline,
-  Help as HelpIcon,
-  AccountBalance as EnterpriseIcon,
+  Analytics as AnalyticsIcon,
+  Group as GroupIcon,
+  Storage as StorageIcon,
+  Monitor as MonitorIcon,
+  People as PeopleIcon,
+  Folder as FolderIcon,
+  TableChart as TableChartIcon,
+  CloudUpload as CloudUploadIcon,
+  AccountTree as AccountTreeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 280;
 
-interface DashboardLayoutProps {
+interface EnterpriseLayoutProps {
   children: React.ReactNode;
 }
 
@@ -61,19 +53,17 @@ interface NavItem {
   icon: React.ReactNode;
   path?: string;
   badge?: number;
-  children?: NavItem[];
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const { user, logout } = useAuth();
+  const { user, logout, organization } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'workspace']);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -100,99 +90,60 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   };
 
-  const toggleExpanded = (item: string) => {
-    setExpandedItems(prev =>
-      prev.includes(item)
-        ? prev.filter(i => i !== item)
-        : [...prev, item]
-    );
-  };
-
   const isActivePath = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   const navigationItems: NavItem[] = [
     {
-      text: 'Dashboard',
+      text: 'Company Dashboard',
       icon: <DashboardIcon />,
-      path: '/dashboard',
-    },
-    {
-      text: 'Enterprise',
-      icon: <EnterpriseIcon />,
       path: '/dashboard/enterprise',
     },
     {
-      text: 'Analytics',
-      icon: <AnalyticsIcon />,
-      path: '/dashboard/analytics',
-      badge: 3,
+      text: 'Team Dashboard',
+      icon: <PeopleIcon />,
+      path: '/dashboard/enterprise/team',
     },
     {
-      text: 'My Tasks',
-      icon: <TasksIcon />,
-      path: '/dashboard/tasks',
-      badge: 12,
+      text: 'User Management',
+      icon: <PersonIcon />,
+      path: '/dashboard/enterprise/users',
     },
     {
-      text: 'Schedule',
-      icon: <ScheduleIcon />,
-      path: '/dashboard/schedule',
+      text: 'Group Management',
+      icon: <GroupIcon />,
+      path: '/dashboard/enterprise/groups',
     },
     {
-      text: 'Projects',
-      icon: <ProjectsIcon />,
-      children: [
-        {
-          text: 'All Projects',
-          icon: <Folder />,
-          path: '/dashboard/projects',
-        },
-        {
-          text: 'My Projects',
-          icon: <Assignment />,
-          path: '/dashboard/my-projects',
-          badge: 5,
-        },
-        {
-          text: 'Project Analytics',
-          icon: <Timeline />,
-          path: '/dashboard/project-analytics',
-        },
-      ],
+      text: 'Data Reports',
+      icon: <AssessmentIcon />,
+      path: '/dashboard/enterprise/reports',
     },
     {
-      text: 'Workspace',
-      icon: <TeamsIcon />,
-      children: [
-        {
-          text: 'Teams',
-          icon: <People />,
-          path: '/dashboard/teams',
-        },
-        {
-          text: 'Focus Areas',
-          icon: <FocusAreasIcon />,
-          path: '/dashboard/focus-areas',
-        },
-        {
-          text: 'Resources',
-          icon: <ResourcesIcon />,
-          path: '/dashboard/resources',
-        },
-      ],
+      text: 'Data Migration',
+      icon: <CloudUploadIcon />,
+      path: '/dashboard/enterprise/migration',
     },
     {
-      text: 'Community',
-      icon: <CommunityIcon />,
-      path: '/dashboard/community',
-      badge: 8,
+      text: 'Model Repository',
+      icon: <FolderIcon />,
+      path: '/dashboard/enterprise/models',
     },
     {
-      text: 'Contact',
-      icon: <ContactIcon />,
-      path: '/dashboard/contact',
+      text: 'Monitoring',
+      icon: <MonitorIcon />,
+      path: '/dashboard/enterprise/monitoring',
+    },
+    {
+      text: 'Audit Logs',
+      icon: <TableChartIcon />,
+      path: '/dashboard/enterprise/audit',
+    },
+    {
+      text: 'Federation',
+      icon: <AccountTreeIcon />,
+      path: '/dashboard/enterprise/federation',
     },
   ];
 
@@ -203,9 +154,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       path: '/dashboard/security',
     },
     {
-      text: 'Help & Support',
-      icon: <HelpIcon />,
-      path: '/dashboard/help',
+      text: 'Analytics',
+      icon: <AnalyticsIcon />,
+      path: '/dashboard/analytics',
     },
     {
       text: 'Settings',
@@ -214,85 +165,63 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     },
   ];
 
-  const renderNavItem = (item: NavItem, depth: number = 0) => {
-    const isExpanded = expandedItems.includes(item.text.toLowerCase().replace(' ', ''));
-    const hasChildren = item.children && item.children.length > 0;
+  const renderNavItem = (item: NavItem) => {
     const isActive = item.path ? isActivePath(item.path) : false;
 
     return (
-      <React.Fragment key={item.text}>
-        <ListItem disablePadding>
-          <ListItemButton
-            onClick={() => {
-              if (hasChildren) {
-                toggleExpanded(item.text.toLowerCase().replace(' ', ''));
-              } else if (item.path) {
-                handleNavigation(item.path);
-              }
-            }}
+      <ListItem key={item.text} disablePadding>
+        <ListItemButton
+          onClick={() => item.path && handleNavigation(item.path)}
+          sx={{
+            pl: 2,
+            pr: 2,
+            py: 1.5,
+            borderRadius: '12px',
+            mx: 1,
+            mb: 0.5,
+            backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+            borderLeft: isActive ? '3px solid #3b82f6' : '3px solid transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(59, 130, 246, 0.05)',
+              transform: 'translateX(4px)',
+            },
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <ListItemIcon
             sx={{
-              pl: 2 + (depth * 2),
-              pr: 2,
-              py: 1,
-              borderRadius: '12px',
-              mx: 1,
-              mb: 0.5,
-              backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-              borderLeft: isActive ? '3px solid #3b82f6' : '3px solid transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                transform: 'translateX(4px)',
+              color: isActive ? '#3b82f6' : '#64748b',
+              minWidth: 40,
+              '& .MuiSvgIcon-root': {
+                fontSize: '1.25rem',
               },
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <ListItemIcon
+            {item.icon}
+          </ListItemIcon>
+          <ListItemText
+            primary={item.text}
+            primaryTypographyProps={{
+              fontSize: '0.95rem',
+              fontWeight: isActive ? 600 : 500,
+              color: isActive ? '#3b82f6' : '#1e293b',
+            }}
+          />
+          {item.badge && (
+            <Badge
+              badgeContent={item.badge}
+              color="error"
               sx={{
-                color: isActive ? '#3b82f6' : '#64748b',
-                minWidth: 40,
-                '& .MuiSvgIcon-root': {
-                  fontSize: '1.25rem',
+                '& .MuiBadge-badge': {
+                  fontSize: '0.7rem',
+                  height: '18px',
+                  minWidth: '18px',
                 },
               }}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.text}
-              primaryTypographyProps={{
-                fontSize: '0.95rem',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? '#3b82f6' : '#1e293b',
-              }}
             />
-            {item.badge && (
-              <Chip
-                label={item.badge}
-                size="small"
-                sx={{
-                  height: '20px',
-                  fontSize: '0.75rem',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  fontWeight: 600,
-                }}
-              />
-            )}
-            {hasChildren && (
-              <IconButton size="small" sx={{ color: '#64748b' }}>
-                {isExpanded ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
-            )}
-          </ListItemButton>
-        </ListItem>
-        {hasChildren && (
-          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {item.children!.map((child) => renderNavItem(child, depth + 1))}
-            </List>
-          </Collapse>
-        )}
-      </React.Fragment>
+          )}
+        </ListItemButton>
+      </ListItem>
     );
   };
 
@@ -303,6 +232,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        color: '#1e293b',
       }}
     >
       {/* Logo */}
@@ -317,20 +247,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           variant="h6"
           sx={{
             fontWeight: 800,
-            background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: '#1e293b',
           }}
         >
-          AtonixCorp
+          {organization?.name || 'Enterprise'}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Professional Dashboard
+        <Typography variant="caption" sx={{ color: '#64748b' }}>
+          Enterprise Dashboard
         </Typography>
       </Box>
 
-      {/* User Profile */}
+      {/* Organization Info */}
       <Box
         sx={{
           p: 2,
@@ -346,46 +273,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             borderRadius: '16px',
             background: 'rgba(255, 255, 255, 0.8)',
             border: '1px solid #e2e8f0',
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            },
           }}
-          onClick={handleProfileMenu}
         >
-          <Avatar
-            src={user?.avatar}
+          <BusinessIcon
             sx={{
               width: 48,
               height: 48,
               mr: 2,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
-              border: '2px solid white',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {user?.first_name?.[0] || 'U'}
-          </Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" fontWeight={600} color="#1e293b">
-              {user?.first_name} {user?.last_name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              @{user?.username}
-            </Typography>
-          </Box>
-          <Badge
-            variant="dot"
-            color="success"
-            sx={{
-              '& .MuiBadge-badge': {
-                right: 8,
-                top: 8,
-              },
+              color: '#3b82f6',
+              background: 'rgba(59, 130, 246, 0.1)',
+              borderRadius: '12px',
+              p: 1,
             }}
           />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ color: '#1e293b' }}>
+              {organization?.name}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>
+              {organization?.domain}
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
@@ -432,7 +340,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Dashboard
+            Enterprise Dashboard
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="error">
@@ -491,6 +399,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
+          backgroundColor: '#f8fafc',
         }}
       >
         {/* Mobile top spacing */}
@@ -525,6 +434,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             mt: 1,
             minWidth: 200,
+            color: '#1e293b',
           },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -535,6 +445,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           sx={{
             borderRadius: '8px',
             mx: 1,
+            color: '#1e293b',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               backgroundColor: 'rgba(59, 130, 246, 0.08)',
@@ -550,6 +461,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           sx={{
             borderRadius: '8px',
             mx: 1,
+            color: '#1e293b',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               backgroundColor: 'rgba(59, 130, 246, 0.08)',
@@ -581,4 +493,4 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   );
 };
 
-export default DashboardLayout;
+export default EnterpriseLayout;

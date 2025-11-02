@@ -6,7 +6,6 @@ import {
   CardContent,
   Button,
   Chip,
-  Avatar,
   List,
   ListItem,
   ListItemText,
@@ -38,9 +37,7 @@ import {
   Assignment,
   Person,
   CalendarToday,
-  AccessTime,
 } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 
 interface Task {
   id: number;
@@ -117,16 +114,6 @@ const TasksPage: React.FC = () => {
     dueDate: '',
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return '#22c55e';
-      case 'in-progress': return '#3b82f6';
-      case 'pending': return '#f59e0b';
-      case 'overdue': return '#ef4444';
-      default: return '#64748b';
-    }
-  };
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return '#ef4444';
@@ -165,12 +152,6 @@ const TasksPage: React.FC = () => {
     setCreateDialogOpen(false);
   };
 
-  const handleUpdateTaskStatus = (taskId: number, newStatus: Task['status']) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
-  };
-
   const handleDeleteTask = (taskId: number) => {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
@@ -207,8 +188,7 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
@@ -220,6 +200,7 @@ const TasksPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Task Management
@@ -234,12 +215,13 @@ const TasksPage: React.FC = () => {
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-            gap: 3,
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
           <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Assignment sx={{ fontSize: 32, color: '#3b82f6', mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="#3b82f6">
                 {taskStats.total}
@@ -251,7 +233,7 @@ const TasksPage: React.FC = () => {
           </Card>
 
           <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <CheckCircle sx={{ fontSize: 32, color: '#22c55e', mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="#22c55e">
                 {taskStats.completed}
@@ -263,7 +245,7 @@ const TasksPage: React.FC = () => {
           </Card>
 
           <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Schedule sx={{ fontSize: 32, color: '#f59e0b', mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="#f59e0b">
                 {taskStats.inProgress}
@@ -275,7 +257,7 @@ const TasksPage: React.FC = () => {
           </Card>
 
           <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Warning sx={{ fontSize: 32, color: '#ef4444', mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="#ef4444">
                 {taskStats.overdue}
@@ -292,8 +274,9 @@ const TasksPage: React.FC = () => {
           sx={{
             borderRadius: '16px',
             border: '1px solid #e2e8f0',
-            p: 3,
+            p: { xs: 2, sm: 2.5, md: 3 },
             mb: 3,
+            width: '100%',
           }}
         >
           <Box
@@ -553,7 +536,6 @@ const TasksPage: React.FC = () => {
           <Add />
         </Fab>
       </Box>
-    </DashboardLayout>
   );
 };
 

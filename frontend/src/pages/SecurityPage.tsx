@@ -1,12 +1,10 @@
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { Security } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 
 const SecurityPage: React.FC = () => {
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         <Typography
           variant="h4"
           sx={{
@@ -16,6 +14,7 @@ const SecurityPage: React.FC = () => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             mb: 2,
+            fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
           }}
         >
           Security Center
@@ -30,8 +29,9 @@ const SecurityPage: React.FC = () => {
             border: '1px solid #e2e8f0',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
-            p: 4,
+            p: { xs: 2.5, sm: 3, md: 4 },
             textAlign: 'center',
+            width: '100%',
           }}
         >
           <Security sx={{ fontSize: 64, color: '#22c55e', mb: 2 }} />
@@ -43,7 +43,6 @@ const SecurityPage: React.FC = () => {
           </Typography>
         </Paper>
       </Box>
-    </DashboardLayout>
   );
 };
 

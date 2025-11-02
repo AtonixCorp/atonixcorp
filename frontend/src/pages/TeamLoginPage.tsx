@@ -7,15 +7,11 @@ import {
   Typography,
   Alert,
   Paper,
-  Avatar,
   Chip,
-  Link as MuiLink,
   Divider,
 } from '@mui/material';
 import {
   Group,
-  Lock,
-  Email,
   ArrowBack,
   Info,
 } from '@mui/icons-material';

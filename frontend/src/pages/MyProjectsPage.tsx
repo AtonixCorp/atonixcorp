@@ -23,7 +23,6 @@ import {
   Alert,
   Snackbar,
   Tooltip,
-  Divider,
 } from '@mui/material';
 import {
   Business,
@@ -32,8 +31,6 @@ import {
   VpnKey,
   ContentCopy,
   ExpandMore,
-  PlayArrow,
-  Stop,
   Refresh,
   Settings,
   Add,
@@ -42,7 +39,6 @@ import {
   Cloud,
   Security,
 } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 
 interface TabPanelProps {
@@ -180,8 +176,7 @@ const MyProjectsPage: React.FC = () => {
   ];
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
             <Typography
@@ -193,6 +188,7 @@ const MyProjectsPage: React.FC = () => {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 mb: 1,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
               }}
             >
               My Projects Dashboard
@@ -792,7 +788,6 @@ const MyProjectsPage: React.FC = () => {
           </Alert>
         </Snackbar>
       </Box>
-    </DashboardLayout>
   );
 };
 

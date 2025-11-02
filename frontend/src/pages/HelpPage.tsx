@@ -12,7 +12,6 @@ import {
   TextField,
   InputAdornment,
   Avatar,
-  Divider,
   Paper,
   Stack,
 } from '@mui/material';
@@ -28,9 +27,7 @@ import {
   Phone,
   Forum,
   Lightbulb,
-  QuestionAnswer,
 } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 
 interface FAQItem {
   question: string;
@@ -132,8 +129,7 @@ const HelpPage: React.FC = () => {
   const categories = Array.from(new Set(faqs.map(faq => faq.category)));
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
@@ -145,6 +141,7 @@ const HelpPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 2,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Help & Support Center
@@ -189,10 +186,12 @@ const HelpPage: React.FC = () => {
             gridTemplateColumns: {
               xs: '1fr',
               sm: 'repeat(2, 1fr)',
-              md: 'repeat(4, 1fr)',
+              md: 'repeat(2, 1fr)',
+              lg: 'repeat(4, 1fr)',
             },
-            gap: 3,
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
           <Card
@@ -208,7 +207,7 @@ const HelpPage: React.FC = () => {
               },
             }}
           >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Avatar
                 sx={{
                   width: 56,
@@ -225,7 +224,7 @@ const HelpPage: React.FC = () => {
                 Documentation
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Browse our comprehensive guides
+                Browse comprehensive guides
               </Typography>
             </CardContent>
           </Card>
@@ -243,7 +242,7 @@ const HelpPage: React.FC = () => {
               },
             }}
           >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Avatar
                 sx={{
                   width: 56,
@@ -278,21 +277,21 @@ const HelpPage: React.FC = () => {
               },
             }}
           >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Avatar
                 sx={{
                   width: 56,
                   height: 56,
-                  backgroundColor: '#f59e0b20',
-                  color: '#f59e0b',
+                  backgroundColor: '#8b5cf620',
+                  color: '#8b5cf6',
                   mx: 'auto',
                   mb: 2,
                 }}
               >
-                <QuestionAnswer sx={{ fontSize: 28 }} />
+                <Chat sx={{ fontSize: 28 }} />
               </Avatar>
               <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
-                Ask AI Assistant
+                Ask AI
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Get instant answers
@@ -313,7 +312,7 @@ const HelpPage: React.FC = () => {
               },
             }}
           >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Avatar
                 sx={{
                   width: 56,
@@ -343,8 +342,9 @@ const HelpPage: React.FC = () => {
             border: '1px solid #e2e8f0',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
-            p: 3,
+            p: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
           <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>
@@ -442,7 +442,8 @@ const HelpPage: React.FC = () => {
             border: '1px solid #e2e8f0',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
-            p: 3,
+            p: { xs: 2, sm: 2.5, md: 3 },
+            width: '100%',
           }}
         >
           <Typography variant="h5" fontWeight={700} sx={{ mb: 3, textAlign: 'center' }}>
@@ -457,7 +458,7 @@ const HelpPage: React.FC = () => {
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(4, 1fr)',
               },
-              gap: 3,
+              gap: { xs: 2, sm: 2.5, md: 3 },
             }}
           >
             {contactMethods.map((method, index) => (
@@ -475,7 +476,7 @@ const HelpPage: React.FC = () => {
                   },
                 }}
               >
-                <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
                   <Avatar
                     sx={{
                       width: 56,
@@ -515,7 +516,6 @@ const HelpPage: React.FC = () => {
           </Box>
         </Paper>
       </Box>
-    </DashboardLayout>
   );
 };
 

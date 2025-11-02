@@ -106,7 +106,7 @@ const CommunityPage: React.FC = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
@@ -195,7 +195,7 @@ const CommunityPage: React.FC = () => {
         <Typography variant={isDashboardMode ? "body1" : "h6"} color="text.secondary" sx={{ mb: 4 }}>
           Connect, collaborate, and contribute with fellow developers and innovators
         </Typography>
-        
+
         {!isAuthenticated && !isDashboardMode && (
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
             <Button
@@ -372,8 +372,8 @@ const CommunityPage: React.FC = () => {
                 </Typography>
                 <List dense>
                   {['General', 'Help & Support', 'Project Showcase', 'Feedback', 'Ideas'].map((category) => (
-                    <ListItem 
-                      key={category} 
+                    <ListItem
+                      key={category}
                       sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
                     >
                       <ListItemText primary={category} />
@@ -396,25 +396,25 @@ const CommunityPage: React.FC = () => {
                 </Typography>
                 <List dense>
                   <ListItem>
-                    <ListItemText 
+                    <ListItemText
                       primary="Be respectful and professional"
                       primaryTypographyProps={{ variant: 'body2' }}
                     />
                   </ListItem>
                   <ListItem>
-                    <ListItemText 
+                    <ListItemText
                       primary="Stay on topic and provide value"
                       primaryTypographyProps={{ variant: 'body2' }}
                     />
                   </ListItem>
                   <ListItem>
-                    <ListItemText 
+                    <ListItemText
                       primary="Search before posting duplicates"
                       primaryTypographyProps={{ variant: 'body2' }}
                     />
                   </ListItem>
                   <ListItem>
-                    <ListItemText 
+                    <ListItemText
                       primary="Share knowledge and help others"
                       primaryTypographyProps={{ variant: 'body2' }}
                     />

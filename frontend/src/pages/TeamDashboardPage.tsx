@@ -12,7 +12,6 @@ import {
   Tabs,
   Tab,
   IconButton,
-  Badge,
   LinearProgress,
   List,
   ListItem,
@@ -24,13 +23,9 @@ import {
 import {
   Group,
   Person,
-  Code,
   Assignment,
   Timeline,
-  TrendingUp,
   Work,
-  Business,
-  AccessTime,
   Message,
   Email,
   Star,
@@ -39,12 +34,11 @@ import {
   Dashboard,
   People,
   Folder,
-  CalendarToday,
   BarChart,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Team, TeamMembership, Project } from '../types/api';
-import { teamsApi, projectsApi } from '../services/api';
+import { Team, TeamMembership } from '../types/api';
+import { teamsApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 
@@ -256,16 +250,17 @@ const TeamDashboardPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Box sx={{ px: 3, py: 4 }}>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Team Header */}
         <Paper
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 3, md: 4 },
             mb: 4,
             background: `linear-gradient(135deg, ${team.color_theme} 0%, ${team.color_theme}CC 100%)`,
             color: 'white',
             position: 'relative',
             overflow: 'hidden',
+            width: '100%',
           }}
         >
           <Box sx={{ position: 'relative', zIndex: 1 }}>
@@ -325,8 +320,8 @@ const TeamDashboardPage: React.FC = () => {
         </Paper>
 
         {/* Quick Stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
-          <Card sx={{ textAlign: 'center', p: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, mb: 4, width: '100%' }}>
+          <Card sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
             <Group sx={{ fontSize: 48, color: team.color_theme, mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {team.members.length}
@@ -335,7 +330,7 @@ const TeamDashboardPage: React.FC = () => {
               Team Members
             </Typography>
           </Card>
-          <Card sx={{ textAlign: 'center', p: 2 }}>
+          <Card sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
             <Work sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {projects.filter(p => p.status === 'active').length}
@@ -344,7 +339,7 @@ const TeamDashboardPage: React.FC = () => {
               Active Projects
             </Typography>
           </Card>
-          <Card sx={{ textAlign: 'center', p: 2 }}>
+          <Card sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
             <BarChart sx={{ fontSize: 48, color: 'warning.main', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {activities.length}
@@ -353,7 +348,7 @@ const TeamDashboardPage: React.FC = () => {
               Recent Activities
             </Typography>
           </Card>
-          <Card sx={{ textAlign: 'center', p: 2 }}>
+          <Card sx={{ textAlign: 'center', p: { xs: 2, sm: 2.5, md: 3 } }}>
             <Star sx={{ fontSize: 48, color: 'info.main', mb: 1 }} />
             <Typography variant="h4" fontWeight={700}>
               {isPremium ? 'Premium' : 'Free'}
@@ -387,9 +382,9 @@ const TeamDashboardPage: React.FC = () => {
           </Tabs>
 
           {/* Overview Tab */}
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
             {tabValue === 0 && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: { xs: 2, sm: 2.5, md: 3 }, width: '100%' }}>
                 <Card sx={{ mb: 3 }}>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
@@ -464,7 +459,7 @@ const TeamDashboardPage: React.FC = () => {
 
             {/* Projects Tab */}
             {tabValue === 1 && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, width: '100%' }}>
                 {projects.map((project) => (
                   <Card key={project.id}>
                     <CardContent>
@@ -512,7 +507,7 @@ const TeamDashboardPage: React.FC = () => {
 
             {/* Team Tab */}
             {tabValue === 2 && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, width: '100%' }}>
                 {team.members.map((member) => (
                   <Card key={member.id}>
                     <CardContent>

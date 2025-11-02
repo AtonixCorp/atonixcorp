@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   TextField,
   Button,
   Switch,
@@ -21,12 +19,9 @@ import {
   Security,
   Notifications,
   Palette,
-  Language,
-  AccountCircle,
   Save,
   PhotoCamera,
 } from '@mui/icons-material';
-import DashboardLayout from '../components/Layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 
 interface TabPanelProps {
@@ -87,8 +82,7 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Box>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
@@ -100,6 +94,7 @@ const SettingsPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Settings
@@ -116,6 +111,7 @@ const SettingsPage: React.FC = () => {
             border: '1px solid #e2e8f0',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
+            width: '100%',
           }}
         >
           <Tabs
@@ -139,7 +135,7 @@ const SettingsPage: React.FC = () => {
 
           {/* Profile Tab */}
           <TabPanel value={tabValue} index={0}>
-            <Box sx={{ maxWidth: 600 }}>
+            <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Profile Information
               </Typography>
@@ -237,7 +233,7 @@ const SettingsPage: React.FC = () => {
 
           {/* Notifications Tab */}
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ maxWidth: 600 }}>
+            <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Notification Preferences
               </Typography>
@@ -317,7 +313,7 @@ const SettingsPage: React.FC = () => {
 
           {/* Security Tab */}
           <TabPanel value={tabValue} index={2}>
-            <Box sx={{ maxWidth: 600 }}>
+            <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Security Settings
               </Typography>
@@ -387,7 +383,7 @@ const SettingsPage: React.FC = () => {
 
           {/* Appearance Tab */}
           <TabPanel value={tabValue} index={3}>
-            <Box sx={{ maxWidth: 600 }}>
+            <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Appearance Settings
               </Typography>
@@ -407,7 +403,6 @@ const SettingsPage: React.FC = () => {
           </TabPanel>
         </Paper>
       </Box>
-    </DashboardLayout>
   );
 };
 

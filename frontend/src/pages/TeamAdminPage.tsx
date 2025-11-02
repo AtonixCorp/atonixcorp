@@ -33,19 +33,15 @@ import {
 } from '@mui/material';
 import {
   Group,
-  Person,
   Settings,
   People,
   Security,
   Payment,
-  Email,
   Delete,
   Edit,
   Add,
   Star,
-  Block,
   CheckCircle,
-  Cancel,
   AdminPanelSettings,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -176,15 +172,6 @@ const TeamAdminPage: React.FC = () => {
     // In real app, this would call an API to update settings
   };
 
-  const getMembershipTypeColor = (type: string) => {
-    switch (type) {
-      case 'admin': return 'error';
-      case 'lead': return 'warning';
-      case 'premium': return 'secondary';
-      default: return 'default';
-    }
-  };
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -215,11 +202,11 @@ const TeamAdminPage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Box sx={{ px: 3, py: 4 }}>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Paper
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
             background: `linear-gradient(135deg, ${team.color_theme} 0%, ${team.color_theme}CC 100%)`,
             color: 'white',
@@ -229,7 +216,7 @@ const TeamAdminPage: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AdminPanelSettings sx={{ fontSize: 40, mr: 2 }} />
               <Box>
-                <Typography variant="h3" component="h1" fontWeight="bold">
+                <Typography variant="h3" component="h1" fontWeight="bold" sx={{ fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' } }}>
                   {team.name} Admin Panel
                 </Typography>
                 <Typography variant="h6" sx={{ opacity: 0.9 }}>
@@ -270,7 +257,7 @@ const TeamAdminPage: React.FC = () => {
             <Tab icon={<Payment />} label="Billing" iconPosition="start" />
           </Tabs>
 
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
             {/* Members Tab */}
             {tabValue === 0 && (
               <Box>

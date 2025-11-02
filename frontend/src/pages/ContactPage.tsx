@@ -222,8 +222,8 @@ const ContactPage: React.FC = () => {
         <Alert severity="error" sx={{ mb: 4 }}>
           {error}
         </Alert>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => {
             setError(null);
             setLoading(true);
@@ -267,7 +267,7 @@ const ContactPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                 />
-                
+
                 <TextField
                   fullWidth
                   label="Email"
@@ -277,7 +277,7 @@ const ContactPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                 />
-                
+
                 <TextField
                   fullWidth
                   label="Company (Optional)"
@@ -285,7 +285,7 @@ const ContactPage: React.FC = () => {
                   value={formData.company}
                   onChange={handleInputChange}
                 />
-                
+
                 <TextField
                   fullWidth
                   label="Phone (Optional)"
@@ -293,7 +293,7 @@ const ContactPage: React.FC = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                 />
-                
+
                 <FormControl fullWidth variant="outlined">
                   <InputLabel>Inquiry Type</InputLabel>
                   <Select
@@ -310,7 +310,7 @@ const ContactPage: React.FC = () => {
                     <MenuItem value="other">Other</MenuItem>
                   </Select>
                 </FormControl>
-                
+
                 <TextField
                   fullWidth
                   label="Subject"
@@ -320,7 +320,7 @@ const ContactPage: React.FC = () => {
                   required
                 />
               </Box>
-                
+
               <TextField
                 fullWidth
                 label="Message"
@@ -332,7 +332,7 @@ const ContactPage: React.FC = () => {
                 required
                 sx={{ mb: 3 }}
               />
-                
+
               <Button
                 type="submit"
                 variant="contained"
@@ -340,7 +340,7 @@ const ContactPage: React.FC = () => {
                 disabled={submitting}
                 fullWidth
                 startIcon={<Send />}
-                sx={{ 
+                sx={{
                   py: 1.5,
                   fontSize: '1.1rem',
                   fontWeight: 600
@@ -494,7 +494,7 @@ const ContactPage: React.FC = () => {
               We respond to all inquiries within 24 hours during business days.
             </Typography>
           </Paper>
-          
+
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <CheckCircle sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
@@ -504,7 +504,7 @@ const ContactPage: React.FC = () => {
               Get personalized advice from our experienced technology consultants.
             </Typography>
           </Paper>
-          
+
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Public sx={{ fontSize: 40, color: 'info.main', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
@@ -523,8 +523,8 @@ const ContactPage: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
-        <Alert 
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+        <Alert
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

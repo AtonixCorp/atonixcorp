@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, SignupRequest, AuthContextType, SocialProvider } from '../types/auth';
+import { User, LoginRequest, SignupRequest, AuthContextType, SocialProvider, Organization, OrganizationRegistrationRequest } from '../types/auth';
 import { authService } from '../services/authService';
 import { SocialAuthService } from '../services/socialAuthService';
 
@@ -11,6 +11,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,10 +41,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Attempting login with:', credentials);
       const response = await authService.login(credentials);
       console.log('Login response:', response);
-      
+
       // Store token
       localStorage.setItem('authToken', response.token);
-      
+
       setUser(response.user);
       console.log('Login successful, user set:', response.user);
     } catch (error) {
@@ -60,10 +61,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Attempting signup with:', userData);
       const response = await authService.signup(userData);
       console.log('Signup response:', response);
-      
+
       // Automatically log in after successful signup
       localStorage.setItem('authToken', response.token);
-      
+
       setUser(response.user);
       console.log('Signup successful, user set:', response.user);
     } catch (error) {
@@ -80,11 +81,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (SocialAuthService.isOAuthCallback()) {
         setIsLoading(true);
         const response = await SocialAuthService.handleCallback();
-        
+
         // Store token
         localStorage.setItem('authToken', response.token);
         setUser(response.user);
-        
+
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
       } else {
@@ -104,24 +105,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const registerOrganization = async (orgData: OrganizationRegistrationRequest): Promise<void> => {
+    setIsLoading(true);
+    try {
+      console.log('Registering organization:', orgData);
+      // Mock organization registration for demo
+      const mockOrg: Organization = {
+        id: Date.now(),
+        name: orgData.name,
+        domain: orgData.domain,
+        description: orgData.description,
+        website: orgData.website,
+        industry: orgData.industry,
+        size: orgData.size,
+        location: orgData.location,
+        is_registered: true,
+        registration_date: new Date().toISOString(),
+        subscription_plan: 'enterprise',
+        features_enabled: ['dashboard', 'analytics', 'security', 'compliance'],
+      };
+
+      setOrganization(mockOrg);
+
+      // Update user with organization info
+      if (user) {
+        setUser({ ...user, organization: mockOrg });
+      }
+
+      console.log('Organization registered successfully:', mockOrg);
+    } catch (error) {
+      console.error('Organization registration failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const refreshToken = async (): Promise<void> => {
     try {
-      // In a real app, implement token refresh logic
-      console.log('Token refresh would happen here');
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        // Verify and refresh token with backend
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+      }
     } catch (error) {
       console.error('Token refresh failed:', error);
       logout();
-      throw error;
     }
   };
 
   const value: AuthContextType = {
     user,
+    organization,
     isAuthenticated: !!user,
+    isOrganizationRegistered: !!organization?.is_registered,
     isLoading,
     login,
     signup,
     socialLogin,
+    registerOrganization,
     logout,
     refreshToken,
   };

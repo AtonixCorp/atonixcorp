@@ -70,7 +70,7 @@ const FocusAreaDetailPage: React.FC = () => {
           const allAreas = await mockFocusAreaService.getFocusAreas();
           area = allAreas.find(a => a.slug === slug);
         }
-        
+
         if (area) {
           setFocusArea(area);
         } else {
@@ -165,9 +165,9 @@ const FocusAreaDetailPage: React.FC = () => {
       </Button>
 
       {/* Focus Area Header */}
-      <Paper 
-        sx={{ 
-          p: 4, 
+      <Paper
+        sx={{
+          p: 4,
           mb: 4,
           background: `linear-gradient(135deg, ${focusArea.color_theme} 0%, ${focusArea.color_theme}CC 100%)`,
           color: 'white',
@@ -227,7 +227,7 @@ const FocusAreaDetailPage: React.FC = () => {
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Comprehensive solutions designed to address specific challenges in {focusArea.name.toLowerCase()}.
               </Typography>
-              
+
               {focusArea.solutions.map((solution, index) => (
                 <Accordion
                   key={solution.id}
@@ -237,7 +237,7 @@ const FocusAreaDetailPage: React.FC = () => {
                 >
                   <AccordionSummary
                     expandIcon={<ExpandMore />}
-                    sx={{ 
+                    sx={{
                       backgroundColor: `${focusArea.color_theme}10`,
                       '&:hover': { backgroundColor: `${focusArea.color_theme}20` }
                     }}
@@ -246,14 +246,14 @@ const FocusAreaDetailPage: React.FC = () => {
                       <Typography variant="h6" fontWeight="bold" sx={{ flexGrow: 1 }}>
                         {solution.title}
                       </Typography>
-                      <Chip 
-                        label={`Solution ${index + 1}`} 
-                        size="small" 
-                        sx={{ 
+                      <Chip
+                        label={`Solution ${index + 1}`}
+                        size="small"
+                        sx={{
                           backgroundColor: focusArea.color_theme,
                           color: 'white',
                           mr: 2
-                        }} 
+                        }}
                       />
                     </Box>
                   </AccordionSummary>
@@ -261,7 +261,7 @@ const FocusAreaDetailPage: React.FC = () => {
                     <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.6 }}>
                       {solution.description}
                     </Typography>
-                    
+
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
                       {/* Benefits */}
                       <Box>
@@ -275,7 +275,7 @@ const FocusAreaDetailPage: React.FC = () => {
                               <ListItemIcon sx={{ minWidth: 24 }}>
                                 <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
                               </ListItemIcon>
-                              <ListItemText 
+                              <ListItemText
                                 primary={benefit}
                                 primaryTypographyProps={{ variant: 'body2' }}
                               />
@@ -283,7 +283,7 @@ const FocusAreaDetailPage: React.FC = () => {
                           ))}
                         </List>
                       </Box>
-                      
+
                       {/* Use Cases */}
                       <Box>
                         <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
@@ -296,7 +296,7 @@ const FocusAreaDetailPage: React.FC = () => {
                               <ListItemIcon sx={{ minWidth: 24 }}>
                                 <CheckCircle sx={{ fontSize: 16, color: focusArea.color_theme }} />
                               </ListItemIcon>
-                              <ListItemText 
+                              <ListItemText
                                 primary={useCase}
                                 primaryTypographyProps={{ variant: 'body2' }}
                               />
@@ -405,7 +405,7 @@ const FocusAreaDetailPage: React.FC = () => {
                   to="/contact"
                   variant="contained"
                   fullWidth
-                  sx={{ 
+                  sx={{
                     backgroundColor: focusArea.color_theme,
                     '&:hover': {
                       backgroundColor: focusArea.color_theme,
@@ -420,7 +420,7 @@ const FocusAreaDetailPage: React.FC = () => {
                   to="/projects"
                   variant="outlined"
                   fullWidth
-                  sx={{ 
+                  sx={{
                     borderColor: focusArea.color_theme,
                     color: focusArea.color_theme,
                     '&:hover': {

@@ -169,7 +169,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDa
             <MoreVert />
           </IconButton>
         </Box>
-        
+
         <Chip
           label={status.toUpperCase()}
           size="small"
@@ -181,7 +181,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDa
             mb: 2,
           }}
         />
-        
+
         <Box sx={{ mb: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2" color="text.secondary">
@@ -205,7 +205,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDa
             }}
           />
         </Box>
-        
+
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <CalendarToday sx={{ fontSize: 16, color: '#64748b', mr: 1 }} />
@@ -405,7 +405,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Box>
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
@@ -417,6 +417,7 @@ const Dashboard: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 1,
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Welcome back, {user?.first_name}! 👋
@@ -426,13 +427,19 @@ const Dashboard: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Responsive Grid */}
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-            gap: 3,
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(2, 1fr)',
+              lg: 'repeat(4, 1fr)',
+            },
+            gap: { xs: 2, sm: 2.5, md: 3 },
             mb: 4,
+            width: '100%',
           }}
         >
           {stats.map((stat, index) => (
@@ -440,20 +447,33 @@ const Dashboard: React.FC = () => {
           ))}
         </Box>
 
-        {/* Main Content Grid */}
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3 }}>
+        {/* Main Content Grid - Full Width with Wrapping */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: '1fr 1fr',
+              lg: '2fr 1fr',
+            },
+            gap: { xs: 2.5, sm: 3, md: 3, lg: 3 },
+            mb: 4,
+            width: '100%',
+          }}
+        >
           {/* Recent Projects */}
-          <Box sx={{ flex: { xs: '1', lg: '2' } }}>
+          <Box sx={{ width: '100%' }}>
             <Paper
               sx={{
                 borderRadius: '20px',
                 border: '1px solid #e2e8f0',
                 background: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
+                height: '100%',
               }}
             >
-              <Box sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+              <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
                   <Typography variant="h6" fontWeight={700}>
                     Recent Projects
                   </Typography>
@@ -463,6 +483,7 @@ const Dashboard: React.FC = () => {
                       borderRadius: '12px',
                       textTransform: 'none',
                       fontWeight: 600,
+                      fontSize: { xs: '0.875rem', md: '1rem' },
                     }}
                   >
                     View All
@@ -471,8 +492,15 @@ const Dashboard: React.FC = () => {
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: 'repeat(3, 1fr)' },
-                    gap: 3,
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: 'repeat(2, 1fr)',
+                      md: '1fr',
+                      lg: 'repeat(2, 1fr)',
+                      xl: 'repeat(3, 1fr)',
+                    },
+                    gap: { xs: 2, sm: 2.5, md: 2.5 },
+                    width: '100%',
                   }}
                 >
                   {recentProjects.map((project, index) => (
@@ -484,17 +512,17 @@ const Dashboard: React.FC = () => {
           </Box>
 
           {/* Today's Tasks */}
-          <Box sx={{ flex: '1' }}>
+          <Box sx={{ width: '100%' }}>
             <Paper
               sx={{
                 borderRadius: '20px',
                 border: '1px solid #e2e8f0',
                 background: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(20px)',
-                height: 'fit-content',
+                height: '100%',
               }}
             >
-              <Box sx={{ p: 3 }}>
+              <Box sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                   <Typography variant="h6" fontWeight={700}>
                     Today's Tasks
@@ -503,6 +531,8 @@ const Dashboard: React.FC = () => {
                     sx={{
                       backgroundColor: '#3b82f620',
                       color: '#3b82f6',
+                      width: 36,
+                      height: 36,
                       '&:hover': {
                         backgroundColor: '#3b82f640',
                       },
@@ -511,7 +541,7 @@ const Dashboard: React.FC = () => {
                     <Add />
                   </IconButton>
                 </Box>
-                <List sx={{ p: 0 }}>
+                <List sx={{ p: 0, width: '100%' }}>
                   {todayTasks.map((task, index) => (
                     <TaskItem key={index} {...task} />
                   ))}
@@ -519,11 +549,10 @@ const Dashboard: React.FC = () => {
               </Box>
             </Paper>
           </Box>
-
-          {/* Quick Actions - Full Width */}
         </Box>
-        
-        <Box sx={{ mt: 3 }}>
+
+        {/* Quick Actions - Full Width */}
+        <Box sx={{ width: '100%' }}>
           <Paper
             sx={{
               borderRadius: '20px',
@@ -532,11 +561,23 @@ const Dashboard: React.FC = () => {
               backdropFilter: 'blur(20px)',
             }}
           >
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Quick Actions
               </Typography>
-              <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, 1fr)',
+                    md: 'repeat(2, 1fr)',
+                    lg: 'repeat(4, 1fr)',
+                  },
+                  gap: { xs: 1.5, sm: 2, md: 2 },
+                  width: '100%',
+                }}
+              >
                 <Button
                   variant="contained"
                   startIcon={<Add />}
@@ -546,6 +587,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 600,
                     background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
                     boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                    py: 1.5,
                     '&:hover': {
                       boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)',
                     },
@@ -562,6 +604,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 600,
                     borderColor: '#22c55e',
                     color: '#22c55e',
+                    py: 1.5,
                     '&:hover': {
                       backgroundColor: '#22c55e10',
                       borderColor: '#22c55e',
@@ -579,6 +622,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 600,
                     borderColor: '#f59e0b',
                     color: '#f59e0b',
+                    py: 1.5,
                     '&:hover': {
                       backgroundColor: '#f59e0b10',
                       borderColor: '#f59e0b',
@@ -596,6 +640,7 @@ const Dashboard: React.FC = () => {
                     fontWeight: 600,
                     borderColor: '#8b5cf6',
                     color: '#8b5cf6',
+                    py: 1.5,
                     '&:hover': {
                       backgroundColor: '#8b5cf610',
                       borderColor: '#8b5cf6',
@@ -604,7 +649,7 @@ const Dashboard: React.FC = () => {
                 >
                   Generate Report
                 </Button>
-              </Stack>
+              </Box>
             </Box>
           </Paper>
         </Box>
