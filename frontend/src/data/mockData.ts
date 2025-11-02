@@ -29,12 +29,8 @@ export const _mockFocusAreas: FocusArea[] = [
     slug: 'infrastructure',
     description: 'Core platform infrastructure and DevOps solutions for scalable, reliable systems',
     detailed_description: 'Building robust, scalable infrastructure solutions that power enterprise applications. Our expertise spans cloud architecture, container orchestration, CI/CD pipelines, and infrastructure automation. We focus on creating resilient systems that can handle massive scale while maintaining security and performance.',
-    icon: 'cloud',
-<<<<<<< HEAD
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-=======
-
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
+  icon: 'cloud',
+  image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     color_theme: '#1976d2',
     is_active: true,
     order: 1,
@@ -503,11 +499,7 @@ export const _mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/planivar',
     documentation_url: 'https://docs.atonixcorp.org/planivar',
     is_featured: true,
-<<<<<<< HEAD
-    focus_areas: [mockFocusAreas[5]], // Big Data & Analytics
-=======
-    focus_areas: [_mockFocusAreas[1]],
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
+    focus_areas: [_mockFocusAreas[1]], // Big Data & Analytics
     start_date: '2024-02-01',
     created_at: '2024-02-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -516,7 +508,6 @@ export const _mockProjects: Project[] = [
   },
   {
     id: 3,
-<<<<<<< HEAD
     name: 'Voltoraiq',
     slug: 'voltoraiq',
     overview: 'A comprehensive full-stack web application for monitoring and managing solar energy systems.',
@@ -535,7 +526,7 @@ export const _mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/voltoraiq',
     documentation_url: 'https://docs.atonixcorp.org/voltoraiq',
     is_featured: true,
-    focus_areas: [mockFocusAreas[3]], // Smart Agriculture & IoT
+    focus_areas: [_mockFocusAreas[3]], // Smart Agriculture & IoT
     start_date: '2024-03-01',
     created_at: '2024-03-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -545,18 +536,10 @@ export const _mockProjects: Project[] = [
   {
     id: 4,
     name: 'Osrovnet',
-    slug: 'osrovnet',
-    overview: 'Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design.',
-    description: 'Osrovnet is AtonixCorp\'s flagship platform for advanced network security, threat intelligence, and resilient infrastructure design. Built for sovereign systems and mission-critical environments, Osrovnet empowers organizations to defend from protocol to perimeter with precision, insight, and autonomy.',
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-=======
-
-      name: 'Osrovnet',
-      slug: 'atonixcorp-security',
-      overview: 'Osrovnet: advanced network security and threat analysis platform.',
-      description: 'Osrovnet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
-      image: '/images/projects/atonixcorp-security.jpg',
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
+    slug: 'atonixcorp-security',
+    overview: 'Osrovnet: advanced network security and threat analysis platform.',
+    description: 'Osrovnet provides comprehensive network monitoring, threat detection, and security analytics for enterprise environments. Built with scalability and real-time analysis in mind.',
+    image: '/images/projects/atonixcorp-security.jpg',
     technologies: [
       { id: 4, name: 'Python' },
       { id: 13, name: 'Go' },
@@ -567,13 +550,6 @@ export const _mockProjects: Project[] = [
       { id: 10, name: 'AI/ML' }
     ],
     status: 'active',
-<<<<<<< HEAD
-    github_url: 'https://github.com/AtonixCorp/osrovnet',
-    documentation_url: 'https://docs.atonixcorp.org/osrovnet',
-    is_featured: true,
-    focus_areas: [mockFocusAreas[2]], // Cybersecurity & Network Protection
-=======
-
     github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
     documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
     is_featured: true,
@@ -581,30 +557,6 @@ export const _mockProjects: Project[] = [
     start_date: '2024-03-01',
     created_at: '2024-03-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
-    features: [],
-    images: []
-  },
-  {
-    id: 4,
-    name: 'AgroTech Suite',
-    slug: 'agrotech-suite',
-    overview: 'Smart farming and agricultural management platform.',
-    description: 'Comprehensive IoT-enabled agricultural management system that helps farmers optimize crop yields, monitor soil conditions, and manage resources efficiently using data-driven insights.',
-    image: '/images/projects/agrotech-suite.jpg',
-    technologies: [
-      { id: 4, name: 'Python' },
-      { id: 1, name: 'React' },
-      { id: 10, name: 'AI/ML' },
-      { id: 6, name: 'Docker' }
-    ],
-    status: 'development',
-  github_url: 'https://github.com/AtonixCorp/agrotech-suite',
-    is_featured: false,
-    focus_areas: [_mockFocusAreas[3]],
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
-    start_date: '2024-04-01',
-    created_at: '2024-04-01T00:00:00Z',
-    updated_at: '2025-10-31T00:00:00Z',
     features: [],
     images: []
   },
@@ -625,18 +577,11 @@ export const _mockProjects: Project[] = [
       { id: 6, name: 'Docker' },
       { id: 7, name: 'Kubernetes' }
     ],
-<<<<<<< HEAD
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/tujengepay',
     documentation_url: 'https://docs.atonixcorp.org/tujengepay',
     is_featured: true,
-    focus_areas: [mockFocusAreas[4]], // Fintech & Blockchain
-=======
-    status: 'development',
-  github_url: 'https://github.com/AtonixCorp/finsecure-blockchain',
-    is_featured: false,
-    focus_areas: [_mockFocusAreas[4]],
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
+    focus_areas: [_mockFocusAreas[4]], // Fintech & Blockchain
     start_date: '2024-05-01',
     created_at: '2024-05-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',

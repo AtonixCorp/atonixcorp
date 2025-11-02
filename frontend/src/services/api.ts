@@ -63,23 +63,25 @@ export const projectsApi = {
 
 // Teams API
 export const teamsApi = {
-<<<<<<< HEAD
-  getAll: () => api.get<Team[]>('/teams/'),
-  getBySlug: (slug: string) => api.get<Team>(`/teams/${slug}/`),
-  getMembers: (slug: string) => api.get(`/teams/${slug}/members/`),
-  getSkills: (slug: string) => api.get(`/teams/${slug}/skills/`),
-  join: (slug: string, data?: { membership_type?: string; role?: string; bio?: string }) =>
-    api.post(`/teams/${slug}/join/`, data),
-  getMembership: (slug: string) => api.get(`/teams/${slug}/membership/`),
-  leave: (slug: string) => api.post(`/teams/${slug}/leave/`),
-  teamLogin: (data: { username: string; password: string; team_slug: string }) =>
-    api.post('/auth/team-login/', data),
-=======
+  // Basic team endpoints
   getAll: () => _api.get<Team[]>('/teams/'),
   getBySlug: (slug: string) => _api.get<Team>(`/teams/${slug}/`),
   getMembers: (slug: string) => _api.get(`/teams/${slug}/members/`),
   getSkills: (slug: string) => _api.get(`/teams/${slug}/skills/`),
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
+
+  // Enterprise-specific helpers used by pages/components
+  list: (enterpriseId: string) => _api.get<Team[]>(`/enterprises/${enterpriseId}/teams/`),
+  create: (enterpriseId: string, data: any) => _api.post(`/enterprises/${enterpriseId}/teams/`, data),
+
+  // Membership flow
+  join: (slug: string, data?: { membership_type?: string; role?: string; bio?: string }) =>
+    _api.post(`/teams/${slug}/join/`, data),
+  leave: (slug: string) => _api.post(`/teams/${slug}/leave/`),
+  getMembership: (slug: string) => _api.get(`/teams/${slug}/membership/`),
+
+  // Team auth (if used)
+  teamLogin: (data: { username: string; password: string; team_slug: string }) =>
+    _api.post('/auth/team-login/', data),
 };
 
 // Focus Areas API
@@ -159,8 +161,4 @@ export const _focusAreaService = {
   }
 };
 
-<<<<<<< HEAD
-export default api;
-=======
 export default _api;
->>>>>>> cf817c2f425914921dfacd00e49554c630584992

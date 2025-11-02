@@ -5,18 +5,14 @@ import {
   Button,
   Paper,
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Rocket as RocketIcon,
   Group as GroupIcon,
   TrackChanges as TargetIcon,
   FlashOn as FlashIcon,
 } from '@mui/icons-material';
-<<<<<<< HEAD
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import DynamicHeroSection from '../components/Hero/DynamicHeroSection';
-=======
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();

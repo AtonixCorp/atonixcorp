@@ -46,15 +46,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login(credentials);
       console.log('Login response:', response);
 
-      // Store token
-<<<<<<< HEAD
-      localStorage.setItem('authToken', response.token);
-
-=======
+  // Store token
   localStorage.setItem('authToken', response.token);
   setAuthToken(response.token);
-      
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
       setUser(response.user);
       console.log('Login successful, user set:', response.user);
     } catch (error) {
@@ -72,15 +66,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.signup(userData);
       console.log('Signup response:', response);
 
-      // Automatically log in after successful signup
-<<<<<<< HEAD
-      localStorage.setItem('authToken', response.token);
-
-=======
+  // Automatically log in after successful signup
   localStorage.setItem('authToken', response.token);
   setAuthToken(response.token);
-      
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
       setUser(response.user);
       console.log('Signup successful, user set:', response.user);
     } catch (error) {
@@ -96,21 +84,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Check if this is a callback from OAuth provider
       if (SocialAuthService.isOAuthCallback()) {
         setIsLoading(true);
-        const response = await SocialAuthService.handleCallback();
-<<<<<<< HEAD
+  const response = await SocialAuthService.handleCallback();
 
-        // Store token
-        localStorage.setItem('authToken', response.token);
-        setUser(response.user);
-
-=======
-        
   // Store token
   localStorage.setItem('authToken', response.token);
   setAuthToken(response.token);
   setUser(response.user);
-        
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
       } else {

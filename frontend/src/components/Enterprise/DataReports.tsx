@@ -1,5 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
 import {
   Box,
   Typography,
@@ -65,11 +64,3 @@ const DataReports: React.FC = () => {
 };
 
 export default DataReports;
-=======
-
-const _DataReports: React.FC = () => {
-	return <div />;
-};
-
-export default _DataReports;
->>>>>>> cf817c2f425914921dfacd00e49554c630584992
