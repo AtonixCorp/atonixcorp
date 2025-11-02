@@ -131,42 +131,48 @@ const DynamicHeroSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showStory, setShowStory] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const storyIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
+  const storyIntervalRef = useRef<number | null>(null);
 
   const currentStory = projectStories[currentIndex];
   const SLIDE_DURATION = 8000; // 8 seconds per project
   const STORY_DURATION = 2000; // 2 seconds per story line
 
+  // Run the slideshow interval once. We don't want to recreate the interval on every index change
+  // (that could lead to unexpected behavior). Manual selection still works via handleProjectSelect.
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
+    intervalRef.current = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % projectStories.length);
       setShowStory(false);
       setStoryIndex(0);
     }, SLIDE_DURATION);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
-  }, [currentIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Only start the story interval when showStory is true. Do not include storyIndex as a dependency
+  // so we don't recreate the timer on every tick.
   useEffect(() => {
-    if (showStory && currentStory.story.length > 0) {
-      storyIntervalRef.current = setInterval(() => {
-        setStoryIndex((prev) => {
-          if (prev >= currentStory.story.length - 1) {
-            setShowStory(false);
-            return 0;
-          }
-          return prev + 1;
-        });
-      }, STORY_DURATION);
+    if (!showStory || currentStory.story.length === 0) return;
 
-      return () => {
-        if (storyIntervalRef.current) clearInterval(storyIntervalRef.current);
-      };
-    }
-  }, [showStory, currentStory.story.length, storyIndex]);
+    storyIntervalRef.current = window.setInterval(() => {
+      setStoryIndex((prev) => {
+        if (prev >= currentStory.story.length - 1) {
+          setShowStory(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, STORY_DURATION);
+
+    return () => {
+      if (storyIntervalRef.current) window.clearInterval(storyIntervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showStory, currentStory.story.length]);
 
   useEffect(() => {
     // Show story after 2 seconds
@@ -467,8 +473,15 @@ const ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    let animationId: number | null = null;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
 
     const particles: Array<{
       x: number;
@@ -491,6 +504,7 @@ const ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
     }
 
     const animate = () => {
+      if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((particle) => {
@@ -502,14 +516,24 @@ const ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
 
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `${color}${Math.floor(particle.opacity * 255).toString(16).padStart(2, '0')}`;
+        // draw with global alpha to respect opacity
+        const prevAlpha = ctx.globalAlpha;
+        ctx.globalAlpha = particle.opacity;
+        ctx.fillStyle = color;
         ctx.fill();
+        ctx.globalAlpha = prevAlpha;
       });
 
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId !== null) cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color]);
 
   return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />;

@@ -351,13 +351,17 @@ SPECTACULAR_SETTINGS = {
 
 # CORS settings for React frontend
 CORS_ALLOWED_ORIGINS = [
-
-    "http://localhost:3001",
+    # Local development origins (CRA default is 3000)
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",    # if you run the frontend on 3001
     "http://127.0.0.1:3001",
     "http://0.0.0.0:3001",
+    # Production origins
     "https://atonixcorp.org",
     "https://www.atonixcorp.org",
-    "http://atonixcorp.org",  # Allow HTTP for development
+    # Allow HTTP hostnames for testing (optional)
+    "http://atonixcorp.org",
     "http://www.atonixcorp.org",
 ]
 
@@ -451,12 +455,14 @@ CSRF_USE_SESSIONS = True
 # Update CORS settings
 CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
 cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[
-
+    # Keep defaults in sync with CORS_ALLOWED_ORIGINS above
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'http://localhost:3001',
-    'http://0.0.0.0:3001',
     'http://127.0.0.1:3001',
+    'http://0.0.0.0:3001',
     'https://atonixcorp.org',
-    'https://www.atonixcorp.org'
+    'https://www.atonixcorp.org',
 ])
 if cors_origins:
     CORS_ALLOWED_ORIGINS.extend(cors_origins)
