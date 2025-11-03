@@ -22,7 +22,7 @@ from .auth_views import LoginView, SignupView, LogoutView, MeView
 # from observability.views import telemetry_endpoint
 from core.health import health_check
 from core.api_utils import APIRootSerializer
-from core.views import landing_page, api_info, api_documentation
+from core.views import landing_page, api_info, api_documentation, interactive_api_root, browse_projects, browse_api_endpoint
 from .quantum_views import submit_job, job_status
 from core.quantum_client import submit_quantum_job, get_job_status
 from django.views.decorators.csrf import csrf_exempt
@@ -74,6 +74,10 @@ def api_root(request):
                 "resources": {"url": f"{base_url}/api/resources/", "description": "Resource management and sharing"},
                 "dashboard": {"url": f"{base_url}/api/dashboard/", "description": "Analytics and dashboard data"},
                 "contact": {"url": f"{base_url}/api/contact/", "description": "Contact form and communication"},
+                "chat": {"url": f"{base_url}/api/chat/", "description": "Real-time messaging and communication"},
+                "analytics": {"url": f"{base_url}/api/status/analytics/", "description": "Comprehensive site analytics and statistics"},
+                "status": {"url": f"{base_url}/api/status/status/", "description": "Real-time system status and health monitoring"},
+                "api_usage": {"url": f"{base_url}/api/status/usage/", "description": "Detailed API usage statistics (authenticated)"},
             },
             "system": {"health_check": f"{base_url}/health/", "admin_panel": f"{base_url}/admin/"},
             "support": {"email": "support@atonixcorp.com", "documentation": "https://docs.atonixcorp.org", "website": "https://atonixcorp.org"},
@@ -99,6 +103,11 @@ urlpatterns = [
     # Professional API Documentation page
     path("api/documentation/", api_documentation, name="api-documentation"),
 
+    # Interactive API Browser
+    path("api/browse/", interactive_api_root, name="interactive-api-root"),
+    path("api/browse/projects/", browse_projects, name="browse-projects"),
+    path("api/browse/<str:endpoint_type>/", browse_api_endpoint, name="browse-api-endpoint"),
+
     # Health check endpoints
     path("api/health/", health_check, name="api-health-check"),
     path("health/", health_check, name="health-check"),
@@ -121,11 +130,16 @@ urlpatterns = [
     # Activity tracking endpoints (ingest and listing of user events)
     path("api/v1/activity/", include("activity.urls")),
     path("api/", include("enterprises.urls")),
+    # Chat and communication endpoints
+    path("api/chat/", include("chat.urls")),
     # Static informational pages accessible via footer links
     path("pages/", include("static_pages.urls", namespace="static_pages")),
 
     # System and monitoring endpoints
     # path('api/zookeeper/', include('core.zookeeper_urls')),  # Temporarily disabled
+
+    # Observability and analytics endpoints
+    path("api/status/", include("observability.urls")),
 
     # Quantum service proxy (development)
     path("api/quantum/submit/", submit_job, name="quantum-submit"),

@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+
+{% block title %}Interactive API Browser - AtonixCorp Platform{% endblock %}
+
+{% block extra_head %}
+<style>
+.api-browser {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.api-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.endpoints-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.endpoint-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+}
+
+.endpoint-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+    border-color: #3b82f6;
+}
+
+.endpoint-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.endpoint-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+}
+
+.endpoint-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.endpoint-description {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.endpoint-url {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 1rem;
+    word-break: break-all;
+}
+
+.endpoint-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-tag {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.endpoint-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+    border: 1px solid #3b82f6;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.btn-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.auth-required {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.auth-optional {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.system-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.system-section h3 {
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.system-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.system-link:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.system-link-icon {
+    width: 32px;
+    height: 32px;
+    background: #e0e7ff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3730a3;
+}
+
+@media (max-width: 768px) {
+    .api-browser {
+        padding: 1rem;
+    }
+
+    .endpoints-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .endpoint-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="api-browser">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 1rem;">
+            Interactive API Browser
+        </h1>
+        <p style="font-size: 1.25rem; color: #6b7280; max-width: 600px; margin: 0 auto;">
+            Explore and interact with all AtonixCorp Platform API endpoints through an intuitive web interface
+        </p>
+    </div>
+
+    <!-- API Statistics -->
+    <div class="api-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ projects_count }}</div>
+            <div class="stat-label">Projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ teams_count }}</div>
+            <div class="stat-label">Teams</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ resources_count }}</div>
+            <div class="stat-label">Resources</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ focus_areas_count }}</div>
+            <div class="stat-label">Focus Areas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ contact_persons_count }}</div>
+            <div class="stat-label">Contacts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ office_locations_count }}</div>
+            <div class="stat-label">Locations</div>
+        </div>
+    </div>
+
+    <!-- API Endpoints -->
+    <div class="endpoints-grid">
+        {% for key, endpoint in endpoints.items %}
+        <div class="endpoint-card">
+            <div class="endpoint-header">
+                <div class="endpoint-icon">
+                    {% if key == 'projects' %}📁{% elif key == 'teams' %}👥{% elif key == 'focus_areas' %}🎯{% elif key == 'resources' %}📚{% elif key == 'dashboard' %}📊{% elif key == 'contact' %}📞{% elif key == 'analytics' %}📈{% elif key == 'status' %}⚡{% endif %}
+                </div>
+                <h3 class="endpoint-title">{{ endpoint.description|title }}</h3>
+            </div>
+
+            <p class="endpoint-description">{{ endpoint.description }}</p>
+
+            <div class="endpoint-url">{{ endpoint.url }}</div>
+
+            <div class="endpoint-features">
+                {% for feature in endpoint.features %}
+                <span class="feature-tag">{{ feature }}</span>
+                {% endfor %}
+                {% if endpoint.auth_required %}
+                <span class="auth-badge auth-required">🔒 Auth Required</span>
+                {% else %}
+                <span class="auth-badge auth-optional">🌐 Public Access</span>
+                {% endif %}
+            </div>
+
+            <div class="endpoint-actions">
+                <a href="{{ endpoint.interactive_url }}" class="btn btn-primary">
+                    🖥️ Browse Interactively
+                </a>
+                <a href="{{ endpoint.url }}" class="btn btn-secondary" target="_blank">
+                    📡 View JSON API
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- System Endpoints -->
+    <div class="system-section">
+        <h3>System & Documentation</h3>
+        <div class="system-grid">
+            <a href="{{ system_endpoints.docs }}" class="system-link" target="_blank">
+                <div class="system-link-icon">📖</div>
+                <div>
+                    <div style="font-weight: 600;">Interactive Documentation</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Swagger UI with API testing</div>
+                </div>
+            </a>
+
+            <a href="{{ system_endpoints.redoc }}" class="system-link" target="_blank">
+                <div class="system-link-icon">📋</div>
+                <div>
+                    <div style="font-weight: 600;">ReDoc Documentation</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Clean, readable API docs</div>
+                </div>
+            </a>
+
+            <a href="{{ system_endpoints.schema }}" class="system-link" target="_blank">
+                <div class="system-link-icon">⚙️</div>
+                <div>
+                    <div style="font-weight: 600;">OpenAPI Schema</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Machine-readable API spec</div>
+                </div>
+            </a>
+
+            <a href="{{ system_endpoints.health }}" class="system-link" target="_blank">
+                <div class="system-link-icon">❤️</div>
+                <div>
+                    <div style="font-weight: 600;">Health Check</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">System health status</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Authentication Section -->
+    <div class="system-section">
+        <h3>Authentication Endpoints</h3>
+        <div class="system-grid">
+            <a href="{{ auth_endpoints.login }}" class="system-link" target="_blank">
+                <div class="system-link-icon">🔑</div>
+                <div>
+                    <div style="font-weight: 600;">Login</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Authenticate user</div>
+                </div>
+            </a>
+
+            <a href="{{ auth_endpoints.signup }}" class="system-link" target="_blank">
+                <div class="system-link-icon">✨</div>
+                <div>
+                    <div style="font-weight: 600;">Signup</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Create new account</div>
+                </div>
+            </a>
+
+            <a href="{{ auth_endpoints.logout }}" class="system-link" target="_blank">
+                <div class="system-link-icon">🚪</div>
+                <div>
+                    <div style="font-weight: 600;">Logout</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">End user session</div>
+                </div>
+            </a>
+
+            <a href="{{ auth_endpoints.profile }}" class="system-link" target="_blank">
+                <div class="system-link-icon">👤</div>
+                <div>
+                    <div style="font-weight: 600;">User Profile</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Get user information</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+        <p style="color: #6b7280; margin-bottom: 1rem;">
+            Ready to integrate? Start with our comprehensive documentation.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ docs_url }}" class="btn btn-primary" target="_blank">
+                📖 View Documentation
+            </a>
+            <a href="{{ api_url }}" class="btn btn-secondary" target="_blank">
+                🔗 API Root (JSON)
+            </a>
+            <a href="{{ base_url }}" class="btn btn-secondary">
+                🏠 Back to Landing
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

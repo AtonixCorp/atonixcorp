@@ -1,0 +1,693 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Projects - AtonixCorp Platform{% endblock %}
+
+{% block extra_head %}
+<style>
+.projects-browser {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.browser-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.browser-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.filter-input {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.filter-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.project-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.project-image {
+    height: 200px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+}
+
+.project-content {
+    padding: 1.5rem;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.project-featured {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.project-overview {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.project-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.project-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-development {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-paused {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.project-date {
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+.project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tech-tag {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: white;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.error {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.page-btn:hover,
+.page-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+@media (max-width: 768px) {
+    .projects-browser {
+        padding: 1rem;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .project-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="projects-browser">
+    <!-- Header -->
+    <div class="browser-header">
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 1rem;">
+            Browse Projects
+        </h1>
+        <p style="font-size: 1.25rem; color: #6b7280; max-width: 600px; margin: 0 auto;">
+            Explore {{ total_projects }} projects in our platform. Filter by status, technology, or search for specific projects.
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="browser-stats">
+        <div class="stat-item">
+            <div class="stat-number">{{ total_projects }}</div>
+            <div class="stat-label">Total Projects</div>
+        </div>
+        {% for status in status_options %}
+        <div class="stat-item">
+            <div class="stat-number">{{ status.count }}</div>
+            <div class="stat-label">{{ status.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label class="filter-label">Search Projects</label>
+                <input type="text" id="search-input" class="filter-input" placeholder="Search by name, description...">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    {% for status in status_options %}
+                    <button class="filter-btn" data-filter="{{ status.value }}">{{ status.label }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Technology</label>
+                <select id="tech-select" class="filter-input">
+                    <option value="">All Technologies</option>
+                    {% for tech in technologies %}
+                    <option value="{{ tech }}">{{ tech }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Sort By</label>
+                <select id="sort-select" class="filter-input">
+                    <option value="-created_at">Newest First</option>
+                    <option value="created_at">Oldest First</option>
+                    <option value="name">Name A-Z</option>
+                    <option value="-name">Name Z-A</option>
+                    <option value="-is_featured">Featured First</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
+            <button id="clear-filters" class="btn btn-secondary">Clear All</button>
+        </div>
+    </div>
+
+    <!-- Loading/Error States -->
+    <div id="loading-state" class="loading" style="display: none;">
+        🔄 Loading projects...
+    </div>
+
+    <div id="error-state" class="error" style="display: none;">
+        ❌ Failed to load projects. Please try again.
+    </div>
+
+    <!-- Projects Grid -->
+    <div id="projects-container" class="projects-grid">
+        {% for project in featured_projects %}
+        <div class="project-card" data-project-id="{{ project.id }}">
+            <div class="project-image">
+                {% if project.is_featured %}⭐{% else %}📁{% endif %}
+            </div>
+            <div class="project-content">
+                <h3 class="project-title">
+                    {{ project.name }}
+                    {% if project.is_featured %}
+                    <span class="project-featured">Featured</span>
+                    {% endif %}
+                </h3>
+                <p class="project-overview">{{ project.overview|truncatechars:120 }}</p>
+
+                <div class="project-meta">
+                    <span class="project-status status-{{ project.status }}">
+                        {{ project.get_status_display }}
+                    </span>
+                    <span class="project-date">{{ project.created_at|date:"M j, Y" }}</span>
+                </div>
+
+                {% if project.technologies %}
+                <div class="project-tech">
+                    {% for tech in project.technologies|slice:":3" %}
+                    <span class="tech-tag">{{ tech }}</span>
+                    {% endfor %}
+                    {% if project.technologies|length > 3 %}
+                    <span class="tech-tag">+{{ project.technologies|length|add:"-3" }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="project-actions">
+                    <a href="/api/projects/{{ project.slug }}/" class="btn btn-primary" target="_blank">
+                        📖 View Details
+                    </a>
+                    <a href="/api/projects/{{ project.slug }}/features/" class="btn btn-secondary" target="_blank">
+                        ⚡ Features
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📂</div>
+        <h3>No projects found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination-container" class="pagination" style="display: none;">
+        <!-- Pagination buttons will be added here by JavaScript -->
+    </div>
+
+    <!-- Footer Actions -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+        <p style="color: #6b7280; margin-bottom: 1rem;">
+            Want to create your own project? Or explore more API endpoints?
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/api/browse/" class="btn btn-primary">
+                🔍 Browse All APIs
+            </a>
+            <a href="/api/docs/" class="btn btn-secondary" target="_blank">
+                📖 API Documentation
+            </a>
+            <a href="/" class="btn btn-secondary">
+                🏠 Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const techSelect = document.getElementById('tech-select');
+    const sortSelect = document.getElementById('sort-select');
+    const applyFiltersBtn = document.getElementById('apply-filters');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    const projectsContainer = document.getElementById('projects-container');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const emptyState = document.getElementById('empty-state');
+    const paginationContainer = document.getElementById('pagination-container');
+
+    let currentPage = 1;
+    let currentFilters = {
+        search: '',
+        status: 'all',
+        technology: '',
+        ordering: '-created_at'
+    };
+
+    // Filter button handling
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilters.status = this.dataset.filter;
+        });
+    });
+
+    // Apply filters
+    applyFiltersBtn.addEventListener('click', function() {
+        currentFilters.search = searchInput.value;
+        currentFilters.technology = techSelect.value;
+        currentFilters.ordering = sortSelect.value;
+        currentPage = 1;
+        loadProjects();
+    });
+
+    // Clear filters
+    clearFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        techSelect.value = '';
+        sortSelect.value = '-created_at';
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+        currentFilters = {
+            search: '',
+            status: 'all',
+            technology: '',
+            ordering: '-created_at'
+        };
+        currentPage = 1;
+        loadProjects();
+    });
+
+    // Enter key in search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFiltersBtn.click();
+        }
+    });
+
+    function loadProjects() {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        // Build API URL
+        let apiUrl = '{{ api_url }}?page=' + currentPage;
+
+        if (currentFilters.search) {
+            apiUrl += '&search=' + encodeURIComponent(currentFilters.search);
+        }
+
+        if (currentFilters.status !== 'all') {
+            apiUrl += '&status=' + currentFilters.status;
+        }
+
+        if (currentFilters.technology) {
+            apiUrl += '&technologies=' + encodeURIComponent(currentFilters.technology);
+        }
+
+        if (currentFilters.ordering) {
+            apiUrl += '&ordering=' + currentFilters.ordering;
+        }
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+
+                if (data.success) {
+                    renderProjects(data.data);
+                    renderPagination(data.metadata);
+                } else {
+                    throw new Error(data.message || 'Failed to load projects');
+                }
+            })
+            .catch(error => {
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+                console.error('Error loading projects:', error);
+            });
+    }
+
+    function renderProjects(projects) {
+        if (!projects || projects.length === 0) {
+            emptyState.style.display = 'block';
+            projectsContainer.innerHTML = '';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+
+        const projectsHtml = projects.map(project => `
+            <div class="project-card" data-project-id="${project.id}">
+                <div class="project-image">
+                    ${project.is_featured ? '⭐' : '📁'}
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">
+                        ${project.name}
+                        ${project.is_featured ? '<span class="project-featured">Featured</span>' : ''}
+                    </h3>
+                    <p class="project-overview">${project.overview ? project.overview.substring(0, 120) + '...' : 'No description available'}</p>
+
+                    <div class="project-meta">
+                        <span class="project-status status-${project.status}">
+                            ${project.status_display || project.status}
+                        </span>
+                        <span class="project-date">${new Date(project.created_at).toLocaleDateString()}</span>
+                    </div>
+
+                    ${project.technologies && project.technologies.length > 0 ? `
+                    <div class="project-tech">
+                        ${project.technologies.slice(0, 3).map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        ${project.technologies.length > 3 ? `<span class="tech-tag">+${project.technologies.length - 3} more</span>` : ''}
+                    </div>
+                    ` : ''}
+
+                    <div class="project-actions">
+                        <a href="/api/projects/${project.slug}/" class="btn btn-primary" target="_blank">
+                            📖 View Details
+                        </a>
+                        <a href="/api/projects/${project.slug}/features/" class="btn btn-secondary" target="_blank">
+                            ⚡ Features
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        projectsContainer.innerHTML = projectsHtml;
+    }
+
+    function renderPagination(metadata) {
+        if (!metadata || !metadata.pagination) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        const pagination = metadata.pagination;
+        if (pagination.pages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        let paginationHtml = '';
+
+        // Previous button
+        if (pagination.has_previous) {
+            paginationHtml += `<a href="#" class="page-btn" data-page="${pagination.page - 1}">← Previous</a>`;
+        }
+
+        // Page numbers
+        for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) {
+            paginationHtml += `<a href="#" class="page-btn ${i === pagination.page ? 'active' : ''}" data-page="${i}">${i}</a>`;
+        }
+
+        // Next button
+        if (pagination.has_next) {
+            paginationHtml += `<a href="#" class="page-btn" data-page="${pagination.page + 1}">Next →</a>`;
+        }
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Add click handlers
+        paginationContainer.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.dataset.page);
+                loadProjects();
+                window.scrollTo(0, 0);
+            });
+        });
+    }
+
+    // Initial load
+    loadProjects();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,794 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse {{ endpoint_type|title }} - AtonixCorp Platform{% endblock %}
+
+{% block extra_head %}
+<style>
+.endpoint-browser {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.browser-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.browser-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.filter-input {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.filter-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.item-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.item-image {
+    height: 150px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.item-content {
+    padding: 1.5rem;
+}
+
+.item-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.item-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.item-description {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.item-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.item-date {
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+.item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    background: white;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.error {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.page-btn:hover,
+.page-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.endpoint-navigation {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.nav-item:hover {
+    background: #f9fafb;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+}
+
+.nav-content h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.nav-content p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+@media (max-width: 768px) {
+    .endpoint-browser {
+        padding: 1rem;
+    }
+
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .item-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        justify-content: center;
+    }
+
+    .nav-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="endpoint-browser">
+    <!-- Header -->
+    <div class="browser-header">
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 1rem;">
+            Browse {{ endpoint_type|title }}
+        </h1>
+        <p style="font-size: 1.25rem; color: #6b7280; max-width: 600px; margin: 0 auto;">
+            Explore {{ total_count }} {{ endpoint_type }} in our platform. Filter and search to find what you're looking for.
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="browser-stats">
+        <div class="stat-item">
+            <div class="stat-number">{{ total_count }}</div>
+            <div class="stat-label">Total {{ endpoint_type|title }}</div>
+        </div>
+        {% for stat in stats %}
+        <div class="stat-item">
+            <div class="stat-number">{{ stat.count }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Endpoint Navigation -->
+    <div class="endpoint-navigation">
+        <h3 style="margin-bottom: 1rem; color: #111827;">Explore Other Endpoints</h3>
+        <div class="nav-grid">
+            <a href="/api/browse/projects/" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <div class="nav-content">
+                    <h4>Projects</h4>
+                    <p>Browse all projects</p>
+                </div>
+            </a>
+            <a href="/api/browse/teams/" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <div class="nav-content">
+                    <h4>Teams</h4>
+                    <p>Explore team members</p>
+                </div>
+            </a>
+            <a href="/api/browse/resources/" class="nav-item">
+                <span class="nav-icon">🔧</span>
+                <div class="nav-content">
+                    <h4>Resources</h4>
+                    <p>View system resources</p>
+                </div>
+            </a>
+            <a href="/api/browse/focus-areas/" class="nav-item">
+                <span class="nav-icon">🎯</span>
+                <div class="nav-content">
+                    <h4>Focus Areas</h4>
+                    <p>Discover focus areas</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label class="filter-label">Search {{ endpoint_type|title }}</label>
+                <input type="text" id="search-input" class="filter-input" placeholder="Search by name, description...">
+            </div>
+
+            {% if status_options %}
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    {% for status in status_options %}
+                    <button class="filter-btn" data-filter="{{ status.value }}">{{ status.label }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if filter_options %}
+            <div class="filter-group">
+                <label class="filter-label">{{ filter_options.label }}</label>
+                <select id="filter-select" class="filter-input">
+                    <option value="">All {{ filter_options.label|lower }}</option>
+                    {% for option in filter_options.values %}
+                    <option value="{{ option.value }}">{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="filter-group">
+                <label class="filter-label">Sort By</label>
+                <select id="sort-select" class="filter-input">
+                    <option value="-created_at">Newest First</option>
+                    <option value="created_at">Oldest First</option>
+                    <option value="name">Name A-Z</option>
+                    <option value="-name">Name Z-A</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
+            <button id="clear-filters" class="btn btn-secondary">Clear All</button>
+        </div>
+    </div>
+
+    <!-- Loading/Error States -->
+    <div id="loading-state" class="loading" style="display: none;">
+        🔄 Loading {{ endpoint_type }}...
+    </div>
+
+    <div id="error-state" class="error" style="display: none;">
+        ❌ Failed to load {{ endpoint_type }}. Please try again.
+    </div>
+
+    <!-- Items Grid -->
+    <div id="items-container" class="items-grid">
+        {% for item in items %}
+        <div class="item-card" data-item-id="{{ item.id }}">
+            <div class="item-image">
+                {{ item.icon|default:"📄" }}
+            </div>
+            <div class="item-content">
+                <h3 class="item-title">
+                    {{ item.name }}
+                    {% if item.is_featured %}
+                    <span class="item-badge">Featured</span>
+                    {% endif %}
+                </h3>
+                <p class="item-description">{{ item.description|truncatechars:120 }}</p>
+
+                <div class="item-meta">
+                    {% if item.status %}
+                    <span class="item-status status-{{ item.status }}">
+                        {{ item.status_display|default:item.status }}
+                    </span>
+                    {% endif %}
+                    <span class="item-date">{{ item.created_at|date:"M j, Y" }}</span>
+                </div>
+
+                {% if item.tags %}
+                <div class="item-tags">
+                    {% for tag in item.tags|slice:":3" %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                    {% if item.tags|length > 3 %}
+                    <span class="tag">+{{ item.tags|length|add:"-3" }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="item-actions">
+                    <a href="/api/{{ endpoint_type }}/{{ item.slug|default:item.id }}/" class="btn btn-primary" target="_blank">
+                        📖 View Details
+                    </a>
+                    {% if endpoint_type == 'projects' %}
+                    <a href="/api/{{ endpoint_type }}/{{ item.slug }}/features/" class="btn btn-secondary" target="_blank">
+                        ⚡ Features
+                    </a>
+                    {% else %}
+                    <a href="/api/{{ endpoint_type }}/{{ item.slug|default:item.id }}/details/" class="btn btn-secondary" target="_blank">
+                        ℹ️ More Info
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📂</div>
+        <h3>No {{ endpoint_type }} found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination-container" class="pagination" style="display: none;">
+        <!-- Pagination buttons will be added here by JavaScript -->
+    </div>
+
+    <!-- Footer Actions -->
+    <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+        <p style="color: #6b7280; margin-bottom: 1rem;">
+            Want to explore more APIs or return to the main browser?
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/api/browse/" class="btn btn-primary">
+                🔍 Browse All APIs
+            </a>
+            <a href="/api/docs/" class="btn btn-secondary" target="_blank">
+                📖 API Documentation
+            </a>
+            <a href="/" class="btn btn-secondary">
+                🏠 Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const filterSelect = document.getElementById('filter-select');
+    const sortSelect = document.getElementById('sort-select');
+    const applyFiltersBtn = document.getElementById('apply-filters');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    const itemsContainer = document.getElementById('items-container');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const emptyState = document.getElementById('empty-state');
+    const paginationContainer = document.getElementById('pagination-container');
+
+    let currentPage = 1;
+    let currentFilters = {
+        search: '',
+        status: 'all',
+        filter: '',
+        ordering: '-created_at'
+    };
+
+    // Filter button handling
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilters.status = this.dataset.filter;
+        });
+    });
+
+    // Apply filters
+    applyFiltersBtn.addEventListener('click', function() {
+        currentFilters.search = searchInput.value;
+        if (filterSelect) {
+            currentFilters.filter = filterSelect.value;
+        }
+        currentFilters.ordering = sortSelect.value;
+        currentPage = 1;
+        loadItems();
+    });
+
+    // Clear filters
+    clearFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        if (filterSelect) {
+            filterSelect.value = '';
+        }
+        sortSelect.value = '-created_at';
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+        currentFilters = {
+            search: '',
+            status: 'all',
+            filter: '',
+            ordering: '-created_at'
+        };
+        currentPage = 1;
+        loadItems();
+    });
+
+    // Enter key in search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFiltersBtn.click();
+        }
+    });
+
+    function loadItems() {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        // Build API URL
+        let apiUrl = '{{ api_url }}?page=' + currentPage;
+
+        if (currentFilters.search) {
+            apiUrl += '&search=' + encodeURIComponent(currentFilters.search);
+        }
+
+        if (currentFilters.status !== 'all') {
+            apiUrl += '&status=' + currentFilters.status;
+        }
+
+        if (currentFilters.filter) {
+            apiUrl += '&{{ filter_param }}=' + encodeURIComponent(currentFilters.filter);
+        }
+
+        if (currentFilters.ordering) {
+            apiUrl += '&ordering=' + currentFilters.ordering;
+        }
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+
+                if (data.success) {
+                    renderItems(data.data);
+                    renderPagination(data.metadata);
+                } else {
+                    throw new Error(data.message || 'Failed to load items');
+                }
+            })
+            .catch(error => {
+                loadingState.style.display = 'none';
+                errorState.style.display = 'block';
+                console.error('Error loading items:', error);
+            });
+    }
+
+    function renderItems(items) {
+        if (!items || items.length === 0) {
+            emptyState.style.display = 'block';
+            itemsContainer.innerHTML = '';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+
+        const itemsHtml = items.map(item => `
+            <div class="item-card" data-item-id="${item.id}">
+                <div class="item-image">
+                    ${item.icon || '📄'}
+                </div>
+                <div class="item-content">
+                    <h3 class="item-title">
+                        ${item.name}
+                        ${item.is_featured ? '<span class="item-badge">Featured</span>' : ''}
+                    </h3>
+                    <p class="item-description">${item.description ? item.description.substring(0, 120) + '...' : 'No description available'}</p>
+
+                    <div class="item-meta">
+                        ${item.status ? `<span class="item-status status-${item.status}">${item.status_display || item.status}</span>` : ''}
+                        <span class="item-date">${new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+
+                    ${item.tags && item.tags.length > 0 ? `
+                    <div class="item-tags">
+                        ${item.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        ${item.tags.length > 3 ? `<span class="tag">+${item.tags.length - 3} more</span>` : ''}
+                    </div>
+                    ` : ''}
+
+                    <div class="item-actions">
+                        <a href="/api/{{ endpoint_type }}/${item.slug || item.id}/" class="btn btn-primary" target="_blank">
+                            📖 View Details
+                        </a>
+                        {% if endpoint_type == 'projects' %}
+                        <a href="/api/{{ endpoint_type }}/${item.slug}/features/" class="btn btn-secondary" target="_blank">
+                            ⚡ Features
+                        </a>
+                        {% else %}
+                        <a href="/api/{{ endpoint_type }}/${item.slug || item.id}/details/" class="btn btn-secondary" target="_blank">
+                            ℹ️ More Info
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        itemsContainer.innerHTML = itemsHtml;
+    }
+
+    function renderPagination(metadata) {
+        if (!metadata || !metadata.pagination) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        const pagination = metadata.pagination;
+        if (pagination.pages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        let paginationHtml = '';
+
+        // Previous button
+        if (pagination.has_previous) {
+            paginationHtml += `<a href="#" class="page-btn" data-page="${pagination.page - 1}">← Previous</a>`;
+        }
+
+        // Page numbers
+        for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) {
+            paginationHtml += `<a href="#" class="page-btn ${i === pagination.page ? 'active' : ''}" data-page="${i}">${i}</a>`;
+        }
+
+        // Next button
+        if (pagination.has_next) {
+            paginationHtml += `<a href="#" class="page-btn" data-page="${pagination.page + 1}">Next →</a>`;
+        }
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Add click handlers
+        paginationContainer.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = parseInt(this.dataset.page);
+                loadProjects();
+                window.scrollTo(0, 0);
+            });
+        });
+    }
+
+    // Initial load
+    loadItems();
+});
+</script>
+{% endblock %}
