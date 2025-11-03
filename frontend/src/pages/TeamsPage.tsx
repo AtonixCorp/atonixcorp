@@ -314,16 +314,20 @@ const TeamsPage: React.FC = () => {
             <Fade in={true} timeout={1000}>
               <Box>
                 <Typography
-                  variant={isDashboardMode ? "h4" : "h2"}
+                  variant={isDashboardMode ? "h3" : "h2"}
                   component="h1"
-                  fontWeight="bold"
+                  align="center"
                   gutterBottom
                   sx={{
-                    background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    mb: 3
+                    backgroundColor: 'white',
+                    color: 'primary.main',
+                    px: 3,
+                    py: 2,
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    mb: 3,
+                    display: 'inline-block',
+                    mx: 'auto'
                   }}
                 >
                   AtonixCorp Teams
@@ -335,7 +339,8 @@ const TeamsPage: React.FC = () => {
                     opacity: 0.9,
                     maxWidth: '800px',
                     mx: 'auto',
-                    lineHeight: 1.6
+                    lineHeight: 1.6,
+                    color: 'white'
                   }}
                 >
                   Join independent, sovereign teams driving innovation across space research, energy systems,
