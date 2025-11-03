@@ -40,8 +40,9 @@ const ___lightTheme = createTheme({
       paper: '#ffffff',
     },
     text: {
-      primary: '#1e293b',
-      secondary: '#64748b',
+      // Darken default text colors for improved contrast across the app
+      primary: '#0f172a',
+      secondary: '#475569',
     },
     grey: {
       50: '#f8fafc',
@@ -169,6 +170,8 @@ const ___lightTheme = createTheme({
         },
         body: {
           backgroundColor: '#f8fafc',
+          // Make default body text use the darker primary color
+          color: '#0f172a',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
         },
