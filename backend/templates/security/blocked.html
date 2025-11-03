@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Access restricted</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#f7fafc; color:#2d3748; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+      .card { background:white; padding:28px; border-radius:8px; box-shadow:0 6px 18px rgba(15,23,42,0.08); max-width:680px; }
+      h1 { margin:0 0 8px 0; font-size:20px; }
+      p { margin:8px 0 16px 0; color:#4a5568 }
+      a.button { display:inline-block; padding:10px 14px; background:#2563eb; color:white; border-radius:6px; text-decoration:none; }
+      .note { font-size:13px; color:#718096 }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Access restricted</h1>
+      <p>{{ message }}</p>
+      <p>If you believe this is an error, please contact your administrator or <a class="button" href="/support">contact support</a>.</p>
+      <p class="note">If you're using a VPN or proxy, try disabling it and try again.</p>
+    </div>
+  </body>
+</html>

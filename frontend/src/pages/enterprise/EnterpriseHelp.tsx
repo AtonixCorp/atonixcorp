@@ -4,7 +4,7 @@ import { Paper, Typography, Box, TextField, Button, MenuItem, List, ListItem, Li
 import { useParams } from 'react-router-dom';
 import supportService, { SupportTicket } from '../../services/supportService';
 
-const priorityOptions = [
+const _priorityOptions = [
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
@@ -60,7 +60,7 @@ const EnterpriseHelp: React.FC = () => {
             <TextField fullWidth placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} sx={{ mb: 1 }} />
             <TextField fullWidth multiline minRows={4} placeholder="Describe the issue" value={description} onChange={(e) => setDescription(e.target.value)} sx={{ mb: 1 }} />
             <TextField select value={priority} onChange={(e) => setPriority(e.target.value as any)} sx={{ width: 160, mb: 2 }}>
-              {priorityOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+              {_priorityOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
             </TextField>
             <Box>
               <Button variant="contained" color="primary" onClick={handleCreate} disabled={!subject || !description}>Open Ticket</Button>

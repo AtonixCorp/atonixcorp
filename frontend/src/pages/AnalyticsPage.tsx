@@ -38,7 +38,7 @@ interface MetricCardProps {
   color: string;
 }
 
-const _MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend, icon, color }) => {
+const __MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend, icon, color }) => {
   return (
     <Card
       sx={{
@@ -216,7 +216,7 @@ const AnalyticsPage: React.FC = () => {
         >
           {metrics.map((metric, index) => (
             <Box key={index}>
-              <_MetricCard {...metric} />
+              <__MetricCard {...metric} />
             </Box>
           ))}
         </Box>

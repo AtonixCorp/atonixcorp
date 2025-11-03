@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-const _RUNS_KEY = 'cloud_migration_runs';
+const __RUNS_KEY = 'cloud_migration_runs';
 
 export const migrationApi = {
   async listRuns(enterpriseId: string) {
@@ -7,7 +7,7 @@ export const migrationApi = {
       const res = await apiClient.get(`/api/enterprises/${enterpriseId}/migration/runs`);
       return res.data;
     } catch (err) {
-      const raw = localStorage.getItem(_RUNS_KEY) || '[]';
+      const raw = localStorage.getItem(__RUNS_KEY) || '[]';
       return JSON.parse(raw);
     }
   },
@@ -16,7 +16,7 @@ export const migrationApi = {
       const res = await apiClient.get(`/api/enterprises/${enterpriseId}/migration/runs/${runId}`);
       return res.data;
     } catch (err) {
-      const raw = localStorage.getItem(_RUNS_KEY) || '[]';
+      const raw = localStorage.getItem(__RUNS_KEY) || '[]';
       const runs = JSON.parse(raw);
       return runs.find((r: any) => String(r.id) === String(runId));
     }
@@ -26,7 +26,7 @@ export const migrationApi = {
       const res = await apiClient.post(`/api/enterprises/${enterpriseId}/migration/runs`, payload);
       return res.data;
     } catch (err) {
-      const raw = localStorage.getItem(_RUNS_KEY) || '[]';
+      const raw = localStorage.getItem(__RUNS_KEY) || '[]';
       const runs = JSON.parse(raw);
       const run = {
         id: Date.now(),
@@ -35,13 +35,13 @@ export const migrationApi = {
         ...payload,
       };
       runs.push(run);
-      localStorage.setItem(_RUNS_KEY, JSON.stringify(runs));
+      localStorage.setItem(__RUNS_KEY, JSON.stringify(runs));
       return run;
     }
   },
   async simulateProgress(runId: string, update: (r: any)=>void) {
     // Simple simulation: append logs and update status over time
-    const raw = localStorage.getItem(_RUNS_KEY) || '[]';
+    const raw = localStorage.getItem(__RUNS_KEY) || '[]';
     const runs = JSON.parse(raw);
     const run = runs.find((r: any) => String(r.id) === String(runId));
     if (!run) return;
@@ -53,7 +53,7 @@ export const migrationApi = {
       run.logs = run.logs || [];
       run.logs.push(`${new Date().toISOString()} - ${steps[i]}`);
       if (i === steps.length - 1) run.status = 'completed';
-      localStorage.setItem(_RUNS_KEY, JSON.stringify(runs));
+      localStorage.setItem(__RUNS_KEY, JSON.stringify(runs));
       update(run);
       i++;
     }, 1500);

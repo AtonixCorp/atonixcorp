@@ -118,6 +118,9 @@ urlpatterns = [
     path("api/", include("contact.urls")),
     path("api/dashboard/", include("dashboard.urls")),
     path("api/", include("scheduling.urls")),
+    # Activity tracking endpoints (ingest and listing of user events)
+    path("api/v1/activity/", include("activity.urls")),
+    path("api/", include("enterprises.urls")),
     # Static informational pages accessible via footer links
     path("pages/", include("static_pages.urls", namespace="static_pages")),
 

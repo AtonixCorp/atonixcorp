@@ -4,7 +4,8 @@ export const teamsApi = {
   async list(enterpriseId: string) {
     try {
       const res = await apiClient.get(`/api/enterprises/${enterpriseId}/teams`);
-      return res.data;
+      // backend returns { data: [ ... ] } - normalize
+      return res.data && res.data.data ? res.data.data : res.data;
     } catch (err) {
       const raw = localStorage.getItem(`teams_${enterpriseId}`) || '[]';
       return JSON.parse(raw);

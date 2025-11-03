@@ -33,7 +33,6 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { Team, TeamMembership } from '../types/api';
 import { teamsApi } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 
 interface PricingPlan {

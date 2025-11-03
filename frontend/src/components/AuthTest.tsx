@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
 
-const _AuthTest: React.FC = () => {
+const __AuthTest: React.FC = () => {
   const [result, setResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
@@ -59,4 +59,4 @@ const _AuthTest: React.FC = () => {
   );
 };
 
-export default _AuthTest;
+export default __AuthTest;

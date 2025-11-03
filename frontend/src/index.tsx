@@ -8,10 +8,10 @@ import * as serviceWorkerRegistration from './serviceWorker';
 // Initialize OpenTelemetry before anything else
 initializeOpenTelemetry();
 
-const _root = ReactDOM.createRoot(
+const __root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
-_root.render(
+__root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

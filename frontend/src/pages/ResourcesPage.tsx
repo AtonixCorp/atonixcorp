@@ -34,8 +34,6 @@ import {
   OpenInNew,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
-import { resourcesApi } from '../services/api';
-import { Resource, ResourceCategory, CommunityLink, FAQ } from '../types/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;

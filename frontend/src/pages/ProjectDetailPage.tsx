@@ -17,18 +17,16 @@ import {
   Alert,
 } from '@mui/material';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import {
-  GitHub as GitHubIcon,
-  Launch as LaunchIcon,
-  Description as DocsIcon,
-  Star as StarIcon,
-  CheckCircle as CheckIcon,
-  Timeline as TimelineIcon,
-  Code as CodeIcon,
-  Architecture as ArchIcon,
-} from '@mui/icons-material';
 import { projectsApi } from '../services/api';
 import { Project } from '../types/api';
+import StarIcon from '@mui/icons-material/Star';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LaunchIcon from '@mui/icons-material/Launch';
+import DocsIcon from '@mui/icons-material/Article';
+import CheckIcon from '@mui/icons-material/Check';
+import CodeIcon from '@mui/icons-material/Code';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import ArchIcon from '@mui/icons-material/AccountTree';
 
 const ProjectDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();

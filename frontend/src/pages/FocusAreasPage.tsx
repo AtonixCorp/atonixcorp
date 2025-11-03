@@ -36,8 +36,6 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { FocusArea } from '../types/api';
 import { mockFocusAreaService } from '../data/mockData';
-import { focusAreasApi } from '../services/api';
-
 const FocusAreasPage: React.FC = () => {
   const location = useLocation();
   const isDashboardMode = location.pathname.startsWith('/dashboard');

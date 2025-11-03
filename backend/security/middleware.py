@@ -5,7 +5,8 @@ import re
 import json
 import time
 from collections import defaultdict
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import render, redirect
 from django.core.cache import cache
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
@@ -26,6 +27,31 @@ class SecurityMiddleware(MiddlewareMixin):
         self.get_response = get_response
         self.rate_limit_storage = defaultdict(list)
         self.blocked_ips = set()
+        # Load configured auth-blocking settings (IPs and CIDR ranges)
+        self.auth_block_paths = getattr(settings, 'AUTH_BLOCKED_PATHS', [
+            '/api/auth/login', '/api/auth/register', '/auth/login', '/auth/register',
+        ])
+        self.auth_blocked_ips = set(getattr(settings, 'AUTH_BLOCKED_IPS', []))
+        self.auth_blocked_networks = []
+        for cidr in getattr(settings, 'AUTH_BLOCKED_IP_RANGES', []):
+            try:
+                self.auth_blocked_networks.append(ipaddress.ip_network(cidr))
+            except Exception:
+                logger.warning(f"Invalid CIDR in AUTH_BLOCKED_IP_RANGES: {cidr}")
+        # Also attempt to load any entries from the BlockedNetwork model (if app is migrated)
+        try:
+            from .models import BlockedNetwork
+            for bn in BlockedNetwork.objects.filter(active=True):
+                try:
+                    if bn.is_cidr:
+                        self.auth_blocked_networks.append(ipaddress.ip_network(bn.value))
+                    else:
+                        self.auth_blocked_ips.add(bn.value)
+                except Exception:
+                    logger.warning(f"Invalid BlockedNetwork entry skipped: {bn.value}")
+        except Exception:
+            # If model/table not available (e.g., during migrate), skip silently
+            pass
         self.suspicious_patterns = [
             r'<script[^>]*>.*?</script>',  # XSS
             r'javascript:',  # JavaScript injection
@@ -43,6 +69,34 @@ class SecurityMiddleware(MiddlewareMixin):
     def process_request(self, request):
         """Process incoming request for security threats"""
         client_ip = self.get_client_ip(request)
+        # Check auth-specific block list for login/register paths
+        try:
+            path = request.path or ''
+            if any(path.startswith(p) for p in self.auth_block_paths):
+                if self.is_ip_in_auth_blocklist(client_ip):
+                    msg = getattr(settings, 'AUTH_BLOCKED_MESSAGE', 'Access denied')
+                    logger.warning(f"Auth blocked for IP {client_ip} on path {path}")
+                    # Optional redirect URL configured in settings
+                    redirect_url = getattr(settings, 'AUTH_BLOCKED_REDIRECT_URL', None)
+                    if redirect_url:
+                        try:
+                            return redirect(redirect_url)
+                        except Exception:
+                            logger.exception('Failed to redirect blocked auth request')
+
+                    # If client prefers HTML, render a friendly blocked page
+                    accept = request.META.get('HTTP_ACCEPT', '')
+                    if 'text/html' in accept:
+                        try:
+                            return render(request, 'security/blocked.html', {'message': msg}, status=403)
+                        except Exception:
+                            logger.exception('Error rendering blocked template')
+
+                    # Fallback to JSON for API/clients
+                    return JsonResponse({'error': msg}, status=403)
+        except Exception:
+            # In case of any unexpected error during auth-block checks, continue processing
+            logger.exception('Error during auth blocklist check')
         
         # Check if IP is blocked
         if self.is_ip_blocked(client_ip):
@@ -118,6 +172,33 @@ class SecurityMiddleware(MiddlewareMixin):
             return True
         
         return False
+
+    def is_ip_in_auth_blocklist(self, ip: str) -> bool:
+        """Check if IP is explicitly blocked for auth flows (registration/login)"""
+        try:
+            if not ip:
+                return False
+            # Exact matches
+            if ip in self.auth_blocked_ips:
+                return True
+
+            # CIDR/range matches
+            try:
+                client_ip = ipaddress.ip_address(ip)
+            except ValueError:
+                return False
+
+            for net in self.auth_blocked_networks:
+                if client_ip in net:
+                    return True
+
+            # Also check cache-based blocked IPs from other logic
+            if self.is_ip_blocked(ip):
+                return True
+
+            return False
+        except Exception:
+            return False
     
     def block_ip(self, ip: str, duration: int = 3600):
         """Block IP for specified duration (seconds)"""

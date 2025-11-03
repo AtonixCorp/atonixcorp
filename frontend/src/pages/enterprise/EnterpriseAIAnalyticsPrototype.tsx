@@ -8,7 +8,7 @@ import { analyticsApi } from '../../services/analyticsApi';
 type TimePoint = { date: string; score: number; };
 
 // generate 30 days of mock time-series data
-const _generateMockSeries = (days = 30): TimePoint[] => {
+const __generateMockSeries = (days = 30): TimePoint[] => {
   const now = new Date();
   const data: TimePoint[] = [];
   for (let i = days - 1; i >= 0; i--) {
@@ -21,14 +21,14 @@ const _generateMockSeries = (days = 30): TimePoint[] => {
   return data;
 };
 
-const _allSeries = _generateMockSeries(60);
+const __allSeries = __generateMockSeries(60);
 
 const EnterpriseAIAnalyticsPrototype: React.FC = () => {
   const { id } = useParams();
   const enterpriseId = id || 'unknown';
-  const [start, setStart] = React.useState<string>(_allSeries[0].date);
-  const [end, setEnd] = React.useState<string>(_allSeries[_allSeries.length - 1].date);
-  const [data, setData] = React.useState(_allSeries.slice(-30));
+  const [start, setStart] = React.useState<string>(__allSeries[0].date);
+  const [end, setEnd] = React.useState<string>(__allSeries[__allSeries.length - 1].date);
+  const [data, setData] = React.useState(__allSeries.slice(-30));
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -56,16 +56,16 @@ const EnterpriseAIAnalyticsPrototype: React.FC = () => {
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Start</InputLabel>
             <Select value={start} label="Start" onChange={(e) => setStart(String(e.target.value))}>
-              {_allSeries.map(d => <MenuItem key={d.date} value={d.date}>{d.date}</MenuItem>)}
+              {__allSeries.map(d => <MenuItem key={d.date} value={d.date}>{d.date}</MenuItem>)}
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>End</InputLabel>
             <Select value={end} label="End" onChange={(e) => setEnd(String(e.target.value))}>
-              {_allSeries.map(d => <MenuItem key={d.date} value={d.date}>{d.date}</MenuItem>)}
+              {__allSeries.map(d => <MenuItem key={d.date} value={d.date}>{d.date}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button variant="outlined" size="small" onClick={() => { setStart(_allSeries[0].date); setEnd(_allSeries[_allSeries.length-1].date); }}>Reset</Button>
+          <Button variant="outlined" size="small" onClick={() => { setStart(__allSeries[0].date); setEnd(__allSeries[__allSeries.length-1].date); }}>Reset</Button>
         </Box>
 
         <Paper sx={{ p: 2 }}>

@@ -3,12 +3,12 @@ import EnterpriseLayout from '../../components/Enterprise/EnterpriseLayout';
 import { Box, Paper, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-const _RUNS_KEY = 'cloud_migration_runs';
+const __RUNS_KEY = 'cloud_migration_runs';
 
 const EnterpriseMigrationRunDetails: React.FC = () => {
   const { id, runId } = useParams();
   const enterpriseId = id || 'unknown';
-  const runsRaw = localStorage.getItem(_RUNS_KEY) || '[]';
+  const runsRaw = localStorage.getItem(__RUNS_KEY) || '[]';
   const runs = JSON.parse(runsRaw) as Array<any>;
   const run = runs.find(r => String(r.id) === String(runId));
 

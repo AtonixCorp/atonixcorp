@@ -9,9 +9,7 @@ import {
   Grow,
   Slide,
 } from '@mui/material';
-import {
-  ExpandMore as ExpandMoreIcon,
-} from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Link } from 'react-router-dom';
 
 interface ProjectStory {
@@ -29,7 +27,7 @@ interface ProjectStory {
   backgroundImage: string;
 }
 
-const projectStories: ProjectStory[] = [
+const _projectStories: ProjectStory[] = [
   {
     id: 1,
     title: 'Atonixcorp-Platform',
@@ -134,7 +132,7 @@ const DynamicHeroSection: React.FC = () => {
   const intervalRef = useRef<number | null>(null);
   const storyIntervalRef = useRef<number | null>(null);
 
-  const currentStory = projectStories[currentIndex];
+  const currentStory = _projectStories[currentIndex];
   const SLIDE_DURATION = 8000; // 8 seconds per project
   const STORY_DURATION = 2000; // 2 seconds per story line
 
@@ -142,7 +140,7 @@ const DynamicHeroSection: React.FC = () => {
   // (that could lead to unexpected behavior). Manual selection still works via handleProjectSelect.
   useEffect(() => {
     intervalRef.current = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % projectStories.length);
+      setCurrentIndex((prev) => (prev + 1) % _projectStories.length);
       setShowStory(false);
       setStoryIndex(0);
     }, SLIDE_DURATION);
@@ -192,17 +190,17 @@ const DynamicHeroSection: React.FC = () => {
   const renderAnimation = () => {
     switch (currentStory.animationType) {
       case 'particles':
-        return <ParticleAnimation color={currentStory.accentColor} />;
+        return <_ParticleAnimation color={currentStory.accentColor} />;
       case 'waves':
-        return <WaveAnimation color={currentStory.accentColor} />;
+        return <_WaveAnimation color={currentStory.accentColor} />;
       case 'circuit':
-        return <CircuitAnimation color={currentStory.accentColor} />;
+        return <_CircuitAnimation color={currentStory.accentColor} />;
       case 'network':
-        return <NetworkAnimation color={currentStory.accentColor} />;
+        return <_NetworkAnimation color={currentStory.accentColor} />;
       case 'dataflow':
-        return <DataFlowAnimation color={currentStory.accentColor} />;
+        return <_DataFlowAnimation color={currentStory.accentColor} />;
       default:
-        return <ParticleAnimation color={currentStory.accentColor} />;
+        return <_ParticleAnimation color={currentStory.accentColor} />;
     }
   };
 
@@ -272,7 +270,7 @@ const DynamicHeroSection: React.FC = () => {
             zIndex: 4,
           }}
         >
-          {projectStories.map((_, index) => (
+          {_projectStories.map((_, index) => (
             <Box
               key={index}
               onClick={() => handleProjectSelect(index)}
@@ -463,7 +461,7 @@ const DynamicHeroSection: React.FC = () => {
 };
 
 // Animation Components
-const ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
+const _ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -539,7 +537,7 @@ const ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
   return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />;
 };
 
-const WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
+const _WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -573,7 +571,7 @@ const WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
+const _CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -611,7 +609,7 @@ const CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
+const _NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -640,7 +638,7 @@ const NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const DataFlowAnimation: React.FC<{ color: string }> = ({ color }) => {
+const _DataFlowAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{

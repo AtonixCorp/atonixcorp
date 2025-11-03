@@ -2,7 +2,8 @@ import React from 'react';
 import EnterpriseLayout from '../../components/Enterprise/EnterpriseLayout';
 import { Box, Paper, Typography, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { enterpriseApi } from '../../services/enterpriseApi';
+import { enterprisesApi } from '../../services/enterprisesApi';
+import type { Enterprise } from '../../types/enterprise';
 import { teamsApi } from '../../services/teamsApi';
 import { migrationApi } from '../../services/migrationApi';
 import { analyticsApi } from '../../services/analyticsApi';
@@ -11,7 +12,7 @@ const EnterpriseOverview: React.FC = () => {
   const { id } = useParams();
   const enterpriseId = id || 'unknown';
 
-  const [enterprise, setEnterprise] = React.useState<any | null>(null);
+  const [enterprise, setEnterprise] = React.useState<Enterprise | null>(null);
   const [teamsCount, setTeamsCount] = React.useState<number | null>(null);
   const [runs, setRuns] = React.useState<any[] | null>(null);
   const [avgScore, setAvgScore] = React.useState<number | null>(null);
@@ -26,7 +27,7 @@ const EnterpriseOverview: React.FC = () => {
     (async () => {
       try {
         const [ent, teams, runsResp, metrics] = await Promise.all([
-          enterpriseApi.getEnterprise(enterpriseId),
+          enterprisesApi.get(enterpriseId),
           teamsApi.list(enterpriseId),
           migrationApi.listRuns(enterpriseId),
           analyticsApi.fetchModelScores(enterpriseId, { days: 30 }),

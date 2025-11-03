@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 import { setAuthToken, clearAuthToken } from '../services/apiClient';
 import { SocialAuthService } from '../services/socialAuthService';
 
-const _AuthContext = createContext<AuthContextType | undefined>(undefined);
+const __AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -223,14 +223,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <_AuthContext.Provider value={value}>
+    <__AuthContext.Provider value={value}>
       {children}
-    </_AuthContext.Provider>
+    </__AuthContext.Provider>
   );
 };
 
 export const useAuth = (): AuthContextType => {
-  const context = useContext(_AuthContext);
+  const context = useContext(__AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }

@@ -95,7 +95,8 @@ INSTALLED_APPS = [
     'django_filters',
     'django_extensions',
     'drf_spectacular',  # API Documentation
-    # 'security',  # Security module - temporarily disabled
+    'security',  # Security module
+    'activity',  # Activity tracking
     # 'observability',  # OpenTelemetry observability - temporarily disabled
     'core',
     'projects',
@@ -112,6 +113,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     # Role-based access control and audit logging
     'access_control',
+    'enterprises',
 ]
 
 MIDDLEWARE = [
@@ -467,21 +469,82 @@ cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[
 if cors_origins:
     CORS_ALLOWED_ORIGINS.extend(cors_origins)
 
+# Allow additional host IPs (useful for servers with multiple interfaces). Set via
+# env var EXTRA_HOST_IPS='108.61.157.236,149.28.63.195,10.1.96.3' or similar.
+extra_ips = env.list('EXTRA_HOST_IPS', default=[])
+for ip in extra_ips:
+    ip = ip.strip()
+    if not ip:
+        continue
+    # add to ALLOWED_HOSTS
+    if ip not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(ip)
+    # for CORS and CSRF, add both http and https origins for convenience
+    if ip.startswith('['):
+        # IPv6 literal
+        http_ip = f"http://{ip}"
+        https_ip = f"https://{ip}"
+    else:
+        http_ip = f"http://{ip}"
+        https_ip = f"https://{ip}"
+    if http_ip not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(http_ip)
+    if https_ip not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(https_ip)
+
+# Ensure localhost and loopback addresses present
+for host in ('localhost', '127.0.0.1', '::1'):
+    if host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
+
+# CSRF trusted origins should include frontend origins and any direct IPs used
+CSRF_TRUSTED_ORIGINS = getattr(globals(), 'CSRF_TRUSTED_ORIGINS', []) or []
+for origin in CORS_ALLOWED_ORIGINS:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
+
+# IP-based auth blocking (prevent registrations/logins from certain IPs/ranges)
+# Provide specific paths to protect and lists of blocked IPs or CIDR ranges.
+AUTH_BLOCKED_PATHS = env.list('AUTH_BLOCKED_PATHS', default=[
+    '/api/auth/login',
+    '/api/auth/register',
+    '/auth/login',
+    '/auth/register',
+    '/api/token/',
+    '/api/accounts/register',
+    '/api/accounts/login',
+])
+
+AUTH_BLOCKED_IPS = env.list('AUTH_BLOCKED_IPS', default=[])
+AUTH_BLOCKED_IP_RANGES = env.list('AUTH_BLOCKED_IP_RANGES', default=[])
+
+# Message returned to blocked users (can be customized via env)
+AUTH_BLOCKED_MESSAGE = os.getenv('AUTH_BLOCKED_MESSAGE', 'Access from your network is restricted for registration and login. Please disable VPN/proxy or contact support.')
+
 # File upload security
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
 # Cache settings for security features
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_URL,  # Use the same Redis URL from above
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+if DEBUG:
+    # Use local in-memory cache in development when Redis is not available.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,  # Use the same Redis URL from above
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
 
 # Logging configuration for security events
 LOGGING = {

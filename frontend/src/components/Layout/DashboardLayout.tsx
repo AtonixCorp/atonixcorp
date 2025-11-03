@@ -51,7 +51,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const _drawerWidth = 280;
+const __drawerWidth = 280;
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -412,8 +412,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { lg: `calc(100% - ${_drawerWidth}px)` },
-          ml: { lg: `${_drawerWidth}px` },
+          width: { lg: `calc(100% - ${__drawerWidth}px)` },
+          ml: { lg: `${__drawerWidth}px` },
           display: { lg: 'none' },
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -446,7 +446,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Sidebar Drawer */}
       <Box
         component="nav"
-        sx={{ width: { lg: _drawerWidth }, flexShrink: { lg: 0 } }}
+        sx={{ width: { lg: __drawerWidth }, flexShrink: { lg: 0 } }}
       >
         <Drawer
           variant="temporary"
@@ -459,7 +459,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             display: { xs: 'block', lg: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: _drawerWidth,
+              width: __drawerWidth,
               border: 'none',
             },
           }}
@@ -472,7 +472,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: _drawerWidth,
+              width: __drawerWidth,
               border: 'none',
               borderRight: '1px solid #e2e8f0',
             },
@@ -488,7 +488,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { lg: `calc(100% - ${_drawerWidth}px)` },
+          width: { lg: `calc(100% - ${__drawerWidth}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',

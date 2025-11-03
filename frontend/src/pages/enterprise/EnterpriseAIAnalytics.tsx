@@ -3,7 +3,7 @@ import EnterpriseLayout from '../../components/Enterprise/EnterpriseLayout';
 import { Paper, Typography, Box } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-const _EnterpriseAIAnalytics: React.FC = () => {
+const __EnterpriseAIAnalytics: React.FC = () => {
   const { id } = useParams();
   const enterpriseId = id || 'unknown';
 
@@ -23,4 +23,4 @@ const _EnterpriseAIAnalytics: React.FC = () => {
   );
 };
 
-export default _EnterpriseAIAnalytics;
+export default __EnterpriseAIAnalytics;

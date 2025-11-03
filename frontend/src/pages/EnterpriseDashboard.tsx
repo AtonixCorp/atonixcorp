@@ -59,7 +59,7 @@ interface DepartmentCardProps {
   performance: number;
 }
 
-const EnterpriseStatCard: React.FC<EnterpriseStatCardProps> = ({ title, value, change, trend, icon, color }) => {
+const _EnterpriseStatCard: React.FC<EnterpriseStatCardProps> = ({ title, value, change, trend, icon, color }) => {
   return (
     <Card
       sx={{
@@ -132,7 +132,7 @@ const EnterpriseStatCard: React.FC<EnterpriseStatCardProps> = ({ title, value, c
   );
 };
 
-const EnterpriseMetric: React.FC<EnterpriseMetricProps> = ({ title, value, subtitle, icon, color }) => {
+const _EnterpriseMetric: React.FC<EnterpriseMetricProps> = ({ title, value, subtitle, icon, color }) => {
   return (
     <Card
       sx={{
@@ -176,7 +176,7 @@ const EnterpriseMetric: React.FC<EnterpriseMetricProps> = ({ title, value, subti
   );
 };
 
-const DepartmentCard: React.FC<DepartmentCardProps> = ({ name, headcount, budget, projects, performance }) => {
+const _DepartmentCard: React.FC<DepartmentCardProps> = ({ name, headcount, budget, projects, performance }) => {
   return (
     <Card
       sx={{
@@ -241,7 +241,7 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({ name, headcount, budget
   );
 };
 
-const EnterpriseDashboard: React.FC = () => {
+const _EnterpriseDashboard: React.FC = () => {
   const { user } = useAuth();
 
   const enterpriseStats = [
@@ -425,7 +425,7 @@ const EnterpriseDashboard: React.FC = () => {
         }}
       >
         {enterpriseStats.map((stat, index) => (
-          <EnterpriseStatCard key={index} {...stat} />
+          <_EnterpriseStatCard key={index} {...stat} />
         ))}
       </Box>
 
@@ -444,7 +444,7 @@ const EnterpriseDashboard: React.FC = () => {
         }}
       >
         {enterpriseMetrics.map((metric, index) => (
-          <EnterpriseMetric key={index} {...metric} />
+          <_EnterpriseMetric key={index} {...metric} />
         ))}
       </Box>
 
@@ -505,7 +505,7 @@ const EnterpriseDashboard: React.FC = () => {
                 }}
               >
                 {departments.map((dept, index) => (
-                  <DepartmentCard key={index} {...dept} />
+                  <_DepartmentCard key={index} {...dept} />
                 ))}
               </Box>
             </Box>
@@ -747,4 +747,4 @@ const EnterpriseDashboard: React.FC = () => {
   );
 };
 
-export default EnterpriseDashboard;
+export default _EnterpriseDashboard;

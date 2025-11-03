@@ -7,7 +7,7 @@ interface Config {
   ENVIRONMENT: 'development' | 'staging' | 'production';
 }
 
-const _getConfig = (): Config => {
+const __getConfig = (): Config => {
   // Check if we're in production by looking at hostname
   const hostname = window.location.hostname;
   const isProduction = hostname === 'atonixcorp.org' || hostname === 'www.atonixcorp.org';
@@ -49,10 +49,10 @@ const _getConfig = (): Config => {
 };
 
 // Export singleton config
-export const config = _getConfig();
+export const config = __getConfig();
 
 // Export function to get current environment info
-export const _getEnvironmentInfo = () => ({
+export const __getEnvironmentInfo = () => ({
   environment: config.ENVIRONMENT,
   apiBaseUrl: config.API_BASE_URL,
   hostname: window.location.hostname,
@@ -62,10 +62,10 @@ export const _getEnvironmentInfo = () => ({
 });
 
 // Export for debugging
-export const _debugConfig = () => {
+export const __debugConfig = () => {
   console.log('Environment Configuration:', {
     ...config,
-    ..._getEnvironmentInfo(),
+    ...__getEnvironmentInfo(),
     location: window.location.href,
   });
 };
