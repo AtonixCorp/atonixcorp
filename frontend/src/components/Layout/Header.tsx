@@ -115,6 +115,48 @@ const Header: React.FC = () => {
           </ListItem>
         ))}
       </List>
+      {/* Mobile auth actions: show Sign In / Sign Up when unauthenticated, else show dashboard/profile/logout */}
+      <Box sx={{ px: 3, py: 2, borderTop: '1px solid rgba(0,0,0,0.06)', mt: 2 }}>
+        {!isAuthenticated ? (
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+            <Button
+              variant="outlined"
+              onClick={(e) => { e.stopPropagation(); handleLoginOpen(); }}
+              sx={{ borderRadius: '12px', px: 2 }}
+            >
+              Sign In
+            </Button>
+            <Button
+              component={Link}
+              to="/signup"
+              variant="contained"
+              onClick={(e) => e.stopPropagation()}
+              sx={{ borderRadius: '12px', px: 2, background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)' }}
+            >
+              Sign Up
+            </Button>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Button
+              component={Link}
+              to={isOrganizationRegistered ? '/dashboard/enterprise' : '/dashboard'}
+              variant="text"
+              onClick={(e) => e.stopPropagation()}
+              sx={{ justifyContent: 'flex-start', color: 'text.primary', fontWeight: 600 }}
+            >
+              {isOrganizationRegistered ? 'Enterprise Dashboard' : 'Dashboard'}
+            </Button>
+            <Button
+              variant="text"
+              onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+              sx={{ justifyContent: 'flex-start', color: '#ef4444' }}
+            >
+              Logout
+            </Button>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 
