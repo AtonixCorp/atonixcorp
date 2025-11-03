@@ -63,7 +63,7 @@ services:
       DEBUG: "True"
       DATABASE_URL: postgresql://atonixcorp_user:postgres@db:5432/atonixcorp
       SECRET_KEY: development-secret
-      ALLOWED_HOSTS: localhost,127.0.0.1,backend,nginx
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend,nginx,api.atonixcorp.com
     ports:
       - "8000:8000"
     depends_on:

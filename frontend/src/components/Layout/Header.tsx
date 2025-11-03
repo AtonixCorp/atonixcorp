@@ -123,10 +123,11 @@ const Header: React.FC = () => {
         position="sticky"
         elevation={0}
         sx={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          // Make AppBar solid black on small screens and keep translucent white on md+
+          backgroundColor: { xs: 'rgba(0,0,0,1)', md: 'rgba(255, 255, 255, 0.95)' },
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid #e2e8f0',
-          color: '#1e293b',
+          borderBottom: { xs: 'none', md: '1px solid #e2e8f0' },
+          color: { xs: 'white', md: '#1e293b' },
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
@@ -155,13 +156,14 @@ const Header: React.FC = () => {
               to="/"
               sx={{
                 textDecoration: 'none',
-                color: '#1e293b',
+                // white on mobile, gradient clipped text on md+
+                color: { xs: 'white', md: '#1e293b' },
                 fontWeight: 800,
                 fontSize: '1.5rem',
-                background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                background: { md: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)' },
+                backgroundClip: { md: 'text' },
+                WebkitBackgroundClip: { md: 'text' },
+                WebkitTextFillColor: { xs: 'white', md: 'transparent' },
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
                   transform: 'scale(1.02)',
@@ -172,18 +174,19 @@ const Header: React.FC = () => {
             </Typography>
           </Box>
 
-          {isMobile ? (
+            {isMobile ? (
             <IconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
               sx={{
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                color: '#3b82f6',
+                // adjust mobile hamburger appearance to sit on dark header
+                backgroundColor: { xs: 'rgba(255,255,255,0.08)', md: 'rgba(59, 130, 246, 0.1)' },
+                color: { xs: 'white', md: '#3b82f6' },
                 borderRadius: '12px',
                 '&:hover': {
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                  backgroundColor: { xs: 'rgba(255,255,255,0.12)', md: 'rgba(59, 130, 246, 0.2)' },
                   transform: 'scale(1.05)',
                 },
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -199,7 +202,8 @@ const Header: React.FC = () => {
                   component={Link}
                   to={item.path}
                   sx={{
-                    color: isActivePath(item.path) ? '#3b82f6' : '#64748b',
+                    // Use a darker neutral on md+ (better contrast on white header)
+                    color: isActivePath(item.path) ? '#3b82f6' : { md: '#1f2937', xs: '#64748b' },
                     fontWeight: isActivePath(item.path) ? 600 : 500,
                     fontSize: '0.95rem',
                     px: 2,

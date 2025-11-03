@@ -238,7 +238,8 @@ const DynamicHeroSection: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)',
+          // Use a solid black overlay on small screens (xs) and keep the translucent gradient on md+
+          background: { xs: 'rgba(0,0,0,1)', md: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' },
           zIndex: 2,
         }}
       />
@@ -255,6 +256,8 @@ const DynamicHeroSection: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           textAlign: 'center',
+          // Make text white on small screens so it contrasts with the solid black overlay
+          color: { xs: 'white', md: 'initial' },
           px: 4,
         }}
       >
@@ -296,7 +299,7 @@ const DynamicHeroSection: React.FC = () => {
               <Typography
                 variant="h6"
                 sx={{
-                  color: '#1a1a1a',
+                  color: { xs: 'white', md: '#1a1a1a' },
                   mb: 2,
                   fontWeight: 500,
                   letterSpacing: 2,
@@ -311,16 +314,18 @@ const DynamicHeroSection: React.FC = () => {
               <Typography
                 variant="h1"
                 sx={{
-                  color: '#000000',
+                  // On small screens use white text so it shows over the solid black overlay.
+                  // On md+ keep the existing gradient/text-clip styling.
+                  color: { xs: 'white', md: undefined },
                   mb: 3,
                   fontWeight: 900,
                   fontSize: { xs: '3rem', md: '4.5rem', lg: '5.5rem' },
                   lineHeight: 1.1,
-                  textShadow: '0 4px 8px rgba(255,255,255,0.9), 0 2px 4px rgba(255,255,255,0.8)',
-                  background: 'linear-gradient(135deg, #000000 0%, #333333 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  textShadow: { xs: '0 2px 6px rgba(0,0,0,0.6)', md: '0 4px 8px rgba(255,255,255,0.9), 0 2px 4px rgba(255,255,255,0.8)' },
+                  background: { md: 'linear-gradient(135deg, #000000 0%, #333333 100%)' },
+                  backgroundClip: { md: 'text' },
+                  WebkitBackgroundClip: { md: 'text' },
+                  WebkitTextFillColor: { xs: 'white', md: 'transparent' },
                 }}
               >
                 {currentStory.title}
@@ -329,7 +334,7 @@ const DynamicHeroSection: React.FC = () => {
               <Typography
                 variant="h4"
                 sx={{
-                  color: '#2d2d2d',
+                  color: { xs: 'rgba(255,255,255,0.9)', md: '#2d2d2d' },
                   mb: 4,
                   fontWeight: 400,
                   fontSize: { xs: '1.5rem', md: '2rem' },
@@ -418,8 +423,8 @@ const DynamicHeroSection: React.FC = () => {
               });
             }}
             sx={{
-              color: '#000000',
-              opacity: 0.7,
+              color: { xs: 'white', md: '#000000' },
+              opacity: 0.85,
               '&:hover': {
                 opacity: 1,
                 transform: 'scale(1.2)',

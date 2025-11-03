@@ -134,7 +134,7 @@ const ResourcesPage: React.FC = () => {
       {/* Navigation Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} centered>
-          <Tab label="Documentation" icon={<Article />} />
+          <Tab label="Documentation" icon={<Article />} iconPosition="top" wrapped />
           <Tab label="Community" icon={<QuestionAnswer />} />
           <Tab label="Tools & Downloads" icon={<Download />} />
           <Tab label="FAQ" icon={<QuestionAnswer />} />
