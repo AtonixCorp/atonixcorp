@@ -6,17 +6,13 @@ import {
   Typography,
   Link,
   IconButton,
-  Divider,
-  Chip,
 } from '@mui/material';
-import BusinessIcon from '@mui/icons-material/Business';
 import {
   Twitter,
   GitHub,
   LinkedIn,
   Email,
   LocationOn,
-  ArrowUpward,
 } from '@mui/icons-material';
 
 const Footer: React.FC = () => {
@@ -29,277 +25,166 @@ const Footer: React.FC = () => {
   ];
 
   const quickLinks = [
-    { name: 'Projects', path: '/projects', description: 'View our latest projects' },
-    { name: 'Teams', path: '/teams', description: 'Meet our talented teams' },
-    { name: 'Focus Areas', path: '/focus-areas', description: 'Our areas of expertise' },
-    { name: 'Resources', path: '/resources', description: 'Helpful resources and tools' },
-    { name: 'Community', path: '/community', description: 'Join our community' },
-    { name: 'Contact', path: '/contact', description: 'Get in touch with us' },
+    { name: 'Projects', path: '/projects' },
+    { name: 'Teams', path: '/teams' },
+    { name: 'Focus Areas', path: '/focus-areas' },
+    { name: 'Resources', path: '/resources' },
+    { name: 'Community', path: '/community' },
+    { name: 'Contact', path: '/contact' },
   ];
-
-  const focusAreas = [
-    { name: 'Agriculture', path: '/focus-areas/agriculture' },
-    { name: 'Fintech', path: '/focus-areas/fintech' },
-    { name: 'Medical Research', path: '/focus-areas/medical-research' },
-    { name: 'Security', path: '/focus-areas/security' },
-    { name: 'Big Data', path: '/focus-areas/big-data' },
-    { name: 'Cloud Computing', path: '/focus-areas/cloud-computing' },
-  ];
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <Box
       component="footer"
       sx={{
-        background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+        backgroundColor: '#0f172a',
         color: 'white',
-        py: 8,
+        py: 3,
         mt: 'auto',
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'radial-gradient(ellipse at top, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        },
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+      <Container maxWidth="lg">
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' }, 
-          gap: 4,
+          gap: 3,
           flexWrap: 'wrap'
         }}>
           {/* Company Info */}
-          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 40%' }, mb: 3 }}>
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <BusinessIcon sx={{ mr: 1, fontSize: 32 }} />
-                <Typography variant="h5" component="div" fontWeight={700}>
-                  AtonixCorp
-                </Typography>
-              </Box>
-              <Typography variant="body2" sx={{ mb: 3, lineHeight: 1.6, opacity: 0.9 }}>
-                A forward-thinking infrastructure and systems engineering organization 
-                dedicated to building secure, scalable, and autonomous cloud solutions.
+          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 40%' }, mb: 2 }}>
+            <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
+              AtonixCorp
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.8, lineHeight: 1.5, color: 'white' }}>
+              Building secure, scalable, and autonomous cloud solutions for forward-thinking organizations.
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Email sx={{ mr: 1, fontSize: 16, opacity: 0.7 }} />
+              <Link
+                href="mailto:support@atonixcorp.com"
+                color="inherit"
+                underline="hover"
+                sx={{
+                  fontSize: '0.875rem',
+                  opacity: 0.8,
+                  '&:hover': { opacity: 1 },
+                }}
+              >
+                support@atonixcorp.com
+              </Link>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <LocationOn sx={{ mr: 1, fontSize: 16, opacity: 0.7 }} />
+              <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>
+                Global Remote Operations
               </Typography>
-              
-              {/* Contact Info */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 2 }}>
-                  Contact Information
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Email sx={{ mr: 1, fontSize: 16, opacity: 0.8 }} />
-                  <Link
-                    href="mailto:guxegdsa@atonixcorp.com"
-                    color="inherit"
-                    underline="hover"
-                    sx={{ 
-                      fontSize: '0.875rem', 
-                      opacity: 0.8,
-                      '&:hover': { opacity: 1 },
-                      transition: 'opacity 0.2s ease-in-out',
-                    }}
-                  >
-                    guxegdsa@atonixcorp.com
-                  </Link>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <LocationOn sx={{ mr: 1, fontSize: 16, opacity: 0.8 }} />
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    Global Remote Operations
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Social Links */}
-              <Box>
-                <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 2 }}>
-                  Follow Us
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {socialLinks.map((social) => (
-                    <IconButton
-                      key={social.name}
-                      component="a"
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                          transform: 'translateY(-2px)',
-                        },
-                        transition: 'all 0.2s ease-in-out',
-                      }}
-                      title={`Follow us on ${social.name}`}
-                    >
-                      {social.icon}
-                    </IconButton>
-                  ))}
-                </Box>
-              </Box>
             </Box>
           </Box>
 
           {/* Quick Links */}
-          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 25%' } }}>
-            <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 3 }}>
+          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 20%' } }}>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
               Quick Links
             </Typography>
-            {quickLinks.map((link) => (
-              <Box key={link.name} sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {quickLinks.map((link) => (
                 <Link
+                  key={link.name}
                   component={RouterLink}
                   to={link.path}
                   color="inherit"
                   underline="none"
                   sx={{
-                    display: 'block',
+                    fontSize: '0.875rem',
                     opacity: 0.8,
-                    '&:hover': { 
-                      opacity: 1,
-                      transform: 'translateX(4px)',
-                    },
-                    transition: 'all 0.2s ease-in-out',
-                    fontSize: '1rem',
-                    fontWeight: 500,
+                    '&:hover': { opacity: 1 },
+                    transition: 'opacity 0.2s ease-in-out',
                   }}
                 >
                   {link.name}
                 </Link>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    opacity: 0.6,
-                    fontSize: '0.75rem',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {link.description}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-
-          {/* Focus Areas */}
-          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 25%' } }}>
-            <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 3 }}>
-              Focus Areas
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {focusAreas.map((area) => (
-                <Chip
-                  key={area.name}
-                  label={area.name}
-                  component={RouterLink}
-                  to={area.path}
-                  clickable
-                  variant="outlined"
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    fontSize: '0.75rem',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                      transform: 'scale(1.05)',
-                    },
-                    '&.MuiChip-clickable:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                    transition: 'all 0.2s ease-in-out',
-                  }}
-                />
               ))}
             </Box>
           </Box>
 
-          {/* Company Stats & CTA */}
-          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 auto' } }}>
-            <Typography variant="h6" component="div" fontWeight={600} sx={{ mb: 3 }}>
+          {/* Company Stats & Social */}
+          <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 30%' } }}>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
               Company
             </Typography>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                Founded: 2024
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                Projects: 15+
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                Team Members: 25+
-              </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 3 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>Founded: 2024</Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>Projects: 15+</Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>Team: 25+</Typography>
             </Box>
             
-            {/* Scroll to Top Button */}
-            <IconButton
-              onClick={scrollToTop}
-              sx={{
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  transform: 'translateY(-2px)',
-                },
-                transition: 'all 0.2s ease-in-out',
-              }}
-              title="Scroll to top"
-            >
-              <ArrowUpward />
-            </IconButton>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
+              Connect With Us
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {socialLinks.map((social) => (
+                <IconButton
+                  key={social.name}
+                  component="a"
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    color: 'white',
+                    opacity: 0.7,
+                    '&:hover': {
+                      opacity: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                    transition: 'all 0.2s ease-in-out',
+                  }}
+                  size="small"
+                  title={`Follow us on ${social.name}`}
+                >
+                  {social.icon}
+                </IconButton>
+              ))}
+            </Box>
           </Box>
         </Box>
 
-        <Divider sx={{ my: 4, backgroundColor: 'rgba(255, 255, 255, 0.2)' }} />
-
+        {/* Bottom Section */}
         <Box
           sx={{
+            mt: 4,
+            pt: 2,
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
             alignItems: 'center',
-            textAlign: { xs: 'center', md: 'left' },
+            gap: 2,
           }}
         >
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+          <Typography variant="body2" sx={{ opacity: 0.7, color: 'white' }}>
             © {currentYear} AtonixCorp. All rights reserved.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, mt: { xs: 2, md: 0 } }}>
+          <Box sx={{ display: 'flex', gap: 3 }}>
             <Link
               component={RouterLink}
               to="/privacy"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.8 }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7 }}
             >
-              Privacy Policy
+              Privacy
             </Link>
             <Link
               component={RouterLink}
               to="/terms"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.8 }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7 }}
             >
-              Terms of Service
+              Terms
             </Link>
           </Box>
-          <Typography variant="body2" sx={{ opacity: 0.8, mt: { xs: 1, md: 0 } }}>
-            Leading the way in technological evolution
-          </Typography>
         </Box>
       </Container>
     </Box>

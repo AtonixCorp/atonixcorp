@@ -26,6 +26,8 @@ import FocusAreaDetailPage from './pages/FocusAreaDetailPage';
 import ResourcesPage from './pages/ResourcesPage';
 import CommunityPage from './pages/CommunityPage';
 import ContactPage from './pages/ContactPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 import Dashboard from './pages/Dashboard';
 import UnifiedRegistrationPage from './pages/UnifiedRegistrationPage';
 import SignupPage from './pages/SignupPage';
@@ -470,6 +472,8 @@ function App() {
                   <Route path="/resources" element={<ResourcesPage />} />
                   <Route path="/community" element={<CommunityPage />} />
                   <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms" element={<TermsOfServicePage />} />
 
                   {/* OAuth Callback Routes */}
                   <Route path="/auth/github/callback" element={<SocialCallback provider="github" />} />

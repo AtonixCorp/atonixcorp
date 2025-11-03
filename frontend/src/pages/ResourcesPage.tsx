@@ -118,26 +118,76 @@ const ResourcesPage: React.FC = () => {
   const content = (
     <>
       {/* Header */}
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography variant={isDashboardMode ? "h4" : "h2"} component="h1" sx={{ mb: 2, fontWeight: 600 }}>
+      <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
+        <Typography 
+          variant={isDashboardMode ? "h4" : "h2"} 
+          component="h1" 
+          sx={{ 
+            mb: 2, 
+            fontWeight: 600,
+            fontSize: { xs: '1.75rem', md: isDashboardMode ? '2.125rem' : '3rem' }
+          }}
+        >
           Developer Resources
         </Typography>
-        <Typography variant={isDashboardMode ? "body1" : "h6"} color="text.secondary" sx={{ mb: 4 }}>
+        <Typography 
+          variant={isDashboardMode ? "body1" : "h6"} 
+          color="text.secondary" 
+          sx={{ 
+            mb: 4,
+            fontSize: { xs: '1rem', md: isDashboardMode ? '1rem' : '1.25rem' }
+          }}
+        >
           Everything you need to build with AtonixCorp
         </Typography>
 
-        <Alert severity="info" sx={{ mb: 4 }}>
+        <Alert 
+          severity="info" 
+          sx={{ 
+            mb: 4,
+            mx: { xs: 0, md: 'auto' },
+            maxWidth: { xs: '100%', md: '600px' }
+          }}
+        >
           Welcome to the AtonixCorp Developer Hub! Find documentation, tutorials, tools, and connect with our community.
         </Alert>
       </Box>
 
       {/* Navigation Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} centered>
-          <Tab label="Documentation" icon={<Article />} iconPosition="top" wrapped />
-          <Tab label="Community" icon={<QuestionAnswer />} />
-          <Tab label="Tools & Downloads" icon={<Download />} />
-          <Tab label="FAQ" icon={<QuestionAnswer />} />
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            '& .MuiTabs-flexContainer': {
+              justifyContent: { xs: 'flex-start', md: 'center' }
+            }
+          }}
+        >
+          <Tab 
+            label="Documentation" 
+            icon={<Article />} 
+            iconPosition="top" 
+            sx={{ minWidth: { xs: 'auto', md: 120 } }}
+          />
+          <Tab 
+            label="Community" 
+            icon={<QuestionAnswer />} 
+            sx={{ minWidth: { xs: 'auto', md: 120 } }}
+          />
+          <Tab 
+            label="Tools & Downloads" 
+            icon={<Download />} 
+            sx={{ minWidth: { xs: 'auto', md: 120 } }}
+          />
+          <Tab 
+            label="FAQ" 
+            icon={<QuestionAnswer />} 
+            sx={{ minWidth: { xs: 'auto', md: 120 } }}
+          />
         </Tabs>
       </Box>
 
@@ -146,10 +196,17 @@ const ResourcesPage: React.FC = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {/* Featured Resources */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 600,
+                fontSize: { xs: '1.5rem', md: '2.125rem' }
+              }}
+            >
               Getting Started
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
               {[
                 {
                   title: 'Development Guidelines',
@@ -200,7 +257,14 @@ const ResourcesPage: React.FC = () => {
 
           {/* Project Documentation */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 600,
+                fontSize: { xs: '1.5rem', md: '2.125rem' }
+              }}
+            >
               Project Documentation
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
@@ -241,7 +305,14 @@ const ResourcesPage: React.FC = () => {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 4 }}>
           {/* Community Links */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 600,
+                fontSize: { xs: '1.5rem', md: '2.125rem' }
+              }}
+            >
               Join Our Community
             </Typography>
             <List>
@@ -284,7 +355,14 @@ const ResourcesPage: React.FC = () => {
 
           {/* Contributing Guidelines */}
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 600,
+                fontSize: { xs: '1.5rem', md: '2.125rem' }
+              }}
+            >
               Contributing
             </Typography>
             <Card>
@@ -323,10 +401,17 @@ const ResourcesPage: React.FC = () => {
       {/* Tools & Downloads Tab */}
       <TabPanel value={tabValue} index={2}>
         <Box>
-          <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              mb: 3, 
+              fontWeight: 600,
+              fontSize: { xs: '1.5rem', md: '2.125rem' }
+            }}
+          >
             Development Tools
           </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
             {[
               {
                 name: 'AtonixCorp CLI',
@@ -376,7 +461,14 @@ const ResourcesPage: React.FC = () => {
 
       {/* FAQ Tab */}
       <TabPanel value={tabValue} index={3}>
-        <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            mb: 3, 
+            fontWeight: 600,
+            fontSize: { xs: '1.5rem', md: '2.125rem' }
+          }}
+        >
           Frequently Asked Questions
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
