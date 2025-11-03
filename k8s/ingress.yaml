@@ -4,6 +4,44 @@ metadata:
   name: atonixcorp-ingress
   namespace: atonixcorp
   annotations:
+    # Example: enable nginx ingress rewrite / to /index.html for SPA if using nginx-ingress
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: atonixcorp.com
+      http:
+        paths:
+          - path: /?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: atonixcorp-frontend
+                port:
+                  number: 80
+    - host: api.atonixcorp.com
+      http:
+        paths:
+          - path: /?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: atonixcorp-backend
+                port:
+                  number: 8000
+
+  # TLS section optional: configure with your cert secret name
+  tls:
+    - hosts:
+        - atonixcorp.com
+        - api.atonixcorp.com
+      secretName: atonixcorp-tls
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: atonixcorp-ingress
+  namespace: atonixcorp
+  annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:

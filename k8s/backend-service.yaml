@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: atonixcorp-backend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-backend
+spec:
+  selector:
+    app: atonixcorp-backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP

@@ -1,3 +1,46 @@
+# Kubernetes deployment for atonixcorp-platform
+
+This folder contains minimal Kubernetes manifests to deploy the backend and frontend images you pushed as:
+
+- atonixdev/atonixcorp-platform-backend:latest
+- atonixdev/atonixcorp-platform-frontend:latest
+
+Files:
+
+- `namespace.yaml` - creates the `atonixcorp` namespace
+- `backend-deployment.yaml` - backend Deployment (2 replicas) and placeholder env values
+- `backend-service.yaml` - backend ClusterIP service on port 8000
+- `frontend-deployment.yaml` - frontend Deployment (2 replicas), serves static via port 80
+- `frontend-service.yaml` - frontend ClusterIP service on port 80
+- `ingress.yaml` - ingress rules for `atonixcorp.com` (frontend) and `api.atonixcorp.com` (backend). This expects an ingress controller (e.g. nginx-ingress) to be installed.
+
+Before applying
+- Update secrets and environment variables in `backend-deployment.yaml`. The `SECRET_KEY` is referenced from a secret `atonixcorp-secrets` with key `DJANGO_SECRET_KEY`.
+- If your image registry is private, create an image pull secret and reference it in the pod spec as `imagePullSecrets`.
+- Ensure an Ingress controller is installed in the cluster (nginx-ingress, traefik, or cloud provider's load balancer).
+
+Apply the manifests:
+
+```bash
+# optional: confirm kubectl context
+kubectl config current-context
+
+# create the namespace and resources
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/backend-deployment.yaml
+kubectl apply -f k8s/backend-service.yaml
+kubectl apply -f k8s/frontend-deployment.yaml
+kubectl apply -f k8s/frontend-service.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+Notes & recommendations
+- The manifests are intentionally minimal. For production you'll want:
+  - Liveness / readiness probes for both backend and frontend.
+  - Resource requests/limits.
+  - HorizontalPodAutoscaler and proper replica counts.
+  - Secrets stored in SealedSecrets/External Secret Manager.
+  - A proper TLS secret (e.g. cert-manager + ACME) for `atonixcorp-tls` referenced in `ingress.yaml`.
 AtonixCorp platform - Kubernetes manifests
 
 Files

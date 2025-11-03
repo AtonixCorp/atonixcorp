@@ -1,3 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atonixcorp-frontend
+  namespace: atonixcorp
+  labels:
+    app: atonixcorp-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: atonixcorp-frontend
+  template:
+    metadata:
+      labels:
+        app: atonixcorp-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: atonixdev/atonixcorp-platform-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: REACT_APP_API_BASE
+              value: "https://api.atonixcorp.com"
+      restartPolicy: Always
 # Frontend Deployment and Service for AtonixCorp platform
 # Frontend Deployment and Service for AtonixCorp platform
 apiVersion: apps/v1
