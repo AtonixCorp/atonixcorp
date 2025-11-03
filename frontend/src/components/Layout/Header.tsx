@@ -115,6 +115,10 @@ const Header: React.FC = () => {
           </ListItem>
         ))}
       </List>
+      {/* Theme toggle in drawer for mobile users */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+        <ThemeToggle />
+      </Box>
       {/* Mobile auth actions: show Sign In / Sign Up when unauthenticated, else show dashboard/profile/logout */}
       <Box sx={{ px: 3, py: 2, borderTop: '1px solid rgba(0,0,0,0.06)', mt: 2 }}>
         {!isAuthenticated ? (
@@ -218,25 +222,31 @@ const Header: React.FC = () => {
           </Box>
 
             {isMobile ? (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{
-                // adjust mobile hamburger appearance to sit on dark header
-                backgroundColor: { xs: 'rgba(255,255,255,0.08)', md: 'rgba(59, 130, 246, 0.1)' },
-                color: { xs: 'white', md: '#3b82f6' },
-                borderRadius: '12px',
-                '&:hover': {
-                  backgroundColor: { xs: 'rgba(255,255,255,0.12)', md: 'rgba(59, 130, 246, 0.2)' },
-                  transform: 'scale(1.05)',
-                },
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{
+                  // adjust mobile hamburger appearance to sit on dark header
+                  backgroundColor: { xs: 'rgba(255,255,255,0.08)', md: 'rgba(59, 130, 246, 0.1)' },
+                  color: { xs: 'white', md: '#3b82f6' },
+                  borderRadius: '12px',
+                  '&:hover': {
+                    backgroundColor: { xs: 'rgba(255,255,255,0.12)', md: 'rgba(59, 130, 246, 0.2)' },
+                    transform: 'scale(1.05)',
+                  },
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              {/* Theme toggle available on mobile for easy access */}
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <ThemeToggle />
+              </Box>
+            </Box>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {navigation.map((item) => (
