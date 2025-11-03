@@ -44,6 +44,11 @@ import {
   Public,
   Support,
   Login,
+  EmojiEvents,
+  Construction,
+  Lock,
+  CreditCard,
+  Handshake,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { Team, TeamJoinRequest, TeamMembership } from '../types/api';
@@ -624,14 +629,16 @@ const TeamsPage: React.FC = () => {
         borderRadius: 4,
         border: '1px solid rgba(148, 163, 184, 0.2)'
       }}>
-        <Typography variant="h4" fontWeight="bold" sx={{ mb: 4, textAlign: 'center', color: 'primary.main' }}>
-          🧱 Team Architecture & Isolation
+        <Typography variant="h4" fontWeight="bold" sx={{ mb: 4, textAlign: 'center', color: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+          <Construction sx={{ fontSize: 28 }} />
+          Team Architecture & Isolation
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 4 }}>
           <Box>
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'secondary.main' }}>
-                🔐 Complete Isolation
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'secondary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Lock sx={{ fontSize: 22 }} />
+                Complete Isolation
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                 Each team operates with full sovereignty - dedicated databases, isolated user spaces,
@@ -640,8 +647,9 @@ const TeamsPage: React.FC = () => {
               </Typography>
             </Box>
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'success.main' }}>
-                🚀 Seamless Onboarding
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'success.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Rocket sx={{ fontSize: 22 }} />
+                Seamless Onboarding
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                 Join any team instantly without complex registration processes. Simply choose your
@@ -652,8 +660,9 @@ const TeamsPage: React.FC = () => {
           </Box>
           <Box>
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'warning.main' }}>
-                💳 Flexible Participation
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'warning.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CreditCard sx={{ fontSize: 22 }} />
+                Flexible Participation
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                 Teams can be configured as free or premium experiences. Premium teams may require
@@ -661,8 +670,9 @@ const TeamsPage: React.FC = () => {
               </Typography>
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'info.main' }}>
-                🤝 Cross-Team Collaboration
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: 'info.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Handshake sx={{ fontSize: 22 }} />
+                Cross-Team Collaboration
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                 While teams operate independently, Tony Core serves as the central hub for
@@ -723,8 +733,9 @@ const TeamsPage: React.FC = () => {
           p: 3,
           color: 'white'
         }}>
-          <Typography variant="h5" fontWeight="bold">
-            🏆 Recent Achievements
+          <Typography variant="h5" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EmojiEvents sx={{ fontSize: 26 }} />
+            Recent Achievements
           </Typography>
         </Box>
         <CardContent sx={{ p: 4 }}>
