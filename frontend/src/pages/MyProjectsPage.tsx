@@ -204,6 +204,7 @@ const MyProjectsPage: React.FC = () => {
               borderRadius: '12px',
               px: 3,
               background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
+              color: 'white',
             }}
           >
             New Project

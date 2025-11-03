@@ -221,6 +221,10 @@ const UserManagement: React.FC = () => {
               sx={{
                 borderRadius: '12px',
                 background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+                },
               }}
             >
               Add User

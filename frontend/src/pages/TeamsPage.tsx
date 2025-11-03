@@ -360,7 +360,7 @@ const TeamsPage: React.FC = () => {
                   <Typography variant="h3" fontWeight="bold" sx={{ color: 'white' }}>
                     {teams.length}
                   </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                  <Typography variant="body1" sx={{ opacity: 0.8, color: 'white' }}>
                     Sovereign Teams
                   </Typography>
                 </Paper>
@@ -376,7 +376,7 @@ const TeamsPage: React.FC = () => {
                   <Typography variant="h3" fontWeight="bold" sx={{ color: 'white' }}>
                     {teams.reduce((total, team) => total + team.members.length, 0)}
                   </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                  <Typography variant="body1" sx={{ opacity: 0.8, color: 'white' }}>
                     Team Members
                   </Typography>
                 </Paper>
@@ -392,7 +392,7 @@ const TeamsPage: React.FC = () => {
                   <Typography variant="h3" fontWeight="bold" sx={{ color: 'white' }}>
                     {teams.reduce((total, team) => total + team.skills.length, 0)}
                   </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                  <Typography variant="body1" sx={{ opacity: 0.8, color: 'white' }}>
                     Core Skills
                   </Typography>
                 </Paper>

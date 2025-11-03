@@ -824,6 +824,7 @@ const SignupPage: React.FC = () => {
                   '&:disabled': {
                     background: '#94a3b8',
                   },
+                  color: 'white',
                 }}
               >
                 {loading ? 'Creating Account...' : `Create ${registrationType === 'individual' ? 'Free' : 'Organization'} Account`}

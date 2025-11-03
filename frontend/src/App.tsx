@@ -165,7 +165,7 @@ const ___OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ childre
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             To access the enterprise dashboard, your organization must be registered. Please complete the registration process below.
           </Typography>
-          <Button variant="contained" size="large" onClick={() => setShowRegistration(true)} sx={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)', px: 4, py: 2 }}>Register Organization</Button>
+          <Button variant="contained" size="large" onClick={() => setShowRegistration(true)} sx={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)', px: 4, py: 2, color: 'white' }}>Register Organization</Button>
         </Box>
         <OrganizationRegistration open={showRegistration} onClose={() => setShowRegistration(false)} onSuccess={handleRegistrationSuccess} />
       </>

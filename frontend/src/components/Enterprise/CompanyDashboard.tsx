@@ -533,7 +533,11 @@ const CompanyDashboard: React.FC = () => {
               textTransform: 'none',
               fontWeight: 600,
               background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
+              color: 'white',
               py: 2,
+              '&:hover': {
+                background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+              },
             }}
           >
             View Analytics

@@ -587,6 +587,7 @@ const Dashboard: React.FC = () => {
                     '&:hover': {
                       boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)',
                     },
+                    color: 'white',
                   }}
                 >
                   New Project

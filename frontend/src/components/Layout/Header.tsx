@@ -459,6 +459,7 @@ const Header: React.FC = () => {
                       py: 1,
                       fontWeight: 600,
                       boxShadow: 'none',
+                      color: 'white',
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
                         transform: 'translateY(-2px)',

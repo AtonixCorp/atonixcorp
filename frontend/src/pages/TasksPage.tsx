@@ -337,6 +337,8 @@ const TasksPage: React.FC = () => {
               sx={{
                 borderRadius: '12px',
                 fontWeight: 600,
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
+                color: 'white',
               }}
             >
               New Task
