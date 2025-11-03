@@ -80,7 +80,7 @@ def api_root(request):
                 "api_usage": {"url": f"{base_url}/api/status/usage/", "description": "Detailed API usage statistics (authenticated)"},
             },
             "system": {"health_check": f"{base_url}/health/", "admin_panel": f"{base_url}/admin/"},
-            "support": {"email": "support@atonixcorp.com", "documentation": "https://docs.atonixcorp.org", "website": "https://atonixcorp.org"},
+            "support": {"email": "support@atonixcorp.com", "documentation": "https://docs.atonixcorp.com", "website": "https://atonixcorp.com"},
         }
     )
 

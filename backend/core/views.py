@@ -159,8 +159,8 @@ def api_info(request):
         },
         'support': {
             'email': 'api@atonixcorp.com',
-            'documentation': 'https://docs.atonixcorp.org',
-            'status_page': 'https://status.atonixcorp.org',
+            'documentation': 'https://docs.atonixcorp.com',
+            'status_page': 'https://status.atonixcorp.com',
             'github': 'https://github.com/atonixcorp/platform'
         },
         'server_info': {

@@ -206,11 +206,7 @@ SPECTACULAR_SETTINGS = {
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-<<<<<<< HEAD
-    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:8080',
-=======
-    default='http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp.org,http://www.atonixcorp.org,',
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
+    default='http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp.com,http://www.atonixcorp.com,',
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
@@ -234,7 +230,7 @@ EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@atonixcorp.org')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@atonixcorp.com')
 
 # File Storage Configuration (Local/Non-AWS)
 # Using local file storage instead of AWS S3

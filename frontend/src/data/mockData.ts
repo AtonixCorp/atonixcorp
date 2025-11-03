@@ -468,9 +468,9 @@ export const ____mockProjects: Project[] = [
       { id: 9, name: 'Redis' }
     ],
     status: 'active',
-    website_url: 'https://platform.atonixcorp.org',
+    website_url: 'https://platform.atonixcorp.com',
     github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
-    documentation_url: 'https://docs.atonixcorp.org/platform',
+    documentation_url: 'https://docs.atonixcorp.com/platform',
     is_featured: true,
     focus_areas: [____mockFocusAreas[0]],
     start_date: '2024-01-01',
@@ -497,7 +497,7 @@ export const ____mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/planivar',
-    documentation_url: 'https://docs.atonixcorp.org/planivar',
+    documentation_url: 'https://docs.atonixcorp.com/planivar',
     is_featured: true,
     focus_areas: [____mockFocusAreas[1]], // Big Data & Analytics
     start_date: '2024-02-01',
@@ -524,7 +524,7 @@ export const ____mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/voltoraiq',
-    documentation_url: 'https://docs.atonixcorp.org/voltoraiq',
+    documentation_url: 'https://docs.atonixcorp.com/voltoraiq',
     is_featured: true,
     focus_areas: [____mockFocusAreas[3]], // Smart Agriculture & IoT
     start_date: '2024-03-01',
@@ -551,7 +551,7 @@ export const ____mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
-    documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
+    documentation_url: 'https://docs.atonixcorp.com/atonixcorp-security',
     is_featured: true,
     focus_areas: [____mockFocusAreas[2]],
     start_date: '2024-03-01',
@@ -579,7 +579,7 @@ export const ____mockProjects: Project[] = [
     ],
     status: 'active',
     github_url: 'https://github.com/AtonixCorp/tujengepay',
-    documentation_url: 'https://docs.atonixcorp.org/tujengepay',
+    documentation_url: 'https://docs.atonixcorp.com/tujengepay',
     is_featured: true,
     focus_areas: [____mockFocusAreas[4]], // Fintech & Blockchain
     start_date: '2024-05-01',

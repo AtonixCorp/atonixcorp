@@ -38,14 +38,14 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure--&b$452=%e)ip6ud6w(y7sen-i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,atonixcorp.org,api.atonixcorp.org').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,atonixcorp.com,www.atonixcorp.com,api.atonixcorp.com').split(',')
 
 # Environment
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # Production domain settings
-FRONTEND_DOMAIN = os.getenv('FRONTEND_DOMAIN', 'https://atonixcorp.org')
-API_DOMAIN = os.getenv('API_DOMAIN', 'https://api.atonixcorp.org')
+FRONTEND_DOMAIN = os.getenv('FRONTEND_DOMAIN', 'https://atonixcorp.com')
+API_DOMAIN = os.getenv('API_DOMAIN', 'https://api.atonixcorp.com')
 
 
 # Redis Configuration
@@ -72,7 +72,7 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@atonixcorp.org')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@atonixcorp.com')
 SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '30'))
 
@@ -302,7 +302,7 @@ SPECTACULAR_SETTINGS = {
 
 
     ## Support
-    For technical support, contact: support@atonixcorp.org
+    For technical support, contact: support@atonixcorp.com
     ''',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
@@ -332,22 +332,22 @@ SPECTACULAR_SETTINGS = {
             'description': 'Development Server'
         },
         {
-            'url': 'https://api.atonixcorp.org',
+            'url': 'https://api.atonixcorp.com',
             'description': 'Production Server'
         }
     ],
     'EXTERNAL_DOCS': {
         'description': 'AtonixCorp Platform Documentation',
-        'url': 'https://docs.atonixcorp.org'
+        'url': 'https://docs.atonixcorp.com'
     },
     'CONTACT': {
         'name': 'AtonixCorp API Team',
-    'email': 'api@atonixcorp.org',
-        'url': 'https://atonixcorp.org/contact'
+    'email': 'api@atonixcorp.com',
+        'url': 'https://atonixcorp.com/contact'
     },
     'LICENSE': {
         'name': 'Proprietary',
-        'url': 'https://atonixcorp.org/license'
+        'url': 'https://atonixcorp.com/license'
     },
 }
 
@@ -356,20 +356,21 @@ CORS_ALLOWED_ORIGINS = [
     # Local development origins (CRA default is 3000)
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:3001",    # if you run the frontend on 3001
-    "http://127.0.0.1:3001",
-    "http://0.0.0.0:3001",
+  
+    "http://0.0.0.0:3000",
     # Production origins
-    "https://atonixcorp.org",
-    "https://www.atonixcorp.org",
+    "https://atonixcorp.com",
+    "https://www.atonixcorp.com",
+    "https://api.atonixcorp.com",  # Backend API subdomain
     # Allow HTTP hostnames for testing (optional)
-    "http://atonixcorp.org",
-    "http://www.atonixcorp.org",
+    "http://atonixcorp.com",
+    "http://www.atonixcorp.com",
+    "http://api.atonixcorp.com",  # Backend API subdomain for testing
 ]
 
 # Additional CORS settings for production
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://\w+\.atonixcorp\.org$",  # Allow subdomains
+    r"^https://\w+\.atonixcorp\.com$",  # Allow subdomains
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -463,8 +464,10 @@ cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[
     'http://localhost:3001',
     'http://127.0.0.1:3001',
     'http://0.0.0.0:3001',
-    'https://atonixcorp.org',
-    'https://www.atonixcorp.org',
+    'https://atonixcorp.com',
+    'https://www.atonixcorp.com',
+    'https://api.atonixcorp.com',
+    'http://api.atonixcorp.com',
 ])
 if cors_origins:
     CORS_ALLOWED_ORIGINS.extend(cors_origins)

@@ -19,7 +19,7 @@ If you are using an unsupported version, please plan an upgrade to a supported r
 
 If you discover a security vulnerability, please report it privately to our security team:
 
-- Email: security@atonixcorp.org
+- Email: security@atonixcorp.com
 - GitHub: Create a private Security Advisory on this repository (recommended) or open a confidential issue if available.
 
 When reporting, include the following information:
@@ -76,7 +76,7 @@ Do not perform testing that could harm user data or production services without 
 
 ## Contact & Next Steps
 
-- Email: security@atonixcorp.org
+- Email: security@atonixcorp.com
 - Add a Security Advisory on GitHub for confidential reports
 - For encrypted reports: use the PGP public key at `.github/SECURITY_PGP.pub`
 

@@ -10,7 +10,7 @@ interface Config {
 const ____getConfig = (): Config => {
   // Check if we're in production by looking at hostname
   const hostname = window.location.hostname;
-  const isProduction = hostname === 'atonixcorp.org' || hostname === 'www.atonixcorp.org';
+  const isProduction = hostname === 'atonixcorp.com' || hostname === 'www.atonixcorp.com';
   const isStaging = hostname.includes('staging') || hostname.includes('preview');
   
   // Determine environment
@@ -26,10 +26,10 @@ const ____getConfig = (): Config => {
   
   switch (environment) {
     case 'production':
-      apiBaseUrl = 'https://api.atonixcorp.org';
+      apiBaseUrl = 'https://api.atonixcorp.com';
       break;
     case 'staging':
-      apiBaseUrl = 'https://api-staging.atonixcorp.org';
+      apiBaseUrl = 'https://api-staging.atonixcorp.com';
       break;
     default:
       // Development - check if we're running on localhost with port 8080 (unified container)

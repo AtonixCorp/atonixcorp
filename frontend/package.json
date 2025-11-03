@@ -50,7 +50,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.org",
+  "proxy": "http://localhost:8000,http://atonixcorp-backend:8000,http://api.atonixcorp.com",
   "devDependencies": {
     "ts-morph": "^16.0.0"
   }

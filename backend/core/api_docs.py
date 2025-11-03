@@ -105,7 +105,7 @@ def api_documentation(request):
                 'method': 'GET',
                 'url': '/api/projects/',
                 'description': 'Retrieve a list of all projects with pagination',
-                'curl': '''curl -X GET "https://api.atonixcorp.org/api/projects/" \\
+                'curl': '''curl -X GET "https://api.atonixcorp.com/api/projects/" \\
      -H "Accept: application/json"''',
                 'response': '''{
   "success": true,
@@ -130,7 +130,7 @@ def api_documentation(request):
                 'method': 'GET', 
                 'url': '/api/projects/featured/',
                 'description': 'Retrieve only projects marked as featured',
-                'curl': '''curl -X GET "https://api.atonixcorp.org/api/projects/featured/" \\
+                'curl': '''curl -X GET "https://api.atonixcorp.com/api/projects/featured/" \\
      -H "Accept: application/json"''',
                 'response': '''{
   "success": true,
@@ -145,7 +145,7 @@ def api_documentation(request):
                 'method': 'POST',
                 'url': '/api/auth/login/',
                 'description': 'Authenticate user and receive JWT token',
-                'curl': '''curl -X POST "https://api.atonixcorp.org/api/auth/login/" \\
+                'curl': '''curl -X POST "https://api.atonixcorp.com/api/auth/login/" \\
      -H "Content-Type: application/json" \\
      -d '{"username": "user@example.com", "password": "password123"}' ''',
                 'response': '''{
@@ -163,8 +163,8 @@ def api_documentation(request):
         ],
         'support': {
             'email': 'api-support@atonixcorp.com',
-            'documentation': 'https://docs.atonixcorp.org/api',
-            'status_page': 'https://status.atonixcorp.org',
+            'documentation': 'https://docs.atonixcorp.com/api',
+            'status_page': 'https://status.atonixcorp.com',
             'github': 'https://github.com/atonixcorp/platform'
         }
     }
