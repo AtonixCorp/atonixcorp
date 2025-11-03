@@ -73,4 +73,4 @@ export interface CreateGroupPayload {
   description?: string;
 }
 
-export default {};
+// No anonymous default export required for type-only module

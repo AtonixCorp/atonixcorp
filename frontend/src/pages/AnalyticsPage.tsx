@@ -23,10 +23,7 @@ import {
   Timeline,
   Group,
   Business,
-  Assignment,
-  CheckCircle,
-  Schedule,
-  Warning,
+  Assignment
 } from '@mui/icons-material';
 
 interface MetricCardProps {
@@ -38,7 +35,7 @@ interface MetricCardProps {
   color: string;
 }
 
-const __MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend, icon, color }) => {
+const ____MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend, icon, color }) => {
   return (
     <Card
       sx={{
@@ -216,7 +213,7 @@ const AnalyticsPage: React.FC = () => {
         >
           {metrics.map((metric, index) => (
             <Box key={index}>
-              <__MetricCard {...metric} />
+              <____MetricCard {...metric} />
             </Box>
           ))}
         </Box>

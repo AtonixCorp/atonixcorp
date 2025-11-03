@@ -9,15 +9,13 @@ import {
   LinearProgress,
   IconButton,
   Button,
-  Divider,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
   ListItemSecondaryAction,
   useTheme,
-  Paper,
-  Stack,
+  Paper
 } from '@mui/material';
 import {
   TrendingUp,
@@ -26,12 +24,10 @@ import {
   Group,
   TrackChanges,
   Timeline,
-  Notifications,
   MoreVert,
   CheckCircle,
   Schedule,
   Warning,
-  Star,
   Add,
   Launch,
   CalendarToday,
@@ -65,7 +61,7 @@ interface TaskItemProps {
   dueTime: string;
 }
 
-const __StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, color }) => {
+const ____StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon, color }) => {
   return (
     <Card
       sx={{
@@ -138,7 +134,7 @@ const __StatCard: React.FC<StatCardProps> = ({ title, value, change, trend, icon
   );
 };
 
-const __ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDate, team }) => {
+const ____ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, dueDate, team }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return '#3b82f6';
@@ -241,7 +237,7 @@ const __ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, due
   );
 };
 
-const __TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTime }) => {
+const ____TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTime }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return '#ef4444';
@@ -309,7 +305,7 @@ const __TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTime 
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const theme = useTheme();
+  const _theme = useTheme();
 
   const stats = [
     {
@@ -443,7 +439,7 @@ const Dashboard: React.FC = () => {
           }}
         >
           {stats.map((stat, index) => (
-            <__StatCard key={index} {...stat} />
+            <____StatCard key={index} {...stat} />
           ))}
         </Box>
 
@@ -504,7 +500,7 @@ const Dashboard: React.FC = () => {
                   }}
                 >
                   {recentProjects.map((project, index) => (
-                    <__ProjectCard key={index} {...project} />
+                    <____ProjectCard key={index} {...project} />
                   ))}
                 </Box>
               </Box>
@@ -543,7 +539,7 @@ const Dashboard: React.FC = () => {
                 </Box>
                 <List sx={{ p: 0, width: '100%' }}>
                   {todayTasks.map((task, index) => (
-                    <__TaskItem key={index} {...task} />
+                    <____TaskItem key={index} {...task} />
                   ))}
                 </List>
               </Box>

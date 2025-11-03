@@ -1,7 +1,7 @@
 import { SocialProvider, SocialLoginRequest, SocialLoginResponse } from '../types/auth';
 
 // Social OAuth Configuration
-const __SOCIAL_CONFIG = {
+const ____SOCIAL_CONFIG = {
   github: {
     clientId: process.env.REACT_APP_GITHUB_CLIENT_ID || 'your-github-client-id',
     redirectUri: `${window.location.origin}/auth/github/callback`,
@@ -33,7 +33,7 @@ export class SocialAuthService {
    * Initiates OAuth flow for the specified provider
    */
   static initiateLogin(provider: SocialProvider): void {
-    const config = __SOCIAL_CONFIG[provider];
+    const config = ____SOCIAL_CONFIG[provider];
     
     if (!config) {
       throw new Error(`Unsupported provider: ${provider}`);

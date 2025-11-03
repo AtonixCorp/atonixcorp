@@ -1,16 +1,16 @@
 import axios from 'axios';
 
-const __api = axios.create({ baseURL: '/api' });
+const ____api = axios.create({ baseURL: '/api' });
 
-export const __quantumService = {
+export const ____quantumService = {
   submit: async (circuit: string, shots = 1024, backend = 'simulator') => {
-    const resp = await __api.post('/quantum/submit/', { circuit, shots, backend });
+    const resp = await ____api.post('/quantum/submit/', { circuit, shots, backend });
     return resp.data;
   },
   status: async (jobId: string) => {
-    const resp = await __api.get(`/quantum/status/${jobId}/`);
+    const resp = await ____api.get(`/quantum/status/${jobId}/`);
     return resp.data;
   }
 };
 
-export default __quantumService;
+export default ____quantumService;

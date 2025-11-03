@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AuditLogEntry } from '../../types/audit';
 
-const __formatTimestamp = (iso?: string) => {
+const ____formatTimestamp = (iso?: string) => {
   if (!iso) return '';
   try {
     return new Date(iso).toLocaleString();
@@ -10,7 +10,7 @@ const __formatTimestamp = (iso?: string) => {
   }
 };
 
-const _AuditLogTable: React.FC<{ entries: AuditLogEntry[] }> = ({ entries }) => {
+const ___AuditLogTable: React.FC<{ entries: AuditLogEntry[] }> = ({ entries }) => {
   if (!entries || entries.length === 0) return <div>No audit entries found.</div>;
 
   return (
@@ -27,7 +27,7 @@ const _AuditLogTable: React.FC<{ entries: AuditLogEntry[] }> = ({ entries }) => 
       <tbody>
         {entries.map((e) => (
           <tr key={e.id}>
-            <td>{__formatTimestamp(e.timestamp)}</td>
+            <td>{____formatTimestamp(e.timestamp)}</td>
             <td>{e.user?.displayName ?? e.user?.username ?? 'System'}</td>
             <td>{e.action}</td>
             <td>{e.resourceType ? `${e.resourceType} ${e.resourceId ?? ''}` : ''}</td>
@@ -39,4 +39,4 @@ const _AuditLogTable: React.FC<{ entries: AuditLogEntry[] }> = ({ entries }) => 
   );
 };
 
-export default _AuditLogTable;
+export default ___AuditLogTable;

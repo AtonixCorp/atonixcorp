@@ -1,10 +1,10 @@
 // Lightweight audit service with fetch wrapper and pagination support
 import type { AuditLogEntry } from '../types/audit';
 
-const __API_BASE = process.env.REACT_APP_API_BASE || '';
+const ____API_BASE = process.env.REACT_APP_API_BASE || '';
 
 export async function fetchAuditLogs(page = 1, pageSize = 50): Promise<AuditLogEntry[]> {
-  const url = `${__API_BASE}/api/audit/logs?page=${page}&page_size=${pageSize}`;
+  const url = `${____API_BASE}/api/audit/logs?page=${page}&page_size=${pageSize}`;
   const res = await fetch(url, { credentials: 'include' });
   if (!res.ok) {
     const text = await res.text();
@@ -17,4 +17,6 @@ export async function fetchAuditLogs(page = 1, pageSize = 50): Promise<AuditLogE
   return [];
 }
 
-export default { fetchAuditLogs };
+const __auditService = { fetchAuditLogs };
+
+export default __auditService;

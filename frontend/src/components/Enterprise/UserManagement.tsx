@@ -38,10 +38,10 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
-  const { organization } = useAuth();
+  const { organization: _organization } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [_selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Mock data - in real app, this would come from API

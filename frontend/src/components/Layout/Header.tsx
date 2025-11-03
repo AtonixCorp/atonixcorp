@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Business as BusinessIcon,
   Person,
   Logout,
   Settings,
@@ -29,6 +28,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
 import ThemeToggle from '../ThemeToggle';
+import BusinessIcon from '@mui/icons-material/Business';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout, isOrganizationRegistered } = useAuth();

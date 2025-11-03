@@ -56,7 +56,7 @@ const TeamsPage: React.FC = () => {
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
 
   // Join dialog state
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);

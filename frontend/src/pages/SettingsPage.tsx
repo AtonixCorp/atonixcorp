@@ -30,7 +30,7 @@ interface TabPanelProps {
   value: number;
 }
 
-const __TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
+const ____TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
   <div role="tabpanel" hidden={value !== index}>
     {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
   </div>
@@ -134,7 +134,7 @@ const SettingsPage: React.FC = () => {
           </Tabs>
 
           {/* Profile Tab */}
-          <__TabPanel value={tabValue} index={0}>
+          <____TabPanel value={tabValue} index={0}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Profile Information
@@ -229,10 +229,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </__TabPanel>
+          </____TabPanel>
 
           {/* Notifications Tab */}
-          <__TabPanel value={tabValue} index={1}>
+          <____TabPanel value={tabValue} index={1}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Notification Preferences
@@ -309,10 +309,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </__TabPanel>
+          </____TabPanel>
 
           {/* Security Tab */}
-          <__TabPanel value={tabValue} index={2}>
+          <____TabPanel value={tabValue} index={2}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Security Settings
@@ -379,10 +379,10 @@ const SettingsPage: React.FC = () => {
                 </Box>
               </Stack>
             </Box>
-          </__TabPanel>
+          </____TabPanel>
 
           {/* Appearance Tab */}
-          <__TabPanel value={tabValue} index={3}>
+          <____TabPanel value={tabValue} index={3}>
             <Box sx={{ maxWidth: 600, p: { xs: 2, sm: 2.5, md: 3 } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
                 Appearance Settings
@@ -400,7 +400,7 @@ const SettingsPage: React.FC = () => {
                 </Alert>
               </Stack>
             </Box>
-          </__TabPanel>
+          </____TabPanel>
         </Paper>
       </Box>
   );

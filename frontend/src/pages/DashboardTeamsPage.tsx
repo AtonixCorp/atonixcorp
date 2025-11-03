@@ -16,12 +16,9 @@ import {
 } from '@mui/material';
 import {
   Group,
-  Person,
-  Code,
   Email,
   Message,
   Assignment,
-  Timeline,
   TrendingUp,
   Work,
   Business,
@@ -59,7 +56,7 @@ interface Department {
 }
 
 const DashboardTeamsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
 
   // Mock data for workplace teams

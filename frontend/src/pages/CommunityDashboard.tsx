@@ -8,8 +8,6 @@ import {
   Avatar,
   Button,
   Chip,
-  LinearProgress,
-  Paper,
   List,
   ListItem,
   ListItemIcon,
@@ -23,7 +21,6 @@ import {
   Skeleton,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   Code,
   People,
   Forum,
@@ -36,25 +33,18 @@ import {
   GitHub,
   BugReport,
   Share,
-  Timeline,
-  GroupWork,
   EmojiEvents,
   Book,
   Security,
   Speed,
   CloudDone,
-  CheckCircle,
-  Warning,
   Info,
-  NewReleases,
-  Comment,
-  ThumbUp,
-  Visibility,
   Person,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { dashboardApi } from '../services/api';
 import { Link } from 'react-router-dom';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 interface DashboardStats {
   userContributions: number;

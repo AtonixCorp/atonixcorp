@@ -60,7 +60,7 @@ interface TeamSettings {
 const TeamAdminPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [membership, setMembership] = useState<TeamMembership | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);

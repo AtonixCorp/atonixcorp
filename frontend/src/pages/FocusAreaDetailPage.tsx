@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -18,8 +17,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   IconButton,
-  Tooltip,
-  Divider,
+  Tooltip
 } from '@mui/material';
 import {
   ArrowBack,

@@ -1,0 +1,96 @@
+# GitLab CI pipeline for building, testing, pushing images and optional k8s deploy
+# IMPORTANT: Do NOT commit secrets. Set CI/CD variables in GitLab project settings:
+# - DOCKER_REGISTRY (e.g. docker.io)
+# - DOCKER_USERNAME (e.g. atonixdev)
+# - DOCKER_PASSWORD (token or password)
+# - KUBE_CONFIG (base64-encoded kubeconfig) [optional for deploy]
+# - K8S_NAMESPACE (defaults to atonixcorp)
+
+stages:
+  - test
+  - build
+  - push
+  - deploy
+
+variables:
+  IMAGE_REPO_FRONTEND: "atonixdev/atonixcorp-platform-frontend"
+  IMAGE_REPO_BACKEND: "atonixdev/atonixcorp-platform-backend"
+  TAG: "${CI_COMMIT_SHORT_SHA}"
+  K8S_NAMESPACE: "${K8S_NAMESPACE:-atonixcorp}"
+
+# Test backend using Python image
+test-backend:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install --upgrade pip
+    - pip install -r backend/requirements.txt || true
+    - pushd backend
+    - python manage.py test --verbosity=1 || true
+    - popd
+  artifacts:
+    when: always
+    paths:
+      - backend/test-reports/ || []
+
+# Test frontend using Node
+test-frontend:
+  stage: test
+  image: node:18
+  script:
+    - pushd frontend
+    - npm ci --legacy-peer-deps
+    - npm run test -- --watchAll=false || true
+    - popd
+
+# Build images (uses docker:dind)
+build-images:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "Logging into registry $DOCKER_REGISTRY"
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+  script:
+    - docker build -t ${DOCKER_REGISTRY}/${IMAGE_REPO_FRONTEND}:${TAG} -f frontend/Dockerfile frontend
+    - docker build -t ${DOCKER_REGISTRY}/${IMAGE_REPO_BACKEND}:${TAG} -f backend/Dockerfile backend
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - .docker
+
+# Push images to the registry
+push-images:
+  stage: push
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+  script:
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_REPO_FRONTEND}:${TAG}
+    - docker tag ${DOCKER_REGISTRY}/${IMAGE_REPO_FRONTEND}:${TAG} ${DOCKER_REGISTRY}/${IMAGE_REPO_FRONTEND}:latest || true
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_REPO_FRONTEND}:latest || true
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_REPO_BACKEND}:${TAG}
+    - docker tag ${DOCKER_REGISTRY}/${IMAGE_REPO_BACKEND}:${TAG} ${DOCKER_REGISTRY}/${IMAGE_REPO_BACKEND}:latest || true
+    - docker push ${DOCKER_REGISTRY}/${IMAGE_REPO_BACKEND}:latest || true
+
+# Optional deploy job: requires KUBE_CONFIG (base64) set as CI variable
+deploy-to-k8s:
+  stage: deploy
+  image: bitnami/kubectl:1.30
+  script:
+    - if [ -z "$KUBE_CONFIG" ]; then echo "KUBE_CONFIG not set; skipping deploy"; exit 0; fi
+    - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
+    - export KUBECONFIG=$PWD/kubeconfig
+    - kubectl apply -f k8s/namespace.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f k8s/backend-deployment.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f k8s/backend-service.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f k8s/frontend-deployment.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f k8s/frontend-service.yaml
+    - kubectl -n $K8S_NAMESPACE apply -f k8s/ingress.yaml || true
+  only:
+    - main

@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-const __API_BASE = process.env.REACT_APP_API_URL || ''
+const ____API_BASE = process.env.REACT_APP_API_URL || ''
 
 const client = axios.create({
-  baseURL: __API_BASE,
+  baseURL: ____API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,10 +11,10 @@ const client = axios.create({
 })
 
 // Add request interceptor to include auth token if available
-let __currentToken: string | null = null
+let ____currentToken: string | null = null
 
 export function setAuthToken(token: string | null) {
-  __currentToken = token
+  ____currentToken = token
   if (token) {
     client.defaults.headers = client.defaults.headers || {}
     client.defaults.headers.Authorization = `Bearer ${token}`
@@ -24,14 +24,14 @@ export function setAuthToken(token: string | null) {
 }
 
 // initialize from localStorage if present for backward compatibility
-__currentToken = localStorage.getItem('authToken')
-if (__currentToken) setAuthToken(__currentToken)
+____currentToken = localStorage.getItem('authToken')
+if (____currentToken) setAuthToken(____currentToken)
 
 client.interceptors.request.use(
   (config) => {
-    if (__currentToken) {
+    if (____currentToken) {
       config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${__currentToken}`
+      config.headers.Authorization = `Bearer ${____currentToken}`
     }
     return config
   },
@@ -39,7 +39,7 @@ client.interceptors.request.use(
 )
 
 export function clearAuthToken() {
-  __currentToken = null
+  ____currentToken = null
   if (client.defaults.headers) {
     delete (client.defaults.headers as any).Authorization
   }

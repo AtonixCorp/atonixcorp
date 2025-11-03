@@ -1,7 +1,11 @@
 import React from 'react';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography, Avatar, Divider, Collapse } from '@mui/material';
-import { Dashboard as DashboardIcon, People as PeopleIcon, Settings as SettingsIcon, Storage as StorageIcon, ExpandLess, ExpandMore, Group as GroupIcon, Storefront as StorefrontIcon, Analytics as AnalyticsIcon } from '@mui/icons-material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import * as MuiIcons from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
+// Icons are resolved via the MuiIcons mapping below to allow fallbacks and
+// to support different icon exports across MUI versions. No direct imports
+// here to avoid redeclaration when the code defines local icon aliases.
 
 interface Props {
   children: React.ReactNode;
@@ -12,6 +16,15 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
   const navigate = useNavigate();
   const params = useParams<{ id?: string }>();
   const id = enterpriseId ?? params.id ?? 'enterprise';
+
+  // Icon aliases (fall back to HelpOutline when specific export isn't available)
+  const DashboardIcon = MuiIcons['Dashboard'] ?? MuiIcons['HelpOutline'];
+  const PeopleIcon = MuiIcons['People'] ?? MuiIcons['Groups'] ?? MuiIcons['HelpOutline'];
+  const StorageIcon = MuiIcons['Storage'] ?? MuiIcons['Cloud'] ?? MuiIcons['HelpOutline'];
+  const AnalyticsIcon = MuiIcons['Analytics'] ?? MuiIcons['BarChart'] ?? MuiIcons['HelpOutline'];
+  const StorefrontIcon = MuiIcons['Storefront'] ?? MuiIcons['Store'] ?? MuiIcons['HelpOutline'];
+  const SettingsIcon = MuiIcons['Settings'] ?? MuiIcons['Tune'] ?? MuiIcons['HelpOutline'];
+  const GroupIcon = MuiIcons['Group'] ?? MuiIcons['Groups'] ?? MuiIcons['HelpOutline'];
 
   const items = [
   { text: 'Overview', icon: <DashboardIcon />, path: `/enterprise/${id}/overview` },

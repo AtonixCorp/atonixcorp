@@ -10,7 +10,7 @@ import {
 } from '../types/auth';
 
 // Create axios instance for auth
-const __authApi = axios.create({
+const ____authApi = axios.create({
   baseURL: '/api/auth',
   headers: {
     'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ const __authApi = axios.create({
 });
 
 // Add request interceptor to include auth token
-__authApi.interceptors.request.use((config) => {
+____authApi.interceptors.request.use((config) => {
   console.log('Auth API request:', config.method?.toUpperCase(), config.url, config.data);
   const token = localStorage.getItem('authToken');
   if (token) {
@@ -28,7 +28,7 @@ __authApi.interceptors.request.use((config) => {
 });
 
 // Add response interceptor for debugging
-__authApi.interceptors.response.use(
+____authApi.interceptors.response.use(
   (response) => {
     console.log('Auth API response success:', response.status, response.data);
     return response;
@@ -77,7 +77,7 @@ export const authService = {
     
     // For other credentials, try real API (will fail gracefully)
     try {
-      const response = await __authApi.post<any>('/login/', credentials);
+      const response = await ____authApi.post<any>('/login/', credentials);
       console.log('AuthService login response:', response.data);
 
       // Normalize backend user payload to frontend User shape
@@ -159,7 +159,7 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    await __authApi.post('/logout/');
+    await ____authApi.post('/logout/');
   },
 
   getCurrentUser: async (): Promise<User> => {
@@ -188,7 +188,7 @@ export const authService = {
     }
     
     // Try real API
-    const response = await __authApi.get<any>('/me/');
+    const response = await ____authApi.get<any>('/me/');
     const backendUser = response.data.user;
     return {
       id: backendUser.id,

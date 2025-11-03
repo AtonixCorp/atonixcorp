@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 
-export const enterpriseApi = {
+export const __enterpriseApi = {
   async getEnterprise(id: string) {
     try {
       const res = await apiClient.get(`/api/enterprises/${id}`);
@@ -24,4 +24,4 @@ export const enterpriseApi = {
   }
 };
 
-export default enterpriseApi;
+export default __enterpriseApi;

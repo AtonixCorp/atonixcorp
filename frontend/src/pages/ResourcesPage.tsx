@@ -19,21 +19,17 @@ import {
   Alert,
 } from '@mui/material';
 import {
-  Code as CodeIcon,
-  Description as DocumentationIcon,
-  School as TutorialIcon,
-  Build as ToolIcon,
-  Link as LinkIcon,
   GitHub,
   Twitter,
   LinkedIn,
-  Forum as Discord,
   Article,
   QuestionAnswer,
   Download,
   OpenInNew,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
+import LinkIcon from '@mui/icons-material/Link';
+import CodeIcon from '@mui/icons-material/Code';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -77,10 +73,11 @@ const ResourcesPage: React.FC = () => {
   };
 
   const getResourceIcon = (type: string) => {
+    // Use already-imported MUI icons where possible.
     switch (type) {
-      case 'documentation': return <DocumentationIcon />;
-      case 'tutorial': return <TutorialIcon />;
-      case 'tool': return <ToolIcon />;
+      case 'documentation': return <Article />; // Article used as documentation icon
+      case 'tutorial': return <QuestionAnswer />; // Q&A as tutorial/community icon
+      case 'tool': return <Download />; // Download for tools
       case 'link': return <LinkIcon />;
       default: return <CodeIcon />;
     }
@@ -91,7 +88,7 @@ const ResourcesPage: React.FC = () => {
       case 'github': return <GitHub />;
       case 'twitter': return <Twitter />;
       case 'linkedin': return <LinkedIn />;
-      case 'discord': return <Discord />;
+      case 'discord': return <LinkIcon />; // fallback for Discord
       default: return <LinkIcon />;
     }
   };

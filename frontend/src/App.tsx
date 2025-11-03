@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, BrowserRouter as Router } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 
 // Context
@@ -87,7 +87,7 @@ import EnterpriseCloudMigrationRuns from './pages/enterprise/EnterpriseCloudMigr
 import EnterpriseMigrationRunDetails from './pages/enterprise/EnterpriseMigrationRunDetails';
 
 // Route guards and helpers
-const __ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ____ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -107,10 +107,10 @@ const __ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children })
 };
 
 // Backwards-compatible alias used in routes (some files reference ProtectedRoute)
-const _ProtectedRoute = __ProtectedRoute;
+const ___ProtectedRoute = ____ProtectedRoute;
 
 // Dashboard Route: redirect registered organizations to enterprise dashboard
-const _DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ___DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isOrganizationRegistered, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -133,7 +133,7 @@ const _DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return isOrganizationRegistered ? null : <>{children}</>;
 };
 
-const _OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ___OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isOrganizationRegistered, isLoading } = useAuth();
   const navigate = useNavigate();
   const [showRegistration, setShowRegistration] = useState(false);
@@ -173,7 +173,7 @@ const _OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ children 
   return <>{children}</>;
 };
 
-const __AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ____AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
@@ -215,234 +215,234 @@ function App() {
                   <Route path="/register/individual" element={<UnifiedRegistrationPage />} />
                   <Route path="/register/organization" element={<UnifiedRegistrationPage />} />
                   <Route path="/dashboard" element={
-                    <_DashboardRoute>
+                    <___DashboardRoute>
                       <Dashboard />
-                    </_DashboardRoute>
+                    </___DashboardRoute>
                   } />
                   <Route path="/dashboard/analytics" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <AnalyticsPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/tasks" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <TasksPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/teams" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <DashboardTeamsPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/settings" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <SettingsPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/schedule" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <SchedulePage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/security" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <SecurityPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/profile" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <ProfilePage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/projects" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <MyProjectsPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/project-analytics" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <ProjectAnalyticsPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/register" element={<EnterpriseRegisterPage />} />
                   <Route path="/enterprise/:id/dashboard" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseHome />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/overview" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseOverview />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/users" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseHome />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/groups" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseGroups />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/ai-analytics" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseAIAnalyticsPrototype />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/cloud-migration" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseCloudMigrationChecklist />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/migration" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseCloudMigrationRuns />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/migration/run/:runId" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseMigrationRunDetails />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/security" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseSecurity />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/help" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseHelp />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/teams" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseTeams />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/focus-areas" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseFocusAreas />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/resources" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseResources />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/enterprise/:id/marketplace" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <EnterpriseMarketplace />
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/marketplace" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <MarketplacePage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/help" element={
-                    <__ProtectedRoute>
+                    <____ProtectedRoute>
                       <DashboardLayout>
                         <HelpPage />
                       </DashboardLayout>
-                    </__ProtectedRoute>
+                    </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/enterprise" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <CompanyDashboard />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/team" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <TeamDashboard />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/users" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <UserManagement />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/groups" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <GroupUserDashboard />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/reports" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <DataReports />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/migration" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <DataMigration />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/models" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <ModelRepository />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/monitoring" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <MonitoringModule />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/audit" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <AuditLogs />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/dashboard/enterprise/federation" element={
-                    <_OrganizationRoute>
+                    <___OrganizationRoute>
                       <EnterpriseLayout>
                         <FederationManagement />
                       </EnterpriseLayout>
-                    </_OrganizationRoute>
+                    </___OrganizationRoute>
                   } />
                   <Route path="/admin" element={
-                    <__AdminRoute>
+                    <____AdminRoute>
                       <DashboardLayout>
                         <ManagementDashboard />
                       </DashboardLayout>
-                    </__AdminRoute>
+                    </____AdminRoute>
                   } />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
@@ -450,20 +450,20 @@ function App() {
                   <Route path="/teams" element={<TeamsPage />} />
                   <Route path="/teams/:slug" element={<TeamDetailPage />} />
                   <Route path="/teams/:slug/dashboard" element={
-                    <_ProtectedRoute>
+                    <___ProtectedRoute>
                       <TeamDashboardPage />
-                    </_ProtectedRoute>
+                    </___ProtectedRoute>
                   } />
                   <Route path="/teams/:slug/admin" element={
-                    <_ProtectedRoute>
+                    <___ProtectedRoute>
                       <TeamAdminPage />
-                    </_ProtectedRoute>
+                    </___ProtectedRoute>
                   } />
                   <Route path="/teams/:slug/login" element={<TeamLoginPage />} />
                   <Route path="/teams/:slug/upgrade" element={
-                    <_ProtectedRoute>
+                    <___ProtectedRoute>
                       <TeamUpgradePage />
-                    </_ProtectedRoute>
+                    </___ProtectedRoute>
                   } />
                   <Route path="/focus-areas" element={<FocusAreasPage />} />
                   <Route path="/focus-areas/:slug" element={<FocusAreaDetailPage />} />

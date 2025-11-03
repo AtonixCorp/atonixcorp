@@ -9,10 +9,10 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const _ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ___ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
-  const context = useContext(_ThemeContext);
+  const context = useContext(___ThemeContext);
   if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
@@ -20,7 +20,7 @@ export const useTheme = () => {
 };
 
 // Light theme configuration
-const _lightTheme = createTheme({
+const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
@@ -292,7 +292,7 @@ const _lightTheme = createTheme({
 });
 
 // Dark theme configuration
-const _darkTheme = createTheme({
+const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
@@ -602,14 +602,14 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  const theme = mode === 'dark' ? _darkTheme : _lightTheme;
+  const theme = mode === 'dark' ? ___darkTheme : ___lightTheme;
 
   return (
-    <_ThemeContext.Provider value={{ mode, toggleTheme }}>
+    <___ThemeContext.Provider value={{ mode, toggleTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
       </ThemeProvider>
-    </_ThemeContext.Provider>
+    </___ThemeContext.Provider>
   );
 };

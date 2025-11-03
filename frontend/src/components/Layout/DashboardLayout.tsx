@@ -23,35 +23,41 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  Person as PersonIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  Logout as LogoutIcon,
-  Business as ProjectsIcon,
-  Group as TeamsIcon,
-  TrackChanges as FocusAreasIcon,
-  LibraryBooks as ResourcesIcon,
-  Storefront as StorefrontIcon,
-  Forum as CommunityIcon,
-  ContactMail as ContactIcon,
-  Analytics as AnalyticsIcon,
-  Task as TasksIcon,
-  Schedule as ScheduleIcon,
-  Security as SecurityIcon,
   ExpandLess,
   ExpandMore,
   Folder,
   Assignment,
   // People (unused)
-  Timeline,
-  Help as HelpIcon,
-  AccountBalance as EnterpriseIcon,
+  Timeline
 } from '@mui/icons-material';
+import * as MuiIcons from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+// Icon imports removed: this file builds local icon aliases from the
+// `MuiIcons` mapping above to provide fallbacks and avoid redeclaration.
 
-const __drawerWidth = 280;
+// Map commonly used icon variable names (ending with "Icon") to the corresponding
+// material icon export (base name without the "Icon" suffix). If the exact base
+// isn't available in the library, fall back to HelpOutline so the UI still renders.
+const _DashboardIcon = MuiIcons['Dashboard'] ?? MuiIcons['HelpOutline'];
+const _EnterpriseIcon = MuiIcons['Business'] ?? MuiIcons['HelpOutline'];
+const _AnalyticsIcon = MuiIcons['Analytics'] ?? MuiIcons['BarChart'] ?? MuiIcons['HelpOutline'];
+const _TasksIcon = MuiIcons['Assignment'] ?? MuiIcons['HelpOutline'];
+const _ScheduleIcon = MuiIcons['Schedule'] ?? MuiIcons['Today'] ?? MuiIcons['HelpOutline'];
+const _ProjectsIcon = MuiIcons['Folder'] ?? MuiIcons['HelpOutline'];
+const _StorefrontIcon = MuiIcons['Storefront'] ?? MuiIcons['Store'] ?? MuiIcons['HelpOutline'];
+const _FocusAreasIcon = MuiIcons['Widgets'] ?? MuiIcons['Category'] ?? MuiIcons['HelpOutline'];
+const _ResourcesIcon = MuiIcons['MenuBook'] ?? MuiIcons['HelpOutline'];
+const _CommunityIcon = MuiIcons['People'] ?? MuiIcons['Groups'] ?? MuiIcons['HelpOutline'];
+const _ContactIcon = MuiIcons['ContactMail'] ?? MuiIcons['Mail'] ?? MuiIcons['HelpOutline'];
+const _SecurityIcon = MuiIcons['Security'] ?? MuiIcons['Shield'] ?? MuiIcons['HelpOutline'];
+const _HelpIcon = MuiIcons['HelpOutline'] ?? MuiIcons['Help'] ?? MuiIcons['HelpOutline'];
+const _SettingsIcon = MuiIcons['Settings'] ?? MuiIcons['Tune'] ?? MuiIcons['HelpOutline'];
+const _NotificationsIcon = MuiIcons['Notifications'] ?? MuiIcons['NotificationsActive'] ?? MuiIcons['HelpOutline'];
+const _PersonIcon = MuiIcons['Person'] ?? MuiIcons['AccountCircle'] ?? MuiIcons['HelpOutline'];
+const _LogoutIcon = MuiIcons['Logout'] ?? MuiIcons['ExitToApp'] ?? MuiIcons['HelpOutline'];
+
+const ____drawerWidth = 280;
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -116,34 +122,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigationItems: NavItem[] = [
     {
       text: 'Dashboard',
-      icon: <DashboardIcon />,
+      icon: <_DashboardIcon />,
       path: '/dashboard',
     },
     ...(isOrganizationRegistered ? [{
       text: 'Enterprise',
-      icon: <EnterpriseIcon />,
+      icon: <_EnterpriseIcon />,
       path: '/dashboard/enterprise',
     }] : []),
     {
       text: 'Analytics',
-      icon: <AnalyticsIcon />,
+      icon: <_AnalyticsIcon />,
       path: '/dashboard/analytics',
       badge: 3,
     },
     {
       text: 'My Tasks',
-      icon: <TasksIcon />,
+      icon: <_TasksIcon />,
       path: '/dashboard/tasks',
       badge: 12,
     },
     {
       text: 'Schedule',
-      icon: <ScheduleIcon />,
+      icon: <_ScheduleIcon />,
       path: '/dashboard/schedule',
     },
     {
       text: 'Projects',
-      icon: <ProjectsIcon />,
+      icon: <_ProjectsIcon />,
       children: [
         {
           text: 'All Projects',
@@ -165,34 +171,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     },
     {
       text: 'Enterprise',
-      icon: <StorefrontIcon />,
+      icon: <_StorefrontIcon />,
       path: '/enterprise/register',
     },
       {
         text: 'Focus Areas',
-        icon: <FocusAreasIcon />,
+        icon: <_FocusAreasIcon />,
         path: '/dashboard/focus-areas',
       },
       {
         text: 'Resources',
-        icon: <ResourcesIcon />,
+        icon: <_ResourcesIcon />,
         path: '/dashboard/resources',
       },
       {
         text: 'Marketplace',
-        icon: <StorefrontIcon />,
+        icon: <_StorefrontIcon />,
         path: '/dashboard/marketplace',
       },
     // Workspace moved inside Enterprise for enterprise-scoped access
     {
       text: 'Community',
-      icon: <CommunityIcon />,
+      icon: <_CommunityIcon />,
       path: '/dashboard/community',
       badge: 8,
     },
     {
       text: 'Contact',
-      icon: <ContactIcon />,
+      icon: <_ContactIcon />,
       path: '/dashboard/contact',
     },
   ];
@@ -200,17 +206,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const bottomNavigationItems: NavItem[] = [
     {
       text: 'Security',
-      icon: <SecurityIcon />,
+      icon: <_SecurityIcon />,
       path: '/dashboard/security',
     },
     {
       text: 'Help & Support',
-      icon: <HelpIcon />,
+      icon: <_HelpIcon />,
       path: '/dashboard/help',
     },
     {
       text: 'Settings',
-      icon: <SettingsIcon />,
+      icon: <_SettingsIcon />,
       path: '/dashboard/settings',
     },
   ];
@@ -412,8 +418,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: { lg: `calc(100% - ${__drawerWidth}px)` },
-          ml: { lg: `${__drawerWidth}px` },
+          width: { lg: `calc(100% - ${____drawerWidth}px)` },
+          ml: { lg: `${____drawerWidth}px` },
           display: { lg: 'none' },
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -437,7 +443,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="error">
-              <NotificationsIcon />
+              <_NotificationsIcon />
             </Badge>
           </IconButton>
         </Toolbar>
@@ -446,7 +452,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Sidebar Drawer */}
       <Box
         component="nav"
-        sx={{ width: { lg: __drawerWidth }, flexShrink: { lg: 0 } }}
+        sx={{ width: { lg: ____drawerWidth }, flexShrink: { lg: 0 } }}
       >
         <Drawer
           variant="temporary"
@@ -459,7 +465,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             display: { xs: 'block', lg: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: __drawerWidth,
+              width: ____drawerWidth,
               border: 'none',
             },
           }}
@@ -472,7 +478,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
-              width: __drawerWidth,
+              width: ____drawerWidth,
               border: 'none',
               borderRight: '1px solid #e2e8f0',
             },
@@ -488,7 +494,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { lg: `calc(100% - ${__drawerWidth}px)` },
+          width: { lg: `calc(100% - ${____drawerWidth}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -543,7 +549,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             },
           }}
         >
-          <PersonIcon sx={{ mr: 2, color: '#64748b' }} />
+          <_PersonIcon sx={{ mr: 2, color: '#64748b' }} />
           <Typography variant="body2">Profile</Typography>
         </MenuItem>
         <MenuItem
@@ -558,7 +564,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             },
           }}
         >
-          <SettingsIcon sx={{ mr: 2, color: '#64748b' }} />
+          <_SettingsIcon sx={{ mr: 2, color: '#64748b' }} />
           <Typography variant="body2">Settings</Typography>
         </MenuItem>
         <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />
@@ -574,7 +580,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             },
           }}
         >
-          <LogoutIcon sx={{ mr: 2, color: '#ef4444' }} />
+          <_LogoutIcon sx={{ mr: 2, color: '#ef4444' }} />
           <Typography variant="body2" sx={{ color: '#ef4444' }}>Logout</Typography>
         </MenuItem>
       </Menu>

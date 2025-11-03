@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { migrationApi } from '../../services/migrationApi';
 import { useParams } from 'react-router-dom';
 
-const __steps = [
+const ____steps = [
   'Inventory workloads',
   'Assess compatibility',
   'Choose cloud provider',
@@ -14,17 +14,17 @@ const __steps = [
   'Validate and optimize',
 ];
 
-const __STORAGE_KEY = 'cloud_migration_progress';
+const ____STORAGE_KEY = 'cloud_migration_progress';
 
 const EnterpriseCloudMigrationChecklist: React.FC = () => {
   const { id } = useParams();
   const enterpriseId = id || 'unknown';
   const [checked, setChecked] = React.useState<boolean[]>(() => {
     try {
-      const raw = localStorage.getItem(__STORAGE_KEY);
-      return raw ? JSON.parse(raw) : new Array(__steps.length).fill(false);
+      const raw = localStorage.getItem(____STORAGE_KEY);
+      return raw ? JSON.parse(raw) : new Array(____steps.length).fill(false);
     } catch {
-      return new Array(__steps.length).fill(false);
+      return new Array(____steps.length).fill(false);
     }
   });
 
@@ -32,19 +32,19 @@ const EnterpriseCloudMigrationChecklist: React.FC = () => {
     const copy = [...checked];
     copy[i] = !copy[i];
     setChecked(copy);
-    localStorage.setItem(__STORAGE_KEY, JSON.stringify(copy));
+    localStorage.setItem(____STORAGE_KEY, JSON.stringify(copy));
   };
 
   const reset = () => {
-    const init = new Array(__steps.length).fill(false);
+    const init = new Array(____steps.length).fill(false);
     setChecked(init);
-    localStorage.setItem(__STORAGE_KEY, JSON.stringify(init));
+    localStorage.setItem(____STORAGE_KEY, JSON.stringify(init));
   };
 
   const navigate = useNavigate();
 
   const startMigration = async () => {
-    const payload = { __steps, completed: checked, logs: ['Initiated migration run'], estimatedCost: Math.round(500 + Math.random() * 4500) };
+    const payload = { ____steps, completed: checked, logs: ['Initiated migration run'], estimatedCost: Math.round(500 + Math.random() * 4500) };
     const run = await migrationApi.startMigration(enterpriseId, payload);
     navigate(`/enterprise/${enterpriseId}/migration/run/${run.id}`);
     // kick off simulation for local fallback
@@ -61,7 +61,7 @@ const EnterpriseCloudMigrationChecklist: React.FC = () => {
         <Typography variant="h5" gutterBottom>Cloud Migration Checklist</Typography>
         <Paper sx={{ p: 2, maxWidth: 720 }}>
           <List>
-            {__steps.map((s, i) => (
+            {____steps.map((s, i) => (
               <ListItem key={s}>
                 <ListItemButton onClick={() => toggle(i)}>
                   <Checkbox checked={!!checked[i]} />

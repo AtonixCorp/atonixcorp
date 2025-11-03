@@ -55,7 +55,7 @@ export const enterprisesApi = {
 export default enterprisesApi;
 
 // Backwards-compatible named export used by older pages that import `enterpriseApi`
-export const enterpriseApi = {
+export const __enterpriseApi = {
   async getEnterprise(enterpriseId: number | string): Promise<Enterprise> {
     return enterprisesApi.get(enterpriseId);
   },

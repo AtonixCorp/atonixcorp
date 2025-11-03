@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Grid, Card, CardContent, Button } from '@mui/material';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 
-const __MarketplaceCard: React.FC<{ title: string; description: string; cta?: string }> = ({ title, description, cta = 'Install' }) => (
+const ____MarketplaceCard: React.FC<{ title: string; description: string; cta?: string }> = ({ title, description, cta = 'Install' }) => (
   <Card sx={{ borderRadius: 4, border: '1px solid #e2e8f0' }}>
     <CardContent>
       <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>{title}</Typography>
@@ -39,7 +39,7 @@ const MarketplacePage: React.FC = () => {
               }}
             >
               <Box sx={{ p: 1 }}>
-                <__MarketplaceCard {...it} />
+                <____MarketplaceCard {...it} />
               </Box>
             </Grid>
           ))}

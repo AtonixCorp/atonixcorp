@@ -3,7 +3,7 @@
 import { Project, Team, Technology, FocusArea } from '../types/api';
 
 // Mock Technologies
-export const __mockTechnologies: Technology[] = [
+export const ____mockTechnologies: Technology[] = [
   { id: 1, name: 'React', description: 'Frontend framework' },
   { id: 2, name: 'Django', description: 'Backend framework' },
   { id: 3, name: 'TypeScript', description: 'Programming language' },
@@ -22,7 +22,7 @@ export const __mockTechnologies: Technology[] = [
 ];
 
 // Mock Focus Areas
-export const __mockFocusAreas: FocusArea[] = [
+export const ____mockFocusAreas: FocusArea[] = [
   {
     id: 1,
     name: 'Infrastructure & DevOps',
@@ -448,7 +448,7 @@ export const __mockFocusAreas: FocusArea[] = [
 ];
 
 // Mock Projects
-export const __mockProjects: Project[] = [
+export const ____mockProjects: Project[] = [
   {
     id: 1,
     name: 'Atonixcorp-Platform',
@@ -472,7 +472,7 @@ export const __mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
     documentation_url: 'https://docs.atonixcorp.org/platform',
     is_featured: true,
-    focus_areas: [__mockFocusAreas[0]],
+    focus_areas: [____mockFocusAreas[0]],
     start_date: '2024-01-01',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -499,7 +499,7 @@ export const __mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/planivar',
     documentation_url: 'https://docs.atonixcorp.org/planivar',
     is_featured: true,
-    focus_areas: [__mockFocusAreas[1]], // Big Data & Analytics
+    focus_areas: [____mockFocusAreas[1]], // Big Data & Analytics
     start_date: '2024-02-01',
     created_at: '2024-02-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -526,7 +526,7 @@ export const __mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/voltoraiq',
     documentation_url: 'https://docs.atonixcorp.org/voltoraiq',
     is_featured: true,
-    focus_areas: [__mockFocusAreas[3]], // Smart Agriculture & IoT
+    focus_areas: [____mockFocusAreas[3]], // Smart Agriculture & IoT
     start_date: '2024-03-01',
     created_at: '2024-03-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -553,7 +553,7 @@ export const __mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/atonixcorp-security',
     documentation_url: 'https://docs.atonixcorp.org/atonixcorp-security',
     is_featured: true,
-    focus_areas: [__mockFocusAreas[2]],
+    focus_areas: [____mockFocusAreas[2]],
     start_date: '2024-03-01',
     created_at: '2024-03-01T00:00:00Z',
     updated_at: '2025-09-20T00:00:00Z',
@@ -581,7 +581,7 @@ export const __mockProjects: Project[] = [
     github_url: 'https://github.com/AtonixCorp/tujengepay',
     documentation_url: 'https://docs.atonixcorp.org/tujengepay',
     is_featured: true,
-    focus_areas: [__mockFocusAreas[4]], // Fintech & Blockchain
+    focus_areas: [____mockFocusAreas[4]], // Fintech & Blockchain
     start_date: '2024-05-01',
     created_at: '2024-05-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',
@@ -591,7 +591,7 @@ export const __mockProjects: Project[] = [
 ];
 
 // Mock Teams
-export const __mockTeams: Team[] = [
+export const ____mockTeams: Team[] = [
   {
     id: 1,
     name: 'Planivarum',
@@ -993,40 +993,40 @@ export const __mockTeams: Team[] = [
 export const mockProjectService = {
   getProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-    return __mockProjects;
+    return ____mockProjects;
   },
   getFeaturedProjects: async (): Promise<Project[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return __mockProjects.filter(project => project.is_featured);
+    return ____mockProjects.filter(project => project.is_featured);
   },
   getProjectBySlug: async (slug: string): Promise<Project | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return __mockProjects.find(project => project.slug === slug) || null;
+    return ____mockProjects.find(project => project.slug === slug) || null;
   }
 };
 
 export const mockTeamService = {
   getTeams: async (): Promise<Team[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return __mockTeams;
+    return ____mockTeams;
   },
   getTeamBySlug: async (slug: string): Promise<Team | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return __mockTeams.find(team => team.slug === slug) || null;
+    return ____mockTeams.find(team => team.slug === slug) || null;
   }
 };
 
 export const mockTechnologyService = {
   getTechnologies: async (): Promise<Technology[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    return __mockTechnologies;
+    return ____mockTechnologies;
   }
 };
 
 export const mockFocusAreaService = {
   getFocusAreas: async (): Promise<FocusArea[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return __mockFocusAreas;
+    return ____mockFocusAreas;
   }
 };
 

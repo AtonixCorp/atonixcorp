@@ -14,7 +14,6 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Paper,
-  Divider,
   Alert,
 } from '@mui/material';
 import {
@@ -25,9 +24,6 @@ import {
   Analytics,
   Settings,
   Add,
-  CheckCircle,
-  Schedule,
-  Assessment,
   Timeline,
   MonetizationOn,
   LocationOn,
@@ -63,7 +59,7 @@ interface Project {
 }
 
 const CompanyDashboard: React.FC = () => {
-  const { user, organization } = useAuth();
+  const { user: _user, organization } = useAuth();
   const [metrics, setMetrics] = useState<CompanyMetric[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);

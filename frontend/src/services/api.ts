@@ -15,7 +15,7 @@ import {
 } from '../types/api';
 
 // Create axios instance with base configuration
-const __api = axios.create({
+const ____api = axios.create({
   baseURL: config.API_BASE_URL,
   timeout: config.API_TIMEOUT,
   headers: {
@@ -26,7 +26,7 @@ const __api = axios.create({
 });
 
 // Request interceptor for adding auth token
-__api.interceptors.request.use(
+____api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -40,7 +40,7 @@ __api.interceptors.request.use(
 );
 
 // Response interceptor for error handling
-__api.interceptors.response.use(
+____api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error);
@@ -55,73 +55,73 @@ __api.interceptors.response.use(
 
 // Projects API
 export const projectsApi = {
-  getAll: () => __api.get<Project[]>('/projects/'),
-  getBySlug: (slug: string) => __api.get<Project>(`/projects/${slug}/`),
-  getFeatured: () => __api.get<Project[]>('/projects/?featured=true'),
-  getByStatus: () => __api.get<{[key: string]: Project[]}>('/projects/by_status/'),
+  getAll: () => ____api.get<Project[]>('/projects/'),
+  getBySlug: (slug: string) => ____api.get<Project>(`/projects/${slug}/`),
+  getFeatured: () => ____api.get<Project[]>('/projects/?featured=true'),
+  getByStatus: () => ____api.get<{[key: string]: Project[]}>('/projects/by_status/'),
 };
 
 // Teams API
 export const teamsApi = {
   // Basic team endpoints
-  getAll: () => __api.get<Team[]>('/teams/'),
-  getBySlug: (slug: string) => __api.get<Team>(`/teams/${slug}/`),
-  getMembers: (slug: string) => __api.get(`/teams/${slug}/members/`),
-  getSkills: (slug: string) => __api.get(`/teams/${slug}/skills/`),
+  getAll: () => ____api.get<Team[]>('/teams/'),
+  getBySlug: (slug: string) => ____api.get<Team>(`/teams/${slug}/`),
+  getMembers: (slug: string) => ____api.get(`/teams/${slug}/members/`),
+  getSkills: (slug: string) => ____api.get(`/teams/${slug}/skills/`),
 
   // Enterprise-specific helpers used by pages/components
-  list: (enterpriseId: string) => __api.get<Team[]>(`/enterprises/${enterpriseId}/teams/`),
-  create: (enterpriseId: string, data: any) => __api.post(`/enterprises/${enterpriseId}/teams/`, data),
+  list: (enterpriseId: string) => ____api.get<Team[]>(`/enterprises/${enterpriseId}/teams/`),
+  create: (enterpriseId: string, data: any) => ____api.post(`/enterprises/${enterpriseId}/teams/`, data),
 
   // Membership flow
   join: (slug: string, data?: { membership_type?: string; role?: string; bio?: string }) =>
-    __api.post(`/teams/${slug}/join/`, data),
-  leave: (slug: string) => __api.post(`/teams/${slug}/leave/`),
-  getMembership: (slug: string) => __api.get(`/teams/${slug}/membership/`),
+    ____api.post(`/teams/${slug}/join/`, data),
+  leave: (slug: string) => ____api.post(`/teams/${slug}/leave/`),
+  getMembership: (slug: string) => ____api.get(`/teams/${slug}/membership/`),
 
   // Team auth (if used)
   teamLogin: (data: { username: string; password: string; team_slug: string }) =>
-    __api.post('/auth/team-login/', data),
+    ____api.post('/auth/team-login/', data),
 };
 
 // Focus Areas API
 export const focusAreasApi = {
-  getAll: () => __api.get<FocusArea[]>('/focus-areas/'),
-  getBySlug: (slug: string) => __api.get<FocusArea>(`/focus-areas/${slug}/`),
-  getTechnologies: (slug: string) => __api.get(`/focus-areas/${slug}/technologies/`),
-  getSolutions: (slug: string) => __api.get(`/focus-areas/${slug}/solutions/`),
+  getAll: () => ____api.get<FocusArea[]>('/focus-areas/'),
+  getBySlug: (slug: string) => ____api.get<FocusArea>(`/focus-areas/${slug}/`),
+  getTechnologies: (slug: string) => ____api.get(`/focus-areas/${slug}/technologies/`),
+  getSolutions: (slug: string) => ____api.get(`/focus-areas/${slug}/solutions/`),
 };
 
 // Resources API
-export const _resourcesApi = {
-  getCategories: () => __api.get<ResourceCategory[]>('/resource-categories/'),
-  getResources: () => __api.get<Resource[]>('/resources/'),
-  getResourceBySlug: (slug: string) => __api.get<Resource>(`/resources/${slug}/`),
-  getFeaturedResources: () => __api.get<Resource[]>('/resources/?featured=true'),
-  getResourcesByCategory: () => __api.get('/resources/by_category/'),
-  getCommunityLinks: () => __api.get<CommunityLink[]>('/community-links/'),
-  getFAQs: () => __api.get<FAQ[]>('/faqs/'),
-  getFeaturedFAQs: () => __api.get<FAQ[]>('/faqs/?featured=true'),
-  getFAQsByCategory: () => __api.get('/faqs/by_category/'),
+export const ___resourcesApi = {
+  getCategories: () => ____api.get<ResourceCategory[]>('/resource-categories/'),
+  getResources: () => ____api.get<Resource[]>('/resources/'),
+  getResourceBySlug: (slug: string) => ____api.get<Resource>(`/resources/${slug}/`),
+  getFeaturedResources: () => ____api.get<Resource[]>('/resources/?featured=true'),
+  getResourcesByCategory: () => ____api.get('/resources/by_category/'),
+  getCommunityLinks: () => ____api.get<CommunityLink[]>('/community-links/'),
+  getFAQs: () => ____api.get<FAQ[]>('/faqs/'),
+  getFeaturedFAQs: () => ____api.get<FAQ[]>('/faqs/?featured=true'),
+  getFAQsByCategory: () => ____api.get('/faqs/by_category/'),
 };
 
 // Contact API
 export const contactApi = {
-  getContacts: () => __api.get<ContactPerson[]>('/contact-persons/'),
-  getPrimaryContacts: () => __api.get<ContactPerson[]>('/contact-persons/?is_primary=true'),
-  getOfficeLocations: () => __api.get<OfficeLocation[]>('/office-locations/'),
-  getHeadquarters: () => __api.get<OfficeLocation>('/office-locations/?is_headquarters=true'),
-  sendMessage: (message: ContactMessage) => __api.post('/contact-messages/', message),
+  getContacts: () => ____api.get<ContactPerson[]>('/contact-persons/'),
+  getPrimaryContacts: () => ____api.get<ContactPerson[]>('/contact-persons/?is_primary=true'),
+  getOfficeLocations: () => ____api.get<OfficeLocation[]>('/office-locations/'),
+  getHeadquarters: () => ____api.get<OfficeLocation>('/office-locations/?is_headquarters=true'),
+  sendMessage: (message: ContactMessage) => ____api.post('/contact-messages/', message),
 };
 
 // Dashboard API
 export const dashboardApi = {
-  getStats: () => __api.get('/dashboard/stats/'),
-  getUserProfile: () => __api.get('/dashboard/profile/'),
+  getStats: () => ____api.get('/dashboard/stats/'),
+  getUserProfile: () => ____api.get('/dashboard/profile/'),
 };
 
 // Service functions for easier use
-export const __projectService = {
+export const ____projectService = {
   getProjects: async (): Promise<Project[]> => {
     const response = await projectsApi.getAll();
     return response.data;
@@ -136,7 +136,7 @@ export const __projectService = {
   }
 };
 
-export const __technologyService = {
+export const ____technologyService = {
   getTechnologies: async (): Promise<Technology[]> => {
     // For now, return a mock list since we don't have a technologies endpoint yet
     return [
@@ -150,7 +150,7 @@ export const __technologyService = {
   }
 };
 
-export const __focusAreaService = {
+export const ____focusAreaService = {
   getFocusAreas: async (): Promise<FocusArea[]> => {
     const response = await focusAreasApi.getAll();
     return response.data;
@@ -161,4 +161,4 @@ export const __focusAreaService = {
   }
 };
 
-export default __api;
+export default ____api;

@@ -8,11 +8,11 @@ export interface EnterpriseRecord {
   createdAt: string;
 }
 
-const __STORAGE_KEY = 'atonix_enterprises_v1';
+const ____STORAGE_KEY = 'atonix_enterprises_v1';
 
 function readAll(): EnterpriseRecord[] {
   try {
-    const raw = localStorage.getItem(__STORAGE_KEY);
+    const raw = localStorage.getItem(____STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as EnterpriseRecord[];
   } catch {
@@ -21,7 +21,7 @@ function readAll(): EnterpriseRecord[] {
 }
 
 function writeAll(records: EnterpriseRecord[]) {
-  localStorage.setItem(__STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(____STORAGE_KEY, JSON.stringify(records));
 }
 
 export function createEnterprise(payload: Omit<EnterpriseRecord, 'id' | 'createdAt'>) {

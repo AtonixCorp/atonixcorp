@@ -10,7 +10,7 @@ export interface SupportTicket {
   createdAt: string;
 }
 
-const _TICKET_KEY = (enterpriseId: string) => `enterprise_${enterpriseId}_tickets`;
+const ___TICKET_KEY = (enterpriseId: string) => `enterprise_${enterpriseId}_tickets`;
 
 export async function createTicket(enterpriseId: string, ticket: Omit<SupportTicket, 'id' | 'createdAt' | 'status'>) {
   try {
@@ -29,14 +29,14 @@ export async function createTicket(enterpriseId: string, ticket: Omit<SupportTic
       createdAt: new Date().toISOString(),
     };
     const next = [newTicket, ...tickets];
-    try { localStorage.setItem(_TICKET_KEY(enterpriseId), JSON.stringify(next)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(___TICKET_KEY(enterpriseId), JSON.stringify(next)); } catch (e) { /* ignore */ }
     return newTicket;
   }
 }
 
 export function getTickets(enterpriseId: string): SupportTicket[] {
   try {
-    const raw = localStorage.getItem(_TICKET_KEY(enterpriseId));
+    const raw = localStorage.getItem(___TICKET_KEY(enterpriseId));
     if (!raw) return [];
     return JSON.parse(raw) as SupportTicket[];
   } catch (e) {

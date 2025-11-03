@@ -9,11 +9,11 @@ import {
   Divider,
   Chip,
 } from '@mui/material';
+import BusinessIcon from '@mui/icons-material/Business';
 import {
   Twitter,
   GitHub,
   LinkedIn,
-  Business as BusinessIcon,
   Email,
   LocationOn,
   ArrowUpward,

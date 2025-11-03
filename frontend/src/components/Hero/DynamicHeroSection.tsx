@@ -27,7 +27,7 @@ interface ProjectStory {
   backgroundImage: string;
 }
 
-const _projectStories: ProjectStory[] = [
+const ___projectStories: ProjectStory[] = [
   {
     id: 1,
     title: 'Atonixcorp-Platform',
@@ -132,7 +132,7 @@ const DynamicHeroSection: React.FC = () => {
   const intervalRef = useRef<number | null>(null);
   const storyIntervalRef = useRef<number | null>(null);
 
-  const currentStory = _projectStories[currentIndex];
+  const currentStory = ___projectStories[currentIndex];
   const SLIDE_DURATION = 8000; // 8 seconds per project
   const STORY_DURATION = 2000; // 2 seconds per story line
 
@@ -140,7 +140,7 @@ const DynamicHeroSection: React.FC = () => {
   // (that could lead to unexpected behavior). Manual selection still works via handleProjectSelect.
   useEffect(() => {
     intervalRef.current = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % _projectStories.length);
+      setCurrentIndex((prev) => (prev + 1) % ___projectStories.length);
       setShowStory(false);
       setStoryIndex(0);
     }, SLIDE_DURATION);
@@ -190,17 +190,17 @@ const DynamicHeroSection: React.FC = () => {
   const renderAnimation = () => {
     switch (currentStory.animationType) {
       case 'particles':
-        return <_ParticleAnimation color={currentStory.accentColor} />;
+        return <___ParticleAnimation color={currentStory.accentColor} />;
       case 'waves':
-        return <_WaveAnimation color={currentStory.accentColor} />;
+        return <___WaveAnimation color={currentStory.accentColor} />;
       case 'circuit':
-        return <_CircuitAnimation color={currentStory.accentColor} />;
+        return <___CircuitAnimation color={currentStory.accentColor} />;
       case 'network':
-        return <_NetworkAnimation color={currentStory.accentColor} />;
+        return <___NetworkAnimation color={currentStory.accentColor} />;
       case 'dataflow':
-        return <_DataFlowAnimation color={currentStory.accentColor} />;
+        return <___DataFlowAnimation color={currentStory.accentColor} />;
       default:
-        return <_ParticleAnimation color={currentStory.accentColor} />;
+        return <___ParticleAnimation color={currentStory.accentColor} />;
     }
   };
 
@@ -270,7 +270,7 @@ const DynamicHeroSection: React.FC = () => {
             zIndex: 4,
           }}
         >
-          {_projectStories.map((_, index) => (
+          {___projectStories.map((_, index) => (
             <Box
               key={index}
               onClick={() => handleProjectSelect(index)}
@@ -461,7 +461,7 @@ const DynamicHeroSection: React.FC = () => {
 };
 
 // Animation Components
-const _ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
+const ___ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -537,7 +537,7 @@ const _ParticleAnimation: React.FC<{ color: string }> = ({ color }) => {
   return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />;
 };
 
-const _WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
+const ___WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -571,7 +571,7 @@ const _WaveAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const _CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
+const ___CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -609,7 +609,7 @@ const _CircuitAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const _NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
+const ___NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{
@@ -638,7 +638,7 @@ const _NetworkAnimation: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-const _DataFlowAnimation: React.FC<{ color: string }> = ({ color }) => {
+const ___DataFlowAnimation: React.FC<{ color: string }> = ({ color }) => {
   return (
     <Box
       sx={{

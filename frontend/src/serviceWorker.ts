@@ -1,7 +1,7 @@
 // Service Worker Registration Utility
 // This provides offline functionality and better performance
 
-const _isLocalhost = Boolean(
+const ___isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
     window.location.hostname === '[::1]' ||
     window.location.hostname.match(
@@ -24,7 +24,7 @@ export function register(config?: Config) {
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
 
-      if (_isLocalhost) {
+      if (___isLocalhost) {
         checkValidServiceWorker(swUrl, config);
         navigator.serviceWorker.ready.then(() => {
           console.log('Service worker is running in development mode.');

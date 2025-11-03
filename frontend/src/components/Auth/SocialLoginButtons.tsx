@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { SocialAuthService } from '../../services/socialAuthService';
 
 // Custom GitLab and LinkedIn icons as SVG components
-const __GitLabIcon: React.FC<{ sx?: any }> = ({ sx }) => (
+const ____GitLabIcon: React.FC<{ sx?: any }> = ({ sx }) => (
   <svg
     viewBox="0 0 24 24"
     width="24"
@@ -21,7 +21,7 @@ const __GitLabIcon: React.FC<{ sx?: any }> = ({ sx }) => (
   </svg>
 );
 
-const __LinkedInIcon: React.FC<{ sx?: any }> = ({ sx }) => (
+const ____LinkedInIcon: React.FC<{ sx?: any }> = ({ sx }) => (
   <svg
     viewBox="0 0 24 24"
     width="24"
@@ -71,12 +71,12 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({ loading, disabl
     },
     {
       provider: 'gitlab',
-      icon: <__GitLabIcon />,
+      icon: <____GitLabIcon />,
       name: 'GitLab',
     },
     {
       provider: 'linkedin',
-      icon: <__LinkedInIcon />,
+      icon: <____LinkedInIcon />,
       name: 'LinkedIn',
     },
   ];

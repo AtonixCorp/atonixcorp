@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -8,15 +7,7 @@ import {
   CardMedia,
   Button,
   Chip,
-  Skeleton,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
-  IconButton,
-  Tooltip,
+  Skeleton
 } from '@mui/material';
 import {
   ArrowForward,
@@ -27,9 +18,6 @@ import {
   Agriculture,
   AccountBalance,
   Analytics,
-  Launch,
-  CheckCircle,
-  StarBorder,
   Code,
   Cloud,
 } from '@mui/icons-material';
@@ -42,8 +30,8 @@ const FocusAreasPage: React.FC = () => {
 
   const [focusAreas, setFocusAreas] = useState<FocusArea[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [_error, setError] = useState<string | null>(null);
+  const [_selectedCategory, _setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     const fetchFocusAreas = async () => {
@@ -80,7 +68,7 @@ const FocusAreasPage: React.FC = () => {
 
   const filteredFocusAreas = focusAreas;
 
-  const categories = ['all'];
+  const _categories = ['all'];
 
   if (loading) {
     return (

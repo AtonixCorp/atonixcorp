@@ -26,17 +26,17 @@ class ActivityService {
     window.addEventListener('click', this.handleClick.bind(this), true)
     window.addEventListener('submit', this.handleSubmit.bind(this), true)
     // Capture history navigation
-    const pushState = history.pushState
+    const pushState = window.history.pushState
     // monkey-patch pushState to capture SPA navigations
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(history as any).pushState = function (state: any, title: string, url?: string | null) {
+    ;(window.history as any).pushState = function (state: any, title: string, url?: string | null) {
       try {
-        activityService.capture('navigation', 'pushState', { url })
+        __activityService.capture('navigation', 'pushState', { url })
       } catch (e) {}
-      return pushState.apply(history, [state, title, url])
+      return pushState.apply(window.history, [state, title, url])
     }
     window.addEventListener('popstate', () => {
-      this.capture('navigation', 'popstate', { url: location.pathname + location.search })
+      this.capture('navigation', 'popstate', { url: window.location.pathname + window.location.search })
     })
   }
 
@@ -87,7 +87,7 @@ class ActivityService {
     const toSend = this.buffer.splice(0, this.buffer.length)
     try {
       await apiClient.post('/api/v1/activity/logs/', toSend)
-    } catch (err) {
+    } catch (_err) {
       // put back to buffer on failure (simple retry)
       this.buffer.unshift(...toSend)
     }
@@ -101,7 +101,7 @@ class ActivityService {
         const { latitude, longitude } = pos.coords
         this.capture('location', 'geolocation', { latitude, longitude })
       },
-      (err) => {
+      (_err) => {
         // ignore
       },
       { enableHighAccuracy: allowHighAccuracy }
@@ -109,5 +109,5 @@ class ActivityService {
   }
 }
 
-const activityService = new ActivityService()
-export default activityService
+const __activityService = new ActivityService()
+export default __activityService
