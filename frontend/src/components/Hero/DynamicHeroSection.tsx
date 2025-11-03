@@ -238,8 +238,9 @@ const DynamicHeroSection: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          // Use a solid black overlay on small screens (xs) and keep the translucent gradient on md+
-          background: { xs: 'rgba(0,0,0,1)', md: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' },
+          // Use a semi-transparent black overlay on small screens (xs) so the background image remains visible,
+          // and keep a translucent gradient on md+ for depth.
+          background: { xs: 'rgba(0,0,0,0.6)', md: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' },
           zIndex: 2,
         }}
       />

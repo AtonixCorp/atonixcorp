@@ -180,7 +180,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Business sx={{ color: '#64748b' }} />
+                    <Business sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -197,7 +197,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Domain sx={{ color: '#64748b' }} />
+                    <Domain sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -213,7 +213,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Web sx={{ color: '#64748b' }} />
+                    <Web sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -261,7 +261,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LocationOn sx={{ color: '#64748b' }} />
+                    <LocationOn sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -295,7 +295,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Person sx={{ color: '#64748b' }} />
+                    <Person sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -311,7 +311,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Person sx={{ color: '#64748b' }} />
+                    <Person sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
@@ -328,7 +328,7 @@ const OrganizationRegistration: React.FC<OrganizationRegistrationProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Email sx={{ color: '#64748b' }} />
+                    <Email sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}

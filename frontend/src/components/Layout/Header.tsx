@@ -351,7 +351,7 @@ const Header: React.FC = () => {
                         <Typography variant="body2" fontWeight="bold" sx={{ color: '#1e293b' }}>
                           {user.first_name} {user.last_name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b' }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                           @{user.username}
                         </Typography>
                       </Box>
@@ -372,7 +372,7 @@ const Header: React.FC = () => {
                         },
                       }}
                     >
-                      <BusinessIcon sx={{ mr: 2, color: '#64748b' }} />
+                      <BusinessIcon sx={{ mr: 2, color: 'text.secondary' }} />
                       <Typography variant="body2">
                         {isOrganizationRegistered ? 'Enterprise Dashboard' : 'Dashboard'}
                       </Typography>
@@ -389,7 +389,7 @@ const Header: React.FC = () => {
                         },
                       }}
                     >
-                      <AccountCircle sx={{ mr: 2, color: '#64748b' }} />
+                      <AccountCircle sx={{ mr: 2, color: 'text.secondary' }} />
                       <Typography variant="body2">Profile</Typography>
                     </MenuItem>
                     <MenuItem
@@ -404,7 +404,7 @@ const Header: React.FC = () => {
                         },
                       }}
                     >
-                      <Settings sx={{ mr: 2, color: '#64748b' }} />
+                      <Settings sx={{ mr: 2, color: 'text.secondary' }} />
                       <Typography variant="body2">Settings</Typography>
                     </MenuItem>
                     <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />

@@ -230,14 +230,14 @@ const CompanyDashboard: React.FC = () => {
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Domain sx={{ mr: 1, color: '#64748b' }} />
+                <Domain sx={{ mr: 1, color: 'text.secondary' }} />
                 <Typography variant="body2" color="text.secondary">
                   Domain: {organization.domain}
                 </Typography>
               </Box>
               {organization.industry && (
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Business sx={{ mr: 1, color: '#64748b' }} />
+                  <Business sx={{ mr: 1, color: 'text.secondary' }} />
                   <Typography variant="body2" color="text.secondary">
                     Industry: {organization.industry}
                   </Typography>
@@ -247,7 +247,7 @@ const CompanyDashboard: React.FC = () => {
             <Box>
               {organization.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <LocationOn sx={{ mr: 1, color: '#64748b' }} />
+                  <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
                   <Typography variant="body2" color="text.secondary">
                     Location: {organization.location}
                   </Typography>
@@ -318,7 +318,7 @@ const CompanyDashboard: React.FC = () => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: metric.trend === 'up' ? '#22c55e' : metric.trend === 'down' ? '#ef4444' : '#64748b',
+                        color: metric.trend === 'up' ? '#22c55e' : metric.trend === 'down' ? '#ef4444' : 'text.secondary',
                         fontWeight: 600,
                       }}
                     >

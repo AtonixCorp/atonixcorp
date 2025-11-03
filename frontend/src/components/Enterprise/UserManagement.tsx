@@ -280,7 +280,7 @@ const UserManagement: React.FC = () => {
                     <IconButton
                       size="small"
                       onClick={(e) => handleMenuClick(e, user)}
-                      sx={{ color: '#64748b' }}
+                      sx={{ color: 'text.secondary' }}
                     >
                       <MoreVert />
                     </IconButton>

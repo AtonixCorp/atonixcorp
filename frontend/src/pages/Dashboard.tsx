@@ -140,7 +140,7 @@ const ____ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, d
       case 'active': return '#3b82f6';
       case 'completed': return '#22c55e';
       case 'pending': return '#f59e0b';
-      default: return '#64748b';
+      default: return 'text.secondary';
     }
   };
 
@@ -204,7 +204,7 @@ const ____ProjectCard: React.FC<ProjectCardProps> = ({ name, status, progress, d
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <CalendarToday sx={{ fontSize: 16, color: '#64748b', mr: 1 }} />
+            <CalendarToday sx={{ fontSize: 16, color: 'text.secondary', mr: 1 }} />
             <Typography variant="caption" color="text.secondary">
               {dueDate}
             </Typography>
@@ -243,7 +243,7 @@ const ____TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTim
       case 'high': return '#ef4444';
       case 'medium': return '#f59e0b';
       case 'low': return '#22c55e';
-      default: return '#64748b';
+      default: return 'text.secondary';
     }
   };
 
@@ -251,7 +251,7 @@ const ____TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTim
     switch (status) {
       case 'completed': return <CheckCircle sx={{ color: '#22c55e' }} />;
       case 'overdue': return <Warning sx={{ color: '#ef4444' }} />;
-      default: return <Schedule sx={{ color: '#64748b' }} />;
+  default: return <Schedule sx={{ color: 'text.secondary' }} />;
     }
   };
 
@@ -272,7 +272,7 @@ const ____TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTim
         primary={title}
         secondary={
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-            <AccessTime sx={{ fontSize: 14, mr: 0.5, color: '#64748b' }} />
+            <AccessTime sx={{ fontSize: 14, mr: 0.5, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
               {dueTime}
             </Typography>
@@ -283,7 +283,7 @@ const ____TaskItem: React.FC<TaskItemProps> = ({ title, status, priority, dueTim
           sx: {
             textDecoration: status === 'completed' ? 'line-through' : 'none',
           },
-          color: status === 'completed' ? '#64748b' : '#1e293b',
+          color: status === 'completed' ? 'text.secondary' : '#1e293b',
         }}
       />
       <ListItemSecondaryAction>

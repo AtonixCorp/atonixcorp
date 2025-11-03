@@ -255,7 +255,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           >
             <ListItemIcon
               sx={{
-                color: isActive ? '#3b82f6' : '#64748b',
+                color: isActive ? '#3b82f6' : 'text.secondary',
                 minWidth: 40,
                 '& .MuiSvgIcon-root': {
                   fontSize: '1.25rem',
@@ -286,7 +286,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               />
             )}
             {hasChildren && (
-              <IconButton size="small" sx={{ color: '#64748b' }}>
+              <IconButton size="small" sx={{ color: 'text.secondary' }}>
                 {isExpanded ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
             )}
@@ -549,7 +549,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             },
           }}
         >
-          <_PersonIcon sx={{ mr: 2, color: '#64748b' }} />
+          <_PersonIcon sx={{ mr: 2, color: 'text.secondary' }} />
           <Typography variant="body2">Profile</Typography>
         </MenuItem>
         <MenuItem
@@ -564,7 +564,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             },
           }}
         >
-          <_SettingsIcon sx={{ mr: 2, color: '#64748b' }} />
+          <_SettingsIcon sx={{ mr: 2, color: 'text.secondary' }} />
           <Typography variant="body2">Settings</Typography>
         </MenuItem>
         <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />

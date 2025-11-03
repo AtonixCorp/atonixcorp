@@ -493,7 +493,7 @@ const DashboardTeamsPage: React.FC = () => {
                           </Typography>
                         </Box>
                       </Box>
-                      <Assignment sx={{ color: '#64748b', fontSize: 24 }} />
+                      <Assignment sx={{ color: 'text.secondary', fontSize: 24 }} />
                     </Box>
 
                     <Box sx={{ mb: 2 }}>
@@ -522,7 +522,7 @@ const DashboardTeamsPage: React.FC = () => {
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <AccessTime sx={{ fontSize: 16, color: '#64748b' }} />
+                        <AccessTime sx={{ fontSize: 16, color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary">
                           Due: {new Date(project.deadline).toLocaleDateString()}
                         </Typography>

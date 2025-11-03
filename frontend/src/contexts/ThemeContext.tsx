@@ -160,6 +160,14 @@ const ___lightTheme = createTheme({
     '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
   ],
   components: {
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            // Default typography color should use the theme's primary text color
+            color: '#0f172a',
+          },
+        },
+      },
     MuiCssBaseline: {
       styleOverrides: {
         '*': {
@@ -449,6 +457,14 @@ const ___darkTheme = createTheme({
         },
       },
     },
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            // Use light color for typography in dark theme
+            color: '#f1f5f9',
+          },
+        },
+      },
     MuiButton: {
       styleOverrides: {
         root: {

@@ -159,7 +159,7 @@ const HelpPage: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Search sx={{ color: '#64748b' }} />
+                  <Search sx={{ color: 'text.secondary' }} />
                 </InputAdornment>
               ),
             }}
@@ -399,7 +399,7 @@ const HelpPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Help sx={{ color: '#64748b' }} />
+                  <Help sx={{ color: 'text.secondary' }} />
                   <Typography variant="h6" fontWeight={600}>
                     {faq.question}
                   </Typography>
