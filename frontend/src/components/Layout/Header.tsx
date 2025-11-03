@@ -95,7 +95,8 @@ const Header: React.FC = () => {
             to={item.path}
             sx={{
               textDecoration: 'none',
-              color: isActivePath(item.path) ? 'primary.main' : 'text.primary',
+              // Use darker theme text on mobile (active items should be dark)
+              color: isActivePath(item.path) ? 'text.primary' : 'text.secondary',
               borderRadius: '12px',
               mx: 1,
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -202,8 +203,9 @@ const Header: React.FC = () => {
                   component={Link}
                   to={item.path}
                   sx={{
-                    // Use a darker neutral on md+ (better contrast on white header)
-                    color: isActivePath(item.path) ? '#3b82f6' : { md: '#1f2937', xs: '#64748b' },
+                    // Use a darker neutral on md+ (better contrast on white header).
+                    // On xs make nav text dark so it remains readable when shown in compact contexts.
+                    color: isActivePath(item.path) ? { md: '#3b82f6', xs: '#0f172a' } : { md: '#1f2937', xs: '#0f172a' },
                     fontWeight: isActivePath(item.path) ? 600 : 500,
                     fontSize: '0.95rem',
                     px: 2,

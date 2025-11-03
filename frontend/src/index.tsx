@@ -17,6 +17,16 @@ ____root.render(
   </React.StrictMode>
 );
 
+// Signal to the static index.html that the app has mounted so the
+// initial loading spinner can be hidden. Also remove the spinner DOM
+// node as a fallback for browsers that may not respect the .app-loaded
+// class immediately.
+document.body.classList.add('app-loaded');
+const __loadingSpinner = document.getElementById('loading-spinner');
+if (__loadingSpinner && __loadingSpinner.parentNode) {
+  __loadingSpinner.parentNode.removeChild(__loadingSpinner);
+}
+
 // Register service worker for PWA functionality
 serviceWorkerRegistration.register();
 
