@@ -42,6 +42,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Verify the token with the backend
           const userData = await authService.getCurrentUser();
           setUser(userData);
+          
+          // Set organization if user is organization type
+          if (userData.user_type === 'organization' && userData.organization) {
+            setOrganization(userData.organization);
+          }
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);

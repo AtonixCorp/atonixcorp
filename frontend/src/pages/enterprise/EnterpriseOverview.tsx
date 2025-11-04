@@ -132,7 +132,9 @@ const EnterpriseOverview: React.FC = () => {
 export const EnterpriseOverviewDashboard: React.FC = () => {
   const { user, organization } = useAuth();
 
-  const enterpriseId = organization?.id?.toString() || 'unknown';
+  // For now, use a default enterprise ID since organization users might not have matching enterprise records
+  // In a real implementation, this would be derived from the user's organization
+  const enterpriseId = organization?.id?.toString() || '1'; // Default to enterprise ID 1 for testing
 
   const [teamsCount, setTeamsCount] = React.useState<number | null>(null);
   const [runs, setRuns] = React.useState<any[] | null>(null);
@@ -238,7 +240,7 @@ export const EnterpriseOverviewDashboard: React.FC = () => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {organization?.name || 'Your Organization'}
+                  {organization?.name || user?.first_name + ' ' + user?.last_name || 'Your Organization'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
                   <Chip label={`Domain: ${organization?.domain || 'N/A'}`} variant="outlined" size="small" />
