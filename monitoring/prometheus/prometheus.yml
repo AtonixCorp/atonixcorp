@@ -3,11 +3,7 @@ global:
   evaluation_interval: 15s
 
 rule_files:
-<<<<<<< HEAD
-  # - "alert_rules.yml"
-=======
   - "alert_rules.yml"
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 scrape_configs:
   # Prometheus itself
@@ -48,8 +44,4 @@ alerting:
   alertmanagers:
     - static_configs:
         - targets:
-<<<<<<< HEAD
-          # - alertmanager:9093
-=======
           - alertmanager:9093
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
