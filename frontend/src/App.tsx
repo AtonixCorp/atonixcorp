@@ -56,7 +56,7 @@ import EnterpriseMarketplace from './pages/EnterpriseMarketplace';
 import MarketplacePage from './pages/MarketplacePage';
 // enterprise prototypes (import specific pages where needed)
 import EnterpriseSecurity from './pages/enterprise/EnterpriseSecurity';
-import EnterpriseOverview from './pages/enterprise/EnterpriseOverview';
+import EnterpriseOverview, { EnterpriseOverviewDashboard } from './pages/enterprise/EnterpriseOverview';
 import EnterpriseHelp from './pages/enterprise/EnterpriseHelp';
 import OrganizationRegistration from './components/Auth/OrganizationRegistration';
 
@@ -393,7 +393,7 @@ function App() {
                   <Route path="/dashboard/enterprise" element={
                     <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
-                        <CompanyDashboard />
+                        <EnterpriseOverviewDashboard />
                       </EnterpriseLayout>
                     </___OrganizationDashboardRoute>
                   } />

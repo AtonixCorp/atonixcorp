@@ -182,11 +182,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Attempting organization signup with:', { userData, orgData });
 
-      // First create the user account
-      const signupResponse = await authService.signup(userData);
-      console.log('User signup response:', signupResponse);
+      // Store organization user credentials separately
+      const userCredentials = JSON.parse(localStorage.getItem('user_credentials') || '[]');
+      
+      // Check if user already exists
+      const existingCredential = userCredentials.find((c: any) => c.email === userData.email);
+      if (existingCredential) {
+        throw new Error('User with this email already exists');
+      }
 
-      // Then register the organization
+      // Create organization
       const mockOrg: Organization = {
         id: Date.now(),
         name: orgData.name,
@@ -202,14 +207,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         features_enabled: ['dashboard', 'analytics', 'security', 'compliance', 'enterprise-features'],
       };
 
+      // Create organization user
+      const orgUser: User = {
+        id: Date.now() + 1, // Ensure different ID from organization
+        username: userData.username || userData.email.split('@')[0],
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        avatar: undefined,
+        bio: '',
+        github_url: '',
+        linkedin_url: '',
+        location: '',
+        skills: [],
+        is_active: true,
+        date_joined: new Date().toISOString(),
+        last_login: new Date().toISOString(),
+        user_type: 'organization',
+        organization: mockOrg,
+      };
+
+      // Store credentials separately
+      userCredentials.push({
+        id: orgUser.id,
+        email: userData.email,
+        password: userData.password,
+        user_type: 'organization'
+      });
+      localStorage.setItem('user_credentials', JSON.stringify(userCredentials));
+
+      // Store user data
+      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      registeredUsers.push(orgUser);
+      localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+
       setOrganization(mockOrg);
 
-      // Tag user as organization user and update with organization info
-      const orgUser = { ...signupResponse.user, user_type: 'organization' as const, organization: mockOrg };
-
       // Store token and set user
-      localStorage.setItem('authToken', signupResponse.token);
-      setAuthToken(signupResponse.token);
+      const token = `mock-jwt-token-${orgUser.id}`;
+      localStorage.setItem('authToken', token);
+      setAuthToken(token);
       setUser(orgUser);
 
       console.log('Organization signup successful, user and org set:', { user: orgUser, org: mockOrg });

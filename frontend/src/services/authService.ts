@@ -76,6 +76,30 @@ export const authService = {
       return mockResponse;
     }
     
+    // Check for registered users in localStorage
+    const userCredentials = JSON.parse(localStorage.getItem('user_credentials') || '[]');
+    const credential = userCredentials.find((c: any) => c.email === credentials.email && c.password === credentials.password);
+    
+    if (credential) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      const user = registeredUsers.find((u: any) => u.id === credential.id);
+      
+      if (user) {
+        // Update last login
+        user.last_login = new Date().toISOString();
+        localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+        
+        const loginResponse: LoginResponse = {
+          message: 'Login successful',
+          token: `mock-jwt-token-${user.id}`,
+          user: user,
+        };
+        
+        console.log('Registered user login successful:', loginResponse);
+        return loginResponse;
+      }
+    }
+    
     // For other credentials, try real API (will fail gracefully)
     try {
       const response = await ____authApi.post<any>('/login/', credentials);
@@ -103,6 +127,7 @@ export const authService = {
         role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
         date_joined: backendUser.date_joined,
         last_login: backendUser.last_login,
+        user_type: backendUser.user_type || 'individual',
       };
 
       const loginResp: LoginResponse = {
@@ -114,15 +139,24 @@ export const authService = {
       return loginResp;
     } catch (error) {
       console.error('AuthService login error:', error);
-      throw new Error('Invalid credentials. Use demo@example.com / password for demo.');
+      throw new Error('Invalid credentials. Please check your email and password, or use demo@example.com / password for demo.');
     }
   },
 
   signup: async (userData: SignupRequest): Promise<SignupResponse> => {
     console.log('AuthService signup called with:', userData);
     
-    // Mock signup for demo
-    const mockUser: User = {
+    // Store user credentials separately for authentication
+    const userCredentials = JSON.parse(localStorage.getItem('user_credentials') || '[]');
+    
+    // Check if user already exists
+    const existingCredential = userCredentials.find((c: any) => c.email === userData.email);
+    if (existingCredential) {
+      throw new Error('User with this email already exists');
+    }
+    
+    // Create new user
+    const newUser: User = {
       id: Date.now(), // Generate a unique ID
       username: userData.username || userData.email.split('@')[0],
       email: userData.email,
@@ -140,13 +174,27 @@ export const authService = {
       user_type: 'individual',
     };
     
+    // Store credentials separately
+    userCredentials.push({
+      id: newUser.id,
+      email: userData.email,
+      password: userData.password,
+      user_type: 'individual'
+    });
+    localStorage.setItem('user_credentials', JSON.stringify(userCredentials));
+    
+    // Store user data
+    const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+    registeredUsers.push(newUser);
+    localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+    
     const mockResponse: SignupResponse = {
       message: 'Account created successfully',
-      token: 'mock-jwt-token',
-      user: mockUser,
+      token: `mock-jwt-token-${newUser.id}`,
+      user: newUser,
     };
     
-    console.log('Mock signup successful:', mockResponse);
+    console.log('Individual signup successful:', mockResponse);
     return mockResponse;
     
     // For real API (commented out for now)
@@ -190,6 +238,16 @@ export const authService = {
       };
     }
     
+    // Check for registered users
+    if (token && token.startsWith('mock-jwt-token-')) {
+      const userId = parseInt(token.replace('mock-jwt-token-', ''));
+      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      const user = registeredUsers.find((u: any) => u.id === userId);
+      if (user) {
+        return user;
+      }
+    }
+    
     // Try real API
     const response = await ____authApi.get<any>('/me/');
     const backendUser = response.data.user;
@@ -212,6 +270,7 @@ export const authService = {
       role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
       date_joined: backendUser.date_joined,
       last_login: backendUser.last_login,
+      user_type: backendUser.user_type || 'individual',
     } as User;
   },
 };

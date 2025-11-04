@@ -66,3 +66,25 @@ class EnterpriseViewSet(viewsets.ModelViewSet):
         runs = MigrationRun.objects.filter(enterprise=enterprise).order_by('-started_at')
         serializer = MigrationRunSerializer(runs, many=True)
         return Response({'data': serializer.data})
+
+    @action(detail=True, methods=['get'], url_path='analytics/scores')
+    def analytics_scores(self, request, pk=None):
+        enterprise = self.get_object()
+        days = int(request.query_params.get('days', 30))
+        
+        # Generate mock analytics data for now
+        import random
+        from datetime import datetime, timedelta
+        
+        scores = []
+        base_date = datetime.now()
+        for i in range(days):
+            date = base_date - timedelta(days=i)
+            # Generate a score between 0-100 with some variation
+            score = min(100, max(0, 50 + 30 * random.sin(i / 4) + (random.random() * 20 - 10)))
+            scores.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'score': round(score, 2)
+            })
+        
+        return Response(scores)

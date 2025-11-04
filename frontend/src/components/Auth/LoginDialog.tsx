@@ -129,6 +129,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
               Fill Demo Data
             </Button>
           </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            <strong>Registered Users:</strong> Use any email/password you registered with.
+          </Typography>
         </Alert>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
