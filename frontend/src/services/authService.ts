@@ -63,6 +63,7 @@ export const authService = {
         role: 'admin',
         date_joined: '2024-01-15T10:30:00Z',
         last_login: '2024-03-20T14:45:00Z',
+        user_type: 'individual',
       };
       
       const mockResponse: LoginResponse = {
@@ -136,6 +137,7 @@ export const authService = {
       is_active: true,
       date_joined: new Date().toISOString(),
       last_login: new Date().toISOString(),
+      user_type: 'individual',
     };
     
     const mockResponse: SignupResponse = {
@@ -184,6 +186,7 @@ export const authService = {
         role: 'admin',
         date_joined: '2024-01-15T10:30:00Z',
         last_login: '2024-03-20T14:45:00Z',
+        user_type: 'individual',
       };
     }
     
@@ -237,6 +240,7 @@ export const mockCommunityService = {
           is_active: true,
           date_joined: '2024-01-15T10:30:00Z',
           last_login: '2024-03-20T14:45:00Z',
+          user_type: 'individual',
         },
         role: 'maintainer',
         contributions: 156,
@@ -260,6 +264,7 @@ export const mockCommunityService = {
           is_active: true,
           date_joined: '2024-02-01T09:15:00Z',
           last_login: '2024-03-19T16:20:00Z',
+          user_type: 'individual',
         },
         role: 'contributor',
         contributions: 89,
@@ -284,6 +289,7 @@ export const mockCommunityService = {
           is_active: true,
           date_joined: '2024-01-20T14:20:00Z',
           last_login: '2024-03-18T11:30:00Z',
+          user_type: 'individual',
         },
         role: 'member',
         contributions: 42,
@@ -313,6 +319,7 @@ export const mockCommunityService = {
           skills: [],
           is_active: true,
           date_joined: '2024-01-15T10:30:00Z',
+          user_type: 'individual',
         },
         category: 'general',
         tags: ['microservices', 'architecture', 'best-practices'],
@@ -336,6 +343,7 @@ export const mockCommunityService = {
           skills: [],
           is_active: true,
           date_joined: '2024-01-20T14:20:00Z',
+          user_type: 'individual',
         },
         category: 'help',
         tags: ['docker', 'django', 'containerization'],
@@ -359,6 +367,7 @@ export const mockCommunityService = {
           skills: [],
           is_active: true,
           date_joined: '2024-02-01T09:15:00Z',
+          user_type: 'individual',
         },
         category: 'showcase',
         tags: ['ai', 'machine-learning', 'dashboard', 'analytics'],

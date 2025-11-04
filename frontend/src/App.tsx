@@ -111,17 +111,60 @@ const ____ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children 
 // Backwards-compatible alias used in routes (some files reference ProtectedRoute)
 const ___ProtectedRoute = ____ProtectedRoute;
 
-// Dashboard Route: redirect registered organizations to enterprise dashboard
-const ___DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isOrganizationRegistered, isLoading } = useAuth();
+// Strict Dashboard Separation Routes
+const ___IndividualDashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isIndividualUser, isOrganizationUser, isLoading, userDashboardType } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated) navigate('/');
-      else if (isOrganizationRegistered) navigate('/dashboard/enterprise');
+      if (!isAuthenticated) {
+        navigate('/');
+      } else if (userDashboardType === 'organization') {
+        // Organization users cannot access individual dashboard
+        navigate('/dashboard/enterprise');
+      } else if (userDashboardType !== 'individual') {
+        // Unknown user type, redirect to home
+        navigate('/');
+      }
     }
-  }, [isAuthenticated, isOrganizationRegistered, isLoading, navigate]);
+  }, [isAuthenticated, userDashboardType, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  // Only allow individual users to access individual dashboard
+  return isAuthenticated && userDashboardType === 'individual' ? <>{children}</> : null;
+};
+
+const ___OrganizationDashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isOrganizationUser, userDashboardType, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const [showRegistration, setShowRegistration] = useState(false);
+
+  React.useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate('/');
+      } else if (userDashboardType === 'individual') {
+        // Individual users cannot access organization dashboard
+        navigate('/dashboard');
+      } else if (userDashboardType !== 'organization') {
+        // Unknown user type, redirect to home
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, userDashboardType, isLoading, navigate]);
+
+  const handleRegistrationSuccess = () => {
+    setShowRegistration(false);
+    navigate('/dashboard/enterprise');
+  };
 
   if (isLoading) {
     return (
@@ -132,32 +175,9 @@ const ___DashboardRoute: React.FC<{ children: React.ReactNode }> = ({ children }
   }
 
   if (!isAuthenticated) return null;
-  return isOrganizationRegistered ? null : <>{children}</>;
-};
 
-const ___OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isOrganizationRegistered, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const [showRegistration, setShowRegistration] = useState(false);
-
-  React.useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) navigate('/');
-      else if (!isOrganizationRegistered) setShowRegistration(true);
-    }
-  }, [isAuthenticated, isOrganizationRegistered, isLoading, navigate]);
-
-  const handleRegistrationSuccess = () => { setShowRegistration(false); navigate('/dashboard/enterprise'); };
-
-  if (isLoading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <Typography>Loading...</Typography>
-    </Box>
-  );
-
-  if (!isAuthenticated) return null;
-
-  if (!isOrganizationRegistered) {
+  // If user is organization type but organization is not registered, show registration
+  if (userDashboardType === 'organization' && !isOrganizationUser) {
     return (
       <>
         <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -172,7 +192,8 @@ const ___OrganizationRoute: React.FC<{ children: React.ReactNode }> = ({ childre
     );
   }
 
-  return <>{children}</>;
+  // Only allow organization users to access organization dashboard
+  return isAuthenticated && userDashboardType === 'organization' ? <>{children}</> : null;
 };
 
 const ____AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -217,72 +238,72 @@ function App() {
                   <Route path="/register/individual" element={<UnifiedRegistrationPage />} />
                   <Route path="/register/organization" element={<UnifiedRegistrationPage />} />
                   <Route path="/dashboard" element={
-                    <___DashboardRoute>
+                    <___IndividualDashboardRoute>
                       <Dashboard />
-                    </___DashboardRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/analytics" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <AnalyticsPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/tasks" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <TasksPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/teams" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <DashboardTeamsPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/settings" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <SettingsPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/schedule" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <SchedulePage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/security" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <SecurityPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/profile" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <ProfilePage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/projects" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <MyProjectsPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/project-analytics" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <ProjectAnalyticsPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/enterprise/register" element={<EnterpriseRegisterPage />} />
                   <Route path="/enterprise/:id/dashboard" element={
@@ -356,88 +377,88 @@ function App() {
                     </____ProtectedRoute>
                   } />
                   <Route path="/dashboard/marketplace" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <MarketplacePage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/help" element={
-                    <____ProtectedRoute>
+                    <___IndividualDashboardRoute>
                       <DashboardLayout>
                         <HelpPage />
                       </DashboardLayout>
-                    </____ProtectedRoute>
+                    </___IndividualDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <CompanyDashboard />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/team" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <TeamDashboard />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/users" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <UserManagement />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/groups" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <GroupUserDashboard />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/reports" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <DataReports />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/migration" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <DataMigration />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/models" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <ModelRepository />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/monitoring" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <MonitoringModule />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/audit" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <AuditLogs />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/dashboard/enterprise/federation" element={
-                    <___OrganizationRoute>
+                    <___OrganizationDashboardRoute>
                       <EnterpriseLayout>
                         <FederationManagement />
                       </EnterpriseLayout>
-                    </___OrganizationRoute>
+                    </___OrganizationDashboardRoute>
                   } />
                   <Route path="/admin" element={
                     <____AdminRoute>

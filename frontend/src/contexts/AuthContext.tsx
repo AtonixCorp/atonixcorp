@@ -15,6 +15,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper functions for dashboard access logic
+  const isIndividualUser = (user: User | null): boolean => {
+    return user?.user_type === 'individual';
+  };
+
+  const isOrganizationUser = (user: User | null): boolean => {
+    return user?.user_type === 'organization' && !!organization?.is_registered;
+  };
+
+  const getUserDashboardType = (user: User | null): 'individual' | 'organization' | null => {
+    if (!user) return null;
+    if (isIndividualUser(user)) return 'individual';
+    if (isOrganizationUser(user)) return 'organization';
+    return null;
+  };
+
   useEffect(() => {
     // Check if user is already logged in
     const initializeAuth = async () => {
@@ -46,11 +62,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login(credentials);
       console.log('Login response:', response);
 
-  // Store token
-  localStorage.setItem('authToken', response.token);
-  setAuthToken(response.token);
-      setUser(response.user);
-      console.log('Login successful, user set:', response.user);
+      // Ensure user has proper user_type (fallback for existing users)
+      const userWithType = {
+        ...response.user,
+        user_type: response.user.user_type || (response.user.organization ? 'organization' : 'individual')
+      };
+
+      // Store token and set user
+      localStorage.setItem('authToken', response.token);
+      setAuthToken(response.token);
+      setUser(userWithType);
+
+      // Set organization if user is organization type
+      if (userWithType.user_type === 'organization' && userWithType.organization) {
+        setOrganization(userWithType.organization);
+      }
+
+      console.log('Login successful, user set:', userWithType);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -62,17 +90,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (userData: SignupRequest): Promise<void> => {
     setIsLoading(true);
     try {
-      console.log('Attempting signup with:', userData);
+      console.log('Attempting individual signup with:', userData);
       const response = await authService.signup(userData);
-      console.log('Signup response:', response);
+      console.log('Individual signup response:', response);
 
-  // Automatically log in after successful signup
-  localStorage.setItem('authToken', response.token);
-  setAuthToken(response.token);
-      setUser(response.user);
-      console.log('Signup successful, user set:', response.user);
+      // Ensure user is tagged as individual
+      const individualUser = { ...response.user, user_type: 'individual' as const };
+
+      // Store token and set user
+      localStorage.setItem('authToken', response.token);
+      setAuthToken(response.token);
+      setUser(individualUser);
+      console.log('Individual signup successful, user set:', individualUser);
     } catch (error) {
-      console.error('Signup failed:', error);
+      console.error('Individual signup failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -155,10 +186,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const signupResponse = await authService.signup(userData);
       console.log('User signup response:', signupResponse);
 
-      // Store token and set user
-      localStorage.setItem('authToken', signupResponse.token);
-      setUser(signupResponse.user);
-
       // Then register the organization
       const mockOrg: Organization = {
         id: Date.now(),
@@ -177,10 +204,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setOrganization(mockOrg);
 
-      // Update user with organization info
-      setUser({ ...signupResponse.user, organization: mockOrg });
+      // Tag user as organization user and update with organization info
+      const orgUser = { ...signupResponse.user, user_type: 'organization' as const, organization: mockOrg };
 
-      console.log('Organization signup successful, user and org set:', { user: signupResponse.user, org: mockOrg });
+      // Store token and set user
+      localStorage.setItem('authToken', signupResponse.token);
+      setAuthToken(signupResponse.token);
+      setUser(orgUser);
+
+      console.log('Organization signup successful, user and org set:', { user: orgUser, org: mockOrg });
     } catch (error) {
       console.error('Organization signup failed:', error);
       // Clean up on failure
@@ -213,6 +245,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     isOrganizationRegistered: !!organization?.is_registered,
     isLoading,
+    isIndividualUser: isIndividualUser(user),
+    isOrganizationUser: isOrganizationUser(user),
+    userDashboardType: getUserDashboardType(user),
     login,
     signup,
     signupOrganization,

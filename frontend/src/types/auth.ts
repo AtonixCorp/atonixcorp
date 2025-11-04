@@ -15,6 +15,8 @@ export interface SocialLoginResponse {
   is_new_user: boolean;
 }
 
+export type UserType = 'individual' | 'organization';
+
 export interface User {
   id: number;
   uuid?: string;
@@ -32,6 +34,7 @@ export interface User {
   is_active: boolean;
   is_admin?: boolean;
   role?: string;
+  user_type: UserType;
   date_joined: string;
   last_login?: string;
   organization?: Organization;
@@ -97,6 +100,9 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isOrganizationRegistered: boolean;
   isLoading: boolean;
+  isIndividualUser: boolean;
+  isOrganizationUser: boolean;
+  userDashboardType: 'individual' | 'organization' | null;
   login: (credentials: LoginRequest) => Promise<void>;
   signup: (userData: SignupRequest) => Promise<void>;
   signupOrganization: (userData: SignupRequest, orgData: OrganizationRegistrationRequest) => Promise<void>;
