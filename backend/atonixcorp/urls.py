@@ -117,6 +117,8 @@ urlpatterns = [
     path("api/auth/signup/", SignupView.as_view(), name="api-signup"),
     path("api/auth/logout/", LogoutView.as_view(), name="api-logout"),
     path("api/auth/me/", MeView.as_view(), name="api-me"),
+    # OAuth authentication endpoints
+    path("api/auth/", include("oauth_auth.urls")),
     # Telemetry ingest endpoint for development
     # path('api/telemetry/', telemetry_endpoint, name='api-telemetry'),  # Temporarily disabled
     # Core application endpoints

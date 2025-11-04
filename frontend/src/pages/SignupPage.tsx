@@ -33,6 +33,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { SignupRequest, OrganizationRegistrationRequest } from '../types/auth';
 import { SelectChangeEvent } from '@mui/material';
+import SocialLoginButtons from '../components/Auth/SocialLoginButtons';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -338,6 +339,14 @@ const SignupPage: React.FC = () => {
                 {error}
               </Alert>
             )}
+
+            {/* Social Login Section */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 2 }}>
+                Sign up faster with
+              </Typography>
+              <SocialLoginButtons loading={loading} disabled={loading} />
+            </Box>
 
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
               {registrationType === 'individual' ? (

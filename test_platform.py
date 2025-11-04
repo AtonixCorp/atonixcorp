@@ -83,16 +83,16 @@ def test_django_setup():
     
     results = []
     
-    # Test Django check
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py check"
+    # Test Django system check
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py check"
     results.append(run_command(cmd, "Django system check"))
     
     # Test database migration status
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py showmigrations"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py showmigrations"
     results.append(run_command(cmd, "Database migration status"))
     
-    # Test static files collection
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py collectstatic --noinput --dry-run"
+    # Test static files collection (dry run)
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py collectstatic --dry-run"
     results.append(run_command(cmd, "Static files collection (dry run)"))
     
     return all(results)
@@ -149,19 +149,19 @@ def test_management_commands():
     results = []
     
     # Test Zookeeper command help
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py zookeeper --help"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py zookeeper --help"
     results.append(run_command(cmd, "Zookeeper command help"))
     
     # Test Kafka command help
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py kafka --help"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py kafka --help"
     results.append(run_command(cmd, "Kafka command help"))
     
     # Test Zookeeper status (expected to fail without server)
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && timeout 10 /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py zookeeper status"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && timeout 10 /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py zookeeper status"
     run_command(cmd, "Zookeeper status (expected to fail)", expect_error=True)
     
     # Test Kafka status (expected to fail without server)  
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && timeout 10 /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py kafka status"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && timeout 10 /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py kafka status"
     run_command(cmd, "Kafka status (expected to fail)", expect_error=True)
     
     return all(results)
@@ -173,11 +173,11 @@ def test_docker_compose_config():
     results = []
     
     # Test nerdctl compose config validation
-    cmd = "cd /home/atonixdev/atonixcorp-platform && nerdctl compose config -q"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform && nerdctl compose config -q"
     results.append(run_command(cmd, "nerdctl Compose config validation"))
     
     # List all services
-    cmd = "cd /home/atonixdev/atonixcorp-platform && nerdctl compose config --services"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform && nerdctl compose config --services"
     results.append(run_command(cmd, "List nerdctl Compose services"))
     
     return all(results)
@@ -228,7 +228,7 @@ def test_urls_configuration():
     results = []
     
     # Test URL patterns
-    cmd = "cd /home/atonixdev/atonixcorp-platform/backend && /home/atonixdev/atonixcorp-platform/.venv/bin/python manage.py show_urls"
+    cmd = "cd /home/atonixdevmaster/atonixcorp-platform/backend && /home/atonixdevmaster/atonixcorp-platform/.venv/bin/python manage.py show_urls"
     results.append(run_command(cmd, "Show URL patterns"))
     
     return all(results)

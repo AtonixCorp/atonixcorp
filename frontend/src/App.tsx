@@ -31,7 +31,7 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import Dashboard from './pages/Dashboard';
 import UnifiedRegistrationPage from './pages/UnifiedRegistrationPage';
 import SignupPage from './pages/SignupPage';
-import LoginPage from './pages/LoginPage';
+import AuthLoginPage from './pages/AuthLoginPage';
 
 // Dashboard Pages
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -245,7 +245,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/login" element={<AuthLoginPage />} />
                   <Route path="/register" element={<UnifiedRegistrationPage />} />
                   <Route path="/register/individual" element={<UnifiedRegistrationPage />} />
                   <Route path="/register/organization" element={<UnifiedRegistrationPage />} />

@@ -11,11 +11,36 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  # Pushgateway
+  - job_name: 'pushgateway'
+    static_configs:
+      - targets: ['pushgateway:9091']
+    honor_labels: true
+
   # Django Backend
   - job_name: 'django-backend'
     static_configs:
       - targets: ['backend:8000']
     metrics_path: '/api/metrics/'
+    scrape_interval: 30s
+
+  # RabbitMQ
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Kafka
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9094']
+    scrape_interval: 30s
+
+  # Zookeeper
+  - job_name: 'zookeeper'
+    static_configs:
+      - targets: ['zookeeper:8080']
     scrape_interval: 30s
 
   # Nginx

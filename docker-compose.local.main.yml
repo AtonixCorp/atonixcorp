@@ -21,6 +21,7 @@ volumes:
   kafka_data:
   zookeeper_data:
   zookeeper_logs:
+  rabbitmq_data:
 
 services:
   db:
@@ -62,11 +63,28 @@ services:
       DATABASE_URL: postgresql://atonixcorp_user:postgres@db:5432/atonixcorp
       SECRET_KEY: development-secret
       ALLOWED_HOSTS: localhost,127.0.0.1,backend,nginx,api.atonixcorp.com,atonixcorp.com,www.atonixcorp.com
+      # RabbitMQ Configuration
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: changeme
+      RABBITMQ_URL: amqp://admin:changeme@rabbitmq:5672/
+      # Kafka Configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ENABLED: "true"
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379
+      # Monitoring
+      PROMETHEUS_PUSHGATEWAY_URL: http://prometheus:9091
     ports:
       - "8000:8000"
     depends_on:
       - db
       - redis
+      - rabbitmq
+      - kafka
+      - zookeeper
     networks:
       - atonixcorp-net
     restart: unless-stopped
@@ -105,6 +123,7 @@ services:
       - zookeeper_logs:/var/lib/zookeeper/log
     ports:
       - "2181:2181"
+      - "8080:8080"
     networks:
       - atonixcorp-net
     restart: unless-stopped
@@ -118,11 +137,19 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9094
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_PUBLISH_MS: 10000
     volumes:
       - kafka_data:/var/lib/kafka/data
     ports:
       - "9092:9092"
       - "29092:29092"
+      - "9094:9094"  # JMX metrics port
     depends_on:
       - zookeeper
     networks:
@@ -144,6 +171,16 @@ services:
       - atonixcorp-net
     restart: unless-stopped
 
+  # Prometheus Pushgateway
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: atonixcorp_pushgateway
+    ports:
+      - "9091:9091"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
   # Prometheus
   prometheus:
     image: prom/prometheus:latest
@@ -156,6 +193,8 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - pushgateway
     networks:
       - atonixcorp-net
     restart: unless-stopped
@@ -177,5 +216,23 @@ services:
     networks:
       - atonixcorp-net
     restart: unless-stopped
+
+# RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: atonixcorp_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: changeme
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
+      - "15692:15692"  # Prometheus metrics port
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
 
   
