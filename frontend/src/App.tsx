@@ -88,6 +88,18 @@ import EnterpriseCloudMigrationChecklist from './pages/enterprise/EnterpriseClou
 import EnterpriseCloudMigrationRuns from './pages/enterprise/EnterpriseCloudMigrationRuns';
 import EnterpriseMigrationRunDetails from './pages/enterprise/EnterpriseMigrationRunDetails';
 
+// Conditional Footer Component
+const ConditionalFooter: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  
+  // Don't show footer when user is authenticated
+  if (isAuthenticated) {
+    return null;
+  }
+  
+  return <Footer />;
+};
+
 // Route guards and helpers
 const ____ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -503,7 +515,7 @@ function App() {
                   <Route path="/auth/linkedin/callback" element={<SocialCallback provider="linkedin" />} />
                 </Routes>
               </Box>
-              <Footer />
+              <ConditionalFooter />
             </Box>
           </Router>
         </AuthProvider>
