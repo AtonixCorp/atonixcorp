@@ -87,6 +87,7 @@ import EnterpriseAIAnalyticsPrototype from './pages/enterprise/EnterpriseAIAnaly
 import EnterpriseCloudMigrationChecklist from './pages/enterprise/EnterpriseCloudMigrationChecklist';
 import EnterpriseCloudMigrationRuns from './pages/enterprise/EnterpriseCloudMigrationRuns';
 import EnterpriseMigrationRunDetails from './pages/enterprise/EnterpriseMigrationRunDetails';
+import Roadmap from './pages/Roadmap';
 
 // Conditional Footer Component
 const ConditionalFooter: React.FC = () => {
@@ -507,6 +508,7 @@ function App() {
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms" element={<TermsOfServicePage />} />
+                  <Route path="/roadmap" element={<Roadmap />} />
 
                   {/* OAuth Callback Routes */}
                   <Route path="/auth/github/callback" element={<SocialCallback provider="github" />} />

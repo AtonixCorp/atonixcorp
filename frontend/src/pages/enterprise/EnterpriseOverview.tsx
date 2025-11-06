@@ -1,6 +1,6 @@
 import React from 'react';
 import EnterpriseLayout from '../../components/Enterprise/EnterpriseLayout';
-import { Box, Paper, Typography, List, ListItem, ListItemText, Divider, Card, CardContent, Grid, Chip } from '@mui/material';
+import { Box, Paper, Typography, List, ListItem, ListItemText, Divider, Card, CardContent, Chip } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { enterprisesApi } from '../../services/enterprisesApi';
 import type { Enterprise } from '../../types/enterprise';

@@ -73,6 +73,7 @@ const Header: React.FC = () => {
     { name: 'Resources', path: '/resources' },
     { name: 'Community', path: '/community' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Roadmap', path: '/roadmap' },
   ];
 
   const isActivePath = (path: string) => {

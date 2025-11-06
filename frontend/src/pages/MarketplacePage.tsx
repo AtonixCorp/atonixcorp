@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Button } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button } from '@mui/material';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 
 const ____MarketplaceCard: React.FC<{ title: string; description: string; cta?: string }> = ({ title, description, cta = 'Install' }) => (
@@ -27,23 +27,13 @@ const MarketplacePage: React.FC = () => {
           Discover add-ons, integrations and official extensions for AtonixCorp Platform.
         </Typography>
 
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3,1fr)' } }}>
           {integrations.map((it, i) => (
-            <Grid
-              key={i}
-              component="div"
-              sx={{
-                flexBasis: { xs: '100%', md: '50%', lg: '33.3333%' },
-                maxWidth: { xs: '100%', md: '50%', lg: '33.3333%' },
-                p: 0,
-              }}
-            >
-              <Box sx={{ p: 1 }}>
-                <____MarketplaceCard {...it} />
-              </Box>
-            </Grid>
+            <Box key={i} sx={{ p: 1 }}>
+              <____MarketplaceCard {...it} />
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Box>
     </DashboardLayout>
   );
