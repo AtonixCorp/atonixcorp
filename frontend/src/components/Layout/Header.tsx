@@ -29,6 +29,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
 import ThemeToggle from '../ThemeToggle';
 import BusinessIcon from '@mui/icons-material/Business';
+import ConnectWalletButton from '../ConnectWalletButton';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout, isOrganizationRegistered } = useAuth();
@@ -119,6 +120,9 @@ const Header: React.FC = () => {
       {/* Theme toggle in drawer for mobile users */}
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
         <ThemeToggle />
+              <Box sx={{ ml: 1 }}>
+                <ConnectWalletButton />
+              </Box>
       </Box>
       {/* Mobile auth actions: show Sign In / Sign Up when unauthenticated, else show dashboard/profile/logout */}
       <Box sx={{ px: 3, py: 2, borderTop: '1px solid rgba(0,0,0,0.06)', mt: 2 }}>
@@ -246,6 +250,9 @@ const Header: React.FC = () => {
               {/* Theme toggle available on mobile for easy access */}
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ThemeToggle />
+                <Box sx={{ ml: 1 }}>
+                  <ConnectWalletButton />
+                </Box>
               </Box>
             </Box>
           ) : (

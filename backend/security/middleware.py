@@ -126,28 +126,77 @@ class SecurityMiddleware(MiddlewareMixin):
     
     def process_response(self, request, response):
         """Add security headers to response"""
-        # Security headers
-        response['X-Content-Type-Options'] = 'nosniff'
-        response['X-Frame-Options'] = 'DENY'
-        response['X-XSS-Protection'] = '1; mode=block'
-        response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
-        
-        # HSTS header for HTTPS
-        if request.is_secure():
-            response['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        
-        # CSP header
-        csp_policy = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: https:; "
-            "font-src 'self' data:; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none';"
-        )
-        response['Content-Security-Policy'] = csp_policy
+        # Only set headers if not already present (avoid overwriting hosting proxies)
+        if 'X-Content-Type-Options' not in response:
+            response['X-Content-Type-Options'] = 'nosniff'
+        if 'X-Frame-Options' not in response:
+            response['X-Frame-Options'] = getattr(settings, 'X_FRAME_OPTIONS', 'DENY')
+        if 'X-XSS-Protection' not in response:
+            response['X-XSS-Protection'] = '1; mode=block'
+        if 'Referrer-Policy' not in response:
+            response['Referrer-Policy'] = getattr(settings, 'SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin')
+        if 'Permissions-Policy' not in response:
+            response['Permissions-Policy'] = getattr(settings, 'PERMISSIONS_POLICY', 'geolocation=(), microphone=(), camera=()')
+
+        # HSTS header for HTTPS - only set when running behind TLS / SECURE_SSL_REDIRECT
+        hsts_seconds = getattr(settings, 'SECURE_HSTS_SECONDS', None)
+        hsts_include_subdomains = getattr(settings, 'SECURE_HSTS_INCLUDE_SUBDOMAINS', False)
+        hsts_preload = getattr(settings, 'SECURE_HSTS_PRELOAD', False)
+        try:
+            should_set_hsts = False
+            # Prefer explicit SECURE_SSL_REDIRECT or USE_HTTPS flag in settings
+            if getattr(settings, 'SECURE_SSL_REDIRECT', False) or getattr(settings, 'USE_HTTPS', False):
+                should_set_hsts = True
+            # Fall back to request.is_secure() when TLS is terminated upstream
+            if not should_set_hsts and request.is_secure():
+                should_set_hsts = True
+
+            if should_set_hsts and hsts_seconds:
+                hsts_value = f"max-age={int(hsts_seconds)}"
+                if hsts_include_subdomains:
+                    hsts_value += '; includeSubDomains'
+                if hsts_preload:
+                    hsts_value += '; preload'
+                response.setdefault('Strict-Transport-Security', hsts_value)
+        except Exception:
+            logger.exception('Error while setting HSTS header')
+
+        # Build CSP dynamically from settings if present, otherwise use a safe default
+        try:
+            csp_parts = []
+            default_src = getattr(settings, 'CSP_DEFAULT_SRC', ["'self'"])
+            csp_parts.append('default-src ' + ' '.join(default_src))
+
+            script_src = getattr(settings, 'CSP_SCRIPT_SRC', None)
+            if script_src:
+                csp_parts.append('script-src ' + ' '.join(script_src))
+
+            style_src = getattr(settings, 'CSP_STYLE_SRC', None)
+            if style_src:
+                csp_parts.append('style-src ' + ' '.join(style_src))
+
+            img_src = getattr(settings, 'CSP_IMG_SRC', None)
+            if img_src:
+                csp_parts.append('img-src ' + ' '.join(img_src))
+
+            font_src = getattr(settings, 'CSP_FONT_SRC', None)
+            if font_src:
+                csp_parts.append('font-src ' + ' '.join(font_src))
+
+            connect_src = getattr(settings, 'CSP_CONNECT_SRC', None)
+            if connect_src:
+                csp_parts.append('connect-src ' + ' '.join(connect_src))
+
+            frame_anc = getattr(settings, 'CSP_FRAME_ANCESTORS', None)
+            if frame_anc:
+                csp_parts.append('frame-ancestors ' + ' '.join(frame_anc))
+
+            # Join into a policy string
+            csp_policy = '; '.join(csp_parts)
+            if csp_policy and 'Content-Security-Policy' not in response:
+                response['Content-Security-Policy'] = csp_policy
+        except Exception:
+            logger.exception('Failed to build or apply CSP header')
         
         return response
     

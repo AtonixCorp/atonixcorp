@@ -101,6 +101,25 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
     "http://127.0.0.1:3000",
 ])
 
+# Optionally allow regex origins (useful for subdomains)
+CORS_ALLOWED_ORIGIN_REGEXES = env.list('CORS_ALLOWED_ORIGIN_REGEXES', default=[])
+# Allow credentials (cookies/auth) to be sent with cross-site requests when needed
+CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=True)
+
+# Content Security Policy (CSP) settings - configurable via environment variables.
+# These defaults are conservative for a single-origin app. If your frontend needs
+# inline scripts/styles or third-party domains (CDNs), add them explicitly via env.
+CSP_DEFAULT_SRC = env.list('CSP_DEFAULT_SRC', default=["'self'"])
+CSP_SCRIPT_SRC = env.list('CSP_SCRIPT_SRC', default=["'self'", "'unsafe-inline'", "'unsafe-eval'", ])
+CSP_STYLE_SRC = env.list('CSP_STYLE_SRC', default=["'self'", "'unsafe-inline'", 'https:'])
+CSP_IMG_SRC = env.list('CSP_IMG_SRC', default=["'self'", 'data:', 'https:'])
+CSP_FONT_SRC = env.list('CSP_FONT_SRC', default=["'self'", 'data:'])
+CSP_CONNECT_SRC = env.list('CSP_CONNECT_SRC', default=["'self'", ])
+CSP_FRAME_ANCESTORS = env.list('CSP_FRAME_ANCESTORS', default=["'none'"])
+
+# If your app loads scripts from trusted CDNs, configure them in CSP_SCRIPT_SRC
+# For example: CSP_SCRIPT_SRC = ["'self'", 'https://cdn.jsdelivr.net']
+
 # File upload security
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
