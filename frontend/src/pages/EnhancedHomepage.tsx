@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Container, Typography, Button, Stack, Card, CardContent, Chip, IconButton } from '@mui/material';
+import React from 'react';
+import { Box, Container, Typography, Button, Stack, Card, CardContent, Chip } from '@mui/material';
 import {
   Cloud as CloudIcon,
   Dns as DnsIcon,
@@ -7,51 +7,16 @@ import {
   CheckCircle as CheckCircleIcon,
   ArrowRight as ArrowRightIcon,
   Public as PublicIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 
 const EnhancedHomepage: React.FC = () => {
-  const [carouselIndex, setCarouselIndex] = useState(0);
   const primaryBlue = '#1E3A8A';
   const accentCyan = '#06B6D4';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
 
-  const carouselSlides = [
-    {
-      title: 'Cloud Storage',
-      emoji: '☁️',
-      description: 'Secure, scalable cloud storage solutions',
-      color: '#06B6D4',
-    },
-    {
-      title: 'Data Centers',
-      emoji: '🏢',
-      description: '46 data centers across 4 continents',
-      color: '#1E3A8A',
-    },
-    {
-      title: 'Infrastructure',
-      emoji: '⚙️',
-      description: 'Enterprise-grade infrastructure management',
-      color: '#10B981',
-    },
-    {
-      title: 'Global Network',
-      emoji: '🌍',
-      description: 'Low-latency global connectivity',
-      color: '#F59E0B',
-    },
-  ];
+  // static hero uses a clean gradient background (no external images)
 
-  const handleCarouselNext = () => {
-    setCarouselIndex((prev) => (prev + 1) % carouselSlides.length);
-  };
-
-  const handleCarouselPrev = () => {
-    setCarouselIndex((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length);
-  };
 
   const products = [
     {
@@ -166,221 +131,39 @@ const EnhancedHomepage: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* Main Carousel Section */}
-          <Stack direction={{ xs: 'column', lg: 'row' }} gap={6} alignItems="center" sx={{ mb: 6 }}>
-            {/* Carousel */}
-            <Box
-              sx={{
-                flex: 1,
+          {/* Hero: clean gradient background with centered write-up */}
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 6 }}>
+            <Box sx={{ width: '100%', maxWidth: 1100, position: 'relative', borderRadius: 3, overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.25)' }}>
+              <Box sx={{
+                height: { xs: 320, md: 480 },
+                background: `linear-gradient(135deg, ${primaryBlue} 0%, ${darkGray} 100%)`,
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
-                gap: 3,
-              }}
-            >
-              {/* Carousel Container */}
-              <Box
-                sx={{
-                  width: '100%',
-                  maxWidth: '450px',
-                  height: '350px',
-                  background: `linear-gradient(135deg, ${carouselSlides[carouselIndex].color}33 0%, ${carouselSlides[carouselIndex].color}11 100%)`,
-                  border: `3px solid ${carouselSlides[carouselIndex].color}`,
-                  borderRadius: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  transition: 'all 0.5s ease',
-                  overflow: 'hidden',
-                  boxShadow: `0 20px 60px ${carouselSlides[carouselIndex].color}33`,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: { xs: '100px', md: '120px' },
-                    mb: 2,
-                    animation: 'bounce 0.6s ease',
-                    '@keyframes bounce': {
-                      '0%, 100%': { transform: 'translateY(0)' },
-                      '50%': { transform: 'translateY(-30px)' },
-                    },
-                  }}
-                >
-                  {carouselSlides[carouselIndex].emoji}
-                </Typography>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 700,
-                    textAlign: 'center',
-                    color: carouselSlides[carouselIndex].color,
-                    mb: 1,
-                  }}
-                >
-                  {carouselSlides[carouselIndex].title}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    textAlign: 'center',
-                    opacity: 0.9,
-                    px: 3,
-                    fontSize: '1rem',
-                  }}
-                >
-                  {carouselSlides[carouselIndex].description}
-                </Typography>
-              </Box>
-
-              {/* Carousel Controls */}
-              <Stack direction="row" gap={2} alignItems="center">
-                <IconButton
-                  onClick={handleCarouselPrev}
-                  sx={{
-                    color: 'white',
-                    border: `2px solid white`,
-                    '&:hover': { bgcolor: accentCyan, color: primaryBlue },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-
-                {/* Dots Indicator */}
-                <Stack direction="row" gap={1.5}>
-                  {carouselSlides.map((_, idx) => (
-                    <Box
-                      key={idx}
-                      onClick={() => setCarouselIndex(idx)}
-                      sx={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        bgcolor: idx === carouselIndex ? accentCyan : 'rgba(255,255,255,0.3)',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        '&:hover': { bgcolor: accentCyan },
-                      }}
-                    />
-                  ))}
-                </Stack>
-
-                <IconButton
-                  onClick={handleCarouselNext}
-                  sx={{
-                    color: 'white',
-                    border: `2px solid white`,
-                    '&:hover': { bgcolor: accentCyan, color: primaryBlue },
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <ChevronRightIcon />
-                </IconButton>
-              </Stack>
-            </Box>
-
-            {/* Write-up Content */}
-            <Box sx={{ flex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  color: 'white',
-                  mb: 2,
-                  textTransform: 'uppercase',
-                  fontSize: '0.9rem',
-                  letterSpacing: '1px',
-                }}
-              >
-                Why Choose atonixcorp
-              </Typography>
-              
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 800,
-                  mb: 3,
-                  fontSize: { xs: '1.8rem', md: '2.2rem' },
-                  lineHeight: 1.3,
-                  color: 'white',
-                }}
-              >
-                Enterprise-Grade Infrastructure That Scales With You
-              </Typography>
-
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: '1.1rem',
-                  lineHeight: 1.8,
-                  opacity: 0.95,
-                  mb: 3,
-                  color: 'white',
-                }}
-              >
-                At atonixcorp, we unify compute, storage, networking, automation, and AI-driven intelligence into one secure, scalable ecosystem. Built for developers, enterprises, and innovators who demand reliability without complexity.
-              </Typography>
-
-              <Stack gap={2} sx={{ mb: 4 }}>
-                {[
-                  'Global reach across 46 data centers on 4 continents',
-                  'Zero-trust security with enterprise-grade compliance',
-                  'AI-powered automation for intelligent operations',
-                  'Predictive scaling and autonomous security management',
-                  'No vendor lock-in—build on your terms',
-                ].map((feature, idx) => (
-                  <Stack key={idx} direction="row" gap={2} alignItems="flex-start">
-                    <CheckCircleIcon
-                      sx={{
-                        color: accentCyan,
-                        mt: 0.5,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ fontSize: '1rem', color: 'white' }}>
-                      {feature}
-                    </Typography>
+                justifyContent: 'center',
+                p: 3,
+              }}>
+                <Box sx={{ color: 'white', textAlign: 'center', maxWidth: 760 }}>
+                  <Typography variant="h2" sx={{ fontWeight: 800, mb: 1, fontSize: { xs: '2rem', md: '3rem' } }}>
+                    atonixcorp
+                  </Typography>
+                  <Typography variant="h5" sx={{ color: 'white', fontWeight: 300, mb: 2 }}>
+                    Intelligent Infrastructure for the Future
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'white', opacity: 0.95, mb: 3, fontSize: '1.05rem', lineHeight: 1.6 }}>
+                    At atonixcorp, we unify compute, storage, networking, automation, and AI-driven intelligence into one secure, scalable ecosystem. Built for developers and enterprises who demand reliability without complexity.
+                  </Typography>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} justifyContent="center">
+                    <Button variant="contained" size="large" sx={{ bgcolor: accentCyan, color: primaryBlue, fontWeight: 700, px: 4 }}>
+                      Get Started
+                    </Button>
+                    <Button variant="outlined" size="large" sx={{ borderColor: 'rgba(255,255,255,0.85)', color: 'white', px: 4 }}>
+                      Learn More
+                    </Button>
                   </Stack>
-                ))}
-              </Stack>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    bgcolor: accentCyan,
-                    color: primaryBlue,
-                    fontWeight: 700,
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1rem',
-                  }}
-                >
-                  Get Started
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    borderColor: accentCyan,
-                    color: accentCyan,
-                    fontWeight: 700,
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1rem',
-                    '&:hover': {
-                      bgcolor: accentCyan,
-                      color: primaryBlue,
-                    },
-                  }}
-                >
-                  Learn More
-                </Button>
-              </Stack>
+                </Box>
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         </Container>
       </Box>
 
