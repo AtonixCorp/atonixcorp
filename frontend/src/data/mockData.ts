@@ -62,7 +62,7 @@ export const ____mockFocusAreas: FocusArea[] = [
       {
         id: 4,
         name: 'AWS/Azure/GCP',
-        description: 'Cloud platform services',
+        description: 'atonixcorp services',
         icon: 'cloud',
         website_url: 'https://aws.amazon.com'
       }

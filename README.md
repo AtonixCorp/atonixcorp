@@ -1,70 +1,125 @@
-# AtonixCorp Platform - Enterprise Edition
+# atonixcorp
 
-**Enterprise. Secure. Scalable.**
+**Intelligent Infrastructure for the Future**
 
-![AtonixCorp Logo](docs/logo.png)
+☁️ **Compute. Storage. Networking. Automation. AI – Unified.**
 
 ---
 
 ## Executive Overview
 
-The AtonixCorp Platform is an enterprise-grade, cloud-native infrastructure solution designed for organizations requiring quantum-safe security, global scalability, and operational excellence. Built on microservices architecture with Kubernetes-native deployment, the platform delivers secure, high-performance digital ecosystems that meet the strictest compliance and security requirements.
+atonixcorp is an intelligent, enterprise-grade cloud infrastructure solution designed for developers, enterprises, and innovators. Built on microservices architecture with Kubernetes-native deployment, the platform unifies compute, storage, networking, automation, and AI-driven intelligence into one secure, scalable ecosystem.
 
 ### Platform Mission
 
-To provide organizations with sovereign control over their digital infrastructure while maintaining enterprise-grade reliability, security, and performance at scale.
+To democratize enterprise-grade cloud infrastructure through intelligent automation, automated security, and AI-driven operations—enabling organizations to deploy with confidence and scale with intelligence.
 
 ---
 
-## 🏢 Enterprise Capabilities
+## �️ Core Capabilities
+
+### Five-Layer Architecture
+
+#### 🖥️ **Compute Layer**
+- Virtual Machines (VMs)
+- Kubernetes orchestration
+- Docker containers
+- Serverless functions
+- GPU clusters for AI/ML
+
+#### 📦 **Storage Layer**
+- Object storage
+- Block storage
+- File storage
+- Intelligent caching
+- Automated tiering
+
+#### 🌐 **Networking Layer**
+- Software-Defined Networking (SDN)
+- Load Balancers (L4/L7)
+- Virtual Private Clouds (VPCs)
+- Content Delivery Network (CDN)
+- DDoS protection & WAF
+
+#### 🔄 **Automation Engine (AOE)**
+- CI/CD pipelines
+- Infrastructure as Code (Terraform)
+- Auto-scaling (horizontal & vertical)
+- Self-healing services
+- GitOps workflows
+
+#### 🔮 **AI Intelligence**
+- Predictive scaling & forecasting
+- Anomaly detection in real-time
+- Autonomous security responses
+- Vector search & embeddings
+- Intelligent routing & traffic management
+
+---
+
+## ✨ Key Features
 
 ### Security & Compliance
-- **🔐 Zero-Trust Architecture**: Multi-layer security with cryptographic identity verification
-- **🛡️ Quantum-Safe Cryptography**: Future-proof encryption standards
-- **📋 Enterprise Compliance**: SOC 2, HIPAA, GDPR, ISO 27001 ready
-- **🔒 Hardware Root of Trust**: Secure boot with TPM attestation
-- **📊 Audit Trails**: Complete immutable transaction logging
-- **🔑 Secret Management**: Centralized encryption key management
+- **🔐 Zero-Trust Architecture**: Never trust, always verify
+- **🔒 Encryption**: End-to-end TLS/mTLS communication
+- **📋 Compliance Ready**: SOC 2, HIPAA, GDPR, PCI-DSS
+- **🛡️ Network Security**: VPCs, NetworkPolicies, WAF
+- **🔑 Secrets Management**: Encrypted credential storage
+- **📊 Audit Logging**: Complete immutable trails
 
 ### Scalability & Performance
-- **⚡ Horizontal Scaling**: Auto-scale to millions of transactions
-- **🚀 Global Deployment**: Multi-region, multi-cloud support
-- **🌍 High Availability**: 99.99% uptime SLA
+- **⚡ Auto-Scaling**: Predictive and reactive scaling
+- **🌍 Global Deployment**: Multi-region, multi-cloud
+- **🚀 High Availability**: 99.99% uptime SLA
 - **🔄 Load Balancing**: Intelligent traffic distribution
-- **📈 Performance Optimization**: Sub-100ms response times
-- **💾 Petabyte Data Handling**: Enterprise data volumes
+- **📈 Performance**: Sub-100ms response times
+- **💾 Data Capacity**: Supports petabyte-scale data
 
-### Operations & Management
-- **🎯 GitOps Workflow**: Infrastructure as Code, declarative management
-- **📊 Comprehensive Monitoring**: Real-time observability and alerting
-- **🛠️ Automated Deployment**: CI/CD pipelines with automated testing
-- **🔧 Self-Healing Infrastructure**: Automatic recovery and remediation
-- **📱 Multi-Cloud Ready**: AWS, Azure, GCP, on-premises
-- **🎮 API-First Design**: RESTful and gRPC interfaces
+### Developer Experience
+- **🛠️ CLI Tool** (`atonix`): Simple service management
+- **📝 Configuration**: Single `atonix.yaml` file
+- **🚀 Quick Deploy**: Initialize → Build → Deploy
+- **📊 Observability**: Logs, metrics, traces out-of-box
+- **🤖 SDK & APIs**: RESTful and gRPC interfaces
+- **📚 Documentation**: Comprehensive guides included
 
-### Data & Analytics
-- **📉 Advanced Analytics**: Apache Spark integration for big data
-- **🔗 Event Streaming**: Kafka-based event-driven architecture
-- **💼 Business Intelligence**: Real-time dashboards and reporting
-- **🧠 Machine Learning Ready**: Data pipelines for AI/ML workloads
-- **📦 Data Warehousing**: Scalable data lake support
-- **🔐 Data Privacy**: GDPR-compliant data handling
+### Operations & Intelligence
+- **🎯 GitOps**: Infrastructure as Code, declarative
+- **🤖 AI-Driven**: Predictive & autonomous operations
+- **📊 Real-time Monitoring**: Prometheus, Grafana, Jaeger
+- **🔧 Self-Healing**: Automatic recovery & remediation
+- **🎮 Multi-Cloud**: AWS, Azure, GCP, on-premises
+- **🔐 Autonomous Security**: ML-powered threat detection
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Platform Architecture
 
-### Enterprise Architecture
+### Five-Layer Stack
+
+```
+Layer 5: AI Intelligence        🔮 Predictive Scaling | Anomaly Detection | Autonomous Security
+                                └─────────────────────────────────────────┐
+Layer 4: Automation Engine      🔄 CI/CD | IaC | Auto-scaling | Self-healing
+                                └─────────────────────────────────────────┐
+Layer 3: Networking             🌐 SDN | Load Balancers | VPCs | CDN | DDoS Protection
+                                └─────────────────────────────────────────┐
+Layer 2: Storage                📦 Object | Block | File | Caching | Tiering
+                                └─────────────────────────────────────────┐
+Layer 1: Compute                🖥️ VMs | Kubernetes | Containers | Serverless | GPU
+```
+
+### Platform Deployment
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│           Global Enterprise Deployment                  │
+│       Global Multi-Region atonixcorp                    │
 ├────────────────────────────────────────────────────────┤
 │                                                        │
 │  Multi-Region / Multi-Cloud / On-Premises             │
 │  ┌──────────────────────────────────────────────────┐ │
-│  │      Kubernetes Control Plane                   │ │
-│  │   (HA - 3+ Master Nodes)                        │ │
+│  │      Kubernetes Control Plane (HA)              │ │
+│  │   (3+ master nodes for high availability)       │ │
 │  └──────────────────────────────────────────────────┘ │
 │                      │                                 │
 │  ┌──────────────────┼──────────────────┐             │
@@ -72,94 +127,172 @@ To provide organizations with sovereign control over their digital infrastructur
 │  ▼                  ▼                  ▼             │
 │ ┌──────────┐  ┌──────────┐  ┌──────────┐            │
 │ │ Region 1 │  │ Region 2 │  │ Region N │            │
-│ │ (Primary)│  │ (Standby)│  │(Optional)│            │
+│ │ (Primary)│  │ (Active) │  │(Optional)│            │
 │ └──────────┘  └──────────┘  └──────────┘            │
 │                                                        │
 └────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────┐
-│          Platform Services (Per Region)                │
+│          Core Platform Services                        │
 ├────────────────────────────────────────────────────────┤
 │                                                        │
-│  ┌─────────┐  ┌──────────┐  ┌──────────────┐        │
-│  │ Backend │  │ Frontend │  │  Operator    │        │
-│  │(Django) │  │ (React)  │  │ (K8s CRD)    │        │
-│  └─────────┘  └──────────┘  └──────────────┘        │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │  Backend     │  │  Frontend    │  │ Platform   │ │
+│  │  (REST API)  │  │  (Web UI)    │  │ Operator   │ │
+│  │  (Django)    │  │  (React)     │  │ (K8s Ctrl) │ │
+│  └──────────────┘  └──────────────┘  └────────────┘ │
 │                                                        │
-│  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐    │
-│  │RabbitMQ│  │ Kafka  │  │Zookepr │  │Spark   │    │
-│  │(Queue) │  │(Events)│  │(Coord.)│  │(Analytics)  │
-│  └────────┘  └────────┘  └────────┘  └────────┘    │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │  Message Q.  │  │  Event Stream│  │Coordinator │ │
+│  │  (RabbitMQ)  │  │  (Kafka)     │  │(Zookeeper) │ │
+│  └──────────────┘  └──────────────┘  └────────────┘ │
 │                                                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │
-│  │ PostgreSQL   │  │   Redis      │  │  Ledger   │  │
-│  │  (Primary)   │  │(Cache/Session│  │ (Auditlog)│  │
-│  └──────────────┘  └──────────────┘  └───────────┘  │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │  Relational  │  │    Cache     │  │  Audit     │ │
+│  │ (PostgreSQL) │  │   (Redis)    │  │  (Ledger)  │ │
+│  └──────────────┘  └──────────────┘  └────────────┘ │
 │                                                        │
-│  ┌──────────────┐  ┌──────────────┐                  │
-│  │ Prometheus   │  │  Grafana     │                  │
-│  │(Metrics)     │  │(Dashboards)  │                  │
-│  └──────────────┘  └──────────────┘                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │   Metrics    │  │  Dashboards  │  │   Tracing  │ │
+│  │(Prometheus)  │  │  (Grafana)   │  │  (Jaeger)  │ │
+│  └──────────────┘  └──────────────┘  └────────────┘ │
 │                                                        │
 └────────────────────────────────────────────────────────┘
 ```
 
 ### Service Components
 
-| Component | Purpose | SLA | Notes |
-|-----------|---------|-----|-------|
-| **Backend API** | RESTful services, business logic | 99.99% | Django with async Celery workers |
-| **Frontend** | Enterprise UI, dashboards | 99.95% | React with TypeScript, offline support |
-| **Kubernetes Operator** | Lifecycle management | Custom | Go-based, CRD controllers |
-| **RabbitMQ** | Message queuing, task processing | 99.9% | Clustered, auto-fail-over |
-| **Apache Kafka** | Event streaming, data pipelines | 99.9% | Multi-broker, configurable retention |
-| **PostgreSQL** | Primary relational database | 99.95% | HA with streaming replication |
-| **Redis** | Caching, session store | 99.9% | Sentinel for HA |
-| **Prometheus** | Metrics collection | 99.9% | Time-series DB with retention |
-| **Grafana** | Monitoring dashboards | 99.95% | Pre-configured dashboards |
-| **Ledger System** | Immutable audit logs | 99.99% | Blockchain-inspired, tamper-proof |
+| Component | Purpose | Type | HA Config |
+|-----------|---------|------|-----------|
+| **API Server** | RESTful endpoints, business logic | Stateless | 3+ replicas |
+| **Web UI** | Dashboard, management interface | Static + SPA | 2+ replicas |
+| **Operator** | Kubernetes resource management | Controller | Leader-elect |
+| **Message Queue** | Async task processing | Queue | Clustered |
+| **Event Streams** | Real-time data pipelines | Pub/Sub | Multi-broker |
+| **Database** | Persistent relational data | Stateful | Replication |
+| **Cache** | High-speed data access | In-memory | Sentinel HA |
+| **Metrics** | Time-series monitoring data | TSDB | Persistent |
+| **Observability** | Logs, metrics, traces | Stack | Multi-sink |
 
 ---
 
-## 🚀 Deployment & Infrastructure
+## 🚀 Getting Started
 
-### Supported Environments
-
-```yaml
-Deployment Options:
-  - Kubernetes: 1.24+ (AKS, EKS, GKE, self-managed)
-  - Cloud Platforms: AWS, Azure, Google Cloud, DigitalOcean
-  - On-Premises: VMware vSphere, OpenStack, bare metal
-  - Hybrid: Multi-cloud with federation
-  - Edge: Kubernetes Edge, K3s for edge locations
-
-High Availability:
-  - Multi-region active-passive/active-active
-  - Auto-scaling: 1-10,000+ nodes
-  - Database: Master-slave, master-master, multi-master
-  - Load Balancing: Layer 7, session affinity, geo-routing
-```
-
-### Quick Enterprise Deployment
+### Quick Start: Deploy Your First Service
 
 ```bash
-# Using Helm (Recommended for Enterprise)
-helm repo add atonixcorp https://charts.atonixcorp.com
-helm repo update
+# 1. Initialize service
+atonix init --name my-app
 
-# Deploy to production
-helm install atonixcorp-prod atonixcorp/atonixcorp-platform \
-  --namespace production \
-  --values enterprise-values.yaml \
-  --set replicas.backend=3 \
-  --set replicas.frontend=2 \
-  --set database.ha=true \
-  --set monitoring.enabled=true \
-  --set ingress.tls=true
+# 2. Build Docker image
+docker build -t my-app:1.0.0 .
+
+# 3. Authenticate with platform
+atonix login --token YOUR_API_TOKEN
+
+# 4. Deploy to production
+atonix deploy --environment production
+
+# 5. Monitor in real-time
+atonix monitor --service my-app
+```
+
+### Deployment Options
+
+**Option 1: Self-Managed Kubernetes**
+```bash
+# Deploy using Kubernetes manifests
+kubectl apply -f manifests/
+kubectl apply -f terraform/modules/kubernetes-service/
+```
+
+**Option 2: Terraform (Infrastructure as Code)**
+```bash
+# Deploy using Terraform
+terraform init
+terraform apply -var-file=production.tfvars
+```
+
+**Option 3: Docker Compose (Development)**
+```bash
+# Local development with Docker Compose
+docker-compose -f docker-compose.yml up -d
+```
+
+### Prerequisites
+
+- **Kubernetes** 1.24+ (AKS, EKS, GKE, self-managed)
+- **Docker** 20.0+ for containerization
+- **Terraform** 1.0+ for infrastructure (optional)
+- **atonix CLI** for service management
+- **Git** for version control
+
+---
+
+## 📚 Documentation
+
+### Core Guides
+
+| Document | Purpose | Read Time |
+|----------|---------|-----------|
+| **[CLOUD_PLATFORM_HOMEPAGE.md](./CLOUD_PLATFORM_HOMEPAGE.md)** | Platform overview & design | 10 min |
+| **[docs/QUICK_START.md](./docs/QUICK_START.md)** | Quick-start guide | 5 min |
+| **[docs/DEVELOPER_REQUIREMENTS.md](./docs/DEVELOPER_REQUIREMENTS.md)** | Service standards | 20 min |
+| **[docs/PLATFORM_IMPLEMENTATION_GUIDE.md](./docs/PLATFORM_IMPLEMENTATION_GUIDE.md)** | Complete implementation guide | 30 min |
+| **[docs/DEPLOYMENT_WORKFLOW.md](./docs/DEPLOYMENT_WORKFLOW.md)** | Deployment procedures | 25 min |
+| **[docs/CI_CD_PIPELINE.md](./docs/CI_CD_PIPELINE.md)** | Automation & CI/CD | 15 min |
+| **[docs/OBSERVABILITY_GUIDE.md](./docs/OBSERVABILITY_GUIDE.md)** | Monitoring & observability | 20 min |
+| **[docs/SECURITY_STANDARDS.md](./docs/SECURITY_STANDARDS.md)** | Security best practices | 25 min |
+| **[docs/AI_AUTOMATION_INTEGRATION.md](./docs/AI_AUTOMATION_INTEGRATION.md)** | AI features & automation | 20 min |
+
+---
+
+## 🛠️ Technology Stack
+
+### Container & Orchestration
+- **Kubernetes** 1.24+ – Container orchestration
+- **Docker** 20.0+ – Container runtime
+- **Helm** – Package management
+
+### Cloud & Infrastructure
+- **Terraform** 1.0+ – Infrastructure as Code
+- **CloudFormation** – AWS provisioning (optional)
+- **GitOps** – Declarative deployments
+
+### Backend & APIs
+- **Django** 4.0+ – Web framework
+- **Django REST Framework** – RESTful APIs
+- **PostgreSQL** 12+ – Primary database
+- **Redis** – Caching & sessions
+
+### Frontend & UI
+- **React** 19+ – User interface
+- **TypeScript** – Type-safe JavaScript
+- **Material-UI** – Component library
+- **Axios** – HTTP client
+
+### Messaging & Streaming
+- **RabbitMQ** – Message queue
+- **Apache Kafka** – Event streaming
+- **ZooKeeper** – Coordination
+
+### Observability
+- **Prometheus** – Metrics collection
+- **Grafana** – Visualization dashboards
+- **Jaeger** – Distributed tracing
+- **Loki** – Log aggregation
+- **OpenTelemetry** – Observability standard
+
+### AI & Automation
+- **Python** 3.10+ – ML/AI workloads
+- **TensorFlow/PyTorch** – ML frameworks
+- **FBProphet/ARIMA** – Time series forecasting
+- **scikit-learn** – ML algorithms
+
 
 # Verify deployment
-kubectl rollout status deployment/atonixcorp-backend -n production
-kubectl rollout status deployment/atonixcorp-frontend -n production
+kubectl rollout status deployment/cloud-backend -n production
+kubectl rollout status deployment/cloud-frontend -n production
 ```
 
 ### Configuration Management
@@ -350,12 +483,12 @@ Response Times (99th percentile):
 
 ### Getting Help
 
-- **Documentation**: https://docs.atonixcorp.com
-- **Support Portal**: https://support.atonixcorp.com
-- **Status Page**: https://status.atonixcorp.com
-- **Email**: enterprise-support@atonixcorp.com
-- **Phone**: +1-800-ATONIX-1
-- **Slack**: #enterprise-support (for premium customers)
+- **Documentation**: See ./docs/ directory
+- **Support Portal**: Check docs/QUICK_START.md
+- **Email**: support@cloudplatform.io
+- **Platform Team**: platform-team@cloudplatform.io
+- **Infrastructure Team**: infra-team@cloudplatform.io
+- **Security Team**: security-team@cloudplatform.io
 
 ---
 
@@ -402,14 +535,14 @@ Upgrade Path:
 
 ---
 
-## 📞 Contact & Sales
+## 📞 Support & Contact
 
-For enterprise deployments, custom configurations, or licensing inquiries:
+For questions, deployments, or custom configurations:
 
-- **Sales**: sales@atonixcorp.com
-- **Enterprise Success**: enterprise@atonixcorp.com
-- **Technical Pre-Sales**: presales-tech@atonixcorp.com
-- **Website**: https://www.atonixcorp.com
+- **Platform Engineering**: platform-team@cloudplatform.io
+- **Infrastructure**: infra-team@cloudplatform.io
+- **Security & Compliance**: security-team@cloudplatform.io
+- **AI & Automation**: ai-team@cloudplatform.io
 
 ---
 
@@ -422,7 +555,7 @@ For enterprise deployments, custom configurations, or licensing inquiries:
 
 ---
 
-**AtonixCorp Platform - Enterprise Edition**  
-*Built for organizations that demand reliability, security, and scale.*
+**atonixcorp**  
+*Intelligent Infrastructure for the Future*
 
-**© 2025 AtonixCorp. All rights reserved.**
+**© 2026 atonixcorp. All rights reserved.**

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>atonixcorp – Intelligent Infrastructure for the Future</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            color: #1F2937;
+            line-height: 1.6;
+            background: #f5f7fa;
+        }
+
+        /* Header Navigation */
+        header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1E3A8A;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1F2937;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #06B6D4;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2D5FB8 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .hero .subtext {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #06B6D4;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background: #0891B2;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1E3A8A;
+            font-weight: bold;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        .hero-visual {
+            margin-top: 3rem;
+            font-size: 4rem;
+            opacity: 0.8;
+        }
+
+        /* Core Capabilities */
+        .capabilities {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #1E3A8A;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .capability-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            border-top: 3px solid #06B6D4;
+        }
+
+        .capability-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .capability-card h3 {
+            color: #1E3A8A;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .capability-card ul {
+            list-style: none;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #6B7280;
+        }
+
+        .capability-card ul li {
+            padding: 0.3rem 0;
+        }
+
+        .capability-card ul li:before {
+            content: "→ ";
+            color: #06B6D4;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Developer Standards */
+        .standards {
+            background: #f9fafb;
+            padding: 4rem 2rem;
+        }
+
+        .standards-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .check-icon {
+            font-size: 1.8rem;
+            color: #10B981;
+        }
+
+        .checklist-item span {
+            color: #1F2937;
+            font-weight: 500;
+        }
+
+        /* Workflow */
+        .workflow {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: #1E3A8A;
+            color: white;
+            border-radius: 50%;
+            line-height: 50px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .step h4 {
+            color: #1E3A8A;
+            margin-bottom: 0.5rem;
+        }
+
+        .step p {
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+
+        .step-arrow {
+            position: absolute;
+            right: -30px;
+            top: 20px;
+            font-size: 2rem;
+            color: #06B6D4;
+        }
+
+        .step:last-child .step-arrow {
+            display: none;
+        }
+
+        /* Observability & Security */
+        .obs-sec {
+            background: white;
+            padding: 4rem 2rem;
+        }
+
+        .obs-sec-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .obs-panel, .sec-panel {
+            background: #f9fafb;
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid #06B6D4;
+        }
+
+        .sec-panel {
+            border-left-color: #EF4444;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            color: #1E3A8A;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+        }
+
+        .panel-list {
+            list-style: none;
+        }
+
+        .panel-list li {
+            padding: 0.5rem 0;
+            color: #6B7280;
+        }
+
+        .panel-list li:before {
+            content: "●";
+            margin-right: 0.8rem;
+            color: #06B6D4;
+        }
+
+        .sec-panel .panel-list li:before {
+            color: #EF4444;
+        }
+
+        /* AI & Automation */
+        .ai-section {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ai-feature {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-top: 3px solid #06B6D4;
+        }
+
+        .ai-feature h4 {
+            color: #1E3A8A;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-feature p {
+            font-size: 0.9rem;
+            color: #6B7280;
+            line-height: 1.5;
+        }
+
+        /* Support Contact */
+        .support {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2D5FB8 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .support-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .support h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .support-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .support-card h4 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .support-card p {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        .contact-button {
+            margin-top: 2rem;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #1F2937;
+            color: #E5E7EB;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #E5E7EB;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #06B6D4;
+        }
+
+        .footer-copyright {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #4B5563;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtext {
+                font-size: 1rem;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-steps {
+                flex-direction: column;
+            }
+
+            .step-arrow {
+                display: none !important;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="navbar">
+            <div class="logo">☁️ atonixcorp</div>
+            <ul class="nav-links">
+                <li><a href="#capabilities">Capabilities</a></li>
+                <li><a href="#standards">Standards</a></li>
+                <li><a href="#workflow">Workflow</a></li>
+                <li><a href="#support">Support</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>atonixcorp</h1>
+            <p class="subtext">Intelligent Infrastructure for the Future</p>
+            <p class="subtext" style="font-size: 1.1rem; margin-bottom: 2rem;">
+                Compute, Storage, Networking, Automation, and AI<br>unified in one secure cloud environment.
+            </p>
+            <div class="cta-buttons">
+                <button class="btn btn-primary">Get Started</button>
+                <button class="btn btn-secondary">Explore Documentation</button>
+            </div>
+            <div class="hero-visual">🌐 ☁️ 🚀</div>
+        </div>
+    </section>
+
+    <!-- Core Capabilities -->
+    <section class="capabilities" id="capabilities">
+        <h2 class="section-title">Core Capabilities – Platform Architecture</h2>
+        <div class="capabilities-grid">
+            <div class="capability-card">
+                <div class="capability-icon">🖥️</div>
+                <h3>Compute</h3>
+                <ul>
+                    <li>VMs</li>
+                    <li>Kubernetes</li>
+                    <li>Containers</li>
+                    <li>Serverless</li>
+                    <li>GPU AI</li>
+                </ul>
+            </div>
+
+            <div class="capability-card">
+                <div class="capability-icon">📦</div>
+                <h3>Storage</h3>
+                <ul>
+                    <li>Object Storage</li>
+                    <li>Block Storage</li>
+                    <li>File Storage</li>
+                    <li>Caching</li>
+                    <li>Tiering</li>
+                </ul>
+            </div>
+
+            <div class="capability-card">
+                <div class="capability-icon">🌐</div>
+                <h3>Networking</h3>
+                <ul>
+                    <li>SDN</li>
+                    <li>Load Balancers</li>
+                    <li>VPCs</li>
+                    <li>CDN</li>
+                    <li>DDoS Protection</li>
+                </ul>
+            </div>
+
+            <div class="capability-card">
+                <div class="capability-icon">🔄</div>
+                <h3>Automation (AOE)</h3>
+                <ul>
+                    <li>CI/CD</li>
+                    <li>Infrastructure as Code</li>
+                    <li>Auto-scaling</li>
+                    <li>Self-healing</li>
+                    <li>GitOps</li>
+                </ul>
+            </div>
+
+            <div class="capability-card">
+                <div class="capability-icon">🔮</div>
+                <h3>AI Intelligence</h3>
+                <ul>
+                    <li>Predictive Scaling</li>
+                    <li>Anomaly Detection</li>
+                    <li>Autonomous Security</li>
+                    <li>Vector Search</li>
+                    <li>Smart Routing</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Developer Standards -->
+    <section class="standards" id="standards">
+        <div class="standards-content">
+            <h2 class="section-title">Developer Standards</h2>
+            <div class="checklist">
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>Containerized Services (Docker)</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>Health Endpoints</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>Structured JSON Logging</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>Zero-Trust Security</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>SDK Integration</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon">✅</span>
+                    <span>OpenTelemetry</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow -->
+    <section class="workflow" id="workflow">
+        <h2 class="section-title">Deployment Workflow</h2>
+        <div class="workflow-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h4>Initialize</h4>
+                <p>atonix init</p>
+                <span class="step-arrow">→</span>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h4>Build</h4>
+                <p>docker build</p>
+                <span class="step-arrow">→</span>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h4>Authenticate</h4>
+                <p>atonix login</p>
+                <span class="step-arrow">→</span>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h4>Deploy</h4>
+                <p>atonix deploy</p>
+                <span class="step-arrow">→</span>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <h4>Monitor</h4>
+                <p>atonix monitor</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Observability & Security -->
+    <section class="obs-sec" id="obs-sec">
+        <div class="obs-sec-content">
+            <h2 class="section-title">Observability & Security</h2>
+            <div class="two-column">
+                <div class="obs-panel">
+                    <h3 class="panel-title">📊 Observability</h3>
+                    <ul class="panel-list">
+                        <li>JSON Structured Logging</li>
+                        <li>Prometheus Metrics</li>
+                        <li>OpenTelemetry Tracing</li>
+                        <li>Grafana Dashboards</li>
+                        <li>Alert Rules & Notifications</li>
+                        <li>Log Aggregation (Loki)</li>
+                    </ul>
+                </div>
+                <div class="sec-panel">
+                    <h3 class="panel-title">🔒 Security</h3>
+                    <ul class="panel-list">
+                        <li>IAM & RBAC</li>
+                        <li>TLS/mTLS Encryption</li>
+                        <li>Secrets Management</li>
+                        <li>VPC Isolation</li>
+                        <li>Network Policies</li>
+                        <li>Audit Logging</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI & Automation -->
+    <section class="ai-section">
+        <h2 class="section-title">Cloud AI Engine</h2>
+        <div class="ai-grid">
+            <div class="ai-feature">
+                <h4>🔮 Predictive Scaling</h4>
+                <p>Forecast demand using ML models. Auto-scale based on predictions, optimizing costs and performance.</p>
+            </div>
+            <div class="ai-feature">
+                <h4>🚨 Anomaly Detection</h4>
+                <p>Real-time metric analysis detects outliers. Automatic alerting for irregular patterns.</p>
+            </div>
+            <div class="ai-feature">
+                <h4>🔐 Autonomous Security</h4>
+                <p>Detect security anomalies. Auto-block threats. Auto-remediate compliance violations.</p>
+            </div>
+            <div class="ai-feature">
+                <h4>🔍 Vector Search</h4>
+                <p>Semantic search across logs and traces. ML-powered insights and pattern recognition.</p>
+            </div>
+            <div class="ai-feature">
+                <h4>⚡ Intelligent Routing</h4>
+                <p>Dynamic service discovery. Health-aware load balancing. Canary deployments.</p>
+            </div>
+            <div class="ai-feature">
+                <h4>💡 Cost Optimization</h4>
+                <p>Recommendations for resource efficiency. Automated cost reduction strategies.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support -->
+    <section class="support" id="support">
+        <div class="support-content">
+            <h2>Global Support. Local Expertise.</h2>
+            <div class="support-grid">
+                <div class="support-card">
+                    <h4>🏗️ Platform Engineering</h4>
+                    <p>Infrastructure design, service architecture, capacity planning.</p>
+                    <p><strong>platform-team@cloudplatform.io</strong></p>
+                </div>
+                <div class="support-card">
+                    <h4>🔧 Cloud Infrastructure</h4>
+                    <p>Kubernetes management, network operations, disaster recovery.</p>
+                    <p><strong>infra-team@cloudplatform.io</strong></p>
+                </div>
+                <div class="support-card">
+                    <h4>🔒 Security & Compliance</h4>
+                    <p>Policy enforcement, compliance audits, incident response.</p>
+                    <p><strong>security-team@cloudplatform.io</strong></p>
+                </div>
+                <div class="support-card">
+                    <h4>🤖 AI & Automation</h4>
+                    <p>AI engine development, predictive analytics, autonomous systems.</p>
+                    <p><strong>ai-team@cloudplatform.io</strong></p>
+                </div>
+            </div>
+            <div class="contact-button">
+                <button class="btn btn-primary btn-large">Contact Enterprise Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <h3>atonixcorp</h3>
+            <div class="footer-links">
+                <a href="#capabilities">Capabilities</a>
+                <a href="#standards">Standards</a>
+                <a href="#workflow">Workflow</a>
+                <a href="./docs/QUICK_START.md">Documentation</a>
+                <a href="./docs/SECURITY_STANDARDS.md">Security</a>
+                <a href="#support">Support</a>
+            </div>
+            <div class="footer-copyright">
+                <p>© 2026 atonixcorp. All rights reserved.</p>
+                <p style="margin-top: 0.5rem; opacity: 0.8;">Built with ☁️ for the future of cloud infrastructure.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
