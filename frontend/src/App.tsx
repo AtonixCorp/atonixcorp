@@ -12,6 +12,7 @@ import { TelemetryErrorBoundary } from './observability/hooks';
 
 // Components
 import CloudPlatformHeader from './components/Layout/CloudPlatformHeader';
+import Footer from './components/Layout/Footer';
 
 // Pages
 import EnhancedHomepage from './pages/EnhancedHomepage';
@@ -45,6 +46,7 @@ function App() {
                   <Route path="*" element={<EnhancedHomepage />} />
                 </Routes>
               </Box>
+              <Footer />
             </Box>
           </Router>
         </AuthProvider>

@@ -32,6 +32,13 @@ const SlackIcon = (props: any) => (
   </SvgIcon>
 );
 
+// Simple GitLab Icon (SVG)
+const GitLabIcon = (props: any) => (
+  <SvgIcon {...props} viewBox="0 0 24 24">
+    <path d="M12 0l-2.4 7.2L2 8.4l6 4.8L5.6 21.6 12 17.4 18.4 21.6 16 13.2 22 8.4l-7.6-.9L12 0z" />
+  </SvgIcon>
+);
+
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
@@ -41,7 +48,7 @@ const Footer: React.FC = () => {
     { name: 'LinkedIn', icon: <LinkedIn />, url: 'https://linkedin.com/company/atonixcorp' },
     { name: 'Instagram', icon: <Instagram />, url: 'https://instagram.com/atonixcorp' },
     { name: 'Facebook', icon: <Facebook />, url: 'https://facebook.com/atonixcorp' },
-    { name: 'GitLab', icon: <GitHub />, url: 'https://gitlab.com/atonixcorpvm' },
+    { name: 'GitLab', icon: <GitLabIcon />, url: 'https://gitlab.com/atonixcorpvm' },
     { name: 'Slack', icon: <SlackIcon />, url: 'https://atonixcorp.slack.com' },
     { name: 'Discord', icon: <DiscordIcon />, url: 'https://discord.gg/YYVWydDcx' },
   ];

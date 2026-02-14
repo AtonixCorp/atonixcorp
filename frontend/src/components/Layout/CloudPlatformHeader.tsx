@@ -25,8 +25,8 @@ const CloudPlatformHeader: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
-  const primaryBlue = '#1E3A8A';
-  const accentCyan = '#06B6D4';
+  const primaryBlue = '#0b1220';
+  const accentCyan = '#14b8a6';
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -49,7 +49,7 @@ const CloudPlatformHeader: React.FC = () => {
       position="static"
       elevation={0}
       sx={{
-        background: `linear-gradient(135deg, ${primaryBlue} 0%, #0F1729 100%)`,
+        background: `linear-gradient(135deg, ${primaryBlue} 0%, #07121a 100%)`,
         borderBottom: `1px solid ${accentCyan}33`,
       }}
     >
@@ -81,7 +81,7 @@ const CloudPlatformHeader: React.FC = () => {
               sx={{
                 width: 40,
                 height: 40,
-                background: `linear-gradient(135deg, ${accentCyan} 0%, #0891b2 100%)`,
+                background: `linear-gradient(135deg, ${accentCyan} 0%, #0ea5a4 100%)`,
                 borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -101,7 +101,7 @@ const CloudPlatformHeader: React.FC = () => {
                 display: { xs: 'none', sm: 'block' },
               }}
             >
-              atonixcorp
+              AtonixCorp
             </Box>
           </Box>
 
@@ -113,17 +113,17 @@ const CloudPlatformHeader: React.FC = () => {
                   key={item.path}
                   onClick={() => handleNavigate(item.path)}
                   sx={{
-                    color: '#f3f4f6',
-                    fontWeight: 600,
-                    px: 2,
-                    py: 1,
-                    borderRadius: 1,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      bgcolor: `${accentCyan}22`,
-                      color: accentCyan,
-                    },
-                  }}
+                      color: '#e6eef7',
+                      fontWeight: 600,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 1,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        bgcolor: `${accentCyan}22`,
+                        color: accentCyan,
+                      },
+                    }}
                 >
                   {item.label}
                 </Button>
@@ -139,16 +139,16 @@ const CloudPlatformHeader: React.FC = () => {
                   onClick={() => handleNavigate(item.path)}
                   size="small"
                   sx={{
-                    color: '#f3f4f6',
-                    fontWeight: 500,
-                    px: 1.5,
-                    py: 0.5,
-                    fontSize: '0.85rem',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      color: accentCyan,
-                    },
-                  }}
+                      color: '#e6eef7',
+                      fontWeight: 500,
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: '0.85rem',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        color: accentCyan,
+                      },
+                    }}
                 >
                   {item.label}
                 </Button>
@@ -165,7 +165,7 @@ const CloudPlatformHeader: React.FC = () => {
                   fontSize: '0.9rem',
                   ml: 1,
                   '&:hover': {
-                    bgcolor: '#0891b2',
+                    bgcolor: '#0ea5a4',
                   },
                 }}
                 onClick={() => handleNavigate('/')}
@@ -179,7 +179,7 @@ const CloudPlatformHeader: React.FC = () => {
           {isMobile && (
             <IconButton
               onClick={() => setMobileOpen(!mobileOpen)}
-              sx={{ color: 'white' }}
+              sx={{ color: '#e6eef7' }}
             >
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}
             </IconButton>
@@ -204,12 +204,12 @@ const CloudPlatformHeader: React.FC = () => {
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
                   sx={{
-                    color: '#f3f4f6',
-                    fontWeight: 600,
-                    '&:hover': {
-                      bgcolor: `${accentCyan}22`,
-                    },
-                  }}
+                      color: '#e6eef7',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: `${accentCyan}22`,
+                      },
+                    }}
                 >
                   <ListItemText primary={item.label} />
                 </ListItemButton>
@@ -221,7 +221,7 @@ const CloudPlatformHeader: React.FC = () => {
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
                   sx={{
-                    color: '#f3f4f6',
+                      color: '#e6eef7',
                     fontSize: '0.9rem',
                     '&:hover': {
                       bgcolor: `${accentCyan}22`,
@@ -237,9 +237,9 @@ const CloudPlatformHeader: React.FC = () => {
                 fullWidth
                 variant="contained"
                 sx={{
-                  bgcolor: accentCyan,
-                  color: primaryBlue,
-                  fontWeight: 700,
+                    bgcolor: accentCyan,
+                    color: primaryBlue,
+                    fontWeight: 700,
                 }}
                 onClick={() => handleNavigate('/')}
               >

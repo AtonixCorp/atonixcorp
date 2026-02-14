@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 
 const EnhancedHomepage: React.FC = () => {
-  const primaryBlue = '#1E3A8A';
+  const primaryBlue = '#06B6DA';
   const accentCyan = '#06B6D4';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
@@ -64,102 +64,217 @@ const EnhancedHomepage: React.FC = () => {
   ];
 
   const useCases = [
-    { icon: '🌐', title: 'Website Business', description: 'Host your websites and web applications' },
-    { icon: '⚙️', title: 'HyperConverged Infrastructure', description: 'Integrated computing and storage' },
-    { icon: '📦', title: 'Software Defined Storage', description: 'Flexible storage solutions' },
-    { icon: '📊', title: 'Big Data & Analytics', description: 'Process and analyze large datasets' },
-    { icon: '💾', title: 'Archiving & Backup', description: 'Secure data preservation' },
-    { icon: '🔐', title: 'Confidential Computing', description: 'Enhanced data privacy' },
-    { icon: '🗄️', title: 'Databases on Bare Metal', description: 'High-performance database hosting' },
-    { icon: '🎮', title: 'Gaming on Bare Metal', description: 'Low-latency game server hosting' },
-    { icon: '⚡', title: 'High Performance Computing', description: 'Compute-intensive workloads' },
+    { icon: '', title: 'Website Business', description: 'Host your websites and web applications' },
+    { icon: '', title: 'HyperConverged Infrastructure', description: 'Integrated computing and storage' },
+    { icon: '', title: 'Software Defined Storage', description: 'Flexible storage solutions' },
+    { icon: '', title: 'Big Data & Analytics', description: 'Process and analyze large datasets' },
+    { icon: '', title: 'Archiving & Backup', description: 'Secure data preservation' },
+    { icon: '', title: 'Confidential Computing', description: 'Enhanced data privacy' },
+    { icon: '', title: 'Databases on Bare Metal', description: 'High-performance database hosting' },
+    { icon: '', title: 'Gaming on Bare Metal', description: 'Low-latency game server hosting' },
+    { icon: '', title: 'High Performance Computing', description: 'Compute-intensive workloads' },
+  ];
+
+  const capabilities = [
+    {
+      title: 'High-Performance Compute',
+      bullets: [
+        'Virtual Machines',
+        'Containers (Kubernetes / Docker)',
+        'Serverless functions',
+        'GPU‑accelerated workloads',
+        'Auto‑scaling compute clusters',
+      ],
+    },
+    {
+      title: 'Scalable Storage Services',
+      bullets: [
+        'Object storage (S3‑compatible)',
+        'Block storage',
+        'File storage',
+        'Intelligent caching',
+        'Automated tiering',
+      ],
+    },
+    {
+      title: 'Advanced Networking',
+      bullets: [
+        'Software‑defined networking (SDN)',
+        'Load balancers',
+        'Private VPCs',
+        'Global CDN',
+        'DDoS protection',
+      ],
+    },
+    {
+      title: 'Automation & Orchestration',
+      bullets: [
+        'Infrastructure‑as‑Code',
+        'CI/CD pipelines',
+        'Auto‑scaling policies',
+        'Self‑healing infrastructure',
+        'Automated backups & snapshots',
+      ],
+    },
+    {
+      title: 'AI‑Driven Optimization',
+      bullets: [
+        'Predictive scaling',
+        'Real‑time anomaly detection',
+        'Intelligent resource allocation',
+        'AI‑powered monitoring',
+        'Autonomous security responses',
+      ],
+    },
+    {
+      title: 'Developer‑First Tools',
+      bullets: [
+        'REST & GraphQL APIs',
+        'CLI tools',
+        'SDKs (Python, Node.js, Go, Java)',
+        'Pre‑built templates & blueprints',
+        'Git‑based deployments',
+      ],
+    },
+    {
+      title: 'Security & Compliance',
+      bullets: [
+        'Zero‑trust architecture',
+        'Encryption at rest & in transit',
+        'Identity & Access Management (IAM)',
+        'Role‑based access control (RBAC)',
+        'SOC 2 / ISO 27001 / GDPR‑ready',
+      ],
+    },
+    {
+      title: 'Reliability & Performance',
+      bullets: ['Multi‑region availability', '99.99% uptime SLA'],
+    },
   ];
 
   return (
     <Box>
-      {/* Main Hero Section with Carousel as Centerpiece */}
+      {/* Main Hero — Professional Split Layout */}
       <Box
         sx={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&h=900&fit=crop")',
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          color: 'white',
-          py: { xs: 8, md: 10 },
-          minHeight: '600px',
-          display: 'flex',
-          alignItems: 'center',
           position: 'relative',
+          color: 'white',
+          py: { xs: 8, md: 12 },
           '&::before': {
             content: '""',
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(30, 58, 138, 0.75)',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(2,6,23,0.55), rgba(2,6,23,0.38))',
             zIndex: 1,
           },
         }}
       >
-        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
-          {/* Hero Header */}
-          <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 800,
-                mb: 2,
-                fontSize: { xs: '2.5rem', md: '4rem' },
-                background: `linear-gradient(135deg, ${accentCyan}, #60a5fa)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              atonixcorp
-            </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 300,
-                color: accentCyan,
-                mb: 2,
-              }}
-            >
-              Intelligent Infrastructure for the Future
-            </Typography>
-          </Box>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 3 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: { xs: 4, md: 6 },
+              alignItems: 'center',
+            }}
+          >
+            {/* Left: Messaging */}
+            <Box>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 900,
+                  lineHeight: 1.02,
+                  fontSize: { xs: '2rem', md: '2.6rem' },
+                  color: '#ffffff',
+                  mb: 1,
+                  textShadow: '0 6px 20px rgba(2,6,23,0.6)',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word',
+                }}
+              >
+                AtonixCorp
+              </Typography>
+              <Typography variant="h6" sx={{ color: accentCyan, fontWeight: 600, mb: 3, textShadow: '0 4px 14px rgba(2,6,23,0.45)' }}>
+                Sovereign. Scalable. Intelligent.
+              </Typography>
 
-          {/* Hero: clean gradient background with centered write-up */}
-          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 6 }}>
-            <Box sx={{ width: '100%', maxWidth: 1100, position: 'relative', borderRadius: 3, overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.25)' }}>
-              <Box sx={{
-                height: { xs: 320, md: 480 },
-                background: `linear-gradient(135deg, ${primaryBlue} 0%, ${darkGray} 100%)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                p: 3,
-              }}>
-                <Box sx={{ color: 'white', textAlign: 'center', maxWidth: 760 }}>
-                  <Typography variant="h2" sx={{ fontWeight: 800, mb: 1, fontSize: { xs: '2rem', md: '3rem' } }}>
-                    atonixcorp
-                  </Typography>
-                  <Typography variant="h5" sx={{ color: 'white', fontWeight: 300, mb: 2 }}>
-                    Intelligent Infrastructure for the Future
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'white', opacity: 0.95, mb: 3, fontSize: '1.05rem', lineHeight: 1.6 }}>
-                    At atonixcorp, we unify compute, storage, networking, automation, and AI-driven intelligence into one secure, scalable ecosystem. Built for developers and enterprises who demand reliability without complexity.
-                  </Typography>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} gap={2} justifyContent="center">
-                    <Button variant="contained" size="large" sx={{ bgcolor: accentCyan, color: primaryBlue, fontWeight: 700, px: 4 }}>
-                      Get Started
-                    </Button>
-                    <Button variant="outlined" size="large" sx={{ borderColor: 'rgba(255,255,255,0.85)', color: 'white', px: 4 }}>
-                      Learn More
-                    </Button>
-                  </Stack>
+              <Typography variant="body1" sx={{ color: '#e6eef7', mb: 2, maxWidth: 760, textShadow: '0 4px 14px rgba(2,6,23,0.45)', overflowWrap: 'break-word' }}>
+                AtonixCorp delivers a unified cloud infrastructure built for the businesses shaping tomorrow. Whether
+                public, private, or hybrid, our platform empowers developers, enterprises, and innovators with secure
+                compute, resilient storage, programmable networking, and AI‑driven automation — all orchestrated through a
+                high‑performance control plane.
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: '#cfeafe', mb: 3, fontStyle: 'italic', textShadow: '0 3px 10px rgba(2,6,23,0.4)' }}>
+                Built on OpenStack. Powered by AMD, Intel, and NVIDIA. Secured by design.
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+                <Button variant="contained" sx={{ bgcolor: accentCyan, color: '#05243b', fontWeight: 700, px: 3 }}>
+                  Get Started
+                </Button>
+                <Button variant="outlined" sx={{ borderColor: '#2b6f8f', color: '#cfeafe' }}>
+                  Explore Documentation
+                </Button>
+              </Box>
+
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: '#e6eef7', fontWeight: 700, mb: 0.5 }}>
+                  From virtual machines to Kubernetes, from object storage to GPU‑accelerated AI —
+                </Typography>
+                <Stack direction="column" sx={{ color: '#ffffff', mt: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>Start building with confidence.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>Deploy with precision.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>Scale without compromise.</Typography>
+                </Stack>
+              </Box>
+            </Box>
+
+            {/* Right: Visual Accent / Feature Panel */}
+            <Box>
+              <Box
+                sx={{
+                  borderRadius: 3,
+                  p: { xs: 3, md: 4 },
+                  minHeight: 320,
+                  bgcolor: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  boxShadow: '0 10px 40px rgba(2,6,23,0.6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr' }, gap: 2 }}>
+                  <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#02102a22' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e6eef7' }}>Compute</Typography>
+                    <Typography variant="body2" sx={{ color: '#cfeafe', mt: 0.5 }}>
+                      VMs, Containers, Serverless, GPU
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#02102a22' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e6eef7' }}>Storage</Typography>
+                    <Typography variant="body2" sx={{ color: '#cfeafe', mt: 0.5 }}>
+                      Object, Block, File, Tiering
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#02102a22' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e6eef7' }}>Networking</Typography>
+                    <Typography variant="body2" sx={{ color: '#cfeafe', mt: 0.5 }}>
+                      SDN, Load Balancers, Global CDN
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#02102a22' }}>
+                    <Typography sx={{ fontWeight: 700, color: '#e6eef7' }}>AI & Automation</Typography>
+                    <Typography variant="body2" sx={{ color: '#cfeafe', mt: 0.5 }}>
+                      Predictive scaling & anomaly detection
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Box>
@@ -259,6 +374,57 @@ const EnhancedHomepage: React.FC = () => {
                   </Button>
                 </CardContent>
               </Card>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Platform Capabilities Section */}
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#fff' }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h3"
+            sx={{ fontWeight: 800, mb: 2, textAlign: 'center', color: primaryBlue }}
+          >
+            Platform Capabilities
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ textAlign: 'center', color: darkGray, mb: 4, maxWidth: '760px', mx: 'auto' }}
+          >
+            Comprehensive, production‑ready infrastructure and developer tooling to power cloud‑native applications and enterprise workloads.
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
+              gap: 2,
+            }}
+          >
+            {capabilities.map((cap, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  p: 3,
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                  border: '1px solid #e6eef2',
+                  minHeight: 180,
+                }}
+              >
+                <Typography sx={{ fontWeight: 700, mb: 1, color: darkGray }}>{cap.title}</Typography>
+                <Stack gap={0.75} sx={{ mt: 1 }}>
+                  {cap.bullets.map((b, i) => (
+                    <Stack key={i} direction="row" gap={1} alignItems="flex-start">
+                      <CheckCircleIcon sx={{ color: accentCyan, fontSize: 18, mt: 0.3 }} />
+                      <Typography variant="body2" sx={{ color: darkGray, fontSize: '0.95rem' }}>
+                        {b}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
             ))}
           </Box>
         </Container>
