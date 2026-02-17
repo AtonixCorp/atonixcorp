@@ -1,1 +1,0 @@
-"""Scheduling app package."""
