@@ -651,7 +651,7 @@ class NATGateway(ResourceModel):
     
     # Network interface
     network_interface_id = models.CharField(max_length=64, blank=True)
-    network_interface_ip = models.GenericIPAddressField(protocol='both', blank=True)
+    network_interface_ip = models.GenericIPAddressField(protocol='both', blank=True, null=True)
     
     class Meta:
         ordering = ['-created_at']

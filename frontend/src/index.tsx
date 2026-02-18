@@ -27,8 +27,8 @@ if (__loadingSpinner && __loadingSpinner.parentNode) {
   __loadingSpinner.parentNode.removeChild(__loadingSpinner);
 }
 
-// Register service worker for PWA functionality
-serviceWorkerRegistration.register();
+// Service worker disabled (causes load hang when cached filenames change)
+// serviceWorkerRegistration.register();
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

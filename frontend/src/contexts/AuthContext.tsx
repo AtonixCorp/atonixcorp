@@ -13,7 +13,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Helper functions for dashboard access logic
   const isIndividualUser = (user: User | null): boolean => {
@@ -34,26 +34,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Check if user is already logged in
     const initializeAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
       try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          // Apply token to shared api client
-          setAuthToken(token);
-          // Verify the token with the backend
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
-          
-          // Set organization if user is organization type
-          if (userData.user_type === 'organization' && userData.organization) {
-            setOrganization(userData.organization);
-          }
+        // Apply token to shared api client
+        setAuthToken(token);
+        // Verify the token with the backend (short timeout so offline backend doesn't block the UI)
+        const userData = await Promise.race([
+          authService.getCurrentUser(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Auth check timed out')), 3000)
+          ),
+        ]);
+        setUser(userData as any);
+        const ud = userData as any;
+        if (ud.user_type === 'organization' && ud.organization) {
+          setOrganization(ud.organization);
         }
       } catch (error) {
-        console.error('Failed to initialize auth:', error);
+        console.warn('Auth init skipped (backend offline or token invalid):', error);
         localStorage.removeItem('authToken');
         clearAuthToken();
-      } finally {
-        setIsLoading(false);
       }
     };
 

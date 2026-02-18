@@ -78,7 +78,7 @@ class StorageBucket(ResourceModel):
 
 class S3Object(TimeStampedModel):
     """Object in a storage bucket."""
-    bucket = models.ForeignKey(StorageBucket, on_delete=models.CASCADE, related_name='objects')
+    bucket = models.ForeignKey(StorageBucket, on_delete=models.CASCADE, related_name='s3_objects')
     object_key = models.CharField(max_length=1024, db_index=True)
     
     # Content properties

@@ -39,11 +39,55 @@ ____authApi.interceptors.response.use(
   }
 );
 
+// Normalize a backend user object into the frontend User shape
+function normalizeUser(backendUser: any): User {
+  return {
+    id: backendUser.id,
+    uuid: backendUser.uuid,
+    username: backendUser.username,
+    email: backendUser.email,
+    first_name: backendUser.first_name || '',
+    last_name: backendUser.last_name || '',
+    avatar: backendUser.avatar,
+    bio: backendUser.bio || '',
+    github_url: backendUser.github_url || '',
+    linkedin_url: backendUser.linkedin_url || '',
+    website_url: backendUser.website_url || '',
+    location: backendUser.location || '',
+    skills: backendUser.skills || [],
+    is_active: backendUser.is_active !== false,
+    is_admin: !!(backendUser.is_staff || backendUser.is_superuser),
+    role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
+    date_joined: backendUser.date_joined,
+    last_login: backendUser.last_login,
+    user_type: backendUser.user_type || 'individual',
+  } as User;
+}
+
 // Auth Services
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     console.log('AuthService login called with:', credentials);
-    
+
+    // --- Try real backend first ---
+    try {
+      const response = await ____authApi.post<any>('/login/', credentials);
+      const data = response.data;
+      return {
+        message: data.message || 'Login successful',
+        token: data.token,
+        user: normalizeUser(data.user),
+      };
+    } catch (backendErr: any) {
+      // If the backend is reachable but credentials are wrong, throw immediately
+      if (backendErr?.response?.status === 400 || backendErr?.response?.status === 401) {
+        throw new Error(backendErr.response.data?.detail || 'Invalid credentials.');
+      }
+      // Otherwise backend is offline — fall through to local demo/mock
+      console.warn('Backend offline, using local auth fallback.');
+    }
+
+    // --- Local demo fallback (backend offline) ---
     // Mock authentication for demo
     if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
       const mockUser: User = {
@@ -145,7 +189,24 @@ export const authService = {
 
   signup: async (userData: SignupRequest): Promise<SignupResponse> => {
     console.log('AuthService signup called with:', userData);
-    
+
+    // --- Try real backend first ---
+    try {
+      const response = await ____authApi.post<any>('/signup/', userData);
+      const data = response.data;
+      return {
+        message: data.message || 'Account created successfully',
+        token: data.token,
+        user: normalizeUser(data.user),
+      };
+    } catch (backendErr: any) {
+      if (backendErr?.response?.status === 400) {
+        throw new Error(backendErr.response.data?.detail || 'Signup failed. Please check your details.');
+      }
+      console.warn('Backend offline, using local signup fallback.');
+    }
+
+    // --- Local fallback ---
     // Store user credentials separately for authentication
     const userCredentials = JSON.parse(localStorage.getItem('user_credentials') || '[]');
     
@@ -214,7 +275,15 @@ export const authService = {
 
   getCurrentUser: async (): Promise<User> => {
     const token = localStorage.getItem('authToken');
-    
+
+    // --- Try real backend first if token is not a local mock token ---
+    if (token && !token.startsWith('mock-jwt-token')) {
+      const response = await ____authApi.get<any>('/me/');
+      const data = response.data;
+      return normalizeUser(data.user || data);
+    }
+
+    // --- Local fallback for mock tokens ---
     // Handle mock authentication
     if (token === 'mock-jwt-token') {
       return {

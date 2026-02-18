@@ -9,25 +9,10 @@ const isLocalhost = Boolean(
 );
 
 const CACHE_NAME = 'atonixcorp-v1';
-const urlsToCache = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png'
-];
 
-// Install event - cache resources
+// Install event - skip waiting so the SW activates immediately
 self.addEventListener('install', (event) => {
-  // Perform install steps
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+  self.skipWaiting();
   );
   // Force the waiting service worker to become the active service worker
   self.skipWaiting();

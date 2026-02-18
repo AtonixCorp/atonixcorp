@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Container, Typography, Button, Stack, Card, CardContent, Chip } from '@mui/material';
 import {
   Cloud as CloudIcon,
@@ -8,8 +8,13 @@ import {
   ArrowRight as ArrowRightIcon,
   Public as PublicIcon,
 } from '@mui/icons-material';
+import LoginDialog from '../components/Auth/LoginDialog';
+import SignupDialog from '../components/Auth/SignupDialog';
 
 const EnhancedHomepage: React.FC = () => {
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
   const primaryBlue = '#06B6DA';
   const accentCyan = '#06B6D4';
   const darkGray = '#1F2937';
@@ -215,11 +220,11 @@ const EnhancedHomepage: React.FC = () => {
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-                <Button variant="contained" sx={{ bgcolor: accentCyan, color: '#05243b', fontWeight: 700, px: 3 }}>
+                <Button variant="contained" sx={{ bgcolor: accentCyan, color: '#05243b', fontWeight: 700, px: 3 }} onClick={() => setSignupOpen(true)}>
                   Get Started
                 </Button>
-                <Button variant="outlined" sx={{ borderColor: '#2b6f8f', color: '#cfeafe' }}>
-                  Explore Documentation
+                <Button variant="outlined" sx={{ borderColor: '#2b6f8f', color: '#cfeafe' }} onClick={() => setLoginOpen(true)}>
+                  Sign In
                 </Button>
               </Box>
 
@@ -587,30 +592,26 @@ const EnhancedHomepage: React.FC = () => {
             <Button
               variant="contained"
               size="large"
-              sx={{
-                bgcolor: accentCyan,
-                color: primaryBlue,
-                fontWeight: 700,
-                px: 4,
-              }}
+              sx={{ bgcolor: accentCyan, color: primaryBlue, fontWeight: 700, px: 4 }}
+              onClick={() => setSignupOpen(true)}
             >
-              Get $200 Credit
+              Get Started Free
             </Button>
             <Button
               variant="outlined"
               size="large"
-              sx={{
-                borderColor: 'white',
-                color: 'white',
-                fontWeight: 700,
-                px: 4,
-              }}
+              sx={{ borderColor: 'white', color: 'white', fontWeight: 700, px: 4 }}
+              onClick={() => setLoginOpen(true)}
             >
-              Schedule Demo
+              Sign In
             </Button>
           </Stack>
         </Container>
       </Box>
+
+      {/* Auth Dialogs */}
+      <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} onSwitchToSignup={() => { setLoginOpen(false); setSignupOpen(true); }} />
+      <SignupDialog open={signupOpen} onClose={() => setSignupOpen(false)} onSwitchToLogin={() => { setSignupOpen(false); setLoginOpen(true); }} />
     </Box>
   );
 };
