@@ -1,779 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>atonixcorp – Intelligent Infrastructure for the Future</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-            color: #1F2937;
-            line-height: 1.6;
-            background: #f5f7fa;
-        }
-
-        /* Header Navigation */
-        header {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1E3A8A;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #1F2937;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #06B6D4;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #1E3A8A 0%, #2D5FB8 100%);
-            color: white;
-            padding: 6rem 2rem;
-            text-align: center;
-        }
-
-        .hero-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
-
-        .hero .subtext {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: #06B6D4;
-            color: white;
-            font-weight: bold;
-        }
-
-        .btn-primary:hover {
-            background: #0891B2;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.3);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #1E3A8A;
-            font-weight: bold;
-        }
-
-        .btn-secondary:hover {
-            background: #f0f9ff;
-            transform: translateY(-2px);
-        }
-
-        .hero-visual {
-            margin-top: 3rem;
-            font-size: 4rem;
-            opacity: 0.8;
-        }
-
-        /* Core Capabilities */
-        .capabilities {
-            max-width: 1200px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #1E3A8A;
-        }
-
-        .capabilities-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .capability-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .capability-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
-            border-top: 3px solid #06B6D4;
-        }
-
-        .capability-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .capability-card h3 {
-            color: #1E3A8A;
-            margin-bottom: 0.5rem;
-            font-size: 1.3rem;
-        }
-
-        .capability-card ul {
-            list-style: none;
-            text-align: left;
-            font-size: 0.9rem;
-            color: #6B7280;
-        }
-
-        .capability-card ul li {
-            padding: 0.3rem 0;
-        }
-
-        .capability-card ul li:before {
-            content: "→ ";
-            color: #06B6D4;
-            font-weight: bold;
-            margin-right: 0.5rem;
-        }
-
-        /* Developer Standards */
-        .standards {
-            background: #f9fafb;
-            padding: 4rem 2rem;
-        }
-
-        .standards-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .checklist {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .check-icon {
-            font-size: 1.8rem;
-            color: #10B981;
-        }
-
-        .checklist-item span {
-            color: #1F2937;
-            font-weight: 500;
-        }
-
-        /* Workflow */
-        .workflow {
-            max-width: 1200px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-        }
-
-        .workflow-steps {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 3rem;
-            flex-wrap: wrap;
-        }
-
-        .step {
-            flex: 1;
-            min-width: 150px;
-            text-align: center;
-            position: relative;
-        }
-
-        .step-number {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            background: #1E3A8A;
-            color: white;
-            border-radius: 50%;
-            line-height: 50px;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .step h4 {
-            color: #1E3A8A;
-            margin-bottom: 0.5rem;
-        }
-
-        .step p {
-            color: #6B7280;
-            font-size: 0.9rem;
-        }
-
-        .step-arrow {
-            position: absolute;
-            right: -30px;
-            top: 20px;
-            font-size: 2rem;
-            color: #06B6D4;
-        }
-
-        .step:last-child .step-arrow {
-            display: none;
-        }
-
-        /* Observability & Security */
-        .obs-sec {
-            background: white;
-            padding: 4rem 2rem;
-        }
-
-        .obs-sec-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-top: 2rem;
-        }
-
-        .obs-panel, .sec-panel {
-            background: #f9fafb;
-            padding: 2rem;
-            border-radius: 12px;
-            border-left: 4px solid #06B6D4;
-        }
-
-        .sec-panel {
-            border-left-color: #EF4444;
-        }
-
-        .panel-title {
-            font-size: 1.3rem;
-            color: #1E3A8A;
-            margin-bottom: 1.5rem;
-            font-weight: bold;
-        }
-
-        .panel-list {
-            list-style: none;
-        }
-
-        .panel-list li {
-            padding: 0.5rem 0;
-            color: #6B7280;
-        }
-
-        .panel-list li:before {
-            content: "";
-            margin-right: 0.8rem;
-            color: #06B6D4;
-        }
-
-        .sec-panel .panel-list li:before {
-            color: #EF4444;
-        }
-
-        /* AI & Automation */
-        .ai-section {
-            max-width: 1200px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-        }
-
-        .ai-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .ai-feature {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-top: 3px solid #06B6D4;
-        }
-
-        .ai-feature h4 {
-            color: #1E3A8A;
-            margin-bottom: 0.5rem;
-        }
-
-        .ai-feature p {
-            font-size: 0.9rem;
-            color: #6B7280;
-            line-height: 1.5;
-        }
-
-        /* Support Contact */
-        .support {
-            background: linear-gradient(135deg, #1E3A8A 0%, #2D5FB8 100%);
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-
-        .support-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .support h2 {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .support-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .support-card {
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .support-card h4 {
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .support-card p {
-            font-size: 0.9rem;
-            opacity: 0.95;
-        }
-
-        .contact-button {
-            margin-top: 2rem;
-        }
-
-        .btn-large {
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-        }
-
-        /* Footer */
-        footer {
-            background: #1F2937;
-            color: #E5E7EB;
-            padding: 3rem 2rem;
-            text-align: center;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: #E5E7EB;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-links a:hover {
-            color: #06B6D4;
-        }
-
-        .footer-copyright {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #4B5563;
-            font-size: 0.9rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero .subtext {
-                font-size: 1rem;
-            }
-
-            .two-column {
-                grid-template-columns: 1fr;
-            }
-
-            .workflow-steps {
-                flex-direction: column;
-            }
-
-            .step-arrow {
-                display: none !important;
-            }
-
-            .nav-links {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AtonixCorp – Intelligent Infrastructure for the Future. Compute, Storage, Networking, Automation, and AI – Unified." />
+  <title>AtonixCorp – Intelligent Infrastructure for the Future</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="navbar">
-            <div class="logo"> atonixcorp</div>
-            <ul class="nav-links">
-                <li><a href="#capabilities">Capabilities</a></li>
-                <li><a href="#standards">Standards</a></li>
-                <li><a href="#workflow">Workflow</a></li>
-                <li><a href="#support">Support</a></li>
-            </ul>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">AtonixCorp</span>
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="pricing.html">Pricing</a></li>
+      <li><a href="docs.html">Docs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-sm btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge">Enterprise Cloud &amp; AI Infrastructure</div>
+    <h1 class="hero-title">
+      Intelligent Infrastructure<br />
+      <span class="gradient-text">for the Future</span>
+    </h1>
+    <p class="hero-sub">
+      Compute. Storage. Networking. Automation. AI &ndash; Unified.<br />
+      Deploy with confidence. Scale with intelligence.
+    </p>
+    <div class="hero-actions">
+      <a href="platform.html" class="btn btn-primary btn-lg">Explore Platform</a>
+      <a href="docs.html" class="btn btn-outline btn-lg">Read the Docs</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-value">46+</span><span class="stat-label">Data Centers</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-value">4</span><span class="stat-label">Continents</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-value">99.99%</span><span class="stat-label">Uptime SLA</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-value">&lt;10ms</span><span class="stat-label">Hot Latency</span></div>
+    </div>
+  </div>
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Five-Layer Architecture</h2>
+      <p>Every layer engineered for enterprise scale &ndash; working together as one unified platform.</p>
+    </div>
+    <div class="card-grid">
+
+      <a href="platform.html#compute" class="card card-hover">
+        <div class="card-icon card-icon--blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
-    </header>
+        <h3>Compute</h3>
+        <p>VMs, Kubernetes, Docker, serverless functions, and GPU clusters for AI/ML workloads.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>atonixcorp</h1>
-            <p class="subtext">Intelligent Infrastructure for the Future</p>
-            <p class="subtext" style="font-size: 1.1rem; margin-bottom: 2rem;">
-                Compute, Storage, Networking, Automation, and AI<br>unified in one secure cloud environment.
-            </p>
-            <div class="cta-buttons">
-                <button class="btn btn-primary">Get Started</button>
-                <button class="btn btn-secondary">Explore Documentation</button>
-            </div>
-            <div class="hero-visual">  </div>
+      <a href="platform.html#storage" class="card card-hover">
+        <div class="card-icon card-icon--indigo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
         </div>
-    </section>
+        <h3>Storage</h3>
+        <p>Object (S3-compatible), block, and file storage with intelligent caching and automated tiering.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- Core Capabilities -->
-    <section class="capabilities" id="capabilities">
-        <h2 class="section-title">Core Capabilities – Platform Architecture</h2>
-        <div class="capabilities-grid">
-            <div class="capability-card">
-                <div class="capability-icon"></div>
-                <h3>Compute</h3>
-                <ul>
-                    <li>VMs</li>
-                    <li>Kubernetes</li>
-                    <li>Containers</li>
-                    <li>Serverless</li>
-                    <li>GPU AI</li>
-                </ul>
-            </div>
-
-            <div class="capability-card">
-                <div class="capability-icon"></div>
-                <h3>Storage</h3>
-                <ul>
-                    <li>Object Storage</li>
-                    <li>Block Storage</li>
-                    <li>File Storage</li>
-                    <li>Caching</li>
-                    <li>Tiering</li>
-                </ul>
-            </div>
-
-            <div class="capability-card">
-                <div class="capability-icon"></div>
-                <h3>Networking</h3>
-                <ul>
-                    <li>SDN</li>
-                    <li>Load Balancers</li>
-                    <li>VPCs</li>
-                    <li>CDN</li>
-                    <li>DDoS Protection</li>
-                </ul>
-            </div>
-
-            <div class="capability-card">
-                <div class="capability-icon"></div>
-                <h3>Automation (AOE)</h3>
-                <ul>
-                    <li>CI/CD</li>
-                    <li>Infrastructure as Code</li>
-                    <li>Auto-scaling</li>
-                    <li>Self-healing</li>
-                    <li>GitOps</li>
-                </ul>
-            </div>
-
-            <div class="capability-card">
-                <div class="capability-icon"></div>
-                <h3>AI Intelligence</h3>
-                <ul>
-                    <li>Predictive Scaling</li>
-                    <li>Anomaly Detection</li>
-                    <li>Autonomous Security</li>
-                    <li>Vector Search</li>
-                    <li>Smart Routing</li>
-                </ul>
-            </div>
+      <a href="platform.html#networking" class="card card-hover">
+        <div class="card-icon card-icon--cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         </div>
-    </section>
+        <h3>Networking</h3>
+        <p>SDN, VPCs, load balancers L4/L7, CDN, DDoS protection, and programmable WAF.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- Developer Standards -->
-    <section class="standards" id="standards">
-        <div class="standards-content">
-            <h2 class="section-title">Developer Standards</h2>
-            <div class="checklist">
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>Containerized Services (Docker)</span>
-                </div>
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>Health Endpoints</span>
-                </div>
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>Structured JSON Logging</span>
-                </div>
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>Zero-Trust Security</span>
-                </div>
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>SDK Integration</span>
-                </div>
-                <div class="checklist-item">
-                    <span class="check-icon"></span>
-                    <span>OpenTelemetry</span>
-                </div>
-            </div>
+      <a href="platform.html#automation" class="card card-hover">
+        <div class="card-icon card-icon--violet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </div>
-    </section>
+        <h3>Automation</h3>
+        <p>CI/CD pipelines, GitOps, Terraform, auto-scaling, and self-healing infrastructure.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- Workflow -->
-    <section class="workflow" id="workflow">
-        <h2 class="section-title">Deployment Workflow</h2>
-        <div class="workflow-steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h4>Initialize</h4>
-                <p>atonix init</p>
-                <span class="step-arrow">→</span>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h4>Build</h4>
-                <p>docker build</p>
-                <span class="step-arrow">→</span>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h4>Authenticate</h4>
-                <p>atonix login</p>
-                <span class="step-arrow">→</span>
-            </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <h4>Deploy</h4>
-                <p>atonix deploy</p>
-                <span class="step-arrow">→</span>
-            </div>
-            <div class="step">
-                <div class="step-number">5</div>
-                <h4>Monitor</h4>
-                <p>atonix monitor</p>
-            </div>
+      <a href="platform.html#ai" class="card card-hover">
+        <div class="card-icon card-icon--emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
         </div>
-    </section>
+        <h3>AI Intelligence</h3>
+        <p>Predictive scaling, anomaly detection, autonomous security, vector search, and intelligent routing.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- Observability & Security -->
-    <section class="obs-sec" id="obs-sec">
-        <div class="obs-sec-content">
-            <h2 class="section-title">Observability & Security</h2>
-            <div class="two-column">
-                <div class="obs-panel">
-                    <h3 class="panel-title"> Observability</h3>
-                    <ul class="panel-list">
-                        <li>JSON Structured Logging</li>
-                        <li>Prometheus Metrics</li>
-                        <li>OpenTelemetry Tracing</li>
-                        <li>Grafana Dashboards</li>
-                        <li>Alert Rules & Notifications</li>
-                        <li>Log Aggregation (Loki)</li>
-                    </ul>
-                </div>
-                <div class="sec-panel">
-                    <h3 class="panel-title"> Security</h3>
-                    <ul class="panel-list">
-                        <li>IAM & RBAC</li>
-                        <li>TLS/mTLS Encryption</li>
-                        <li>Secrets Management</li>
-                        <li>VPC Isolation</li>
-                        <li>Network Policies</li>
-                        <li>Audit Logging</li>
-                    </ul>
-                </div>
-            </div>
+      <a href="platform.html#security" class="card card-hover">
+        <div class="card-icon card-icon--rose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-    </section>
+        <h3>Security</h3>
+        <p>Zero-trust architecture, end-to-end encryption, SOC 2, HIPAA, and GDPR compliant by default.</p>
+        <span class="card-link">Learn more &rarr;</span>
+      </a>
 
-    <!-- AI & Automation -->
-    <section class="ai-section">
-        <h2 class="section-title">Cloud AI Engine</h2>
-        <div class="ai-grid">
-            <div class="ai-feature">
-                <h4> Predictive Scaling</h4>
-                <p>Forecast demand using ML models. Auto-scale based on predictions, optimizing costs and performance.</p>
-            </div>
-            <div class="ai-feature">
-                <h4> Anomaly Detection</h4>
-                <p>Real-time metric analysis detects outliers. Automatic alerting for irregular patterns.</p>
-            </div>
-            <div class="ai-feature">
-                <h4> Autonomous Security</h4>
-                <p>Detect security anomalies. Auto-block threats. Auto-remediate compliance violations.</p>
-            </div>
-            <div class="ai-feature">
-                <h4> Vector Search</h4>
-                <p>Semantic search across logs and traces. ML-powered insights and pattern recognition.</p>
-            </div>
-            <div class="ai-feature">
-                <h4> Intelligent Routing</h4>
-                <p>Dynamic service discovery. Health-aware load balancing. Canary deployments.</p>
-            </div>
-            <div class="ai-feature">
-                <h4> Cost Optimization</h4>
-                <p>Recommendations for resource efficiency. Automated cost reduction strategies.</p>
-            </div>
-        </div>
-    </section>
+    </div>
+  </div>
+</section>
 
-    <!-- Support -->
-    <section class="support" id="support">
-        <div class="support-content">
-            <h2>Global Support. Local Expertise.</h2>
-            <div class="support-grid">
-                <div class="support-card">
-                    <h4> Platform Engineering</h4>
-                    <p>Infrastructure design, service architecture, capacity planning.</p>
-                    <p><strong>platform-team@atonixcorp.com</strong></p>
-                </div>
-                <div class="support-card">
-                    <h4> Cloud Infrastructure</h4>
-                    <p>Kubernetes management, network operations, disaster recovery.</p>
-                    <p><strong>infra-team@atonixcorp.com</strong></p>
-                </div>
-                <div class="support-card">
-                    <h4> Security & Compliance</h4>
-                    <p>Policy enforcement, compliance audits, incident response.</p>
-                    <p><strong>security-team@atonixcorp.com</strong></p>
-                </div>
-                <div class="support-card">
-                    <h4> AI & Automation</h4>
-                    <p>AI engine development, predictive analytics, autonomous systems.</p>
-                    <p><strong>ai-team@atonixcorp.com</strong></p>
-                </div>
-            </div>
-            <div class="contact-button">
-                <button class="btn btn-primary btn-large">Contact Enterprise Sales</button>
-            </div>
-        </div>
-    </section>
+<section class="section section-dark">
+  <div class="container container-narrow text-center">
+    <h2 class="quote-headline">Sovereign. Scalable. Intelligent.</h2>
+    <p class="quote-body">
+      AtonixCorp delivers unified cloud infrastructure built for the businesses shaping tomorrow.
+      Whether public, private, or hybrid, our platform empowers developers, enterprises, and innovators
+      with secure compute, resilient storage, programmable networking, and AI-driven automation &mdash;
+      all orchestrated through a high-performance control plane built on OpenStack and AMD EPYC.
+    </p>
+    <a href="about.html" class="btn btn-outline-light">Our Mission &rarr;</a>
+  </div>
+</section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <h3>atonixcorp</h3>
-            <div class="footer-links">
-                <a href="#capabilities">Capabilities</a>
-                <a href="#standards">Standards</a>
-                <a href="#workflow">Workflow</a>
-                <a href="./docs/QUICK_START.md">Documentation</a>
-                <a href="./docs/SECURITY_STANDARDS.md">Security</a>
-                <a href="#support">Support</a>
-            </div>
-            <div class="footer-copyright">
-                <p>© 2026 atonixcorp. All rights reserved.</p>
-                <p style="margin-top: 0.5rem; opacity: 0.8;">Built with  for the future of cloud infrastructure.</p>
-            </div>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Built for Enterprise Scale</h2>
+      <p>Production-hardened from day one. Every component designed for reliability, performance, and developer experience.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
-    </footer>
+        <div>
+          <h4>Real-time Observability</h4>
+          <p>Prometheus, Grafana, and distributed tracing built in. Full observability stack out of the box.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <div>
+          <h4>Kubernetes-Native</h4>
+          <p>Deploy with Helm, manage with Argo CD, scale automatically. GitOps ready from day one.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h4>Zero-Trust Security</h4>
+          <p>SOC 2 Type II, HIPAA, and GDPR compliant with automated threat response and full audit logging.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+        </div>
+        <div>
+          <h4>AI-Driven Auto-scaling</h4>
+          <p>Horizontal and vertical scaling powered by AI predictions &mdash; before demand spikes happen.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>
+        </div>
+        <div>
+          <h4>Infrastructure as Code</h4>
+          <p>Terraform modules, Helm charts, and Kubernetes operators for fully reproducible deployments.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+          <h4>Multi-Region &amp; Hybrid Cloud</h4>
+          <p>46+ data centers across 4 continents with single-pane-of-glass management and unified APIs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section cta-section">
+  <div class="container text-center">
+    <h2>Ready to Build with AtonixCorp?</h2>
+    <p>Start with our documentation or talk to our enterprise team about your infrastructure needs.</p>
+    <div class="cta-actions">
+      <a href="docs.html" class="btn btn-primary btn-lg">Start with Docs</a>
+      <a href="contact.html" class="btn btn-outline btn-lg">Contact Enterprise Sales</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;margin-bottom:1rem">
+          <span class="logo-mark">A</span>
+          <span class="logo-text">AtonixCorp</span>
+        </a>
+        <p>Intelligent infrastructure for the future.<br />Sovereign. Scalable. Intelligent.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <ul>
+          <li><a href="platform.html#compute">Compute</a></li>
+          <li><a href="platform.html#storage">Storage</a></li>
+          <li><a href="platform.html#networking">Networking</a></li>
+          <li><a href="platform.html#automation">Automation</a></li>
+          <li><a href="platform.html#ai">AI Intelligence</a></li>
+          <li><a href="platform.html#security">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="docs.html#api">API Reference</a></li>
+          <li><a href="docs.html#guides">Getting Started</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="about.html#mission">Mission</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AtonixCorp. All rights reserved.</p>
+      <p><a href="https://www.atonixcorp.com">atonixcorp.com</a></p>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

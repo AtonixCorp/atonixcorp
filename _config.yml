@@ -1,0 +1,50 @@
+title: AtonixCorp
+description: Intelligent Infrastructure for the Future – Compute, Storage, Networking, Automation, and AI Unified.
+url: "https://atonixcorp.github.io"
+baseurl: "/atonixcorp"
+
+author:
+  name: AtonixCorp Engineering
+  email: platform-team@atonixcorp.com
+
+# Disable Jekyll theme (using custom HTML/CSS)
+theme: null
+
+# Don't process these as Jekyll templates
+exclude:
+  - README.md
+  - SECURITY.md
+  - DEPLOYMENT.md
+  - INFRASTRUCTURE.md
+  - QUICKSTART.md
+  - TROUBLESHOOTING.md
+  - "*.sh"
+  - "*.py"
+  - docker-compose*.yml
+  - Dockerfile*
+  - requirements*.txt
+  - backend/
+  - frontend/
+  - scripts/
+  - terraform/
+  - k8s/
+  - gitops/
+  - helm/
+  - monitoring/
+  - security/
+  - infra/
+  - infrastructure/
+  - nginx/
+  - rabbitmq/
+  - atonix/
+  - dev/
+  - vscode/
+  - __pycache__/
+
+include:
+  - "*.html"
+  - assets/
+  - docs/
+
+# GitHub Pages settings
+plugins: []

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AtonixCorp Documentation – Platform architecture, API reference, services, deployment guides, and security standards." />
+  <title>Documentation – AtonixCorp</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">AtonixCorp</span>
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="pricing.html">Pricing</a></li>
+      <li><a href="docs.html" class="active">Docs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-sm btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="container">
+    <div class="badge">Documentation</div>
+    <h1>AtonixCorp <span class="gradient-text">Docs</span></h1>
+    <p>Everything you need to architect, deploy, and operate on the AtonixCorp platform.</p>
+  </div>
+</header>
+
+<main class="section">
+  <div class="container">
+
+    <!-- ===== GETTING STARTED ===== -->
+    <div id="guides" class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>Getting Started</h2>
+      <p>Start here &ndash; from local development to production in minutes.</p>
+    </div>
+    <div class="docs-grid" style="margin-bottom:4rem">
+      <a href="docs/docs/PLATFORM_ARCHITECTURE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--blue)">Architecture</div>
+        <h3>Platform Architecture</h3>
+        <p>Five-layer architecture overview, OpenStack foundation, AMD EPYC hardware, and design principles.</p>
+      </a>
+      <a href="docs/docs/DEPLOYMENT_GUIDE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--indigo)">Deployment</div>
+        <h3>Deployment Guide</h3>
+        <p>Step-by-step instructions for deploying your first workload, from Docker to Kubernetes.</p>
+      </a>
+      <a href="docs/LOCAL_RUN.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--emerald)">Local Dev</div>
+        <h3>Local Development</h3>
+        <p>Run the full platform stack locally with Docker Compose for development and testing.</p>
+      </a>
+      <a href="docs/DEVELOPER_REQUIREMENTS.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--amber)">Requirements</div>
+        <h3>Developer Requirements</h3>
+        <p>Prerequisites, environment setup, and toolchain requirements for platform development.</p>
+      </a>
+      <a href="docs/docs/IMPLEMENTATION_SUMMARY.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--cyan)">Overview</div>
+        <h3>Implementation Summary</h3>
+        <p>High-level summary of all platform components, services, and their current status.</p>
+      </a>
+      <a href="QUICKSTART.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--violet)">Quickstart</div>
+        <h3>Quickstart Guide</h3>
+        <p>Get up and running with AtonixCorp in under 10 minutes.</p>
+      </a>
+    </div>
+
+    <!-- ===== PLATFORM SERVICES ===== -->
+    <div class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>Platform Services</h2>
+      <p>Detailed technical documentation for each service layer.</p>
+    </div>
+    <div class="docs-grid" style="margin-bottom:4rem">
+      <a href="docs/docs/COMPUTE_SERVICE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--blue)">Compute</div>
+        <h3>Compute Service</h3>
+        <p>VMs, Kubernetes, containers, serverless, and GPU instances &ndash; configuration and APIs.</p>
+      </a>
+      <a href="docs/docs/STORAGE_SERVICE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--indigo)">Storage</div>
+        <h3>Storage Service</h3>
+        <p>Object, block, and file storage APIs. S3-compatibility, tiering policies, and encryption.</p>
+      </a>
+      <a href="docs/docs/NETWORKING_SERVICE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--cyan)">Networking</div>
+        <h3>Networking Service</h3>
+        <p>VPCs, load balancers, SDN, CDN configuration, DDoS rules, and WAF policy management.</p>
+      </a>
+      <a href="docs/docs/BACKEND_SERVICES.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--violet)">Backend</div>
+        <h3>Backend Services</h3>
+        <p>Django REST API, authentication, webhooks, service catalog, and database configuration.</p>
+      </a>
+      <a href="docs/docs/AI_AUTOMATION_SERVICE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--emerald)">AI</div>
+        <h3>AI &amp; Automation Service</h3>
+        <p>Predictive scaling models, anomaly detection, intelligent routing, and vector search integration.</p>
+      </a>
+      <a href="docs/AI_AUTOMATION_INTEGRATION.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--emerald)">AI</div>
+        <h3>AI Integration Guide</h3>
+        <p>How to connect external AI models and services to the AtonixCorp AI intelligence layer.</p>
+      </a>
+    </div>
+
+    <!-- ===== API REFERENCE ===== -->
+    <div id="api" class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>API Reference</h2>
+      <p>Complete reference documentation for the AtonixCorp REST API.</p>
+    </div>
+    <div class="docs-grid" style="margin-bottom:4rem">
+      <a href="docs/docs/API_REFERENCE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--blue)">REST API</div>
+        <h3>API Reference</h3>
+        <p>Full API endpoint reference &ndash; authentication, resources, request/response schemas, and error codes.</p>
+      </a>
+      <a href="docs/ATONIX_YAML_SPEC.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--indigo)">Spec</div>
+        <h3>AtonixCorp YAML Spec</h3>
+        <p>Infrastructure definition language &ndash; declarative YAML format for provisioning platform resources.</p>
+      </a>
+      <a href="docs/PLATFORM_IMPLEMENTATION_GUIDE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--cyan)">Guide</div>
+        <h3>Platform Implementation Guide</h3>
+        <p>End-to-end implementation patterns, best practices, and reference architectures.</p>
+      </a>
+      <a href="docs/docs/README.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--text-dim)">Index</div>
+        <h3>Docs Index</h3>
+        <p>Full documentation index with links to all technical reference material.</p>
+      </a>
+    </div>
+
+    <!-- ===== OPERATIONS ===== -->
+    <div class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>Operations &amp; CI/CD</h2>
+      <p>Deploy, monitor, and operate your infrastructure reliably.</p>
+    </div>
+    <div class="docs-grid" style="margin-bottom:4rem">
+      <a href="docs/CI_CD_PIPELINE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--violet)">CI/CD</div>
+        <h3>CI/CD Pipeline</h3>
+        <p>GitHub Actions and GitLab CI configuration, artifact caching, and deployment automation.</p>
+      </a>
+      <a href="docs/DEPLOYMENT_WORKFLOW.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--violet)">Deployment</div>
+        <h3>Deployment Workflow</h3>
+        <p>Blue/green deployments, canary releases, rollback procedures, and GitOps patterns.</p>
+      </a>
+      <a href="docs/PIPELINE_GHCR.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--blue)">Registry</div>
+        <h3>GHCR Pipeline</h3>
+        <p>Container image publishing to GitHub Container Registry via automated pipelines.</p>
+      </a>
+      <a href="docs/OBSERVABILITY_GUIDE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--amber)">Observability</div>
+        <h3>Observability Guide</h3>
+        <p>Prometheus metrics, Grafana dashboards, alerting rules, and distributed tracing setup.</p>
+      </a>
+      <a href="docs/SPARK_LOCAL_RUN.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--emerald)">Data</div>
+        <h3>Spark Local Run</h3>
+        <p>Running Apache Spark workloads locally and on the AtonixCorp compute layer.</p>
+      </a>
+      <a href="docs/ZOOKEEPER_INTEGRATION.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--cyan)">Messaging</div>
+        <h3>Zookeeper Integration</h3>
+        <p>Apache Zookeeper and Kafka integration for distributed coordination and event streaming.</p>
+      </a>
+    </div>
+
+    <!-- ===== SECURITY ===== -->
+    <div class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>Security &amp; Compliance</h2>
+      <p>Security architecture, compliance standards, and access control.</p>
+    </div>
+    <div class="docs-grid" style="margin-bottom:4rem">
+      <a href="docs/SECURITY_STANDARDS.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--rose)">Security</div>
+        <h3>Security Standards</h3>
+        <p>AtonixCorp security standards, encryption policies, and compliance framework documentation.</p>
+      </a>
+      <a href="docs/access_control.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--rose)">IAM</div>
+        <h3>Access Control</h3>
+        <p>RBAC policies, identity-aware proxy, mTLS configuration, and secrets management.</p>
+      </a>
+      <a href="docs/security/implementations.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--rose)">Implementation</div>
+        <h3>Security Implementations</h3>
+        <p>Detailed implementation notes for zero-trust, WAF rules, DDoS mitigation, and audit logging.</p>
+      </a>
+      <a href="SECURITY.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--rose)">Policy</div>
+        <h3>Security Policy</h3>
+        <p>Responsible disclosure policy, supported versions, and vulnerability reporting procedures.</p>
+      </a>
+    </div>
+
+    <!-- ===== HARDWARE ===== -->
+    <div class="section-header" style="text-align:left;margin-bottom:2rem">
+      <h2>Hardware &amp; Infrastructure</h2>
+      <p>Physical hardware integration, Yocto Linux, and PCIe expansion.</p>
+    </div>
+    <div class="docs-grid">
+      <a href="docs/PCIe_Expansion_Guide.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--amber)">Hardware</div>
+        <h3>PCIe Expansion Guide</h3>
+        <p>PCIe device configuration, GPU passthrough, and hardware acceleration setup.</p>
+      </a>
+      <a href="atonix-hardware-integration/README.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--amber)">Hardware</div>
+        <h3>Hardware Integration</h3>
+        <p>Yocto Linux build system, meta-atonix-hardware layer, and embedded systems integration.</p>
+      </a>
+      <a href="INFRASTRUCTURE.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--text-dim)">Infra</div>
+        <h3>Infrastructure Overview</h3>
+        <p>Complete infrastructure topology, Kubernetes cluster layout, and service mesh architecture.</p>
+      </a>
+      <a href="DEPLOYMENT.md" class="docs-card">
+        <div class="docs-tag" style="color:var(--indigo)">Deployment</div>
+        <h3>Deployment Reference</h3>
+        <p>Production deployment checklist, environment variables, and operational runbooks.</p>
+      </a>
+    </div>
+
+  </div>
+</main>
+
+<section class="section cta-section">
+  <div class="container text-center">
+    <h2>Can't Find What You Need?</h2>
+    <p>Reach out to the platform team &ndash; we're happy to help with architecture questions and integration support.</p>
+    <div class="cta-actions">
+      <a href="contact.html" class="btn btn-primary btn-lg">Contact Support</a>
+      <a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener" class="btn btn-outline btn-lg">Open an Issue on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;margin-bottom:1rem">
+          <span class="logo-mark">A</span>
+          <span class="logo-text">AtonixCorp</span>
+        </a>
+        <p>Intelligent infrastructure for the future.<br />Sovereign. Scalable. Intelligent.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <ul>
+          <li><a href="platform.html#compute">Compute</a></li>
+          <li><a href="platform.html#storage">Storage</a></li>
+          <li><a href="platform.html#networking">Networking</a></li>
+          <li><a href="platform.html#automation">Automation</a></li>
+          <li><a href="platform.html#ai">AI Intelligence</a></li>
+          <li><a href="platform.html#security">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="docs.html#api">API Reference</a></li>
+          <li><a href="docs.html#guides">Getting Started</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="about.html#mission">Mission</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AtonixCorp. All rights reserved.</p>
+      <p><a href="https://www.atonixcorp.com">atonixcorp.com</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

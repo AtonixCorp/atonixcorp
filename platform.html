@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AtonixCorp Platform – Compute, Storage, Networking, Automation, AI and Security services." />
+  <title>Platform – AtonixCorp</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">AtonixCorp</span>
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="platform.html" class="active">Platform</a></li>
+      <li><a href="pricing.html">Pricing</a></li>
+      <li><a href="docs.html">Docs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-sm btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="container">
+    <div class="badge">Five-Layer Architecture</div>
+    <h1>The AtonixCorp <span class="gradient-text">Platform</span></h1>
+    <p>Every layer engineered for enterprise scale &ndash; working together as one unified, programmable infrastructure.</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== COMPUTE ===== -->
+  <div id="compute" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--blue);font-weight:600;margin-bottom:.2rem">Layer 1</p>
+        <h2>Compute</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>From bare-metal VMs to managed Kubernetes clusters and serverless functions, AtonixCorp Compute delivers the processing power your applications demand. Powered by AMD EPYC 4005 Zen 5 processors with liquid cooling and 3&times; the bandwidth of conventional hardware.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Virtual Machines</strong> – Flexible CPU/RAM/storage profiles, OpenStack Nova backend, live migration</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Managed Kubernetes</strong> – Production clusters with auto-upgrades, node auto-provisioning, multi-zone HA</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Container Runtime</strong> – Docker and containerd runtimes with OCI-compliant image registry</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Serverless Functions</strong> – Event-driven compute with sub-millisecond cold starts</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>GPU Clusters</strong> – NVIDIA-accelerated nodes for AI, ML, HPC, and rendering workloads</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Bare Metal</strong> – Dedicated physical servers with no hypervisor overhead</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>Hardware Specifications</h4>
+        <div class="spec-row"><span>CPU Architecture</span><span>AMD EPYC 4005 Zen 5</span></div>
+        <div class="spec-row"><span>Cooling</span><span>Liquid-cooled</span></div>
+        <div class="spec-row"><span>Bandwidth</span><span>3&times; industry standard</span></div>
+        <div class="spec-row"><span>GPU Support</span><span>NVIDIA A100 / H100</span></div>
+        <div class="spec-row"><span>Hypervisor</span><span>OpenStack Nova + KVM</span></div>
+        <div class="spec-row"><span>Network Fabric</span><span>25 / 100 GbE</span></div>
+        <div class="spec-row"><span>Availability</span><span>99.99% SLA</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STORAGE ===== -->
+  <div id="storage" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--indigo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--indigo);font-weight:600;margin-bottom:.2rem">Layer 2</p>
+        <h2>Storage</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>Resilient, high-performance storage across three tiers &ndash; automatically optimizing cost and latency based on access patterns. S3-compatible APIs ensure seamless integration with every major framework and toolchain.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Object Storage</strong> – S3-compatible, unlimited scale, multi-region replication, versioning</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Block Storage</strong> – NVMe-backed persistent volumes, live resize, snapshot policies</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>File Storage</strong> – NFS/SMB shared file systems for legacy workloads and shared access</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Intelligent Caching</strong> – ML-driven prefetch and eviction for predictable low latency</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Automated Tiering</strong> – Move data between Hot, Warm, and Cold tiers based on policies</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Encryption at Rest</strong> – AES-256 with customer-managed keys and FIPS 140-2 compliance</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>Storage Tiers</h4>
+        <div class="spec-row"><span>Hot Tier</span><span>&lt;10ms latency</span></div>
+        <div class="spec-row"><span>Warm Tier</span><span>10&ndash;100ms latency</span></div>
+        <div class="spec-row"><span>Cold / Glacier</span><span>Archival, cost-optimized</span></div>
+        <div class="spec-row"><span>S3 API Compatibility</span><span>Full AWS S3 v4</span></div>
+        <div class="spec-row"><span>Replication</span><span>3-way multi-region</span></div>
+        <div class="spec-row"><span>Durability</span><span>99.999999999%</span></div>
+        <div class="spec-row"><span>Block IOPS</span><span>Up to 500,000</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NETWORKING ===== -->
+  <div id="networking" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--cyan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--cyan);font-weight:600;margin-bottom:.2rem">Layer 3</p>
+        <h2>Networking</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>Fully programmable networking from the hypervisor to the edge. Software-defined virtual private clouds, global load balancing, and built-in security give your applications the connectivity they need &ndash; without the complexity.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Software-Defined Networking (SDN)</strong> – Fully programmable via API/Terraform, Calico CNI</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Virtual Private Clouds (VPCs)</strong> – Private, isolated network spaces with custom CIDR ranges</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Load Balancers</strong> – L4 (TCP/UDP) and L7 (HTTP/HTTPS) with health checks and session affinity</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>CDN</strong> – Global content delivery with edge caching across 46+ PoPs</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>DDoS Protection</strong> – Always-on volumetric and application-layer attack mitigation</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Web Application Firewall (WAF)</strong> – OWASP ruleset with custom rule authoring</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>Network Specifications</h4>
+        <div class="spec-row"><span>Core Fabric</span><span>25 / 100 GbE</span></div>
+        <div class="spec-row"><span>SDN Controller</span><span>OpenStack Neutron + Calico</span></div>
+        <div class="spec-row"><span>LB Types</span><span>L4 TCP/UDP + L7 HTTP/S</span></div>
+        <div class="spec-row"><span>CDN PoPs</span><span>46+ globally</span></div>
+        <div class="spec-row"><span>DDoS Capacity</span><span>Multiple Tbps</span></div>
+        <div class="spec-row"><span>Latency (same DC)</span><span>&lt;1ms</span></div>
+        <div class="spec-row"><span>Routing</span><span>BGP Anycast</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AUTOMATION ===== -->
+  <div id="automation" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--violet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--violet);font-weight:600;margin-bottom:.2rem">Layer 4</p>
+        <h2>Automation &amp; Orchestration Engine (AOE)</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>The Automation Orchestration Engine (AOE) is the operational backbone of AtonixCorp. From CI/CD pipelines to self-healing infrastructure, AOE means you spend less time managing infrastructure and more time building product.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>CI/CD Pipelines</strong> – GitHub Actions, GitLab CI, and built-in pipeline runners with artifact caching</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Terraform Integration</strong> – Native providers for all AtonixCorp resources, remote state backend</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>GitOps with Argo CD</strong> – Declarative continuous delivery with drift detection and reconciliation</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Auto-scaling</strong> – Horizontal Pod Autoscaler, Cluster Autoscaler, and custom metrics scaling</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Self-healing</strong> – Automatic restart, rescheduling, and failover with configurable policies</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Kubernetes Operators</strong> – Custom resource definitions and controllers for stateful applications</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>AOE Capabilities</h4>
+        <div class="spec-row"><span>IaC</span><span>Terraform, Pulumi, Helm</span></div>
+        <div class="spec-row"><span>GitOps</span><span>Argo CD, Flux CD</span></div>
+        <div class="spec-row"><span>Pipeline Runners</span><span>Native + GitHub Actions</span></div>
+        <div class="spec-row"><span>Scaling Triggers</span><span>CPU, Memory, Custom</span></div>
+        <div class="spec-row"><span>Self-heal MTTR</span><span>&lt;30 seconds</span></div>
+        <div class="spec-row"><span>Rollback</span><span>Automated blue/green</span></div>
+        <div class="spec-row"><span>Secrets Mgmt</span><span>Vault + K8s Secrets</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AI ===== -->
+  <div id="ai" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--emerald">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--emerald);font-weight:600;margin-bottom:.2rem">Layer 5</p>
+        <h2>AI Intelligence</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>AI is not a feature in AtonixCorp &ndash; it is woven into the infrastructure itself. From predictive scaling that anticipates load spikes to autonomous security remediation, the platform gets smarter over time.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Predictive Scaling</strong> – ML models forecast demand and scale resources proactively</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Anomaly Detection</strong> – Real-time detection of performance deviations and security threats</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Autonomous Security</strong> – Automated threat response, policy enforcement, and incident remediation</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Vector Search</strong> – Native vector database support for AI-native application development</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Intelligent Routing</strong> – AI-optimized traffic distribution based on latency and resource health</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Cost Optimization</strong> – Continuous right-sizing recommendations and waste elimination</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>AI / ML Stack</h4>
+        <div class="spec-row"><span>GPU Support</span><span>NVIDIA A100 / H100</span></div>
+        <div class="spec-row"><span>Frameworks</span><span>PyTorch, TensorFlow</span></div>
+        <div class="spec-row"><span>Vector DB</span><span>pgvector, Qdrant</span></div>
+        <div class="spec-row"><span>MLOps</span><span>MLflow, Kubeflow</span></div>
+        <div class="spec-row"><span>Inference</span><span>ONNX, Triton Server</span></div>
+        <div class="spec-row"><span>Prediction Horizon</span><span>Up to 30 min ahead</span></div>
+        <div class="spec-row"><span>Detection Latency</span><span>&lt;5 seconds</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECURITY ===== -->
+  <div id="security" class="container platform-section">
+    <div class="platform-header">
+      <div class="card-icon card-icon--rose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <p style="font-size:.8rem;text-transform:uppercase;letter-spacing:.07em;color:var(--rose);font-weight:600;margin-bottom:.2rem">Cross-Layer</p>
+        <h2>Security</h2>
+      </div>
+    </div>
+    <div class="platform-content">
+      <div>
+        <p>Security is not bolted on &ndash; it is built into every layer. Zero-trust principles govern every connection, every API call, and every workload. Compliance frameworks are automated, not audited after the fact.</p>
+        <div class="platform-features">
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Zero-Trust Architecture</strong> – mTLS between all services, identity-aware proxy, least-privilege RBAC</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Encryption</strong> – TLS 1.3 in transit, AES-256 at rest, customer-managed keys (BYOK)</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Compliance</strong> – SOC 2 Type II, HIPAA, GDPR, ISO 27001 ready</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Audit Logging</strong> – Immutable, tamper-evident logs for every API action and resource change</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Secrets Management</strong> – HashiCorp Vault integration with dynamic secrets and automatic rotation</div>
+          </div>
+          <div class="platform-feature">
+            <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <div><strong>Vulnerability Scanning</strong> – Trivy container scanning, CodeQL analysis, automated CVE patching</div>
+          </div>
+        </div>
+      </div>
+      <div class="platform-spec">
+        <h4>Compliance &amp; Standards</h4>
+        <div class="spec-row"><span>SOC 2</span><span>Type II Certified</span></div>
+        <div class="spec-row"><span>HIPAA</span><span>BAA Available</span></div>
+        <div class="spec-row"><span>GDPR</span><span>DPA Available</span></div>
+        <div class="spec-row"><span>Encryption (Transit)</span><span>TLS 1.3</span></div>
+        <div class="spec-row"><span>Encryption (Rest)</span><span>AES-256</span></div>
+        <div class="spec-row"><span>Key Management</span><span>BYOK + HSM</span></div>
+        <div class="spec-row"><span>Pen Testing</span><span>Annual third-party</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<section class="section cta-section">
+  <div class="container text-center">
+    <h2>Ready to Explore the Platform?</h2>
+    <p>Read the full documentation or talk to our solutions team about your architecture.</p>
+    <div class="cta-actions">
+      <a href="docs.html" class="btn btn-primary btn-lg">Read Documentation</a>
+      <a href="pricing.html" class="btn btn-outline btn-lg">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;margin-bottom:1rem">
+          <span class="logo-mark">A</span>
+          <span class="logo-text">AtonixCorp</span>
+        </a>
+        <p>Intelligent infrastructure for the future.<br />Sovereign. Scalable. Intelligent.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <ul>
+          <li><a href="platform.html#compute">Compute</a></li>
+          <li><a href="platform.html#storage">Storage</a></li>
+          <li><a href="platform.html#networking">Networking</a></li>
+          <li><a href="platform.html#automation">Automation</a></li>
+          <li><a href="platform.html#ai">AI Intelligence</a></li>
+          <li><a href="platform.html#security">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="docs.html#api">API Reference</a></li>
+          <li><a href="docs.html#guides">Getting Started</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="about.html#mission">Mission</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AtonixCorp. All rights reserved.</p>
+      <p><a href="https://www.atonixcorp.com">atonixcorp.com</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

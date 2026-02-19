@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contact AtonixCorp – sales, support, security disclosure, and enterprise inquiries." />
+  <title>Contact – AtonixCorp</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .form-success {
+      display: none; background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3);
+      border-radius: var(--radius); padding: 1rem 1.25rem; color: var(--emerald);
+      font-size: .9rem; margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">AtonixCorp</span>
+    </a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </label>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="pricing.html">Pricing</a></li>
+      <li><a href="docs.html">Docs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-sm btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="container">
+    <div class="badge">Get in Touch</div>
+    <h1>Let's Build<br /><span class="gradient-text">Together</span></h1>
+    <p>Sales inquiries, technical questions, enterprise architecture, or security reports &ndash; we're here.</p>
+  </div>
+</header>
+
+<main class="section">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- FORM -->
+      <div>
+        <div class="contact-form-card">
+          <h2 style="font-size:1.4rem;margin-bottom:1.5rem">Send a Message</h2>
+          <form id="contact-form" action="https://formspree.io/f/placeholder" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" name="first_name" placeholder="Jane" required />
+              </div>
+              <div class="form-group">
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" name="last_name" placeholder="Smith" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="email">Work Email</label>
+              <input type="email" id="email" name="email" placeholder="jane@company.com" required />
+            </div>
+            <div class="form-group">
+              <label for="company">Company</label>
+              <input type="text" id="company" name="company" placeholder="Acme Corp" />
+            </div>
+            <div class="form-group">
+              <label for="inquiry">Inquiry Type</label>
+              <select id="inquiry" name="inquiry_type">
+                <option value="sales">Enterprise Sales</option>
+                <option value="trial">Free Trial</option>
+                <option value="technical">Technical Support</option>
+                <option value="partnership">Partnership</option>
+                <option value="security">Security Disclosure</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about your infrastructure needs, team size, or the question you have..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.8rem">
+              Send Message
+            </button>
+            <div class="form-success" id="form-success">
+              Message received. We'll get back to you within one business day.
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- CHANNELS -->
+      <div>
+        <h2 style="font-size:1.4rem;margin-bottom:1.5rem">Direct Channels</h2>
+
+        <div class="channel-card">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+            <div class="card-icon card-icon--blue" style="width:36px;height:36px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><polyline points="16 3 12 7 8 3"/></svg>
+            </div>
+            <h4>Enterprise Sales</h4>
+          </div>
+          <p>Pricing, custom contracts, dedicated infrastructure, and solution architecture.</p>
+          <a href="mailto:sales@atonixcorp.com">sales@atonixcorp.com</a>
+        </div>
+
+        <div class="channel-card">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+            <div class="card-icon card-icon--violet" style="width:36px;height:36px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <h4>Platform Engineering</h4>
+          </div>
+          <p>Technical questions about core infrastructure, APIs, and platform operations.</p>
+          <a href="mailto:platform-team@atonixcorp.com">platform-team@atonixcorp.com</a>
+        </div>
+
+        <div class="channel-card">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+            <div class="card-icon card-icon--cyan" style="width:36px;height:36px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>
+            </div>
+            <h4>Infrastructure Engineering</h4>
+          </div>
+          <p>Hardware provisioning, networking, data center operations, and capacity planning.</p>
+          <a href="mailto:infra-team@atonixcorp.com">infra-team@atonixcorp.com</a>
+        </div>
+
+        <div class="channel-card">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+            <div class="card-icon card-icon--emerald" style="width:36px;height:36px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M9.663 17h4.673M12 3v1"/></svg>
+            </div>
+            <h4>AI &amp; Automation Engineering</h4>
+          </div>
+          <p>AI workloads, intelligent scaling, vector search, and ML infrastructure integrations.</p>
+          <a href="mailto:ai-team@atonixcorp.com">ai-team@atonixcorp.com</a>
+        </div>
+
+        <div class="channel-card">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+            <div class="card-icon card-icon--rose" style="width:36px;height:36px;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h4>Security &amp; Disclosure</h4>
+          </div>
+          <p>Responsible vulnerability disclosure, security audits, and compliance inquiries.</p>
+          <a href="mailto:security-team@atonixcorp.com">security-team@atonixcorp.com</a>
+        </div>
+
+        <div style="margin-top:2rem;padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius)">
+          <h4 style="margin-bottom:.5rem">GitHub</h4>
+          <p style="font-size:.88rem;margin-bottom:.75rem">Bug reports, feature requests, and open source contributions welcome.</p>
+          <a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+            Open an Issue &rarr;
+          </a>
+        </div>
+
+        <div style="margin-top:1rem;padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius)">
+          <h4 style="margin-bottom:.5rem">Website</h4>
+          <p style="font-size:.88rem;margin-bottom:.5rem">
+            <a href="https://www.atonixcorp.com">www.atonixcorp.com</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- ENTERPRISE CALLOUT -->
+<section class="section section-dark">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
+      <div>
+        <div class="badge" style="margin-bottom:1rem">Enterprise</div>
+        <h2 style="margin-bottom:1rem">Need a Dedicated Architecture Review?</h2>
+        <p>Our solutions architects work with enterprise teams to design resilient, compliant, and cost-efficient infrastructure on AtonixCorp. We cover compute sizing, storage tiering, networking topology, CI/CD patterns, and more.</p>
+        <div style="margin-top:1.75rem;display:flex;gap:.75rem;flex-wrap:wrap">
+          <a href="mailto:sales@atonixcorp.com" class="btn btn-primary">Email Enterprise Sales</a>
+          <a href="platform.html" class="btn btn-outline">Explore Platform</a>
+        </div>
+      </div>
+      <div class="card-grid" style="grid-template-columns:1fr 1fr">
+        <div class="card" style="padding:1.25rem">
+          <h4>Dedicated Architect</h4>
+          <p style="font-size:.85rem">Your own solutions architect for onboarding and ongoing support.</p>
+        </div>
+        <div class="card" style="padding:1.25rem">
+          <h4>Custom SLA</h4>
+          <p style="font-size:.85rem">Up to 99.999% availability with financial SLA guarantees.</p>
+        </div>
+        <div class="card" style="padding:1.25rem">
+          <h4>Compliance Assistance</h4>
+          <p style="font-size:.85rem">SOC 2, HIPAA BAA, GDPR DPA documentation and support.</p>
+        </div>
+        <div class="card" style="padding:1.25rem">
+          <h4>24/7 Phone Support</h4>
+          <p style="font-size:.85rem">Priority escalation channel with 15-minute response guarantees.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;margin-bottom:1rem">
+          <span class="logo-mark">A</span>
+          <span class="logo-text">AtonixCorp</span>
+        </a>
+        <p>Intelligent infrastructure for the future.<br />Sovereign. Scalable. Intelligent.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <ul>
+          <li><a href="platform.html#compute">Compute</a></li>
+          <li><a href="platform.html#storage">Storage</a></li>
+          <li><a href="platform.html#networking">Networking</a></li>
+          <li><a href="platform.html#automation">Automation</a></li>
+          <li><a href="platform.html#ai">AI Intelligence</a></li>
+          <li><a href="platform.html#security">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="docs.html">Documentation</a></li>
+          <li><a href="docs.html#api">API Reference</a></li>
+          <li><a href="docs.html#guides">Getting Started</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="about.html#mission">Mission</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://github.com/atonixcorp/atonixcorp" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 AtonixCorp. All rights reserved.</p>
+      <p><a href="https://www.atonixcorp.com">atonixcorp.com</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const form = document.getElementById('contact-form');
+  const success = document.getElementById('form-success');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Show success message (Formspree will handle actual submission)
+      setTimeout(function() { success.style.display = 'block'; }, 500);
+    });
+  }
+</script>
+
+</body>
+</html>
