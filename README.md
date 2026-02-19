@@ -235,7 +235,7 @@ docker-compose -f docker-compose.yml up -d
 
 | Document | Purpose | Read Time |
 |----------|---------|-----------|
-| **[CLOUD_PLATFORM_HOMEPAGE.md](./CLOUD_PLATFORM_HOMEPAGE.md)** | Platform overview & design | 10 min |
+| **[ATONIXCORP_HOMEPAGE.md](./ATONIXCORP_HOMEPAGE.md)** | Platform overview & design | 10 min |
 | **[docs/QUICK_START.md](./docs/QUICK_START.md)** | Quick-start guide | 5 min |
 | **[docs/DEVELOPER_REQUIREMENTS.md](./docs/DEVELOPER_REQUIREMENTS.md)** | Service standards | 20 min |
 | **[docs/PLATFORM_IMPLEMENTATION_GUIDE.md](./docs/PLATFORM_IMPLEMENTATION_GUIDE.md)** | Complete implementation guide | 30 min |

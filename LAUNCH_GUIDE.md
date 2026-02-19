@@ -9,9 +9,9 @@ Your atonixcorp rebranding is complete! Here's how to view, test, and deploy the
 ##  Files Created
 
 ### Design & Strategy
-- **[CLOUD_PLATFORM_HOMEPAGE.md](./CLOUD_PLATFORM_HOMEPAGE.md)** - Complete homepage design with sections and specifications
-- **[CLOUD_PLATFORM_BRAND_GUIDELINES.md](./CLOUD_PLATFORM_BRAND_GUIDELINES.md)** - Official brand standards
-- **[CLOUD_PLATFORM_REBRANDING_SUMMARY.md](./CLOUD_PLATFORM_REBRANDING_SUMMARY.md)** - Complete rebranding overview
+- **[ATONIXCORP_HOMEPAGE.md](./ATONIXCORP_HOMEPAGE.md)** - Complete homepage design with sections and specifications
+- **[ATONIXCORP_BRAND_GUIDELINES.md](./ATONIXCORP_BRAND_GUIDELINES.md)** - Official brand standards
+- **[ATONIXCORP_REBRANDING_SUMMARY.md](./ATONIXCORP_REBRANDING_SUMMARY.md)** - Complete rebranding overview
 
 ### Landing Page
 - **[index.html](./index.html)** - Interactive landing page (fully responsive, production-ready)
@@ -311,10 +311,10 @@ Before deploying to production:
 ##  Support
 
 ### Questions About the Design?
-See [CLOUD_PLATFORM_BRAND_GUIDELINES.md](./CLOUD_PLATFORM_BRAND_GUIDELINES.md)
+See [ATONIXCORP_BRAND_GUIDELINES.md](./ATONIXCORP_BRAND_GUIDELINES.md)
 
 ### Questions About the Copy?
-See [CLOUD_PLATFORM_HOMEPAGE.md](./CLOUD_PLATFORM_HOMEPAGE.md)
+See [ATONIXCORP_HOMEPAGE.md](./ATONIXCORP_HOMEPAGE.md)
 
 ### Technical Issues?
 - Test in different browsers
