@@ -431,6 +431,9 @@ jobs:
     name: Security Scan
     runs-on: self-hosted
     if: github.event_name == 'push' || github.event_name == 'pull_request'
+    permissions:
+      security-events: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -445,7 +448,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -804,7 +807,7 @@ jobs:
 
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'

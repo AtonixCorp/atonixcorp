@@ -24,7 +24,7 @@ from django.utils import timezone
 from .models import (
     Instance, StorageVolume, StorageBucket, ServerlessFunction,
     KubernetesCluster, LoadBalancer, SecurityGroup,
-    InstanceMetric, AuditLog, Webhook, WebhookEvent,
+    InstanceMetric, AuditLog,
 )
 from .tasks import (
     provision_instance, deprovision_instance,
@@ -60,9 +60,9 @@ def on_instance_created_or_updated(sender, instance, created, **kwargs):
             }
         )
         
-        # Trigger provisioning in background
+        # Trigger provisioning
         if instance.status == 'pending':
-            provision_instance.delay(instance.id)
+            provision_instance(instance.id)
         
         # Send webhook
         send_webhook_event(
@@ -119,7 +119,7 @@ def on_instance_deleted(sender, instance, **kwargs):
     if instance.status in ['running', 'stopped']:
         instance.status = 'terminated'
         instance.save()
-        deprovision_instance.delay(instance.id)
+        deprovision_instance(instance.id)
 
 
 # ========== STORAGE LIFECYCLE ==========
@@ -308,50 +308,23 @@ def log_audit_event(user, action, resource_type, resource_id, details):
 
 def send_webhook_event(event_type, resource_type, resource_id, user, details):
     """
-    Send webhook event to all subscribed webhooks.
-    
+    Log a webhook event. In production, POST to registered webhook URLs.
+
     Args:
-        event_type: Type of event (e.g., 'instance.created')
+        event_type:   Type of event (e.g., 'instance.created')
         resource_type: Type of resource
-        resource_id: ID of resource
-        user: User who triggered event
-        details: Dict with event details
+        resource_id:  ID of resource
+        user:         User who triggered event
+        details:      Dict with event details
     """
-    try:
-        # Find all active webhooks subscribed to this event
-        webhooks = Webhook.objects.filter(
-            user=user,
-            enabled=True,
-            events__contains=[event_type],  # Assuming JSONField
-        )
-        
-        if not webhooks.exists():
-            return
-        
-        # Create event record
-        event = WebhookEvent.objects.create(
-            event_type=event_type,
-            resource_type=resource_type,
-            resource_id=resource_id,
-            details=details,
-            timestamp=timezone.now(),
-        )
-        
-        # Send to each webhook
-        for webhook in webhooks:
-            try:
-                # In production, would use requests library to POST
-                logger.info(
-                    f"Sending webhook event {event_type} to {webhook.url}"
-                )
-                
-                # send_webhook_post.delay(webhook.id, event.id)
-                
-            except Exception as exc:
-                logger.error(f"Error sending webhook: {exc}")
-        
-    except Exception as exc:
-        logger.error(f"Error processing webhook events: {exc}")
+    logger.info(
+        f"[webhook] event={event_type} resource={resource_type}:{resource_id} "
+        f"user={getattr(user, 'username', user)} details={details}"
+    )
+    # In production:
+    # - Query Webhook model for active subscriptions matching event_type
+    # - POST payload to each webhook URL with HMAC signature
+    # - Store WebhookEvent for audit / retry
 
 
 # ========== SIGNAL REGISTRATION ==========
