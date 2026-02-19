@@ -1,4 +1,4 @@
-# AtonixCorp Platform - Puppet Configuration Management
+# AtonixCorp - Puppet Configuration Management
 
 ## Overview
 This directory contains Puppet manifests and modules for managing the AtonixCorp platform infrastructure.

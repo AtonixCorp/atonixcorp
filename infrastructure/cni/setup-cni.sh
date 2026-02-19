@@ -1,5 +1,5 @@
 #!/bin/bash
-# CNI Setup Script for AtonixCorp Platform
+# CNI Setup Script for AtonixCorp
 
 set -euo pipefail
 

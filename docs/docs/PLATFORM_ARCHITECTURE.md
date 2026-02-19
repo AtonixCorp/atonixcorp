@@ -1,4 +1,4 @@
-# AtonixCorp Platform Architecture
+# AtonixCorp Architecture
 
 ## Executive Summary
 

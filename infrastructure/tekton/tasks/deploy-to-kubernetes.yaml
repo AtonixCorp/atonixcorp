@@ -94,7 +94,7 @@ spec:
       cat > $(params.HELM_CHART_PATH)/Chart.yaml << EOF
       apiVersion: v2
       name: atonixcorp
-      description: AtonixCorp Platform Helm Chart
+      description: AtonixCorp Helm Chart
       type: application
       version: 0.1.0
       appVersion: "1.0.0"
@@ -104,7 +104,7 @@ spec:
       if [ -n "$(params.VALUES_FILE)" ] && [ ! -f "$(params.VALUES_FILE)" ]; then
         echo "Creating values file for $(params.ENVIRONMENT) environment..."
         cat > $(params.VALUES_FILE) << EOF
-      # AtonixCorp Platform - $(params.ENVIRONMENT) Environment
+      # AtonixCorp - $(params.ENVIRONMENT) Environment
       replicaCount: 1
       
       image:
@@ -242,7 +242,7 @@ spec:
       
       # Create deployment report
       cat > deployment-report.txt << EOF
-      AtonixCorp Platform Deployment Report
+      AtonixCorp Deployment Report
       ====================================
       Date: $(date)
       Environment: $(params.ENVIRONMENT)

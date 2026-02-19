@@ -1,6 +1,6 @@
 apiVersion: v2
 name: atonixcorp
-description: A Helm chart for AtonixCorp Platform
+description: A Helm chart for AtonixCorp
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

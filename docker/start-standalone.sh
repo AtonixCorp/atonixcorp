@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Starting AtonixCorp Platform in standalone mode..."
+echo "Starting AtonixCorp in standalone mode..."
 
 # Create required directories
 mkdir -p /app/logs /app/static /app/media

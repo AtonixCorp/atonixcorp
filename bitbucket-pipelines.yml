@@ -1,4 +1,4 @@
-# Bitbucket Pipelines Configuration for AtonixCorp Platform
+# Bitbucket Pipelines Configuration for AtonixCorp
 image: atlassian/default-image:3
 
 definitions:

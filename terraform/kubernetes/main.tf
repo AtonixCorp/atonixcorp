@@ -1,4 +1,4 @@
-# AtonixCorp Platform - Kubernetes Infrastructure
+# AtonixCorp - Kubernetes Infrastructure
 terraform {
 <<<<<<< HEAD
   required_version = ">= 1.0"

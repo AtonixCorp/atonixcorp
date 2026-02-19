@@ -1,6 +1,6 @@
-#  AtonixCorp Platform - Security Overview
+#  AtonixCorp - Security Overview
 
-This document outlines the security posture, hardening strategies, and operational controls implemented across the AtonixCorp Platform enterprise environments. It serves as a reference for developers, infrastructure engineers, security professionals, and auditors to ensure consistent, secure, and compliant deployments.
+This document outlines the security posture, hardening strategies, and operational controls implemented across the AtonixCorp enterprise environments. It serves as a reference for developers, infrastructure engineers, security professionals, and auditors to ensure consistent, secure, and compliant deployments.
 
 ---
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform Management Script
+# AtonixCorp Management Script
 # Usage: ./manage.sh [command] [options]
 
 set -e
@@ -20,7 +20,7 @@ NC='\033[0m' # No Color
 
 # Function to display usage
 usage() {
-    echo "AtonixCorp Platform Management Script"
+    echo "AtonixCorp Management Script"
     echo ""
     echo "Usage: $0 [command] [options]"
     echo ""
@@ -51,7 +51,7 @@ usage() {
 # Function to start services
 start_services() {
     local env=${1:-dev}
-    echo -e "${GREEN}[START] Starting AtonixCorp Platform ($env environment)...${NC}"
+    echo -e "${GREEN}[START] Starting AtonixCorp ($env environment)...${NC}"
     
     if [ "$env" = "prod" ]; then
         docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -65,7 +65,7 @@ start_services() {
 
 # Function to stop services
 stop_services() {
-    echo -e "${YELLOW} Stopping AtonixCorp Platform...${NC}"
+    echo -e "${YELLOW} Stopping AtonixCorp...${NC}"
     docker-compose down
     echo -e "${GREEN}[OK] Platform stopped successfully!${NC}"
 }
@@ -73,7 +73,7 @@ stop_services() {
 # Function to restart services
 restart_services() {
     local env=${1:-dev}
-    echo -e "${BLUE}[RESTART] Restarting AtonixCorp Platform...${NC}"
+    echo -e "${BLUE}[RESTART] Restarting AtonixCorp...${NC}"
     stop_platform
     sleep 3
     start_platform

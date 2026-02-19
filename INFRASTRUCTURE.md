@@ -1,8 +1,8 @@
-# AtonixCorp Platform - Infrastructure Documentation
+# AtonixCorp - Infrastructure Documentation
 
 ## [INFRA] Infrastructure Overview
 
-The AtonixCorp Platform is built with a modern, scalable, and production-ready infrastructure using Docker containers and microservices architecture.
+The AtonixCorp is built with a modern, scalable, and production-ready infrastructure using Docker containers and microservices architecture.
 
 ### [ARCH] Architecture Components
 

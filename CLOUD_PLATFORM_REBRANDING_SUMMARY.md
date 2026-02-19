@@ -2,7 +2,7 @@
 
 ##  Rebranding Complete
 
-The platform has been successfully rebranded from **"AtonixCorp Platform"** to **"atonixcorp"** with a professional, modern identity.
+The platform has been successfully rebranded from **"AtonixCorp"** to **"atonixcorp"** with a professional, modern identity.
 
 ---
 

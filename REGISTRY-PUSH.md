@@ -1,4 +1,4 @@
-# [SHIP] Pushing AtonixCorp Platform to Quay.io Registry
+# [SHIP] Pushing AtonixCorp to Quay.io Registry
 
 ## [CLIPBOARD] Prerequisites
 
@@ -166,4 +166,4 @@ nerdctl images | grep atonixcorp
 docker run -d -p 8080:8080 quay.io/atonixdev/atonixcorp:latest
 ```
 
-[SUCCESS] **Your unified AtonixCorp Platform container is now ready for production deployment from Quay.io!**
+[SUCCESS] **Your unified AtonixCorp container is now ready for production deployment from Quay.io!**

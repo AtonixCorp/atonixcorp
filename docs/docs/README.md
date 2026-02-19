@@ -1,8 +1,8 @@
-# AtonixCorp Platform - Complete Implementation Guide
+# AtonixCorp - Complete Implementation Guide
 
 ##  Overview
 
-Welcome to the **AtonixCorp Platform** - a unified, production-grade cloud infrastructure solution delivering secure, scalable, and intelligent cloud services.
+Welcome to the **AtonixCorp** - a unified, production-grade cloud infrastructure solution delivering secure, scalable, and intelligent cloud services.
 
 **Vision**: *Sovereign. Scalable. Intelligent.*
 

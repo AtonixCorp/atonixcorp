@@ -1,4 +1,4 @@
-# KAS (Kubernetes Agent Server) Integration for AtonixCorp Platform
+# KAS (Kubernetes Agent Server) Integration for AtonixCorp
 
 This directory contains the complete KAS integration for secure CI/CD & GitOps workflows with AtonixCorp's declarative approach for quantum-safe modules.
 

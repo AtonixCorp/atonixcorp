@@ -452,7 +452,7 @@ kubectl rollout restart deployment/service-name
   - Security standards
   - AI/Automation framework
 
-For the latest updates, visit the [AtonixCorp Platform Repository](https://github.com/atonixcorp/platform).
+For the latest updates, visit the [AtonixCorp Repository](https://github.com/atonixcorp/platform).
 
 ---
 

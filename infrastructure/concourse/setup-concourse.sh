@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Concourse CI Setup Script
+# AtonixCorp - Concourse CI Setup Script
 # This script sets up Concourse CI for the AtonixCorp platform
 
 set -euo pipefail

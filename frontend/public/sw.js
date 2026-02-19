@@ -101,7 +101,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('AtonixCorp Platform', options)
+    self.registration.showNotification('AtonixCorp', options)
   );
 });
 

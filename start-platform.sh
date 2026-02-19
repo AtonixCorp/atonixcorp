@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AtonixCorp Platform Startup Script
+# AtonixCorp Startup Script
 # This script provides easy commands to start the entire platform
 
-set    echo -e "${RED}[CLEANUP] Cleaning all AtonixCorp Platform services and data...${NC}"-e
+set    echo -e "${RED}[CLEANUP] Cleaning all AtonixCorp services and data...${NC}"-e
 
 # Colors for output
 RED='\033[0;31m'
@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 print_header() {
     echo -e "${BLUE}=================================="
-    echo -e "[PLATFORM] AtonixCorp Platform Manager"
+    echo -e "[PLATFORM] AtonixCorp Manager"
     echo -e "==================================${NC}"
 }
 
@@ -66,7 +66,7 @@ create_env_if_needed() {
 }
 
 start_minimal() {
-    echo -e "${GREEN}[START] Starting minimal AtonixCorp Platform...${NC}"
+    echo -e "${GREEN}[START] Starting minimal AtonixCorp...${NC}"
     echo "Services: PostgreSQL, Redis, Backend, Frontend"
     
     COMPOSE_CMD="docker-compose -f docker-compose.all-in-one.yml"
@@ -75,14 +75,14 @@ start_minimal() {
 }
 
 start_full() {
-    echo -e "${GREEN}[START] Starting full AtonixCorp Platform...${NC}"
+    echo -e "${GREEN}[START] Starting full AtonixCorp...${NC}"
     echo "Services: All development services"
     
     docker compose -f docker-compose.yml up $@
 }
 
 start_production() {
-    echo -e "${GREEN}[START] Starting production AtonixCorp Platform...${NC}"
+    echo -e "${GREEN}[START] Starting production AtonixCorp...${NC}"
     echo "Services: Production-ready services with Nginx"
     
     COMPOSE_CMD="docker-compose -f docker-compose.all-in-one.yml"
@@ -91,7 +91,7 @@ start_production() {
 }
 
 start_messaging() {
-    echo -e "${GREEN}[START] Starting AtonixCorp Platform with messaging...${NC}"
+    echo -e "${GREEN}[START] Starting AtonixCorp with messaging...${NC}"
     echo "Services: Full stack with Kafka, RabbitMQ, and Celery"
     
     COMPOSE_CMD="docker-compose -f docker-compose.all-in-one.yml"
@@ -100,14 +100,14 @@ start_messaging() {
 }
 
 start_unified() {
-    echo -e "${GREEN}[START] Starting unified AtonixCorp Platform...${NC}"
+    echo -e "${GREEN}[START] Starting unified AtonixCorp...${NC}"
     echo "Services: Single container with frontend and backend"
     
     docker compose -f docker-compose.unified.yml up $@
 }
 
 stop_services() {
-    echo -e "${YELLOW} Stopping all AtonixCorp Platform services...${NC}"
+    echo -e "${YELLOW} Stopping all AtonixCorp services...${NC}"
     
     docker compose -f docker-compose.yml down 2>/dev/null || true
     docker compose -f docker-compose.all-in-one.yml down 2>/dev/null || true
@@ -118,7 +118,7 @@ stop_services() {
 }
 
 clean_services() {
-    echo -e "${RED} Cleaning all AtonixCorp Platform services and data...${NC}"
+    echo -e "${RED} Cleaning all AtonixCorp services and data...${NC}"
     read -p "This will remove all containers and volumes. Are you sure? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -150,7 +150,7 @@ show_status() {
 
 print_success_info() {
     echo ""
-    echo -e "${GREEN}[SUCCESS] AtonixCorp Platform is starting up!${NC}"
+    echo -e "${GREEN}[SUCCESS] AtonixCorp is starting up!${NC}"
     echo ""
     echo -e "${BLUE}[ACCESS] Access URLs:${NC}"
     echo "  Frontend:          http://localhost:3000"

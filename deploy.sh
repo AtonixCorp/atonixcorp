@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform Deployment Script
+# AtonixCorp Deployment Script
 # Usage: ./deploy.sh [environment]
 
 set -e
@@ -8,7 +8,7 @@ set -e
 ENVIRONMENT=${1:-production}
 PROJECT_DIR="/home/atonixdev/atonixcorp"
 
-echo "[DEPLOY] Deploying AtonixCorp Platform to $ENVIRONMENT environment..."
+echo "[DEPLOY] Deploying AtonixCorp to $ENVIRONMENT environment..."
 
 # Change to project directory
 cd $PROJECT_DIR

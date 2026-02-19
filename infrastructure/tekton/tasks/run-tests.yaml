@@ -183,7 +183,7 @@ spec:
       
       # Create test results summary
       cat > test-results.txt << EOF
-      AtonixCorp Platform Test Results
+      AtonixCorp Test Results
       ================================
       Date: $(date)
       Test Type: $(params.TEST_TYPE)

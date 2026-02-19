@@ -1,4 +1,4 @@
-# Kube-OVN Installation for AtonixCorp Platform
+# Kube-OVN Installation for AtonixCorp
 
 This directory contains the complete Kube-OVN networking plugin installation for advanced Kubernetes networking capabilities.
 

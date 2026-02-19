@@ -1,4 +1,4 @@
-# AtonixCorp Platform - Professional Dashboard
+# AtonixCorp - Professional Dashboard
 
 ## Overview
 A modern, professional dashboard interface with a left sidebar navigation designed for enterprise-level user experience.
@@ -302,7 +302,7 @@ Replace mock data with real API endpoints:
 
 ## [LOG] License
 
-This dashboard is part of the AtonixCorp Platform project.
+This dashboard is part of the AtonixCorp project.
 
 ---
 

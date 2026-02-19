@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Dashboard Demo Script
+# AtonixCorp - Dashboard Demo Script
 # This script starts the frontend development server so you can test the dashboard
 
-echo " Starting AtonixCorp Platform Dashboard Demo"
+echo " Starting AtonixCorp Dashboard Demo"
 echo "=============================================="
 echo ""
 

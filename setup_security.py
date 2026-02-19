@@ -13,7 +13,7 @@ def print_banner():
     """Print security setup banner"""
     print("""
     ╔══════════════════════════════════════════════════════════════╗
-    ║                  AtonixCorp Platform                         ║
+    ║                  AtonixCorp                         ║
     ║              Comprehensive Security Setup                    ║
     ║                                                              ║
     ║  [SECURITY] Encryption at Rest & in Transit                         ║
@@ -61,7 +61,7 @@ def generate_encryption_keys():
     aes_salt = secrets.token_hex(16)
     
     # Create .env file with security settings
-    env_content = f"""# AtonixCorp Platform Security Configuration
+    env_content = f"""# AtonixCorp Security Configuration
 # Generated on {os.popen('date').read().strip()}
 
 # Encryption Keys
@@ -317,7 +317,7 @@ def create_security_checklist():
     """Create security implementation checklist"""
     print("\n[CHECKLIST] Creating security checklist...")
     
-    checklist = """# AtonixCorp Platform Security Implementation Checklist
+    checklist = """# AtonixCorp Security Implementation Checklist
 
 ## [COMPLETED] Completed
 - [x] Data encryption at rest with Fernet

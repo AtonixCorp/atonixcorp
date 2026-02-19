@@ -254,5 +254,5 @@ atonixcorp/
 ---
 
 **Created**: November 2, 2025
-**For**: AtonixCorp Platform
+**For**: AtonixCorp
 **Domains**: atonixcorp.org (frontend), api.atonixcorp.org (backend)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Kubernetes Deployment Script
+# AtonixCorp - Kubernetes Deployment Script
 # This script helps initialize and deploy the platform to Kubernetes
 
 set -e
@@ -183,7 +183,7 @@ show_access_info() {
 }
 
 show_help() {
-    echo "AtonixCorp Platform - Kubernetes Deployment Script"
+    echo "AtonixCorp - Kubernetes Deployment Script"
     echo ""
     echo "Usage: $0 [ENVIRONMENT] [COMMAND]"
     echo ""

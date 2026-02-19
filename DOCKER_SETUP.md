@@ -1,6 +1,6 @@
-# AtonixCorp Platform - Docker Setup Guide
+# AtonixCorp - Docker Setup Guide
 
-This guide explains how to run the entire AtonixCorp Platform using Docker Compose with a single command.
+This guide explains how to run the entire AtonixCorp using Docker Compose with a single command.
 
 ## [QUICKSTART] Quick Start
 

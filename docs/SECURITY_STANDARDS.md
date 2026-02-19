@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AtonixCorp Platform implements zero-trust security architecture with:
+The AtonixCorp implements zero-trust security architecture with:
 - Cryptographic identity verification
 - Encrypted communication (TLS 1.2+)
 - Centralized IAM system

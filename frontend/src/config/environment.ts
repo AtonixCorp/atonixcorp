@@ -1,4 +1,4 @@
-// Environment configuration for AtonixCorp Platform
+// Environment configuration for AtonixCorp
 // This file handles API endpoints for different environments
 
 interface Config {

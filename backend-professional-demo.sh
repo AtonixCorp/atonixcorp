@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Professional API Demo Script for AtonixCorp Platform
+# Professional API Demo Script for AtonixCorp
 # This script demonstrates all the professional styling and features added to the backend
 
 set -e
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 print_header() {
     echo -e "${BLUE}"
     echo "========================================================"
-    echo " AtonixCorp Platform - Professional API Demo"
+    echo " AtonixCorp - Professional API Demo"
     echo "========================================================"
     echo -e "${NC}"
 }
@@ -45,7 +45,7 @@ main() {
     
     print_section "Backend Professional Styling Overview"
     
-    print_info "The AtonixCorp Platform backend has been professionally styled with:"
+    print_info "The AtonixCorp backend has been professionally styled with:"
     echo ""
     
     echo " PROFESSIONAL API DOCUMENTATION:"
@@ -248,7 +248,7 @@ main() {
     
     print_success "Professional Backend Styling Complete!"
     echo ""
-    print_info "The AtonixCorp Platform backend now features:"
+    print_info "The AtonixCorp backend now features:"
     echo "•  Professional API documentation with Swagger/ReDoc"
     echo "•  Beautiful admin interface with modern styling"  
     echo "•  Standardized response formats across all endpoints"

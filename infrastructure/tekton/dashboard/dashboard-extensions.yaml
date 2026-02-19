@@ -16,7 +16,7 @@ data:
     spec:
       apiVersion: dashboard.tekton.dev/v1alpha1
       name: atonixcorp
-      displayname: AtonixCorp Platform
+      displayname: AtonixCorp
       bundlelocation: ./static/extensions/atonixcorp/
       source: |
         import React from 'react';
@@ -34,7 +34,7 @@ data:
           return (
             <Box p={3}>
               <Typography variant="h4" gutterBottom>
-                 AtonixCorp Platform Dashboard
+                 AtonixCorp Dashboard
               </Typography>
               
               <Grid container spacing={3}>

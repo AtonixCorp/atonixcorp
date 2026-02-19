@@ -1,4 +1,4 @@
-# ArgoCD Application for AtonixCorp Platform - Development
+# ArgoCD Application for AtonixCorp - Development
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -57,7 +57,7 @@ spec:
       jsonPointers:
         - /data
 ---
-# ArgoCD Application for AtonixCorp Platform - Staging
+# ArgoCD Application for AtonixCorp - Staging
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -105,7 +105,7 @@ spec:
   
   revisionHistoryLimit: 10
 ---
-# ArgoCD Application for AtonixCorp Platform - Production
+# ArgoCD Application for AtonixCorp - Production
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

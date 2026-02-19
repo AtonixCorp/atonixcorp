@@ -1,8 +1,8 @@
-# AtonixCorp Platform - Deployment Guide
+# AtonixCorp - Deployment Guide
 
 ## [DEPLOY] Production Deployment
 
-This guide walks you through deploying the AtonixCorp Platform to a production environment.
+This guide walks you through deploying the AtonixCorp to a production environment.
 
 ### Prerequisites
 

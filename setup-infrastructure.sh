@@ -1,5 +1,5 @@
 #!/bin/bash
-# AtonixCorp Platform Infrastructure Setup
+# AtonixCorp Infrastructure Setup
 # Puppet + Gerrit + CNI Configuration and Deployment
 
 set -euo pipefail
@@ -48,7 +48,7 @@ print_banner() {
     echo -e "${BLUE}"
     cat << 'EOF'
     ╔══════════════════════════════════════════════════════════════╗
-    ║              AtonixCorp Platform Infrastructure              ║
+    ║              AtonixCorp Infrastructure              ║
     ║          Puppet + Gerrit + CNI Setup & Configuration        ║
     ║                                                              ║
     ║  [CONFIG] Puppet Configuration Management                   ║
@@ -295,7 +295,7 @@ create_documentation() {
     log "Creating infrastructure documentation..."
     
     cat > /opt/atonixcorp/INFRASTRUCTURE_GUIDE.md << 'EOF'
-# AtonixCorp Platform Infrastructure Guide
+# AtonixCorp Infrastructure Guide
 
 ## Overview
 This guide covers the infrastructure components of the AtonixCorp platform:
@@ -409,7 +409,7 @@ EOF
 main() {
     print_banner
     
-    log "Starting AtonixCorp Platform Infrastructure setup..."
+    log "Starting AtonixCorp Infrastructure setup..."
     
     check_root
     install_prerequisites
@@ -421,7 +421,7 @@ main() {
     run_tests
     create_documentation
     
-    log "[COMPLETE] AtonixCorp Platform Infrastructure setup completed successfully!"
+    log "[COMPLETE] AtonixCorp Infrastructure setup completed successfully!"
     
     echo
     info "Infrastructure Services:"

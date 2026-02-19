@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Container Build and Test Script
+# AtonixCorp - Container Build and Test Script
 # This script builds all containers and tests that they are working properly
 
 set -e  # Exit on any error
@@ -82,7 +82,7 @@ test_endpoint() {
 }
 
 # Main script
-print_status "Starting AtonixCorp Platform Container Build and Test"
+print_status "Starting AtonixCorp Container Build and Test"
 echo "=================================================================="
 
 # 1. Clean up any existing containers

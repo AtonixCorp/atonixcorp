@@ -1,8 +1,8 @@
-# AtonixCorp Platform - Complete Infrastructure Guide
+# AtonixCorp - Complete Infrastructure Guide
 
 ## [OVERVIEW] Overview
 
-Your AtonixCorp Platform now includes a **complete enterprise-grade infrastructure** with all the components you requested and more:
+Your AtonixCorp now includes a **complete enterprise-grade infrastructure** with all the components you requested and more:
 
 - [OK] **Kubernetes Configuration** - Complete K8s manifests with Kustomize
 - [OK] **Terraform Infrastructure** - AWS/Multi-cloud infrastructure as code  

@@ -1,4 +1,4 @@
-# Gerrit CI/CD Configuration for AtonixCorp Platform
+# Gerrit CI/CD Configuration for AtonixCorp
 version: '3.8'
 
 services:

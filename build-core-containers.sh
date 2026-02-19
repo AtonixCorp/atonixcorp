@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Quick Build Core Containers
+# AtonixCorp - Quick Build Core Containers
 # This script quickly builds and starts just the core containers (db, redis, backend, frontend)
 
 set -e  # Exit on any error
@@ -18,7 +18,7 @@ print_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-print_status "Building and starting core AtonixCorp Platform containers..."
+print_status "Building and starting core AtonixCorp containers..."
 
 # Clean up
 print_status "Cleaning up existing containers..."

@@ -1,4 +1,4 @@
-// API Types for AtonixCorp Platform
+// API Types for AtonixCorp
 
 export interface Technology {
   id: number;

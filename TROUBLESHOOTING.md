@@ -1,4 +1,4 @@
-# AtonixCorp Platform - Quick Start Guide
+# AtonixCorp - Quick Start Guide
 
 ## [START] Starting the Platform
 

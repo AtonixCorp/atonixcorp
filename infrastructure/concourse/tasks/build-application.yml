@@ -20,7 +20,7 @@ run:
     - |
       set -e
       
-      echo "Building AtonixCorp Platform application..."
+      echo "Building AtonixCorp application..."
       cd atonixcorp-source
       
       # Build Docker image

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Starting AtonixCorp Platform..."
+echo "Starting AtonixCorp..."
 echo "Environment: ${ENVIRONMENT:-development}"
 
 # Configure nginx based on environment

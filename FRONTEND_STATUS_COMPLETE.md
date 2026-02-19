@@ -2,7 +2,7 @@
 
 ##  FRONTEND SETUP COMPLETE
 
-Your AtonixCorp Platform frontend is fully configured and ready for development!
+Your AtonixCorp frontend is fully configured and ready for development!
 
 ---
 

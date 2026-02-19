@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AtonixCorp Platform - Tekton CI/CD Setup Script
+# AtonixCorp - Tekton CI/CD Setup Script
 # This script installs and configures Tekton for the AtonixCorp platform
 
 set -euo pipefail

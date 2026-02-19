@@ -157,7 +157,7 @@ spec:
       
       # Create final security report
       cat > security-reports/security-summary.txt << EOF
-      AtonixCorp Platform Security Scan Report
+      AtonixCorp Security Scan Report
       ========================================
       Date: $(date)
       Scan Type: Comprehensive Security Analysis

@@ -1,8 +1,8 @@
-# AtonixCorp Platform - Quick Start Guide
+# AtonixCorp - Quick Start Guide
 
 ## [START] Getting Started
 
-The AtonixCorp Platform is a modern, full-stack community platform built with Django and React, powered by a complete Docker infrastructure.
+The AtonixCorp is a modern, full-stack community platform built with Django and React, powered by a complete Docker infrastructure.
 
 ###  Super Quick Start
 
@@ -293,7 +293,7 @@ curl http://localhost:8080/api/health/
 
 ## [NEXT] What's Next?
 
-Your AtonixCorp Platform is now equipped with enterprise-grade infrastructure! You can:
+Your AtonixCorp is now equipped with enterprise-grade infrastructure! You can:
 
 1. **Customize the frontend** - Modify React components and styling
 2. **Extend the API** - Add new Django apps and endpoints

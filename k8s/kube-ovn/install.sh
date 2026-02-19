@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Kube-OVN Installation Script for AtonixCorp Platform
+# Kube-OVN Installation Script for AtonixCorp
 # This script installs Kube-OVN networking plugin
 
 set -e

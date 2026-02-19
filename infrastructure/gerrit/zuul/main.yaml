@@ -1,4 +1,4 @@
-# Zuul Configuration for AtonixCorp Platform CI/CD
+# Zuul Configuration for AtonixCorp CI/CD
 
 - tenant:
     name: atonixcorp

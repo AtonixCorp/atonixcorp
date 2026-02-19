@@ -1,9 +1,9 @@
 #!/bin/bash
-# Build and run script for AtonixCorp Platform unified container
+# Build and run script for AtonixCorp unified container
 
 set -e
 
-echo "[BUILD] AtonixCorp Platform - Unified Container Builder"
+echo "[BUILD] AtonixCorp - Unified Container Builder"
 echo "=================================================="
 
 # Configuration
@@ -55,7 +55,7 @@ build_container() {
 
 # Function to run the unified stack
 run_stack() {
-    echo " Starting AtonixCorp Platform..."
+    echo " Starting AtonixCorp..."
     nerdctl compose -f docker-compose.unified.yml up -d
     echo " Platform started successfully!"
     echo ""

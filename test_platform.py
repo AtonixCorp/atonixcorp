@@ -1,5 +1,5 @@
 """
-Comprehensive testing script for AtonixCorp Platform
+Comprehensive testing script for AtonixCorp
 Tests all integrations: Django, Zookeeper, Kafka, RabbitMQ, Email
 """
 import os

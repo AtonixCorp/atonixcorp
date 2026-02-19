@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo " AtonixCorp Platform Status Check"
+echo " AtonixCorp Status Check"
 echo "=================================="
 
 # Check Django server

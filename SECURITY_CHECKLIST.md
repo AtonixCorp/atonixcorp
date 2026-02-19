@@ -1,4 +1,4 @@
-# AtonixCorp Platform Security Implementation Checklist
+# AtonixCorp Security Implementation Checklist
 
 ## [COMPLETED] Completed
 - [x] Data encryption at rest with Fernet

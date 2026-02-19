@@ -1,4 +1,4 @@
-# [DEPLOY] AtonixCorp Platform - Production Deployment Guide
+# [DEPLOY] AtonixCorp - Production Deployment Guide
 
 ## [PACKAGE] Main Production Image
 

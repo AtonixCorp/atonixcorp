@@ -1,4 +1,4 @@
-# [DESIGN] AtonixCorp Platform - Professional Frontend Styling Enhancements
+# [DESIGN] AtonixCorp - Professional Frontend Styling Enhancements
 
 ## [ENHANCED] What's Been Enhanced
 

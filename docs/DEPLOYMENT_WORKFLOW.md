@@ -330,7 +330,7 @@ git push origin v1.1.0
 ### Release Notes Template
 
 ```markdown
-# AtonixCorp Platform v1.1.0
+# AtonixCorp v1.1.0
 
 ## New Features
 - [ ] Feature 1 description

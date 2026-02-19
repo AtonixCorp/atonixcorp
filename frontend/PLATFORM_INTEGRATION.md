@@ -1,8 +1,8 @@
-# Frontend Integration with AtonixCorp Platform
+# Frontend Integration with AtonixCorp
 
 ##  Frontend-to-Platform Integration
 
-Your frontend is now part of the complete AtonixCorp Platform. This document shows how the frontend integrates with all platform components.
+Your frontend is now part of the complete AtonixCorp. This document shows how the frontend integrates with all platform components.
 
 ##  Architecture Overview
 
