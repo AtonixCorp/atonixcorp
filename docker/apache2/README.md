@@ -18,12 +18,12 @@ Main Apache2 configuration file that loads all necessary modules and includes vi
 Virtual host configuration for HTTP (development).
 
 **Virtual Hosts:**
-1. **atonixcorp.org** (Frontend)
+1. **atonixcorp.com** (Frontend)
    - Proxies to `atonixcorp_frontend:80`
    - Forwards `/api` requests to backend
    - Serves static files and React app
 
-2. **api.atonixcorp.org** (Backend API)
+2. **api.atonixcorp.com** (Backend API)
    - Proxies to `atonixcorp_backend:8000`
    - Includes CORS headers for cross-origin requests
    - Handles all `/api` endpoints
@@ -58,19 +58,19 @@ docker-compose -f docker-compose.local.main.yml up -d apache-proxy backend front
 ```bash
 sudo nano /etc/hosts
 # Add these lines:
-127.0.0.1 atonixcorp.org
-127.0.0.1 api.atonixcorp.org
-127.0.0.1 www.atonixcorp.org
-127.0.0.1 www.api.atonixcorp.org
+127.0.0.1 atonixcorp.com
+127.0.0.1 api.atonixcorp.com
+127.0.0.1 www.atonixcorp.com
+127.0.0.1 www.api.atonixcorp.com
 ```
 
 4. **Test the setup:**
 ```bash
 # Frontend
-curl -H "Host: atonixcorp.org" http://localhost/
+curl -H "Host: atonixcorp.com" http://localhost/
 
 # Backend API
-curl -H "Host: api.atonixcorp.org" http://localhost/api/
+curl -H "Host: api.atonixcorp.com" http://localhost/api/
 ```
 
 ### For Production (HTTPS)
@@ -79,8 +79,8 @@ curl -H "Host: api.atonixcorp.org" http://localhost/api/
 
    Option A: Using Let's Encrypt with Certbot
    ```bash
-   certbot certonly --standalone -d atonixcorp.org -d www.atonixcorp.org
-   certbot certonly --standalone -d api.atonixcorp.org -d www.api.atonixcorp.org
+   certbot certonly --standalone -d atonixcorp.com -d www.atonixcorp.com
+   certbot certonly --standalone -d api.atonixcorp.com -d www.api.atonixcorp.com
    ```
 
    Option B: Using self-signed certificates (testing only)
@@ -89,15 +89,15 @@ curl -H "Host: api.atonixcorp.org" http://localhost/api/
    
    # Frontend certificate
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-     -keyout docker/apache2/certs/atonixcorp.org.key \
-     -out docker/apache2/certs/atonixcorp.org.crt \
-     -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.org"
+     -keyout docker/apache2/certs/atonixcorp.com.key \
+     -out docker/apache2/certs/atonixcorp.com.crt \
+     -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.com"
    
    # API certificate
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-     -keyout docker/apache2/certs/api.atonixcorp.org.key \
-     -out docker/apache2/certs/api.atonixcorp.org.crt \
-     -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.org"
+     -keyout docker/apache2/certs/api.atonixcorp.com.key \
+     -out docker/apache2/certs/api.atonixcorp.com.crt \
+     -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.com"
    ```
 
 2. **Update the docker-compose to use vhosts-ssl.conf:**
@@ -117,8 +117,8 @@ curl -H "Host: api.atonixcorp.org" http://localhost/api/
 
 4. **Test HTTPS:**
    ```bash
-   curl -k https://atonixcorp.org/
-   curl -k https://api.atonixcorp.org/api/
+   curl -k https://atonixcorp.com/
+   curl -k https://api.atonixcorp.com/api/
    ```
 
 ## Directory Structure
@@ -130,10 +130,10 @@ docker/apache2/
 ├── vhosts-ssl.conf           # HTTPS virtual hosts
 ├── Dockerfile.apache2        # Docker image definition
 └── certs/                    # SSL certificates (production)
-    ├── atonixcorp.org.crt
-    ├── atonixcorp.org.key
-    ├── api.atonixcorp.org.crt
-    ├── api.atonixcorp.org.key
+    ├── atonixcorp.com.crt
+    ├── atonixcorp.com.key
+    ├── api.atonixcorp.com.crt
+    ├── api.atonixcorp.com.key
     └── chain.crt             # Certificate chain (if needed)
 ```
 
@@ -141,12 +141,12 @@ docker/apache2/
 
 ### Request Flow
 
-1. **Frontend Requests (atonixcorp.org)**
+1. **Frontend Requests (atonixcorp.com)**
    - User → Apache (port 80/443)
    - Apache → React Frontend Container (port 3001)
    - Static assets and JS served by frontend
 
-2. **API Requests (api.atonixcorp.org or atonixcorp.org/api)**
+2. **API Requests (api.atonixcorp.com or atonixcorp.com/api)**
    - User → Apache (port 80/443)
    - Apache → Django Backend Container (port 8000)
    - JSON responses from API
@@ -186,7 +186,7 @@ docker exec atonixcorp_apache_proxy curl http://atonixcorp_frontend:80/
 ### SSL Certificate Issues
 - Verify certificate paths in volumes
 - Ensure certificates match the domain names in vhosts-ssl.conf
-- Check certificate expiration: `openssl x509 -text -noout -in certs/atonixcorp.org.crt`
+- Check certificate expiration: `openssl x509 -text -noout -in certs/atonixcorp.com.crt`
 
 ## Performance Tuning
 
@@ -223,12 +223,12 @@ APACHE_PROXY_WORKERS=256
 APACHE_PROXY_TIMEOUT=300
 
 # Frontend
-REACT_APP_API_URL=https://api.atonixcorp.org
-REACT_APP_FRONTEND_URL=https://atonixcorp.org
+REACT_APP_API_URL=https://api.atonixcorp.com
+REACT_APP_FRONTEND_URL=https://atonixcorp.com
 
 # Backend
-ALLOWED_HOSTS=atonixcorp.org,api.atonixcorp.org
-CSRF_TRUSTED_ORIGINS=https://atonixcorp.org,https://api.atonixcorp.org
+ALLOWED_HOSTS=atonixcorp.com,api.atonixcorp.com
+CSRF_TRUSTED_ORIGINS=https://atonixcorp.com,https://api.atonixcorp.com
 ```
 
 ## References

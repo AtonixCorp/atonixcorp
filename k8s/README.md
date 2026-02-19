@@ -52,7 +52,7 @@ Files
 - redis-deployment.yaml - Redis Deployment + Service
 - secrets.yaml - Kubernetes Secret (stringData) for SECRET_KEY and DB credentials (replace values)
 - pvcs.yaml - PersistentVolumeClaim definitions for Postgres, Redis and media
-- ingress.yaml - Ingress (nginx) rules for atonixcorp.org and api.atonixcorp.org
+- ingress.yaml - Ingress (nginx) rules for atonixcorp.com and api.atonixcorp.com
 
 Quick start (kind / minikube / any k8s):
 1. Make sure your cluster can pull or has the image `atonixcorpvm:1.0.0`:
@@ -77,7 +77,7 @@ kubectl apply -n atonixcorp -f k8s/nginx-deployment.yaml
 kubectl apply -n atonixcorp -f k8s/ingress.yaml
 ```
 
-4. Add hosts entries for `atonixcorp.org` and `api.atonixcorp.org` pointing at your cluster ingress IP (or use nip.io / xip.io / local hosts file).
+4. Add hosts entries for `atonixcorp.com` and `api.atonixcorp.com` pointing at your cluster ingress IP (or use nip.io / xip.io / local hosts file).
 
 Notes:
 - These manifests are intentionally minimal for a demo/local cluster. For production, consider:

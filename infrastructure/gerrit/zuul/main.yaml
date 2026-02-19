@@ -35,8 +35,8 @@
     default_from: zuul@atonixcorp.com
     default_to: dev@atonixcorp.com
 =======
-    default_from: zuul@atonixcorp.org
-    default_to: dev@atonixcorp.org
+    default_from: zuul@atonixcorp.com
+    default_to: dev@atonixcorp.com
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # Pipeline definitions

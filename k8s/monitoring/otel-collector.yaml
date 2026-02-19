@@ -16,7 +16,7 @@ data:
               allowed_origins:
                 - "http://localhost:3000"
                 - "http://localhost:8000"
-                - "https://atonixcorp.org"
+                - "https://atonixcorp.com"
               allowed_headers:
                 - "*"
 

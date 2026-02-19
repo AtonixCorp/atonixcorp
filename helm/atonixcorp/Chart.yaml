@@ -13,13 +13,13 @@ keywords:
   - postgresql
   - redis
 
-home: https://atonixcorp.org
+home: https://atonixcorp.com
 sources:
   - https://github.com/atonixcorp/platform
 
 maintainers:
   - name: AtonixCorp DevOps Team
-    email: devops@atonixcorp.org
+    email: devops@atonixcorp.com
 
 dependencies:
   - name: postgresql

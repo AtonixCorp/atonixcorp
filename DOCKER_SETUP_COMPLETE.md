@@ -8,7 +8,7 @@ Your Atonix Corp platform is now fully configured to build from source and run i
 
 -  **Frontend**: Builds from `./frontend/Dockerfile` (npm install with fallback)
 -  **Backend**: Builds from `./backend/Dockerfile.dev` (Django development)
--  **Apache2 Proxy**: Reverse proxy for `atonixcorp.org` and `api.atonixcorp.org`
+-  **Apache2 Proxy**: Reverse proxy for `atonixcorp.com` and `api.atonixcorp.com`
 -  **Services**: PostgreSQL, Redis, RabbitMQ, Elasticsearch, Grafana, Prometheus, Jaeger, Spark, Zookeeper
 
 ## How It Works
@@ -35,8 +35,8 @@ Your Atonix Corp platform is now fully configured to build from source and run i
 - **Build**: Local `docker/Dockerfile.apache2`
 - **Configuration**: `docker/apache2/vhosts.conf`
 - **Routing**:
-  - `atonixcorp.org` → frontend (port 3000)
-  - `api.atonixcorp.org` → backend (port 8000)
+  - `atonixcorp.com` → frontend (port 3000)
+  - `api.atonixcorp.com` → backend (port 8000)
   - `/api` requests intelligently routed
 - **Features**:
   - CORS headers configured
@@ -95,8 +95,8 @@ docker compose -f docker-compose.local.main.yml build --no-cache apache-proxy
 ## Access Services
 
 ### Development URLs
-- **Frontend**: http://atonixcorp.org (via Apache proxy on port 80)
-- **Backend API**: http://api.atonixcorp.org (via Apache proxy on port 80)
+- **Frontend**: http://atonixcorp.com (via Apache proxy on port 80)
+- **Backend API**: http://api.atonixcorp.com (via Apache proxy on port 80)
 - **Direct Frontend**: http://localhost:3001
 - **Direct Backend**: http://localhost:8000
 
@@ -125,9 +125,9 @@ OTEL_ENABLED: "False"
 
 **Frontend**:
 ```yaml
-REACT_APP_API_URL: http://atonixcorp.org/api
+REACT_APP_API_URL: http://atonixcorp.com/api
 REACT_APP_ENVIRONMENT: development
-REACT_APP_FRONTEND_URL: http://atonixcorp.org
+REACT_APP_FRONTEND_URL: http://atonixcorp.com
 ```
 
 ### .env File
@@ -276,12 +276,12 @@ docker compose -f ../docker-compose.local.main.yml build backend
 
 2.  **Test frontend access**:
    ```bash
-   curl http://atonixcorp.org
+   curl http://atonixcorp.com
    ```
 
 3.  **Test backend access**:
    ```bash
-   curl http://api.atonixcorp.org/api/
+   curl http://api.atonixcorp.com/api/
    ```
 
 4.  **Fix any remaining issues** (check logs if services are unhealthy)

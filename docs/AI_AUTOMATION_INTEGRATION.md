@@ -201,7 +201,7 @@ atonix ai root-cause --anomaly-id 12345
 ### 3.3 Smart Alerting
 
 ```yaml
-apiVersion: monitoring.atonix.io/v1
+apiVersion: monitoring.atonixcorp.com/v1
 kind: AnomalyAlert
 metadata:
   name: api-gateway-anomalies

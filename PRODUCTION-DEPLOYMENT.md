@@ -10,9 +10,9 @@
 
 ## [DOMAINS] Production Domains
 
-- **Frontend**: `https://atonixcorp.org` - Serves the React application
-- **Backend API**: `https://api.atonixcorp.org` - Serves the Django REST API  
-- **Admin Interface**: `https://api.atonixcorp.org/admin/` - Django admin panel
+- **Frontend**: `https://atonixcorp.com` - Serves the React application
+- **Backend API**: `https://api.atonixcorp.com` - Serves the Django REST API  
+- **Admin Interface**: `https://api.atonixcorp.com/admin/` - Django admin panel
 
 ## [ARCHITECTURE] Architecture Overview
 

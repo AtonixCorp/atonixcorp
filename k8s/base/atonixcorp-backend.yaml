@@ -12,7 +12,7 @@ stringData:
   # comma-separated list (the application reads ALLOWED_HOSTS from env and splits by comma)
   # Allow all hosts in development so kube liveness/readiness probes (which use pod IPs)
   # don't trigger Django's DisallowedHost error. Replace with a stricter list for prod.
-  ALLOWED_HOSTS: "*,atonixcorp.org,www.atonixcorp.org"
+  ALLOWED_HOSTS: "*,atonixcorp.com,www.atonixcorp.com"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -26,7 +26,7 @@ data:
   # Celery envs use the same Redis URL for broker and result backend
   CELERY_BROKER_URL: "redis://:redis_password@redis:6379/0"
   CELERY_RESULT_BACKEND: "redis://:redis_password@redis:6379/0"
-  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org,https://www.atonixcorp.org,http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp-frontend:80,http://atonixcorp.org"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.com,https://www.atonixcorp.com,http://localhost:3000,http://127.0.0.1:3000,http://atonixcorp-frontend:80,http://atonixcorp.com"
   # OpenTelemetry settings (enable and export to in-cluster collector)
   OTEL_ENABLED: "True"
   OTEL_ENABLE_OTLP: "True"

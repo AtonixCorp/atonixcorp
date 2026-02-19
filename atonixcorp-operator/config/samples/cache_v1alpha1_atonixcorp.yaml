@@ -1,4 +1,4 @@
-apiVersion: cache.atonixcorp.org/v1alpha1
+apiVersion: cache.atonixcorp.com/v1alpha1
 kind: Atonixcorp
 metadata:
   labels:

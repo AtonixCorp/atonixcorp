@@ -30,8 +30,8 @@ backend:
   env:
     DEBUG: "False"
     SECRET_KEY: ""
-  ALLOWED_HOSTS: "localhost,atonixcorp.org"
-  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org"
+  ALLOWED_HOSTS: "localhost,atonixcorp.com"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.com"
   
   # Resources
   resources:
@@ -97,7 +97,7 @@ frontend:
   
   # Environment variables
   env:
-    REACT_APP_API_URL: "https://api.atonixcorp.org/api"
+    REACT_APP_API_URL: "https://api.atonixcorp.com/api"
     REACT_APP_ENVIRONMENT: "production"
   
   # Resources
@@ -260,12 +260,12 @@ ingress:
     nginx.ingress.kubernetes.io/rate-limit-window: "1m"
   
   hosts:
-  - host: atonixcorp.org
+  - host: atonixcorp.com
     paths:
       - path: /
         pathType: Prefix
         service: frontend
-  - host: api.atonixcorp.org
+  - host: api.atonixcorp.com
     paths:
       - path: /
         pathType: Prefix
@@ -274,8 +274,8 @@ ingress:
   tls:
     - secretName: atonixcorp-tls
       hosts:
-        - atonixcorp.org
-        - api.atonixcorp.org
+        - atonixcorp.com
+        - api.atonixcorp.com
 
 # Persistent Volume Claims
 persistence:

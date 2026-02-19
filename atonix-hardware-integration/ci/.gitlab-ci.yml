@@ -34,7 +34,7 @@ build:
 
 .hardware_test_template: &hardware_test_template  image: golang:${GO_VERSION}
 
-  image: registry.atonixcorp.org/hardware-integration/ci:latest  script:
+  image: registry.atonixcorp.com/hardware-integration/ci:latest  script:
 
   services:    - go mod tidy
 
@@ -283,7 +283,7 @@ test:firmware:
 
 # Security audit
 security:audit:
-  image: registry.atonixcorp.org/security/audit:latest
+  image: registry.atonixcorp.com/security/audit:latest
   stage: security
   script:
     - ./security/audit-hardware.sh
@@ -304,7 +304,7 @@ deploy:staging:
     - ./deploy/deploy-staging.sh
   environment:
     name: staging
-    url: https://staging-hardware.atonixcorp.org
+    url: https://staging-hardware.atonixcorp.com
   dependencies:
     - build:yocto
   only:
@@ -317,7 +317,7 @@ deploy:production:
     - ./deploy/deploy-production.sh
   environment:
     name: production
-    url: https://hardware.atonixcorp.org
+    url: https://hardware.atonixcorp.com
   dependencies:
     - build:yocto
     - test:hardware_security
@@ -334,7 +334,7 @@ deploy:production:
 
 # Performance monitoring
 performance:monitor:
-  image: registry.atonixcorp.org/monitoring/performance:latest
+  image: registry.atonixcorp.com/monitoring/performance:latest
   stage: deploy
   script:
     - ./monitoring/run-performance-tests.sh

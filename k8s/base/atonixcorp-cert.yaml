@@ -11,9 +11,9 @@ spec:
     organizations:
     - AtonixCorp
   dnsNames:
-  - atonixcorp.org
-  - www.atonixcorp.org
-  - api.atonixcorp.org
+  - atonixcorp.com
+  - www.atonixcorp.com
+  - api.atonixcorp.com
   issuerRef:
     name: selfsigned-issuer
     kind: ClusterIssuer

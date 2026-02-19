@@ -4,7 +4,7 @@ metadata:
   name: frontend-config
   namespace: atonixcorp
 data:
-  REACT_APP_API_URL: "https://api.atonixcorp.org,http://api.atonixcorp.org,http://localhost:8000,http://127.0.0.1:8000,http://atonixcorp-backend:8000,"
+  REACT_APP_API_URL: "https://api.atonixcorp.com,http://api.atonixcorp.com,http://localhost:8000,http://127.0.0.1:8000,http://atonixcorp-backend:8000,"
   REACT_APP_ENVIRONMENT: "production"
   # Frontend OpenTelemetry/telemetry flags
   REACT_APP_OTEL_ENABLED: "true"

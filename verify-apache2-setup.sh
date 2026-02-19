@@ -81,18 +81,18 @@ echo ""
 
 # Check hosts entries
 echo " Checking /etc/hosts entries..."
-if grep -q "atonixcorp.org" /etc/hosts 2>/dev/null; then
-    echo -e "${GREEN}${NC} /etc/hosts has atonixcorp.org entry"
+if grep -q "atonixcorp.com" /etc/hosts 2>/dev/null; then
+    echo -e "${GREEN}${NC} /etc/hosts has atonixcorp.com entry"
     ((PASS++))
 else
-    echo -e "${YELLOW}ℹ${NC} /etc/hosts needs atonixcorp.org entry (run setup-docker.sh)"
+    echo -e "${YELLOW}ℹ${NC} /etc/hosts needs atonixcorp.com entry (run setup-docker.sh)"
 fi
 
-if grep -q "api.atonixcorp.org" /etc/hosts 2>/dev/null; then
-    echo -e "${GREEN}${NC} /etc/hosts has api.atonixcorp.org entry"
+if grep -q "api.atonixcorp.com" /etc/hosts 2>/dev/null; then
+    echo -e "${GREEN}${NC} /etc/hosts has api.atonixcorp.com entry"
     ((PASS++))
 else
-    echo -e "${YELLOW}ℹ${NC} /etc/hosts needs api.atonixcorp.org entry (run setup-docker.sh)"
+    echo -e "${YELLOW}ℹ${NC} /etc/hosts needs api.atonixcorp.com entry (run setup-docker.sh)"
 fi
 echo ""
 
@@ -108,16 +108,16 @@ echo ""
 
 # Check configuration syntax
 echo " Configuration Content Verification..."
-if grep -q "ServerName atonixcorp.org" docker/apache2/vhosts.conf; then
-    echo -e "${GREEN}${NC} Frontend vhost configured (atonixcorp.org)"
+if grep -q "ServerName atonixcorp.com" docker/apache2/vhosts.conf; then
+    echo -e "${GREEN}${NC} Frontend vhost configured (atonixcorp.com)"
     ((PASS++))
 else
     echo -e "${RED}${NC} Frontend vhost not configured"
     ((FAIL++))
 fi
 
-if grep -q "ServerName api.atonixcorp.org" docker/apache2/vhosts.conf; then
-    echo -e "${GREEN}${NC} API vhost configured (api.atonixcorp.org)"
+if grep -q "ServerName api.atonixcorp.com" docker/apache2/vhosts.conf; then
+    echo -e "${GREEN}${NC} API vhost configured (api.atonixcorp.com)"
     ((PASS++))
 else
     echo -e "${RED}${NC} API vhost not configured"

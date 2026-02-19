@@ -401,6 +401,6 @@ git checkout previous-tag
 For deployment support, contact:
 - **Email**: devops@atonixcorp.com
 - **Slack**: #infrastructure
-- **Documentation**: https://docs.atonixcorp.org
+- **Documentation**: https://docs.atonixcorp.com
 
 **Emergency Contact**: +1-555-ATONIX-1

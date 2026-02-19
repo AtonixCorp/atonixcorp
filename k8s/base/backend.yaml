@@ -10,7 +10,7 @@ data:
 stringData:
   # replace these hostnames with the hostnames you will use (DNS names preferred)
   # comma-separated list (the application reads ALLOWED_HOSTS from env and splits by comma)
-  ALLOWED_HOSTS: "atonixcorp.org,www.atonixcorp.org"
+  ALLOWED_HOSTS: "atonixcorp.com,www.atonixcorp.com"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -24,7 +24,7 @@ data:
   # Celery envs use the same Redis URL for broker and result backend
   CELERY_BROKER_URL: "redis://:redis_password@redis:6379/0"
   CELERY_RESULT_BACKEND: "redis://:redis_password@redis:6379/0"
-  CORS_ALLOWED_ORIGINS: "https://atonixcorp.org,https://www.atonixcorp.org"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.com,https://www.atonixcorp.com"
 ---
 apiVersion: apps/v1
 kind: Deployment

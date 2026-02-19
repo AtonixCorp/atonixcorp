@@ -206,10 +206,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - ruby.atonixcorp.org
+    - ruby.atonixcorp.com
     secretName: ruby-service-tls
   rules:
-  - host: ruby.atonixcorp.org
+  - host: ruby.atonixcorp.com
     http:
       paths:
       - path: /

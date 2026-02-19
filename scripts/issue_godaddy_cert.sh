@@ -7,7 +7,7 @@ set -euo pipefail
 # 2) Export GD_Key and GD_Secret env vars, or pass them inline.
 #    export GD_Key="<GODADDY_API_KEY>"; export GD_Secret="<GODADDY_API_SECRET>"
 # 3) Run this script:
-#    ./scripts/issue_godaddy_cert.sh --domains "atonixcorp.org,www.atonixcorp.org,api.atonixcorp.org" --namespace default --secret atonixcorp-com-tls --staging
+#    ./scripts/issue_godaddy_cert.sh --domains "atonixcorp.com,www.atonixcorp.com,api.atonixcorp.com" --namespace default --secret atonixcorp-com-tls --staging
 
 # This script will:
 #  - call acme.sh to perform DNS-01 issuance against GoDaddy
@@ -29,7 +29,7 @@ Environment variables:
   GD_Secret   GoDaddy API secret
 
 Examples:
-  GD_Key=xxx GD_Secret=yyy $0 --domains "atonixcorp.org,www.atonixcorp.org,api.atonixcorp.org" --staging
+  GD_Key=xxx GD_Secret=yyy $0 --domains "atonixcorp.com,www.atonixcorp.com,api.atonixcorp.com" --staging
 EOF
   exit 1
 }

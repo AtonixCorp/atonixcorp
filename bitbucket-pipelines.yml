@@ -213,8 +213,8 @@ pipelines:
           image: curlimages/curl
           script:
             - sleep 30  # Wait for deployment
-            - curl -f https://api.atonixcorp.org/api/health/ || exit 1
-            - curl -f https://atonixcorp.org/ || exit 1
+            - curl -f https://api.atonixcorp.com/api/health/ || exit 1
+            - curl -f https://atonixcorp.com/ || exit 1
             - echo "[OK] Deployment successful and smoke tests passed"
 
   # Infrastructure pipeline (Kubernetes only - no AWS Terraform)

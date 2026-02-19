@@ -125,7 +125,7 @@ post_deployment() {
         docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T backend python manage.py shell -c "
 from django.contrib.auth.models import User
 if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@atonixcorp.org', 'admin123')
+    User.objects.create_superuser('admin', 'admin@atonixcorp.com', 'admin123')
     print('Superuser created')
 else:
     print('Superuser already exists')

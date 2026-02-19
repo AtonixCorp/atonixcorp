@@ -4,8 +4,8 @@
 
 This guide explains how to set up Apache2 as a reverse proxy for the AtonixCorp platform using Docker. The setup provides:
 
-- **Frontend**: `atonixcorp.org` (React application on port 80/443)
-- **API Backend**: `api.atonixcorp.org` (Django backend on port 80/443)
+- **Frontend**: `atonixcorp.com` (React application on port 80/443)
+- **API Backend**: `api.atonixcorp.com` (Django backend on port 80/443)
 - **HTTPS Support**: Optional SSL/TLS encryption for production
 
 ## Quick Start
@@ -40,9 +40,9 @@ docker-compose -f docker-compose.local.main.yml ps
 ```
 
 ### 4. Access Services
-- **Frontend**: http://atonixcorp.org or http://localhost
-- **API**: http://api.atonixcorp.org or http://localhost:8000
-- **Admin Panel**: http://api.atonixcorp.org/admin
+- **Frontend**: http://atonixcorp.com or http://localhost
+- **API**: http://api.atonixcorp.com or http://localhost:8000
+- **Admin Panel**: http://api.atonixcorp.com/admin
 
 ## Architecture
 
@@ -56,8 +56,8 @@ docker-compose -f docker-compose.local.main.yml ps
 │ Apache2 Reverse Proxy (atonixcorp_apache_proxy)             │
 │ ┌───────────────────────────────────────────────────────┐   │
 │ │ Virtual Hosts:                                        │   │
-│ │ - atonixcorp.org → frontend:3001/80                  │   │
-│ │ - api.atonixcorp.org → backend:8000                  │   │
+│ │ - atonixcorp.com → frontend:3001/80                  │   │
+│ │ - api.atonixcorp.com → backend:8000                  │   │
 │ │ - Rewrites /api calls intelligently                  │   │
 │ └───────────────────────────────────────────────────────┘   │
 └──────────────┬──────────────────────────┬──────────────────┘
@@ -80,10 +80,10 @@ docker/
 │   ├── vhosts-ssl.conf         # HTTPS virtual hosts
 │   ├── Dockerfile.apache2      # Apache Docker image
 │   ├── certs/                  # SSL certificates (production)
-│   │   ├── atonixcorp.org.crt
-│   │   ├── atonixcorp.org.key
-│   │   ├── api.atonixcorp.org.crt
-│   │   └── api.atonixcorp.org.key
+│   │   ├── atonixcorp.com.crt
+│   │   ├── atonixcorp.com.key
+│   │   ├── api.atonixcorp.com.crt
+│   │   └── api.atonixcorp.com.key
 │   └── README.md               # Detailed Apache configuration
 ├── Dockerfile.apache2          # Apache Docker image definition
 └── ...
@@ -155,12 +155,12 @@ docker-compose -f docker-compose.local.main.yml exec apache-proxy \
 
 # Test connectivity
 docker-compose -f docker-compose.local.main.yml exec apache-proxy \
-  curl -H "Host: atonixcorp.org" http://localhost/
+  curl -H "Host: atonixcorp.com" http://localhost/
 ```
 
 ## Configuration Details
 
-### Virtual Host: atonixcorp.org (Frontend)
+### Virtual Host: atonixcorp.com (Frontend)
 
 **Purpose**: Serves the React frontend and handles client requests
 
@@ -172,10 +172,10 @@ docker-compose -f docker-compose.local.main.yml exec apache-proxy \
 
 **Request Flow**:
 ```
-User → atonixcorp.org → Apache → React Frontend
+User → atonixcorp.com → Apache → React Frontend
 ```
 
-### Virtual Host: api.atonixcorp.org (Backend API)
+### Virtual Host: api.atonixcorp.com (Backend API)
 
 **Purpose**: Serves Django REST API endpoints
 
@@ -187,23 +187,23 @@ User → atonixcorp.org → Apache → React Frontend
 
 **Request Flow**:
 ```
-Client → api.atonixcorp.org → Apache → Django Backend
+Client → api.atonixcorp.com → Apache → Django Backend
 ```
 
 ## Environment Configuration
 
 ### Backend Environment Variables
 ```bash
-ALLOWED_HOSTS=atonixcorp.org,www.atonixcorp.org,api.atonixcorp.org,www.api.atonixcorp.org
-CSRF_TRUSTED_ORIGINS=https://atonixcorp.org,https://api.atonixcorp.org
+ALLOWED_HOSTS=atonixcorp.com,www.atonixcorp.com,api.atonixcorp.com,www.api.atonixcorp.com
+CSRF_TRUSTED_ORIGINS=https://atonixcorp.com,https://api.atonixcorp.com
 USE_HTTPS=True  # For production
 DEBUG=False     # For production
 ```
 
 ### Frontend Environment Variables
 ```bash
-REACT_APP_API_URL=https://api.atonixcorp.org/api
-REACT_APP_FRONTEND_URL=https://atonixcorp.org
+REACT_APP_API_URL=https://api.atonixcorp.com/api
+REACT_APP_FRONTEND_URL=https://atonixcorp.com
 REACT_APP_ENVIRONMENT=production
 ```
 
@@ -220,21 +220,21 @@ Edit `docker/apache2/httpd.conf` for:
 
 1. **Get certificates**:
 ```bash
-sudo certbot certonly --standalone -d atonixcorp.org -d www.atonixcorp.org
-sudo certbot certonly --standalone -d api.atonixcorp.org
+sudo certbot certonly --standalone -d atonixcorp.com -d www.atonixcorp.com
+sudo certbot certonly --standalone -d api.atonixcorp.com
 ```
 
 2. **Copy to Docker volume**:
 ```bash
-sudo cp /etc/letsencrypt/live/atonixcorp.org/fullchain.pem \
-  docker/apache2/certs/atonixcorp.org.crt
-sudo cp /etc/letsencrypt/live/atonixcorp.org/privkey.pem \
-  docker/apache2/certs/atonixcorp.org.key
+sudo cp /etc/letsencrypt/live/atonixcorp.com/fullchain.pem \
+  docker/apache2/certs/atonixcorp.com.crt
+sudo cp /etc/letsencrypt/live/atonixcorp.com/privkey.pem \
+  docker/apache2/certs/atonixcorp.com.key
 
-sudo cp /etc/letsencrypt/live/api.atonixcorp.org/fullchain.pem \
-  docker/apache2/certs/api.atonixcorp.org.crt
-sudo cp /etc/letsencrypt/live/api.atonixcorp.org/privkey.pem \
-  docker/apache2/certs/api.atonixcorp.org.key
+sudo cp /etc/letsencrypt/live/api.atonixcorp.com/fullchain.pem \
+  docker/apache2/certs/api.atonixcorp.com.crt
+sudo cp /etc/letsencrypt/live/api.atonixcorp.com/privkey.pem \
+  docker/apache2/certs/api.atonixcorp.com.key
 
 # Fix permissions
 sudo chown -R $(whoami) docker/apache2/certs
@@ -261,15 +261,15 @@ The setup script can generate these automatically, or manually:
 ```bash
 # Frontend
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout docker/apache2/certs/atonixcorp.org.key \
-  -out docker/apache2/certs/atonixcorp.org.crt \
-  -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.org"
+  -keyout docker/apache2/certs/atonixcorp.com.key \
+  -out docker/apache2/certs/atonixcorp.com.crt \
+  -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.com"
 
 # API
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout docker/apache2/certs/api.atonixcorp.org.key \
-  -out docker/apache2/certs/api.atonixcorp.org.crt \
-  -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.org"
+  -keyout docker/apache2/certs/api.atonixcorp.com.key \
+  -out docker/apache2/certs/api.atonixcorp.com.crt \
+  -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.com"
 ```
 
 ## Troubleshooting
@@ -303,7 +303,7 @@ docker-compose -f docker-compose.local.main.yml logs backend
 cat /etc/hosts | grep atonixcorp
 
 # Add entries if missing (for local development)
-sudo bash -c 'echo "127.0.0.1 atonixcorp.org api.atonixcorp.org" >> /etc/hosts'
+sudo bash -c 'echo "127.0.0.1 atonixcorp.com api.atonixcorp.com" >> /etc/hosts'
 ```
 
 ### CORS Issues
@@ -314,14 +314,14 @@ sudo bash -c 'echo "127.0.0.1 atonixcorp.org api.atonixcorp.org" >> /etc/hosts'
 ### SSL Certificate Issues
 ```bash
 # Check certificate expiration
-openssl x509 -text -noout -in docker/apache2/certs/atonixcorp.org.crt | \
+openssl x509 -text -noout -in docker/apache2/certs/atonixcorp.com.crt | \
   grep -A 1 "Not After"
 
 # Verify certificate matches key
-openssl x509 -noout -modulus -in docker/apache2/certs/atonixcorp.org.crt | \
+openssl x509 -noout -modulus -in docker/apache2/certs/atonixcorp.com.crt | \
   openssl md5
 
-openssl rsa -noout -modulus -in docker/apache2/certs/atonixcorp.org.key | \
+openssl rsa -noout -modulus -in docker/apache2/certs/atonixcorp.com.key | \
   openssl md5
 ```
 

@@ -6,9 +6,9 @@ metadata:
 spec:
   secretName: atonixcorp-tls-staging
   dnsNames:
-  - atonixcorp.org
-  - www.atonixcorp.org
-  - api.atonixcorp.org
+  - atonixcorp.com
+  - www.atonixcorp.com
+  - api.atonixcorp.com
   issuerRef:
     name: letsencrypt-staging-dns-cloudflare
     kind: ClusterIssuer

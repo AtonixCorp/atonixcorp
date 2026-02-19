@@ -316,7 +316,7 @@ atonix deploy --environment production --apply
 ### View Configuration
 ```yaml
 # atonix.yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: api-gateway

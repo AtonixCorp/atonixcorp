@@ -205,7 +205,7 @@ def send_notification(user_id, subject, message):
         logger.info(f"[notify] → {user.email} | {subject}: {message}")
         # In production:
         # from django.core.mail import send_mail
-        # send_mail(subject, message, 'noreply@atonix.cloud', [user.email])
+        # send_mail(subject, message, 'noreply@atonixcorp.com', [user.email])
     except Exception as exc:
         logger.error(f"Error sending notification to user {user_id}: {exc}")
 

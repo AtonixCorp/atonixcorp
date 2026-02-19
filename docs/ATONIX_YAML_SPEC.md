@@ -7,7 +7,7 @@ The `atonix.yaml` file defines all configuration for AtonixCorp services. This s
 ## File Structure
 
 ```yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: service-name
@@ -96,7 +96,7 @@ deployment:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `apiVersion` | string | Yes | API version (atonix.io/v1) |
+| `apiVersion` | string | Yes | API version (atonixcorp.com/v1) |
 | `kind` | string | Yes | Resource kind (Service) |
 | `metadata.name` | string | Yes | Service name (lowercase, alphanumeric, hyphens) |
 | `metadata.version` | string | No | Service version (semantic versioning) |
@@ -244,7 +244,7 @@ deployment:
 ### Simple HTTP Service
 
 ```yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: api-gateway
@@ -283,7 +283,7 @@ observability:
 ### Database Service
 
 ```yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: database-service
@@ -322,7 +322,7 @@ security:
 ### AI/ML Service with GPU
 
 ```yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: ml-inference

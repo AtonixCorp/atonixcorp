@@ -23,8 +23,8 @@ docker compose up -d
 6. Verify TLS and access:
 
 ```bash
-curl -vkI https://api.atonixcorp.org
-curl -vkI https://www.atonixcorp.org
+curl -vkI https://api.atonixcorp.com
+curl -vkI https://www.atonixcorp.com
 ```
 
 Notes

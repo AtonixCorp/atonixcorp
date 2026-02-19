@@ -83,7 +83,7 @@ Every service must include `atonix.yaml` in its root directory. See [atonix.yaml
 
 ```yaml
 # atonix.yaml
-apiVersion: atonix.io/v1
+apiVersion: atonixcorp.com/v1
 kind: Service
 metadata:
   name: api-gateway

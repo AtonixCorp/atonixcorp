@@ -558,8 +558,8 @@ jobs:
       - name: Run smoke tests
         run: |
           sleep 30
-          curl -f https://api.atonixcorp.org/api/health/ || exit 1
-          curl -f https://atonixcorp.org/ || exit 1
+          curl -f https://api.atonixcorp.com/api/health/ || exit 1
+          curl -f https://atonixcorp.com/ || exit 1
 
   notify:
     name: Notify Team
@@ -1019,15 +1019,15 @@ jobs:
 <<<<<<< HEAD
         
         # Run smoke tests
-  curl -f https://api.atonixcorp.org/api/health/ || exit 1
-  curl -f https://atonixcorp.org/ || exit 1
+  curl -f https://api.atonixcorp.com/api/health/ || exit 1
+  curl -f https://atonixcorp.com/ || exit 1
         
         echo " Deployment successful and smoke tests passed"
 =======
 
         # Run smoke tests
-      curl -f https://api.atonixcorp.org/api/health/ || exit 1
-      curl -f https://atonixcorp.org/ || exit 1
+      curl -f https://api.atonixcorp.com/api/health/ || exit 1
+      curl -f https://atonixcorp.com/ || exit 1
 
         echo " Deployment successful and smoke tests passed"
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

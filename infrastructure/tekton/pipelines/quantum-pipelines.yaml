@@ -5,7 +5,7 @@ metadata:
   namespace: atonixcorp-tekton
   labels:
     app.kubernetes.io/version: "0.1"
-  kas.atonixcorp.io/managed: "true"
+  kas.atonixcorp.com/managed: "true"
   annotations:
     tekton.dev/pipelines.minVersion: "0.29.0"
     tekton.dev/categories: CI/CD, Quantum
@@ -247,7 +247,7 @@ metadata:
   namespace: atonixcorp-tekton
   labels:
     app.kubernetes.io/version: "0.1"
-  kas.atonixcorp.io/managed: "true"
+  kas.atonixcorp.com/managed: "true"
   annotations:
     tekton.dev/pipelines.minVersion: "0.29.0"
     tekton.dev/categories: CI/CD, Quantum

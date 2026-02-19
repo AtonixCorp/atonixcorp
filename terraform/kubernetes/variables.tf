@@ -292,7 +292,7 @@ variable "allowed_hosts" {
 variable "cors_allowed_origins" {
   description = "CORS allowed origins"
   type        = list(string)
-  default     = ["http://localhost:3000", "https://atonixcorp.org"]
+  default     = ["http://localhost:3000", "https://atonixcorp.com"]
 }
 
 variable "api_url" {
@@ -308,7 +308,7 @@ variable "api_url" {
 variable "domain_name" {
   description = "Domain name for ingress"
   type        = string
-  default     = "atonixcorp.org"
+  default     = "atonixcorp.com"
 }
 
 variable "tls_secret_name" {

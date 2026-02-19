@@ -37,8 +37,8 @@ if [ ! -f .env ]; then
 # Backend Configuration
 SECRET_KEY=your-secret-key-here
 DEBUG=False
-ALLOWED_HOSTS=atonixcorp.org,api.atonixcorp.org,localhost,127.0.0.1
-CSRF_TRUSTED_ORIGINS=https://atonixcorp.org,https://api.atonixcorp.org
+ALLOWED_HOSTS=atonixcorp.com,api.atonixcorp.com,localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=https://atonixcorp.com,https://api.atonixcorp.com
 
 # Database
 DATABASE_URL=postgresql://postgres:postgres@postgres:5432/atonixcorp_db
@@ -53,23 +53,23 @@ EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
 
 # Frontend
-REACT_APP_API_URL=http://api.atonixcorp.org
+REACT_APP_API_URL=http://api.atonixcorp.com
 REACT_APP_ENVIRONMENT=development
-REACT_APP_FRONTEND_URL=http://atonixcorp.org
+REACT_APP_FRONTEND_URL=http://atonixcorp.com
 EOF
     echo " Created .env file. Please edit it with your configuration."
 fi
 
 # Update /etc/hosts for local development
-if grep -q "atonixcorp.org" /etc/hosts 2>/dev/null; then
+if grep -q "atonixcorp.com" /etc/hosts 2>/dev/null; then
     echo " /etc/hosts already configured"
 else
     echo " Adding entries to /etc/hosts (requires sudo)..."
     sudo bash -c 'cat >> /etc/hosts << EOF
-127.0.0.1 atonixcorp.org
-127.0.0.1 www.atonixcorp.org
-127.0.0.1 api.atonixcorp.org
-127.0.0.1 www.api.atonixcorp.org
+127.0.0.1 atonixcorp.com
+127.0.0.1 www.atonixcorp.com
+127.0.0.1 api.atonixcorp.com
+127.0.0.1 www.api.atonixcorp.com
 EOF'
     echo " Updated /etc/hosts"
 fi
@@ -86,17 +86,17 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     
     # Frontend certificate
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout docker/apache2/certs/atonixcorp.org.key \
-        -out docker/apache2/certs/atonixcorp.org.crt \
-        -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.org" \
+        -keyout docker/apache2/certs/atonixcorp.com.key \
+        -out docker/apache2/certs/atonixcorp.com.crt \
+        -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=atonixcorp.com" \
         2>/dev/null
     echo " Generated frontend certificate"
     
     # API certificate
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout docker/apache2/certs/api.atonixcorp.org.key \
-        -out docker/apache2/certs/api.atonixcorp.org.crt \
-        -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.org" \
+        -keyout docker/apache2/certs/api.atonixcorp.com.key \
+        -out docker/apache2/certs/api.atonixcorp.com.crt \
+        -subj "/C=US/ST=State/L=City/O=AtonixCorp/CN=api.atonixcorp.com" \
         2>/dev/null
     echo " Generated API certificate"
 fi
@@ -111,9 +111,9 @@ echo "   docker-compose -f docker-compose.local.main.yml build"
 echo "3. Start the services:"
 echo "   docker-compose -f docker-compose.local.main.yml up -d"
 echo "4. Access the services:"
-echo "   - Frontend: http://atonixcorp.org"
-echo "   - API: http://api.atonixcorp.org"
-echo "   - Backend Admin: http://api.atonixcorp.org/admin/"
+echo "   - Frontend: http://atonixcorp.com"
+echo "   - API: http://api.atonixcorp.com"
+echo "   - Backend Admin: http://api.atonixcorp.com/admin/"
 echo ""
 echo "View logs with:"
 echo "   docker-compose -f docker-compose.local.main.yml logs -f"

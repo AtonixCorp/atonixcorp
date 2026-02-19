@@ -10,7 +10,7 @@ if [ "${ENVIRONMENT}" = "production" ]; then
     ln -sf /etc/nginx/sites-available/production /etc/nginx/sites-enabled/default
     
     # Verify SSL certificates exist
-    if [ ! -f "/etc/ssl/certs/atonixcorp.org.crt" ] || [ ! -f "/etc/ssl/private/atonixcorp.org.key" ]; then
+    if [ ! -f "/etc/ssl/certs/atonixcorp.com.crt" ] || [ ! -f "/etc/ssl/private/atonixcorp.com.key" ]; then
         echo "WARNING: Production SSL certificates not found. Nginx may not start properly."
         echo "Please ensure SSL certificates are mounted in the container."
     fi

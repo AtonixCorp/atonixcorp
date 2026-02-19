@@ -4,7 +4,7 @@ metadata:
   name: frontend-config
   namespace: atonixcorp
 data:
-  REACT_APP_API_URL: "https://api.atonixcorp.org/api"
+  REACT_APP_API_URL: "https://api.atonixcorp.com/api"
   REACT_APP_ENVIRONMENT: "production"
 ---
 apiVersion: apps/v1

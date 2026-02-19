@@ -13,8 +13,8 @@ I've created a complete Apache2 reverse proxy setup for your AtonixCorp platform
   - Includes virtual host definitions
 
 - **`docker/apache2/vhosts.conf`** - HTTP virtual hosts (development)
-  - `atonixcorp.org` → Frontend (port 80)
-  - `api.atonixcorp.org` → Backend API (port 8000)
+  - `atonixcorp.com` → Frontend (port 80)
+  - `api.atonixcorp.com` → Backend API (port 8000)
   - Automatic API request routing
   - CORS headers for API
 
@@ -76,8 +76,8 @@ I've created a complete Apache2 reverse proxy setup for your AtonixCorp platform
 User Browser
     ↓ (HTTP/HTTPS)
 Apache2 Reverse Proxy (Port 80 & 443)
-    ├─→ atonixcorp.org → React Frontend (Port 80/3001)
-    ├─→ api.atonixcorp.org → Django Backend (Port 8000)
+    ├─→ atonixcorp.com → React Frontend (Port 80/3001)
+    ├─→ api.atonixcorp.com → Django Backend (Port 8000)
     └─→ /api paths → Backend (Port 8000)
 ```
 
@@ -95,8 +95,8 @@ docker-compose -f docker-compose.local.main.yml build
 docker-compose -f docker-compose.local.main.yml up -d
 
 # 4. Access services
-# Frontend: http://atonixcorp.org
-# API: http://api.atonixcorp.org
+# Frontend: http://atonixcorp.com
+# API: http://api.atonixcorp.com
 ```
 
 ## Key Features
@@ -177,7 +177,7 @@ docker-compose -f docker-compose.local.main.yml exec apache-proxy bash
 
 ## Troubleshooting
 
-### Can't access http://atonixcorp.org
+### Can't access http://atonixcorp.com
 1. Check `/etc/hosts` has the entries
 2. Verify Apache container is running: `docker ps | grep apache`
 3. Check logs: `docker logs atonixcorp_apache_proxy`
@@ -198,7 +198,7 @@ docker-compose -f docker-compose.local.main.yml exec apache-proxy bash
 2. **Edit .env**: Add your configuration values
 3. **Build**: `docker-compose -f docker-compose.local.main.yml build`
 4. **Start**: `docker-compose -f docker-compose.local.main.yml up -d`
-5. **Access**: Visit http://atonixcorp.org
+5. **Access**: Visit http://atonixcorp.com
 
 ## File Locations
 
@@ -255,4 +255,4 @@ atonixcorp/
 
 **Created**: November 2, 2025
 **For**: AtonixCorp
-**Domains**: atonixcorp.org (frontend), api.atonixcorp.org (backend)
+**Domains**: atonixcorp.com (frontend), api.atonixcorp.com (backend)

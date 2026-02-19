@@ -6,13 +6,13 @@ metadata:
 spec:
   secretName: atonixcorp-com-tls
   dnsNames:
-  - api.atonixcorp.org
-  - www.atonixcorp.org
-  - atonixcorp.org
+  - api.atonixcorp.com
+  - www.atonixcorp.com
+  - atonixcorp.com
   issuerRef:
     name: letsencrypt-dns-cloudflare-staging
     kind: ClusterIssuer
   privateKey:
     algorithm: RSA
     size: 2048
-  commonName: atonixcorp.org
+  commonName: atonixcorp.com
