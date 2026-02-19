@@ -204,7 +204,7 @@ spec:
     runAfter: ["trigger-argocd-sync"]
     params:
     - name: message
-      value: "🚀 Quantum module $(params.module-name) v$(params.module-version) successfully deployed to $(params.environment)!"
+      value: " Quantum module $(params.module-name) v$(params.module-version) successfully deployed to $(params.environment)!"
     - name: environment
       value: $(params.environment)
     - name: module
@@ -232,7 +232,7 @@ spec:
       values: ["Failed"]
     params:
     - name: message
-      value: "❌ Quantum module $(params.module-name) deployment failed in $(params.environment). Check logs for details."
+      value: " Quantum module $(params.module-name) deployment failed in $(params.environment). Check logs for details."
     - name: environment
       value: $(params.environment)
     - name: module
@@ -383,7 +383,7 @@ spec:
     runAfter: ["verify-cleanup-completion"]
     params:
     - name: message
-      value: "🧹 Quantum module $(params.module-name) successfully cleaned up from $(params.environment)!"
+      value: " Quantum module $(params.module-name) successfully cleaned up from $(params.environment)!"
     - name: environment
       value: $(params.environment)
     - name: module
@@ -399,7 +399,7 @@ spec:
       values: ["Failed"]
     params:
     - name: message
-      value: "❌ Quantum module $(params.module-name) cleanup failed in $(params.environment). Check logs for details."
+      value: " Quantum module $(params.module-name) cleanup failed in $(params.environment). Check logs for details."
     - name: environment
       value: $(params.environment)
     - name: module

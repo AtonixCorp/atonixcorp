@@ -325,10 +325,10 @@ logger.info({ request_id: 'req-123', duration: 245 }, 'Request processed');
 - Personal identifiable information (PII)
 
 ```python
-# ❌ WRONG
+#  WRONG
 logger.info(f"User login: {username}, password: {password}")
 
-# ✅ CORRECT
+#  CORRECT
 logger.info(f"User login: {username}")
 ```
 

@@ -485,8 +485,8 @@ const tokenKey = process.env.REACT_APP_AUTH_TOKEN_KEY || 'authToken';
 
 1. **Store Token Securely**
    ```typescript
-   // ✅ Better - HTTP-only cookie
-   // ❌ Avoid - localStorage for sensitive tokens
+   //  Better - HTTP-only cookie
+   //  Avoid - localStorage for sensitive tokens
    localStorage.setItem('authToken', token); // For demo only
    ```
 
@@ -537,6 +537,6 @@ http://localhost:3000/enterprise/{id}/security
 
 ---
 
-**Setup Complete!** 🎉
+**Setup Complete!** 
 
 The Enterprise Security Dashboard is now ready to display real security data from your backend.

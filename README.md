@@ -2,7 +2,7 @@
 
 **Intelligent Infrastructure for the Future**
 
-☁️ **Compute. Storage. Networking. Automation. AI – Unified.**
+ **Compute. Storage. Networking. Automation. AI – Unified.**
 
 ---
 
@@ -16,39 +16,39 @@ To democratize enterprise-grade cloud infrastructure through intelligent automat
 
 ---
 
-## �️ Core Capabilities
+## � Core Capabilities
 
 ### Five-Layer Architecture
 
-#### 🖥️ **Compute Layer**
+####  **Compute Layer**
 - Virtual Machines (VMs)
 - Kubernetes orchestration
 - Docker containers
 - Serverless functions
 - GPU clusters for AI/ML
 
-#### 📦 **Storage Layer**
+####  **Storage Layer**
 - Object storage
 - Block storage
 - File storage
 - Intelligent caching
 - Automated tiering
 
-#### 🌐 **Networking Layer**
+####  **Networking Layer**
 - Software-Defined Networking (SDN)
 - Load Balancers (L4/L7)
 - Virtual Private Clouds (VPCs)
 - Content Delivery Network (CDN)
 - DDoS protection & WAF
 
-#### 🔄 **Automation Engine (AOE)**
+####  **Automation Engine (AOE)**
 - CI/CD pipelines
 - Infrastructure as Code (Terraform)
 - Auto-scaling (horizontal & vertical)
 - Self-healing services
 - GitOps workflows
 
-#### 🔮 **AI Intelligence**
+####  **AI Intelligence**
 - Predictive scaling & forecasting
 - Anomaly detection in real-time
 - Autonomous security responses
@@ -57,56 +57,56 @@ To democratize enterprise-grade cloud infrastructure through intelligent automat
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### Security & Compliance
-- **🔐 Zero-Trust Architecture**: Never trust, always verify
-- **🔒 Encryption**: End-to-end TLS/mTLS communication
-- **📋 Compliance Ready**: SOC 2, HIPAA, GDPR, PCI-DSS
-- **🛡️ Network Security**: VPCs, NetworkPolicies, WAF
-- **🔑 Secrets Management**: Encrypted credential storage
-- **📊 Audit Logging**: Complete immutable trails
+- ** Zero-Trust Architecture**: Never trust, always verify
+- ** Encryption**: End-to-end TLS/mTLS communication
+- ** Compliance Ready**: SOC 2, HIPAA, GDPR, PCI-DSS
+- ** Network Security**: VPCs, NetworkPolicies, WAF
+- ** Secrets Management**: Encrypted credential storage
+- ** Audit Logging**: Complete immutable trails
 
 ### Scalability & Performance
-- **⚡ Auto-Scaling**: Predictive and reactive scaling
-- **🌍 Global Deployment**: Multi-region, multi-cloud
-- **🚀 High Availability**: 99.99% uptime SLA
-- **🔄 Load Balancing**: Intelligent traffic distribution
-- **📈 Performance**: Sub-100ms response times
-- **💾 Data Capacity**: Supports petabyte-scale data
+- ** Auto-Scaling**: Predictive and reactive scaling
+- ** Global Deployment**: Multi-region, multi-cloud
+- ** High Availability**: 99.99% uptime SLA
+- ** Load Balancing**: Intelligent traffic distribution
+- ** Performance**: Sub-100ms response times
+- ** Data Capacity**: Supports petabyte-scale data
 
 ### Developer Experience
-- **🛠️ CLI Tool** (`atonix`): Simple service management
-- **📝 Configuration**: Single `atonix.yaml` file
-- **🚀 Quick Deploy**: Initialize → Build → Deploy
-- **📊 Observability**: Logs, metrics, traces out-of-box
-- **🤖 SDK & APIs**: RESTful and gRPC interfaces
-- **📚 Documentation**: Comprehensive guides included
+- ** CLI Tool** (`atonix`): Simple service management
+- ** Configuration**: Single `atonix.yaml` file
+- ** Quick Deploy**: Initialize → Build → Deploy
+- ** Observability**: Logs, metrics, traces out-of-box
+- ** SDK & APIs**: RESTful and gRPC interfaces
+- ** Documentation**: Comprehensive guides included
 
 ### Operations & Intelligence
-- **🎯 GitOps**: Infrastructure as Code, declarative
-- **🤖 AI-Driven**: Predictive & autonomous operations
-- **📊 Real-time Monitoring**: Prometheus, Grafana, Jaeger
-- **🔧 Self-Healing**: Automatic recovery & remediation
-- **🎮 Multi-Cloud**: AWS, Azure, GCP, on-premises
-- **🔐 Autonomous Security**: ML-powered threat detection
+- ** GitOps**: Infrastructure as Code, declarative
+- ** AI-Driven**: Predictive & autonomous operations
+- ** Real-time Monitoring**: Prometheus, Grafana, Jaeger
+- ** Self-Healing**: Automatic recovery & remediation
+- ** Multi-Cloud**: AWS, Azure, GCP, on-premises
+- ** Autonomous Security**: ML-powered threat detection
 
 ---
 
-## 🏗️ Platform Architecture
+##  Platform Architecture
 
 ### Five-Layer Stack
 
 ```
-Layer 5: AI Intelligence        🔮 Predictive Scaling | Anomaly Detection | Autonomous Security
+Layer 5: AI Intelligence         Predictive Scaling | Anomaly Detection | Autonomous Security
                                 └─────────────────────────────────────────┐
-Layer 4: Automation Engine      🔄 CI/CD | IaC | Auto-scaling | Self-healing
+Layer 4: Automation Engine       CI/CD | IaC | Auto-scaling | Self-healing
                                 └─────────────────────────────────────────┐
-Layer 3: Networking             🌐 SDN | Load Balancers | VPCs | CDN | DDoS Protection
+Layer 3: Networking              SDN | Load Balancers | VPCs | CDN | DDoS Protection
                                 └─────────────────────────────────────────┐
-Layer 2: Storage                📦 Object | Block | File | Caching | Tiering
+Layer 2: Storage                 Object | Block | File | Caching | Tiering
                                 └─────────────────────────────────────────┐
-Layer 1: Compute                🖥️ VMs | Kubernetes | Containers | Serverless | GPU
+Layer 1: Compute                 VMs | Kubernetes | Containers | Serverless | GPU
 ```
 
 ### Platform Deployment
@@ -124,7 +124,7 @@ Layer 1: Compute                🖥️ VMs | Kubernetes | Containers | Serverle
 │                      │                                 │
 │  ┌──────────────────┼──────────────────┐             │
 │  │                  │                  │             │
-│  ▼                  ▼                  ▼             │
+│                                                   │
 │ ┌──────────┐  ┌──────────┐  ┌──────────┐            │
 │ │ Region 1 │  │ Region 2 │  │ Region N │            │
 │ │ (Primary)│  │ (Active) │  │(Optional)│            │
@@ -176,7 +176,7 @@ Layer 1: Compute                🖥️ VMs | Kubernetes | Containers | Serverle
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Quick Start: Deploy Your First Service
 
@@ -229,7 +229,7 @@ docker-compose -f docker-compose.yml up -d
 
 ---
 
-## 📚 Documentation
+##  Documentation
 
 ### Core Guides
 
@@ -247,7 +247,7 @@ docker-compose -f docker-compose.yml up -d
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Container & Orchestration
 - **Kubernetes** 1.24+ – Container orchestration
@@ -359,7 +359,7 @@ logging:
 
 ---
 
-## 📊 Monitoring & Observability
+##  Monitoring & Observability
 
 ### Key Performance Indicators (KPIs)
 
@@ -396,39 +396,39 @@ Real-Time Dashboards Available:
 
 ---
 
-## 🔒 Security & Compliance
+##  Security & Compliance
 
 ### Security Features
 
-✅ **Authentication & Authorization**
+ **Authentication & Authorization**
 - OAuth 2.0 / OpenID Connect
 - SAML 2.0 for enterprise SSO
 - Multi-factor authentication (MFA)
 - Role-based access control (RBAC)
 - Attribute-based access control (ABAC)
 
-✅ **Data Security**
+ **Data Security**
 - AES-256 encryption at rest
 - TLS 1.3 encryption in transit
 - Field-level encryption support
 - Key rotation policies
 - Secrets management (Vault integration)
 
-✅ **Network Security**
+ **Network Security**
 - Network policies and microsegmentation
 - Service mesh with mutual TLS
 - API rate limiting and DDoS protection
 - Web application firewall (WAF)
 - VPN/private network support
 
-✅ **Compliance**
+ **Compliance**
 - SOC 2 Type II certification
 - HIPAA BAA available
 - GDPR compliance ready
 - ISO 27001 alignment
 - PCI-DSS v3.2.1 compliant
 
-✅ **Audit & Logging**
+ **Audit & Logging**
 - Immutable audit logs
 - 90-day log retention (configurable)
 - Real-time security alerting
@@ -437,7 +437,7 @@ Real-Time Dashboards Available:
 
 ---
 
-## 📈 Performance Specifications
+##  Performance Specifications
 
 ### Throughput Capacity
 
@@ -470,7 +470,7 @@ Response Times (99th percentile):
 
 ---
 
-## 🤝 Enterprise Support
+##  Enterprise Support
 
 ### Support Tiers
 
@@ -492,7 +492,7 @@ Response Times (99th percentile):
 
 ---
 
-## 📋 Service Level Agreement (SLA)
+##  Service Level Agreement (SLA)
 
 ```
 Platform Availability: 99.99%
@@ -517,7 +517,7 @@ Disaster Recovery:
 
 ---
 
-## 🔄 Release & Update Process
+##  Release & Update Process
 
 ```yaml
 Release Schedule:
@@ -535,7 +535,7 @@ Upgrade Path:
 
 ---
 
-## 📞 Support & Contact
+##  Support & Contact
 
 For questions, deployments, or custom configurations:
 
@@ -546,7 +546,7 @@ For questions, deployments, or custom configurations:
 
 ---
 
-## 📄 License & Legal
+##  License & Legal
 
 - **License**: Enterprise Software License Agreement (ESLA)
 - **Terms**: Available upon request

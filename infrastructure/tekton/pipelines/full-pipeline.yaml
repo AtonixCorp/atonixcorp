@@ -239,7 +239,7 @@ spec:
       values: ["false"]
     params:
     - name: message
-      value: "🚀 AtonixCorp platform successfully deployed to PRODUCTION!"
+      value: " AtonixCorp platform successfully deployed to PRODUCTION!"
     - name: environment
       value: "production"
     - name: image
@@ -267,7 +267,7 @@ spec:
       values: ["Failed"]
     params:
     - name: message
-      value: "❌ AtonixCorp pipeline failed. Check logs for details."
+      value: " AtonixCorp pipeline failed. Check logs for details."
     - name: environment
       value: "pipeline"
     - name: image

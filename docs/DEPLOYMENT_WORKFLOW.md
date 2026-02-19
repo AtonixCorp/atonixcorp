@@ -64,11 +64,11 @@ git push origin feature/new-api
 ### Phase 2: Code Review & Testing
 
 **Automated (GitHub Actions):**
-- ✓ Lint code
-- ✓ Run unit tests  
-- ✓ Security scan
-- ✓ Build container
-- ✓ Push to registry
+-  Lint code
+-  Run unit tests  
+-  Security scan
+-  Build container
+-  Push to registry
 
 **Manual:**
 - [ ] Code review by teammates
@@ -135,9 +135,9 @@ git pull origin main
 git merge develop
 
 # Wait for:
-# ✓ All tests pass
-# ✓ Security scan approved
-# ✓ Code review complete
+#  All tests pass
+#  Security scan approved
+#  Code review complete
 
 git push origin main
 ```

@@ -1,10 +1,10 @@
-# 🛡️ AtonixCorp Platform - Security Overview
+#  AtonixCorp Platform - Security Overview
 
 This document outlines the security posture, hardening strategies, and operational controls implemented across the AtonixCorp Platform enterprise environments. It serves as a reference for developers, infrastructure engineers, security professionals, and auditors to ensure consistent, secure, and compliant deployments.
 
 ---
 
-## 🔐 Security Guidance & Frameworks
+##  Security Guidance & Frameworks
 
 We adhere to industry-standard security frameworks to guide our architecture and operations:
 
@@ -28,7 +28,7 @@ We adhere to industry-standard security frameworks to guide our architecture and
 
 ---
 
-## 🧰 Hardening Checklists & Baselines
+##  Hardening Checklists & Baselines
 
 We maintain hardened baselines for all critical systems. These are versioned, tested, and reviewed quarterly.
 
@@ -38,45 +38,45 @@ We maintain hardened baselines for all critical systems. These are versioned, te
 
 ```bash
 # Security Configuration Checklist
-✅ Apply CIS Benchmarks for Linux (Level 1 & 2)
-✅ Disable unnecessary kernel modules
-✅ Configure firewall rules (iptables/firewalld)
-✅ Enforce secure SSH configuration
+ Apply CIS Benchmarks for Linux (Level 1 & 2)
+ Disable unnecessary kernel modules
+ Configure firewall rules (iptables/firewalld)
+ Enforce secure SSH configuration
    - Disable root login: PermitRootLogin no
    - Use SSH keys only: PasswordAuthentication no
    - Set SSH port to non-standard port
    - Restrict SSH access by IP/group
-✅ Enable SELinux or AppArmor
-✅ Set up intrusion detection (aide/tripwire)
-✅ Configure automatic security updates
-✅ Set strong NTP time synchronization
-✅ Configure system logging (rsyslog/journal)
-✅ Enable secure boot and kernel integrity monitoring
-✅ Disable unnecessary services (telnet, rsh, rlogin, etc.)
-✅ Configure file permissions (umask 0077)
-✅ Set password policy enforcement
-✅ Enable process accounting
-✅ Configure audit logging (auditd)
+ Enable SELinux or AppArmor
+ Set up intrusion detection (aide/tripwire)
+ Configure automatic security updates
+ Set strong NTP time synchronization
+ Configure system logging (rsyslog/journal)
+ Enable secure boot and kernel integrity monitoring
+ Disable unnecessary services (telnet, rsh, rlogin, etc.)
+ Configure file permissions (umask 0077)
+ Set password policy enforcement
+ Enable process accounting
+ Configure audit logging (auditd)
 ```
 
 #### Windows Systems
 
 ```yaml
 Security Configuration Checklist:
-  ✅ Apply CIS Benchmarks for Windows Server
-  ✅ Enable Windows Firewall on all profiles
-  ✅ Configure Windows Defender/antivirus
-  ✅ Enable PowerShell script logging
-  ✅ Disable unnecessary services
-  ✅ Enable audit logging (Event Viewer)
-  ✅ Configure User Account Control (UAC)
-  ✅ Apply security patch management
-  ✅ Enable Credential Guard
-  ✅ Configure password policy
-  ✅ Enable Windows Defender Exploit Guard
-  ✅ Set up network segmentation
-  ✅ Configure RDP hardening
-  ✅ Enable Windows Update for automatic patching
+   Apply CIS Benchmarks for Windows Server
+   Enable Windows Firewall on all profiles
+   Configure Windows Defender/antivirus
+   Enable PowerShell script logging
+   Disable unnecessary services
+   Enable audit logging (Event Viewer)
+   Configure User Account Control (UAC)
+   Apply security patch management
+   Enable Credential Guard
+   Configure password policy
+   Enable Windows Defender Exploit Guard
+   Set up network segmentation
+   Configure RDP hardening
+   Enable Windows Update for automatic patching
 ```
 
 ### Container Security
@@ -85,22 +85,22 @@ Security Configuration Checklist:
 
 ```dockerfile
 # Dockerfile Security Best Practices
-✅ Use minimal base images (alpine, distroless)
-✅ Run as non-root user
+ Use minimal base images (alpine, distroless)
+ Run as non-root user
    FROM ubuntu:22.04
    RUN useradd -m -u 1000 appuser
    USER appuser
-✅ Apply read-only root filesystem where possible
-✅ Don't run privileged containers
-✅ Limit container capabilities
+ Apply read-only root filesystem where possible
+ Don't run privileged containers
+ Limit container capabilities
    --cap-drop=ALL --cap-add=NET_BIND_SERVICE
-✅ Set memory and CPU limits
+ Set memory and CPU limits
    --memory=512m --cpus="0.5"
-✅ Scan images for vulnerabilities (Trivy, Grype)
-✅ Use private container registries
-✅ Sign container images (Notary, Cosign)
-✅ Apply image policies and admission controllers
-✅ Keep container runtime updated
+ Scan images for vulnerabilities (Trivy, Grype)
+ Use private container registries
+ Sign container images (Notary, Cosign)
+ Apply image policies and admission controllers
+ Keep container runtime updated
 ```
 
 ### Network Security Hardening
@@ -108,16 +108,16 @@ Security Configuration Checklist:
 ```yaml
 # Network Policies - Deny All by Default
 Security Configuration:
-  ✅ Default deny ingress and egress rules
-  ✅ Allow only required traffic
-  ✅ Implement network microsegmentation
-  ✅ Enable service mesh with mutual TLS
-  ✅ Configure API rate limiting
-  ✅ Enable WAF on all public endpoints
-  ✅ Implement DDoS protection
-  ✅ Use VPN/private connections for management
-  ✅ Enable flow logging and monitoring
-  ✅ Regular penetration testing
+   Default deny ingress and egress rules
+   Allow only required traffic
+   Implement network microsegmentation
+   Enable service mesh with mutual TLS
+   Configure API rate limiting
+   Enable WAF on all public endpoints
+   Implement DDoS protection
+   Use VPN/private connections for management
+   Enable flow logging and monitoring
+   Regular penetration testing
 ```
 
 ### Authentication & Access Control Hardening
@@ -126,28 +126,28 @@ Security Configuration:
 Security Configuration Checklist:
 
 Authentication:
-  ✅ Enforce MFA for all privileged access
-  ✅ Use hardware security keys (U2F/WebAuthn)
-  ✅ Rotate SSH keys quarterly
-  ✅ Disable password authentication for service accounts
-  ✅ Implement password complexity requirements
-  ✅ Set password expiration (90 days)
-  ✅ Lock accounts after 5 failed attempts
-  ✅ Log all authentication attempts
-  ✅ Implement session timeout (15 minutes idle)
+   Enforce MFA for all privileged access
+   Use hardware security keys (U2F/WebAuthn)
+   Rotate SSH keys quarterly
+   Disable password authentication for service accounts
+   Implement password complexity requirements
+   Set password expiration (90 days)
+   Lock accounts after 5 failed attempts
+   Log all authentication attempts
+   Implement session timeout (15 minutes idle)
 
 Authorization:
-  ✅ Implement Role-Based Access Control (RBAC)
-  ✅ Apply Attribute-Based Access Control (ABAC)
-  ✅ Review permissions quarterly
-  ✅ Implement approval workflows for privileged access
-  ✅ Separate duties between roles
-  ✅ Maintain audit trails
+   Implement Role-Based Access Control (RBAC)
+   Apply Attribute-Based Access Control (ABAC)
+   Review permissions quarterly
+   Implement approval workflows for privileged access
+   Separate duties between roles
+   Maintain audit trails
 ```
 
 ---
 
-## 🛡️ Controls & Enforcement
+##  Controls & Enforcement
 
 Security controls are embedded into infrastructure, application code, and CI/CD pipelines for consistent enforcement across all deployments.
 
@@ -191,35 +191,35 @@ All applications implement:
 
 ---
 
-## 📋 Compliance & Auditing
+##  Compliance & Auditing
 
 We support compliance with relevant standards and conduct regular security audits.
 
 ### Compliance Certifications
 
-✅ **SOC 2 Type II**
+ **SOC 2 Type II**
 - Annual audit by Big Four firm
 - Continuous monitoring and control attestation
 - Focus: Security, availability, processing integrity, confidentiality, privacy
 
-✅ **GDPR Compliance**
+ **GDPR Compliance**
 - Data processing agreements with all subprocessors
 - Data subject rights implementation
 - Privacy by design and default
 - Data retention policies (typically 90 days minimum)
 
-✅ **CCPA Compliance**
+ **CCPA Compliance**
 - Consumer privacy rights implementation
 - Opt-out mechanisms
 - Data disclosure notices
 
-✅ **HIPAA (where applicable)**
+ **HIPAA (where applicable)**
 - Business Associate Agreements (BAA)
 - Encryption standards (AES-256)
 - Audit controls and logging
 - Risk analysis and management
 
-✅ **PCI-DSS v3.2.1**
+ **PCI-DSS v3.2.1**
 - For payment processing
 - Network segmentation
 - Encryption of stored cardholder data
@@ -253,7 +253,7 @@ Security Audits:
 
 ---
 
-## 🔑 Secret Management
+##  Secret Management
 
 ### Secrets Rotation Policy
 
@@ -278,7 +278,7 @@ Storage Requirements:
 
 ---
 
-## 🚨 Security Monitoring & Alerting
+##  Security Monitoring & Alerting
 
 ### Real-Time Security Monitoring
 
@@ -312,7 +312,7 @@ Application:
 
 ---
 
-## 📚 Developer & Operations Guidelines
+##  Developer & Operations Guidelines
 
 ### Before Deploying New Services
 
@@ -391,7 +391,7 @@ security/
 
 ---
 
-## 📞 Security Contact & Escalation
+##  Security Contact & Escalation
 
 For questions, exceptions, or security concerns:
 
@@ -415,7 +415,7 @@ If you discover a security vulnerability:
 
 ---
 
-## 🔄 Continuous Improvement
+##  Continuous Improvement
 
 This policy is reviewed:
 - **Quarterly**: Security control effectiveness

@@ -27,10 +27,10 @@ const AboutPage: React.FC = () => {
   ];
 
   const team = [
-    { name: 'Jane Smith', role: 'CEO & Founder', image: '👩‍💼' },
-    { name: 'John Chen', role: 'CTO', image: '👨‍💻' },
-    { name: 'Sarah Johnson', role: 'VP Product', image: '👩‍🔬' },
-    { name: 'Mike Rodriguez', role: 'VP Engineering', image: '👨‍🔧' },
+    { name: 'Jane Smith', role: 'CEO & Founder', image: '' },
+    { name: 'John Chen', role: 'CTO', image: '' },
+    { name: 'Sarah Johnson', role: 'VP Product', image: '' },
+    { name: 'Mike Rodriguez', role: 'VP Engineering', image: '' },
   ];
 
   return (

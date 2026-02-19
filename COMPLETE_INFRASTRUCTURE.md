@@ -58,7 +58,7 @@ atonixcorp/
 │   │   └── terraform.yml               # Infrastructure pipeline
 │   └── bitbucket-pipelines.yml         # Bitbucket alternative
 │
-├── ⛵ Helm Charts
+├──  Helm Charts
 │   └── helm/atonixcorp/
 │       ├── Chart.yaml                  # Chart metadata
 │       ├── values.yaml                 # Default values
@@ -183,7 +183,7 @@ kubectl apply -f gitops/argocd/
 - **[MULTI-ENV] Multi-Environment**: Dev, staging, production environments
 - **[FEATURE BRANCHES] Feature Branch Deployments**: Automatic PR environments
 - **[RBAC] RBAC Integration**: Role-based access control
-- **⏰ Sync Windows**: Controlled deployment schedules
+- ** Sync Windows**: Controlled deployment schedules
 - **[APP SETS] Application Sets**: Template-based multi-environment deployment
 
 ## [START] Quick Start Commands

@@ -105,7 +105,7 @@ const CloudPlatformHeader: React.FC = () => {
                 fontSize: '1.2rem',
               }}
             >
-              ☁️
+              
             </Box>
             <Box
               sx={{

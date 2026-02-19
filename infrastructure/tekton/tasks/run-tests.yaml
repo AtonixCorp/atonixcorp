@@ -191,10 +191,10 @@ spec:
       Test execution completed successfully.
       All test suites passed.
       
-      Backend Tests: ✅ PASSED
-      Frontend Tests: ✅ PASSED
-      Security Tests: ✅ PASSED
-      Integration Tests: ✅ PASSED
+      Backend Tests:  PASSED
+      Frontend Tests:  PASSED
+      Security Tests:  PASSED
+      Integration Tests:  PASSED
       
       For detailed results, check individual test logs.
       EOF

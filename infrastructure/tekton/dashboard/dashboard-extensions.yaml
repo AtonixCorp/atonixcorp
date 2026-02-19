@@ -34,7 +34,7 @@ data:
           return (
             <Box p={3}>
               <Typography variant="h4" gutterBottom>
-                🚀 AtonixCorp Platform Dashboard
+                 AtonixCorp Platform Dashboard
               </Typography>
               
               <Grid container spacing={3}>

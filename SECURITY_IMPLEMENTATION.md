@@ -179,7 +179,7 @@ Access security metrics at `/api/security/dashboard/`:
 
 ### Response Actions:
 - [BLOCKING] Automatic IP blocking
-- ⏰ Rate limiting
+-  Rate limiting
 - [ALERTS] Real-time alerts
 - [LOGGING] Detailed logging
 - [INVALIDATION] Token invalidation
@@ -282,10 +282,10 @@ The security implementation helps with:
 
 ---
 
-## ⚡ **Performance Impact**
+##  **Performance Impact**
 
 Security features are optimized for minimal performance impact:
-- ⚡ **Redis caching** for rate limiting
+-  **Redis caching** for rate limiting
 - [ASYNC] **Async processing** for security events
 - [LOGGING] **Efficient logging** with rotation
 - [TARGETED] **Targeted validation** only where needed

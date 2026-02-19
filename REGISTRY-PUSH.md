@@ -27,7 +27,7 @@ When prompted, enter:
 ./build.sh build
 ```
 
-## 🏷️ Step 3: Tag for Registry
+##  Step 3: Tag for Registry
 
 ```bash
 # Tag with latest
@@ -39,7 +39,7 @@ VERSION=v1.0.0 ./build.sh tag
 
 This will create the tag: `quay.io/atonixdev/atonixcorp:latest` (or your specified version)
 
-## 📤 Step 4: Push to Quay.io
+##  Step 4: Push to Quay.io
 
 ```bash
 # Push latest
@@ -49,7 +49,7 @@ This will create the tag: `quay.io/atonixdev/atonixcorp:latest` (or your specifi
 VERSION=v1.0.0 ./build.sh push
 ```
 
-## 🚀 Step 5: One-Command Release (Recommended)
+##  Step 5: One-Command Release (Recommended)
 
 ```bash
 # Build, tag, and push latest

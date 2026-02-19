@@ -21,7 +21,7 @@ print("Testing RabbitMQ integration with live server...")
 try:
     # Test direct import
     import pika
-    print("✓ pika imports successful")
+    print(" pika imports successful")
     
     # Wait for RabbitMQ to be ready
     print("Waiting for RabbitMQ to be ready...")
@@ -37,12 +37,12 @@ try:
     
     connection = pika.BlockingConnection(connection_params)
     channel = connection.channel()
-    print("✓ Connected to RabbitMQ successfully")
+    print(" Connected to RabbitMQ successfully")
     
     # Declare a test queue
     queue_name = 'test_queue'
     channel.queue_declare(queue=queue_name, durable=True)
-    print(f"✓ Declared queue '{queue_name}'")
+    print(f" Declared queue '{queue_name}'")
     
     # Send test message
     test_message = "Test message from live RabbitMQ test"
@@ -52,11 +52,11 @@ try:
         body=test_message,
         properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
     )
-    print(f"✓ Sent message to queue '{queue_name}'")
+    print(f" Sent message to queue '{queue_name}'")
     
     # Receive test message
     def callback(ch, method, properties, body):
-        print(f"✓ Received message: {body.decode()}")
+        print(f" Received message: {body.decode()}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
         ch.stop_consuming()
     
@@ -75,16 +75,16 @@ try:
         message={'test': True, 'timestamp': '2025-09-20T15:50:00Z'},
         routing_key='test'
     )
-    print("✓ Sent message through Django RabbitMQ client")
+    print(" Sent message through Django RabbitMQ client")
     
     connection.close()
     
     print("\n" + "="*60)
-    print("✓ ALL RABBITMQ TESTS PASSED!")
-    print("✓ RabbitMQ integration is working correctly")
+    print(" ALL RABBITMQ TESTS PASSED!")
+    print(" RabbitMQ integration is working correctly")
     print("="*60)
     
 except Exception as e:
-    print(f"✗ RabbitMQ test failed: {e}")
+    print(f" RabbitMQ test failed: {e}")
     import traceback
     traceback.print_exc()

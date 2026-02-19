@@ -101,30 +101,30 @@ docker-compose -f docker-compose.local.main.yml up -d
 
 ## Key Features
 
-✅ **Virtual Hosts**
+ **Virtual Hosts**
 - Separate domains for frontend and API
 - Automatic request routing
 - Hostname-based proxying
 
-✅ **Security**
+ **Security**
 - X-Frame-Options header (prevents clickjacking)
 - X-Content-Type-Options (prevents MIME sniffing)
 - X-XSS-Protection (XSS protection)
 - CORS headers for API
 
-✅ **Performance**
+ **Performance**
 - ProxyPreserveHost (maintains host header)
 - ProxyPassReverse (rewrites Location headers)
 - Worker pool optimization
 - Configurable timeouts
 
-✅ **SSL/HTTPS Support**
+ **SSL/HTTPS Support**
 - Let's Encrypt integration
 - Self-signed certificate generation
 - HTTP → HTTPS redirect
 - HSTS headers
 
-✅ **Debugging**
+ **Debugging**
 - Health checks on containers
 - Structured logging
 - Easy log access
@@ -147,11 +147,11 @@ docker-compose -f docker-compose.local.main.yml up -d
 ## Environment Setup
 
 The `setup-docker.sh` script automatically:
-1. ✅ Creates Docker network (`atonixcorp_net`)
-2. ✅ Validates Docker installation
-3. ✅ Updates `/etc/hosts` file
-4. ✅ Creates `.env` file template
-5. ✅ Optionally generates SSL certificates
+1.  Creates Docker network (`atonixcorp_net`)
+2.  Validates Docker installation
+3.  Updates `/etc/hosts` file
+4.  Creates `.env` file template
+5.  Optionally generates SSL certificates
 
 ## Docker-Compose Commands
 
@@ -227,18 +227,18 @@ atonixcorp/
 
 ## Important Notes
 
-⚠️ **Local Development**
+ **Local Development**
 - Requires `/etc/hosts` entries
 - Uses HTTP (no SSL)
 - Domain names must match Apache configuration
 
-⚠️ **Production Deployment**
+ **Production Deployment**
 - Obtain real SSL certificates (Let's Encrypt recommended)
 - Update `ALLOWED_HOSTS` in backend
 - Update `CSRF_TRUSTED_ORIGINS` in backend
 - Use `docker-compose.prod.override.yml`
 
-⚠️ **Security**
+ **Security**
 - Never commit real SSL private keys
 - Use `.gitignore` for `docker/apache2/certs/`
 - Change default Django `SECRET_KEY`

@@ -565,7 +565,7 @@ const EnhancedHomepage: React.FC = () => {
                   color: accentCyan,
                 }}
               >
-                🌍 46 Data Centers
+                 46 Data Centers
               </Typography>
             </Box>
           </Stack>

@@ -3,9 +3,9 @@
 ## Overview
 A modern, professional dashboard interface with a left sidebar navigation designed for enterprise-level user experience.
 
-## ✨ Features
+##  Features
 
-### 🎨 Professional Design
+###  Professional Design
 - **Clean, modern interface** with glassmorphism effects
 - **Premium color scheme** with gradient accents
 - **Professional typography** using Inter font family
@@ -45,7 +45,7 @@ A modern, professional dashboard interface with a left sidebar navigation design
 - **Gradient styling** for primary actions
 - **Hover effects** for better UX
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -197,7 +197,7 @@ Task management includes:
 - Due times and scheduling
 - Quick completion toggles
 
-## 🎨 Design System
+##  Design System
 
 ### Color Palette
 - **Primary**: `#1e293b` (Dark slate)
@@ -225,7 +225,7 @@ Task management includes:
 - **Hover Effects**: Transform and box-shadow
 - **Loading States**: Smooth opacity changes
 
-## 🚀 Performance
+##  Performance
 
 ### Optimization Features
 - **Lazy loading** for route components
@@ -238,7 +238,7 @@ Task management includes:
 - **Code splitting** by routes
 - **Tree shaking** for unused code elimination
 
-## 📖 File Structure
+##  File Structure
 
 ```
 frontend/src/
@@ -257,7 +257,7 @@ frontend/src/
 └── App.tsx                       # Main app with routing
 ```
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -292,7 +292,7 @@ Replace mock data with real API endpoints:
 - Analytics and reporting
 - Team collaboration features
 
-## 🤝 Contributing
+##  Contributing
 
 1. Follow the existing code style and patterns
 2. Test on multiple screen sizes

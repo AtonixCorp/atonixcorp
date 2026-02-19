@@ -17,26 +17,26 @@ NC='\033[0m' # No Color
 print_header() {
     echo -e "${BLUE}"
     echo "========================================================"
-    echo "🎯 AtonixCorp Platform - Professional API Demo"
+    echo " AtonixCorp Platform - Professional API Demo"
     echo "========================================================"
     echo -e "${NC}"
 }
 
 print_section() {
-    echo -e "\n${PURPLE}▶ $1${NC}"
+    echo -e "\n${PURPLE} $1${NC}"
     echo "----------------------------------------"
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN} $1${NC}"
 }
 
 print_info() {
-    echo -e "${CYAN}ℹ️  $1${NC}"
+    echo -e "${CYAN}ℹ  $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}  $1${NC}"
 }
 
 # Main demo function
@@ -48,7 +48,7 @@ main() {
     print_info "The AtonixCorp Platform backend has been professionally styled with:"
     echo ""
     
-    echo "🎨 PROFESSIONAL API DOCUMENTATION:"
+    echo " PROFESSIONAL API DOCUMENTATION:"
     echo "   ├── OpenAPI 3.0 schema with drf-spectacular"
     echo "   ├── Interactive Swagger UI at /api/docs/"
     echo "   ├── Beautiful ReDoc documentation at /api/redoc/"
@@ -56,7 +56,7 @@ main() {
     echo "   └── Professional error handling and response formats"
     echo ""
     
-    echo "🔧 STANDARDIZED API RESPONSES:"
+    echo " STANDARDIZED API RESPONSES:"
     echo "   ├── Consistent response format across all endpoints"
     echo "   ├── Professional error messages with status codes"
     echo "   ├── Standardized pagination metadata"
@@ -64,7 +64,7 @@ main() {
     echo "   └── Custom exception handler for unified error format"
     echo ""
     
-    echo "🎭 ENHANCED ADMIN INTERFACE:"
+    echo " ENHANCED ADMIN INTERFACE:"
     echo "   ├── Custom AtonixCorpAdminSite with branding"
     echo "   ├── Professional CSS styling with modern colors"
     echo "   ├── Enhanced app organization with icons and descriptions"
@@ -72,7 +72,7 @@ main() {
     echo "   └── Professional dashboard with system statistics"
     echo ""
     
-    echo "📊 PROFESSIONAL SERIALIZERS:"
+    echo " PROFESSIONAL SERIALIZERS:"
     echo "   ├── BaseModelSerializer with common patterns"
     echo "   ├── Comprehensive validation and error handling"
     echo "   ├── OpenAPI examples and documentation"
@@ -80,7 +80,7 @@ main() {
     echo "   └── Specialized serializers for different use cases"
     echo ""
     
-    echo "🚀 ENHANCED API VIEWS:"
+    echo " ENHANCED API VIEWS:"
     echo "   ├── Professional ViewSets with proper error handling"
     echo "   ├── Advanced filtering, searching, and pagination"
     echo "   ├── Custom actions for specialized endpoints"
@@ -90,7 +90,7 @@ main() {
     
     print_section "API Endpoints Available"
     
-    echo "📍 CORE API ENDPOINTS:"
+    echo " CORE API ENDPOINTS:"
     echo "   ├── GET  /api/                     - API root with navigation"
     echo "   ├── GET  /api/docs/                - Interactive API documentation"
     echo "   ├── GET  /api/redoc/               - ReDoc documentation"
@@ -98,14 +98,14 @@ main() {
     echo "   └── GET  /api/health/              - Health check endpoint"
     echo ""
     
-    echo "🔐 AUTHENTICATION ENDPOINTS:"
+    echo " AUTHENTICATION ENDPOINTS:"
     echo "   ├── POST /api/auth/login/          - User authentication"
     echo "   ├── POST /api/auth/signup/         - User registration"
     echo "   ├── POST /api/auth/logout/         - User logout"
     echo "   └── GET  /api/auth/me/             - Current user profile"
     echo ""
     
-    echo "📁 PROJECT MANAGEMENT:"
+    echo " PROJECT MANAGEMENT:"
     echo "   ├── GET  /api/projects/            - List all projects"
     echo "   ├── GET  /api/projects/{slug}/     - Project details"
     echo "   ├── GET  /api/projects/featured/   - Featured projects"
@@ -114,7 +114,7 @@ main() {
     echo "   └── GET  /api/projects/{slug}/gallery/  - Project image gallery"
     echo ""
     
-    echo "👥 TEAM & COLLABORATION:"
+    echo " TEAM & COLLABORATION:"
     echo "   ├── GET  /api/teams/               - Team management"
     echo "   ├── GET  /api/focus-areas/         - Focus area organization"
     echo "   ├── GET  /api/resources/           - Resource management"
@@ -123,7 +123,7 @@ main() {
     
     print_section "Professional Features Included"
     
-    echo "✨ RESPONSE FORMATTING:"
+    echo " RESPONSE FORMATTING:"
     echo "   All API responses follow this professional structure:"
     echo '   {
       "success": true,
@@ -137,7 +137,7 @@ main() {
     }'
     echo ""
     
-    echo "🛡️ SECURITY FEATURES:"
+    echo " SECURITY FEATURES:"
     echo "   ├── JWT authentication with refresh tokens"
     echo "   ├── API key authentication for services"
     echo "   ├── Rate limiting (1000/hour for authenticated users)"
@@ -145,7 +145,7 @@ main() {
     echo "   └── Secure headers and HTTPS enforcement"
     echo ""
     
-    echo "📝 DOCUMENTATION FEATURES:"
+    echo " DOCUMENTATION FEATURES:"
     echo "   ├── Comprehensive OpenAPI 3.0 specifications"
     echo "   ├── Interactive Swagger UI with try-it-out functionality"
     echo "   ├── Beautiful ReDoc documentation with examples"
@@ -170,7 +170,7 @@ main() {
     
     print_section "Professional API Response Examples"
     
-    echo "📋 SUCCESS RESPONSE:"
+    echo " SUCCESS RESPONSE:"
     echo '{
   "success": true,
   "message": "Projects retrieved successfully", 
@@ -202,7 +202,7 @@ main() {
 }'
     echo ""
     
-    echo "❌ ERROR RESPONSE:"
+    echo " ERROR RESPONSE:"
     echo '{
   "success": false,
   "message": "Project not found",
@@ -220,7 +220,7 @@ main() {
     
     print_section "Admin Interface Features"
     
-    echo "🎨 PROFESSIONAL ADMIN STYLING:"
+    echo " PROFESSIONAL ADMIN STYLING:"
     echo "   ├── Modern color scheme with AtonixCorp branding"
     echo "   ├── Enhanced navigation with icons and descriptions"
     echo "   ├── Responsive design for mobile and desktop"
@@ -228,7 +228,7 @@ main() {
     echo "   └── Dark mode support with CSS custom properties"
     echo ""
     
-    echo "📊 DASHBOARD ENHANCEMENTS:"
+    echo " DASHBOARD ENHANCEMENTS:"
     echo "   ├── System statistics and model counts"
     echo "   ├── Recent activity tracking"
     echo "   ├── Enhanced app organization by importance"
@@ -238,7 +238,7 @@ main() {
     
     print_section "Development Tools"
     
-    echo "🔧 BUILT-IN TOOLS:"
+    echo " BUILT-IN TOOLS:"
     echo "   ├── Health check endpoint for monitoring"
     echo "   ├── API status endpoint with service health"
     echo "   ├── Dynamic endpoint discovery"
@@ -249,13 +249,13 @@ main() {
     print_success "Professional Backend Styling Complete!"
     echo ""
     print_info "The AtonixCorp Platform backend now features:"
-    echo "• 🎯 Professional API documentation with Swagger/ReDoc"
-    echo "• 🎨 Beautiful admin interface with modern styling"  
-    echo "• 📊 Standardized response formats across all endpoints"
-    echo "• 🔒 Enterprise-grade security and authentication"
-    echo "• ⚡ High-performance optimized queries and caching"
-    echo "• 📱 Mobile-responsive design throughout"
-    echo "• 🚀 Production-ready configuration and deployment"
+    echo "•  Professional API documentation with Swagger/ReDoc"
+    echo "•  Beautiful admin interface with modern styling"  
+    echo "•  Standardized response formats across all endpoints"
+    echo "•  Enterprise-grade security and authentication"
+    echo "•  High-performance optimized queries and caching"
+    echo "•  Mobile-responsive design throughout"
+    echo "•  Production-ready configuration and deployment"
     echo ""
     
     print_warning "Next Steps:"
@@ -266,7 +266,7 @@ main() {
     echo "5. Configure authentication providers for social login"
     echo ""
     
-    echo -e "${GREEN}🎉 Your backend is now professionally styled and ready for production! 🎉${NC}"
+    echo -e "${GREEN} Your backend is now professionally styled and ready for production! ${NC}"
 }
 
 # Run the demo

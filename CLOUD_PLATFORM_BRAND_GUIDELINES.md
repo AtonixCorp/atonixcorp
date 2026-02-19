@@ -29,9 +29,9 @@ Unify compute, storage, networking, automation, and AI-driven intelligence into 
 ## Visual Identity
 
 ### Logo
-- **Primary**: `☁️ atonixcorp` (text + cloud emoji)
+- **Primary**: ` atonixcorp` (text + cloud emoji)
 - **Alternative**: `ATONIXCORP` (sans-serif, all caps)
-- **Favicon**: ☁️ (cloud emoji)
+- **Favicon**:  (cloud emoji)
 
 ### Color Palette
 
@@ -112,16 +112,16 @@ Unify compute, storage, networking, automation, and AI-driven intelligence into 
 
 ### Examples
 
-**✅ Good**
+** Good**
 > Deploy with confidence. atonixcorp handles the complexity.
 
-**❌ Bad**
+** Bad**
 > atonixcorp is, like, totally awesome for your cloud stuff.
 
-**✅ Good**
+** Good**
 > Predictive scaling forecasts demand and auto-scales your services.
 
-**❌ Bad**
+** Bad**
 > Our AI does cool things with your metrics.
 
 ---
@@ -179,7 +179,7 @@ Intelligent Infrastructure for the Future
 platform-team@atonixcorp.io
 
 ---
-Built with ☁️ for the future of cloud infrastructure.
+Built with  for the future of cloud infrastructure.
 ```
 
 **Social Media**:

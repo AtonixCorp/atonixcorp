@@ -21,7 +21,7 @@ try:
     # Test direct import
     from kafka import KafkaProducer, KafkaConsumer, KafkaAdminClient
     from kafka.admin import NewTopic
-    print("✓ kafka-python imports successful")
+    print(" kafka-python imports successful")
     
     # Test basic connection
     admin_client = KafkaAdminClient(
@@ -31,7 +31,7 @@ try:
     
     # List topics
     metadata = admin_client.list_consumer_groups()
-    print("✓ Connected to Kafka successfully")
+    print(" Connected to Kafka successfully")
     
     # Create a test topic
     topic_name = "test-connection"
@@ -43,10 +43,10 @@ try:
     
     try:
         admin_client.create_topics([topic])
-        print(f"✓ Created topic '{topic_name}'")
+        print(f" Created topic '{topic_name}'")
     except Exception as e:
         if "already exists" in str(e).lower():
-            print(f"✓ Topic '{topic_name}' already exists")
+            print(f" Topic '{topic_name}' already exists")
         else:
             print(f"[WARNING] Topic creation failed: {e}")
     
@@ -59,7 +59,7 @@ try:
     # Send test message
     future = producer.send(topic_name, value="Test message from live test")
     result = future.get(timeout=10)
-    print(f"✓ Sent message to topic '{topic_name}'")
+    print(f" Sent message to topic '{topic_name}'")
     
     # Test consumer
     consumer = KafkaConsumer(
@@ -76,7 +76,7 @@ try:
         break  # Just get one message
     
     if messages:
-        print(f"✓ Received message: {messages[0]}")
+        print(f" Received message: {messages[0]}")
     else:
         print("[WARNING] No messages received")
     
@@ -92,14 +92,14 @@ try:
         data={'test': True, 'timestamp': '2025-09-20T15:50:00Z'},
         key='test-key'
     )
-    print("✓ Sent event through Django Kafka client")
+    print(" Sent event through Django Kafka client")
     
     print("\n" + "="*60)
-    print("✓ ALL KAFKA TESTS PASSED!")
-    print("✓ Kafka integration is working correctly")
+    print(" ALL KAFKA TESTS PASSED!")
+    print(" Kafka integration is working correctly")
     print("="*60)
     
 except Exception as e:
-    print(f"✗ Kafka test failed: {e}")
+    print(f" Kafka test failed: {e}")
     import traceback
     traceback.print_exc()

@@ -402,7 +402,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Pipeline Status*: ❌ Failed\n*Repository*: ${{ github.repository }}\n*Branch*: ${{ github.ref }}\n*Commit*: ${{ github.sha }}"
+                    "text": "*Pipeline Status*:  Failed\n*Repository*: ${{ github.repository }}\n*Branch*: ${{ github.ref }}\n*Commit*: ${{ github.sha }}"
                   }
                 }
               ]

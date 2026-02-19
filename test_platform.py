@@ -34,11 +34,11 @@ def print_header(title):
 
 def print_success(message):
     """Print success message."""
-    print(f"{Colors.GREEN}✓{Colors.END} {message}")
+    print(f"{Colors.GREEN}{Colors.END} {message}")
 
 def print_error(message):
     """Print error message."""
-    print(f"{Colors.RED}✗{Colors.END} {message}")
+    print(f"{Colors.RED}{Colors.END} {message}")
 
 def print_warning(message):
     """Print warning message."""
@@ -278,7 +278,7 @@ def create_test_summary(test_results):
     
     print(f"\nTest Details:")
     for test_name, result in test_results.items():
-        status = "✓ PASS" if result else "✗ FAIL"
+        status = " PASS" if result else " FAIL"
         color = Colors.GREEN if result else Colors.RED
         print(f"  {color}{status}{Colors.END} {test_name}")
     

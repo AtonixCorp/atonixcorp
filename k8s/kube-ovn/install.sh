@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🚀 Installing Kube-OVN networking plugin..."
+echo " Installing Kube-OVN networking plugin..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -15,15 +15,15 @@ NC='\033[0m' # No Color
 
 # Function to print status
 print_status() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}${NC} $1"
 }
 
 # Check if kubectl is available
@@ -38,7 +38,7 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
-echo "📋 Applying Kube-OVN manifests..."
+echo " Applying Kube-OVN manifests..."
 
 # Apply manifests in order
 manifests=(

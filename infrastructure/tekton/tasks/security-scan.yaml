@@ -165,12 +165,12 @@ spec:
       
       Scans Performed:
       ================
-      ✅ Code Security Analysis (Bandit)
-      ✅ Dependency Vulnerability Check (Safety)
-      ✅ Secret Detection (detect-secrets)
-      ✅ Security Pattern Analysis (Semgrep)
-      ✅ Filesystem Vulnerability Scan (Trivy)
-      $(if [ -n "$(params.IMAGE_URL)" ]; then echo "✅ Container Image Scan (Trivy)"; else echo "⚠️  Container Image Scan (Skipped - No image URL)"; fi)
+       Code Security Analysis (Bandit)
+       Dependency Vulnerability Check (Safety)
+       Secret Detection (detect-secrets)
+       Security Pattern Analysis (Semgrep)
+       Filesystem Vulnerability Scan (Trivy)
+      $(if [ -n "$(params.IMAGE_URL)" ]; then echo " Container Image Scan (Trivy)"; else echo "  Container Image Scan (Skipped - No image URL)"; fi)
       
       Report Files Generated:
       ======================

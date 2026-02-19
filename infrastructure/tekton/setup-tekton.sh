@@ -365,16 +365,16 @@ verify_installation() {
     
     # Check Tekton Pipelines
     if kubectl get pods -n tekton-pipelines | grep -q "Running"; then
-        log_success "✓ Tekton Pipelines is running"
+        log_success " Tekton Pipelines is running"
     else
-        log_error "✗ Tekton Pipelines is not running properly"
+        log_error " Tekton Pipelines is not running properly"
     fi
     
     # Check Tekton Dashboard
     if kubectl get pods -n tekton-dashboard | grep -q "Running"; then
-        log_success "✓ Tekton Dashboard is running"
+        log_success " Tekton Dashboard is running"
     else
-        log_error "✗ Tekton Dashboard is not running properly"
+        log_error " Tekton Dashboard is not running properly"
     fi
     
     # Check AtonixCorp resources
@@ -382,7 +382,7 @@ verify_installation() {
     local pipeline_count=$(kubectl get pipelines -n "$NAMESPACE" --no-headers | wc -l)
     local trigger_count=$(kubectl get eventlisteners -n "$NAMESPACE" --no-headers | wc -l)
     
-    log_success "✓ Installed $task_count tasks, $pipeline_count pipelines, $trigger_count triggers"
+    log_success " Installed $task_count tasks, $pipeline_count pipelines, $trigger_count triggers"
 }
 
 # Print access information
@@ -390,24 +390,24 @@ print_access_info() {
     log_info "Installation completed! Here's how to access your Tekton setup:"
     
     echo ""
-    echo "🎯 Access Information:"
+    echo " Access Information:"
     echo "====================="
     
     # Dashboard access
-    echo "📊 Tekton Dashboard:"
+    echo " Tekton Dashboard:"
     echo "   - NodePort: http://localhost:30097"
     echo "   - Port Forward: kubectl port-forward -n tekton-dashboard svc/tekton-dashboard 9097:9097"
     echo "   - Then access: http://localhost:9097"
     
     echo ""
-    echo "🔧 Namespace: $NAMESPACE"
-    echo "📁 Resources installed:"
+    echo " Namespace: $NAMESPACE"
+    echo " Resources installed:"
     echo "   - Tasks: kubectl get tasks -n $NAMESPACE"
     echo "   - Pipelines: kubectl get pipelines -n $NAMESPACE"
     echo "   - Triggers: kubectl get eventlisteners -n $NAMESPACE"
     
     echo ""
-    echo "⚠️  Next Steps:"
+    echo "  Next Steps:"
     echo "==============="
     echo "1. Update secrets with real values:"
     echo "   kubectl edit secret github-secret -n $NAMESPACE"
@@ -424,12 +424,12 @@ print_access_info() {
     echo "4. View pipeline runs:"
     echo "   kubectl get pipelineruns -n $NAMESPACE"
     echo ""
-    echo "📚 Documentation: See infrastructure/tekton/README.md for detailed usage"
+    echo " Documentation: See infrastructure/tekton/README.md for detailed usage"
 }
 
 # Main execution
 main() {
-    echo "🚀 AtonixCorp Tekton CI/CD Setup"
+    echo " AtonixCorp Tekton CI/CD Setup"
     echo "================================="
     echo ""
     
@@ -453,7 +453,7 @@ main() {
     print_access_info
     
     echo ""
-    log_success "🎉 AtonixCorp Tekton setup completed successfully!"
+    log_success " AtonixCorp Tekton setup completed successfully!"
 }
 
 # Run main function

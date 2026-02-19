@@ -44,22 +44,22 @@ show_usage() {
 
 # Function to build the container
 build_container() {
-    echo "📦 Building unified container..."
+    echo " Building unified container..."
 <<<<<<< HEAD
     nerdctl build -f Dockerfile.fullstack -t atonixcorp:latest .
 =======
     nerdctl build -f Dockerfile.fullstack -t atonixcorpvm:latest .
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    echo "✅ Container built successfully!"
+    echo " Container built successfully!"
 }
 
 # Function to run the unified stack
 run_stack() {
-    echo "🏃 Starting AtonixCorp Platform..."
+    echo " Starting AtonixCorp Platform..."
     nerdctl compose -f docker-compose.unified.yml up -d
-    echo "✅ Platform started successfully!"
+    echo " Platform started successfully!"
     echo ""
-    echo "🌐 Access URLs:"
+    echo " Access URLs:"
     echo "   Frontend + API: http://localhost"
     echo "   Django Admin:   http://localhost/admin/"
     echo "   API Direct:     http://localhost:8000/api/"
@@ -70,7 +70,7 @@ run_stack() {
 
 # Function to run in development mode
 run_dev() {
-    echo "🔧 Starting in development mode..."
+    echo " Starting in development mode..."
     # Create development override
     cat > docker-compose.dev.yml << 'EOF'
 version: '3.8'
@@ -85,70 +85,70 @@ services:
 EOF
     
     nerdctl compose -f docker-compose.unified.yml -f docker-compose.dev.yml up -d
-    echo "✅ Development environment started!"
+    echo " Development environment started!"
 }
 
 # Function to stop containers
 stop_containers() {
-    echo "🛑 Stopping containers..."
+    echo " Stopping containers..."
     nerdctl compose -f docker-compose.unified.yml down
-    echo "✅ Containers stopped!"
+    echo " Containers stopped!"
 }
 
 # Function to show logs
 show_logs() {
-    echo "📋 Showing container logs..."
+    echo " Showing container logs..."
     nerdctl compose -f docker-compose.unified.yml logs -f "${2:-app}"
 }
 
 # Function to clean up
 clean_up() {
-    echo "🧹 Cleaning up..."
+    echo " Cleaning up..."
     nerdctl compose -f docker-compose.unified.yml down -v
     nerdctl image rm atonixcorp:latest 2>/dev/null || true
 <<<<<<< HEAD
 =======
     nerdctl image rm atonixcorpvm:latest 2>/dev/null || true
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    echo "✅ Cleanup completed!"
+    echo " Cleanup completed!"
 }
 
 # Function to login to registry
 registry_login() {
-    echo "🔐 Logging into Quay.io registry..."
+    echo " Logging into Quay.io registry..."
     echo "Please enter your Quay.io credentials:"
     nerdctl login quay.io
-    echo "✅ Login successful!"
+    echo " Login successful!"
 }
 
 # Function to tag image for registry
 tag_image() {
-    echo "🏷️  Tagging image for registry..."
+    echo "  Tagging image for registry..."
     echo "Local tag: ${LOCAL_TAG}"
     echo "Registry tag: ${REGISTRY_TAG}"
     
     if ! nerdctl image inspect "${LOCAL_TAG}" &>/dev/null; then
-        echo "❌ Local image ${LOCAL_TAG} not found. Run 'build' first."
+        echo " Local image ${LOCAL_TAG} not found. Run 'build' first."
         exit 1
     fi
     
     nerdctl tag "${LOCAL_TAG}" "${REGISTRY_TAG}"
-    echo "✅ Image tagged successfully!"
+    echo " Image tagged successfully!"
 }
 
 # Function to push image to registry
 push_image() {
-    echo "📤 Pushing image to registry..."
+    echo " Pushing image to registry..."
     echo "Pushing: ${REGISTRY_TAG}"
     
     if ! nerdctl image inspect "${REGISTRY_TAG}" &>/dev/null; then
-        echo "❌ Registry tagged image not found. Run 'tag' first."
+        echo " Registry tagged image not found. Run 'tag' first."
         exit 1
     fi
     
     nerdctl push "${REGISTRY_TAG}"
-    echo "✅ Image pushed successfully!"
-    echo "🌐 Image available at: ${REGISTRY_TAG}"
+    echo " Image pushed successfully!"
+    echo " Image available at: ${REGISTRY_TAG}"
 }
 
 # Function to build, tag and push (full release)
@@ -158,33 +158,33 @@ release_image() {
     build_container
     tag_image
     push_image
-    echo "🎉 Release completed successfully!"
-    echo "🌐 Image available at: ${REGISTRY_TAG}"
+    echo " Release completed successfully!"
+    echo " Image available at: ${REGISTRY_TAG}"
 }
 
 # Function to check requirements
 check_requirements() {
-    echo "🔍 Checking requirements..."
+    echo " Checking requirements..."
     
     # Check if nerdctl is available
     if ! command -v nerdctl &> /dev/null; then
-        echo "❌ nerdctl is not installed or not in PATH"
+        echo " nerdctl is not installed or not in PATH"
         exit 1
     fi
     
     # Check if frontend directory exists
     if [ ! -d "frontend" ]; then
-        echo "❌ Frontend directory not found"
+        echo " Frontend directory not found"
         exit 1
     fi
     
     # Check if backend directory exists
     if [ ! -d "backend" ]; then
-        echo "❌ Backend directory not found"
+        echo " Backend directory not found"
         exit 1
     fi
     
-    echo "✅ Requirements check passed!"
+    echo " Requirements check passed!"
 }
 
 # Main script logic

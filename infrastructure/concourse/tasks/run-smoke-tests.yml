@@ -47,7 +47,7 @@ run:
         echo "Health check failed: HTTP $response"
         exit 1
       fi
-      echo "✅ Health check passed"
+      echo " Health check passed"
       
       # Test API endpoints
       echo "Testing API endpoints..."
@@ -56,7 +56,7 @@ run:
         echo "API endpoint test failed: HTTP $response"
         exit 1
       fi
-      echo "✅ API endpoint test passed"
+      echo " API endpoint test passed"
       
       # Test static files
       echo "Testing static files..."
@@ -65,7 +65,7 @@ run:
         echo "Static files test failed: HTTP $response"
         exit 1
       fi
-      echo "✅ Static files test passed"
+      echo " Static files test passed"
       
       # Test admin interface
       echo "Testing admin interface..."
@@ -74,6 +74,6 @@ run:
         echo "Admin interface test failed: HTTP $response"
         exit 1
       fi
-      echo "✅ Admin interface test passed"
+      echo " Admin interface test passed"
       
       echo "All smoke tests passed successfully!"

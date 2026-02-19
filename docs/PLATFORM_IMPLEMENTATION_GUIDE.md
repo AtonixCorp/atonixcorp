@@ -133,21 +133,21 @@ atonix deploy --environment production
 │  - Autonomous security                      │
 └──────────────────┬──────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────┐
+┌────────────────────────────────────────────┐
 │    Automation Layer (CI/CD & Orchestration) │
 │  - GitHub Actions pipelines                 │
 │  - Kubernetes orchestration                 │
 │  - Infrastructure as Code (Terraform)       │
 └──────────────────┬──────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────┐
+┌────────────────────────────────────────────┐
 │    Application Services & Workloads         │
 │  - Microservices (containerized)            │
 │  - Stateless design                         │
 │  - Health checks & metrics                  │
 └──────────────────┬──────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────┐
+┌────────────────────────────────────────────┐
 │       Observability & Monitoring            │
 │  - Prometheus metrics                       │
 │  - Loki log aggregation                     │
@@ -155,7 +155,7 @@ atonix deploy --environment production
 │  - Grafana dashboards                       │
 └──────────────────┬──────────────────────────┘
                    │
-┌──────────────────▼──────────────────────────┐
+┌────────────────────────────────────────────┐
 │      Infrastructure & Security              │
 │  - Kubernetes cluster                       │
 │  - mTLS & TLS encryption                    │

@@ -19,7 +19,7 @@ Observability is a critical requirement for the AtonixCorp platform. All service
                │
       ┌────────┼────────┐
       │        │        │
-      ▼        ▼        ▼
+                      
   ┌─────┐  ┌──────┐  ┌─────────┐
   │Loki │  │Prom  │  │Jaeger/  │
   │     │  │etheus│  │Tempo    │
@@ -27,7 +27,7 @@ Observability is a critical requirement for the AtonixCorp platform. All service
        │       │           │
        └───────┼───────────┘
                │
-        ┌──────▼─────┐
+        ┌───────────┐
         │  Grafana   │
         │ Dashboards │
         └────────────┘
@@ -173,11 +173,11 @@ logger.fatal("Critical: Database unreachable")
 - Personally identifiable information (PII)
 
 ```python
-# ❌ WRONG
+#  WRONG
 logger.info(f"User login: {username}, password: {password}")
 logger.info(f"Credit card: {cc_number}")
 
-# ✅ CORRECT
+#  CORRECT
 logger.info(f"User login: {username}")
 logger.info("Payment processed", extra={'cc_last4': '****1234'})
 ```

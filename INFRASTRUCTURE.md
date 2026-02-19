@@ -9,10 +9,10 @@ The AtonixCorp Platform is built with a modern, scalable, and production-ready i
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │     Nginx       │    │   React App     │    │  Django API     │
-│  (Load Balancer)│◄──►│   (Frontend)    │◄──►│   (Backend)     │
+│  (Load Balancer)│──│   (Frontend)    │──│   (Backend)     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
-         ▼                       ▼                       ▼
+                                                       
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   PostgreSQL    │    │      Redis      │    │     Celery      │
 │   (Database)    │    │     (Cache)     │    │ (Task Queue)    │

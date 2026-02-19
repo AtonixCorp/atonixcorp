@@ -1,16 +1,16 @@
-# 🚀 Full-Stack Server PCIe Expansion Guide
+#  Full-Stack Server PCIe Expansion Guide
 
 This README outlines the essential and advanced PCIe cards required to build a robust full-stack server capable of supporting cloud platforms (e.g., OpenStack, Kubernetes), enterprise workloads, AI/ML, IoT, cybersecurity, and even space exploration.
 
 ---
 
-## 📦 Overview
+##  Overview
 
 A full-stack server requires more than CPU and RAM. PCIe expansion cards provide the networking, storage, acceleration, and security capabilities needed for production-grade infrastructure across multiple domains.
 
 ---
 
-## 🔧 Essential PCIe Cards
+##  Essential PCIe Cards
 
 ### 1. Network Interface Cards (NICs)
 - **Purpose:** High-speed connectivity for cluster communication and external traffic.
@@ -49,32 +49,32 @@ A full-stack server requires more than CPU and RAM. PCIe expansion cards provide
 
 ---
 
-## 🧠 Advanced PCIe Stack for Multi-Domain Infrastructure
+##  Advanced PCIe Stack for Multi-Domain Infrastructure
 
 For a server supporting space exploration, IoT, cybersecurity, and cloud computing:
 
-### 🔥 Compute Acceleration
+###  Compute Acceleration
 - **NVIDIA H100 or A100 Tensor Core GPU** – AI/ML, simulation, scientific modeling
 - **Xilinx Alveo U55C FPGA** – Real-time signal processing, embedded inference
 
-### 🌐 High-Speed Networking
+###  High-Speed Networking
 - **Mellanox ConnectX-6 Dx 100GbE NIC** – RDMA, RoCE, crypto offload
 - **NVIDIA Quantum-2 InfiniBand Adapter (400Gb/s)** – HPC and inter-node AI training
 
-### 💾 Storage & Data Integrity
+###  Storage & Data Integrity
 - **Broadcom MegaRAID 9560-16i** – NVMe/SAS/SATA RAID with hardware redundancy
 - **HighPoint SSD7540 (8x M.2 PCIe Gen4)** – Up to 28GB/s throughput for local caching
 
-### 🔐 Security & Compliance
+###  Security & Compliance
 - **TPM 2.0 PCIe Module (Infineon SLB 9670)** – Secure boot, key storage, compliance
 
-### 🧩 Peripheral Expansion
+###  Peripheral Expansion
 - **PCIe Gen5 Riser Kit (Supermicro RSC-G4)** – Maximize slot usage in 1U/2U chassis
 - **StarTech 4-Port USB 3.2 Gen 2 Card** – IoT device interfacing, serial console access
 
 ---
 
-## ⚡ Key Considerations
+##  Key Considerations
 
 - **PCIe Lanes:** Ensure CPU/motherboard supports enough lanes for GPUs and NICs.
 - **Power & Cooling:** Multiple accelerators increase heat and power draw; redundant PSUs recommended.
@@ -83,7 +83,7 @@ For a server supporting space exploration, IoT, cybersecurity, and cloud computi
 
 ---
 
-## ✅ Recommended Setup for Cloud/Testbed Servers
+##  Recommended Setup for Cloud/Testbed Servers
 
 1. Dual/Quad-Port 10GbE NIC for networking.
 2. RAID Controller (Dell PERC or LSI) for storage management.
@@ -93,7 +93,7 @@ For a server supporting space exploration, IoT, cybersecurity, and cloud computi
 
 ---
 
-## 📌 Notes
+##  Notes
 
 - This README is intended for **development and production planning**.
 - For sovereign infrastructure projects, prioritize **NIC + RAID + NVMe expansion** first, then scale into **GPU accelerators** as workloads demand.
@@ -101,7 +101,7 @@ For a server supporting space exploration, IoT, cybersecurity, and cloud computi
 
 ---
 
-## 🖼️ Server PCIe Setup Diagram
+##  Server PCIe Setup Diagram
 
 Below is a simplified ASCII diagram of a full-stack server chassis with PCIe expansion cards installed. This represents a typical 2U rack server setup.
 

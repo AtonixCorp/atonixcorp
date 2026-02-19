@@ -38,7 +38,7 @@ check_docker() {
 
 # Function to build images
 build_images() {
-    echo "🔨 Building Docker images..."
+    echo " Building Docker images..."
     
     if [ "$ENVIRONMENT" = "production" ]; then
         docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
@@ -64,7 +64,7 @@ run_migrations() {
 
 # Function to collect static files
 collect_static() {
-    echo "📦 Collecting static files..."
+    echo " Collecting static files..."
     
     if [ "$ENVIRONMENT" = "production" ]; then
         docker-compose -f docker-compose.yml -f docker-compose.prod.yml run --rm backend python manage.py collectstatic --noinput
@@ -90,7 +90,7 @@ start_services() {
 
 # Function to wait for services to be healthy
 wait_for_health() {
-    echo "🏥 Waiting for services to be healthy..."
+    echo " Waiting for services to be healthy..."
     
     # Wait for backend health check
     for i in {1..30}; do

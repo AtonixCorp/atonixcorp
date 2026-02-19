@@ -226,7 +226,7 @@ curl http://localhost:8000/api/health/
 curl http://localhost:3000
 ```
 
-## 🧹 Cleanup
+##  Cleanup
 
 ### Stop Services
 ```bash
@@ -274,7 +274,7 @@ docker run --rm -v atonixcorp_postgres_data:/data -v $(pwd):/backup alpine tar c
 - [Django in Docker](https://docs.docker.com/samples/django/)
 - [React in Docker](https://create-react-app.dev/docs/deployment/#docker)
 
-## 🤝 Support
+##  Support
 
 If you encounter issues:
 1. Check the troubleshooting section above

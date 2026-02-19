@@ -65,7 +65,7 @@ start_services() {
 
 # Function to stop services
 stop_services() {
-    echo -e "${YELLOW}🛑 Stopping AtonixCorp Platform...${NC}"
+    echo -e "${YELLOW} Stopping AtonixCorp Platform...${NC}"
     docker-compose down
     echo -e "${GREEN}[OK] Platform stopped successfully!${NC}"
 }
@@ -133,7 +133,7 @@ show_status() {
     echo -e "${BLUE}[STATUS] Service Status:${NC}"
     docker-compose ps
     echo ""
-    echo -e "${BLUE}🏥 Health Checks:${NC}"
+    echo -e "${BLUE} Health Checks:${NC}"
     
     echo -e "Backend: ${GREEN}[OK] Healthy${NC}"
     else
@@ -176,7 +176,7 @@ show_logs() {
 # Function to access service shell
 access_shell() {
     local service=${1:-backend}
-    echo -e "${BLUE}🐚 Accessing $service shell...${NC}"
+    echo -e "${BLUE} Accessing $service shell...${NC}"
     
     case $service in
         backend)
@@ -203,7 +203,7 @@ create_backup() {
     local backup_dir="./backups"
     local backup_file="$backup_dir/backup_$(date +%Y%m%d_%H%M%S).sql"
     
-    echo -e "${BLUE}💾 Creating database backup...${NC}"
+    echo -e "${BLUE} Creating database backup...${NC}"
     mkdir -p $backup_dir
     
     docker-compose exec -T db pg_dump -U atonixcorp_user atonixcorp > $backup_file
@@ -254,15 +254,15 @@ run_migrations() {
 
 # Function to run tests
 run_tests() {
-    echo -e "${BLUE}🧪 Running tests...${NC}"
+    echo -e "${BLUE} Running tests...${NC}"
     docker-compose exec backend python manage.py test
-    echo -e "${GREEN}✅ Tests completed${NC}"
+    echo -e "${GREEN} Tests completed${NC}"
 }
 
 # Function to clean up
 cleanup() {
-    echo -e "${YELLOW}🧹 Cleaning up containers and volumes...${NC}"
-    echo -e "${RED}⚠️  This will remove all containers, images, and volumes. Continue? (y/N)${NC}"
+    echo -e "${YELLOW} Cleaning up containers and volumes...${NC}"
+    echo -e "${RED}  This will remove all containers, images, and volumes. Continue? (y/N)${NC}"
     read -r response
     if [[ ! "$response" =~ ^[Yy]$ ]]; then
         echo "Cleanup cancelled"
@@ -290,17 +290,17 @@ show_access() {
 
 # Function to build images
 build_images() {
-    echo -e "${BLUE}🔨 Building Docker images...${NC}"
+    echo -e "${BLUE} Building Docker images...${NC}"
     docker-compose build --no-cache
-    echo -e "${GREEN}✅ Images built successfully${NC}"
+    echo -e "${GREEN} Images built successfully${NC}"
 }
 
 # Function to show access information
 show_access_info() {
     echo ""
-    echo -e "${GREEN}🎉 Platform is running!${NC}"
+    echo -e "${GREEN} Platform is running!${NC}"
     echo ""
-    echo -e "${BLUE}📍 Access Points:${NC}"
+    echo -e "${BLUE} Access Points:${NC}"
     echo "   Frontend: http://localhost:8080"
     echo "   Backend API: http://localhost:8080/api/"
     echo "   Admin Panel: http://localhost:8080/admin/"

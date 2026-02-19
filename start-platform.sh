@@ -107,7 +107,7 @@ start_unified() {
 }
 
 stop_services() {
-    echo -e "${YELLOW}🛑 Stopping all AtonixCorp Platform services...${NC}"
+    echo -e "${YELLOW} Stopping all AtonixCorp Platform services...${NC}"
     
     docker compose -f docker-compose.yml down 2>/dev/null || true
     docker compose -f docker-compose.all-in-one.yml down 2>/dev/null || true
@@ -118,7 +118,7 @@ stop_services() {
 }
 
 clean_services() {
-    echo -e "${RED}🧹 Cleaning all AtonixCorp Platform services and data...${NC}"
+    echo -e "${RED} Cleaning all AtonixCorp Platform services and data...${NC}"
     read -p "This will remove all containers and volumes. Are you sure? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -144,7 +144,7 @@ show_status() {
     echo -e "${BLUE}[STATUS] Service Status:${NC}"
     docker compose -f docker-compose.all-in-one.yml ps
     echo ""
-    echo -e "${BLUE}💾 Volume Usage:${NC}"
+    echo -e "${BLUE} Volume Usage:${NC}"
     docker volume ls | grep atonixcorp || echo "No AtonixCorp volumes found"
 }
 

@@ -170,11 +170,11 @@ Enterprise security with compliance ready architecture.
 - **Role-Based Access Control (RBAC)**: Granular permission management
 
 #### Compliance Certifications
-- ✓ SOC 2 Type II
-- ✓ ISO 27001
-- ✓ GDPR Ready
-- ✓ HIPAA Compatible
-- ✓ PCI-DSS Compliant
+-  SOC 2 Type II
+-  ISO 27001
+-  GDPR Ready
+-  HIPAA Compatible
+-  PCI-DSS Compliant
 
 #### Security Features
 - Multi-factor authentication (MFA)

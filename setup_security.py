@@ -25,7 +25,7 @@ def print_banner():
 
 def install_security_packages():
     """Install required security packages"""
-    print("\n📦 Installing security packages...")
+    print("\n Installing security packages...")
     
     packages = [
         "cryptography>=41.0.0",
@@ -329,7 +329,7 @@ def create_security_checklist():
 - [x] Real-time security monitoring
 - [x] SSL/TLS configuration for HTTPS
 
-## 🔄 Next Steps
+##  Next Steps
 
 ### Production Deployment
 - [ ] Replace development SSL certificates with Let's Encrypt
@@ -372,7 +372,7 @@ Start Redis for caching and rate limiting:
 redis-server
 ```
 
-## 🚨 Security Best Practices
+##  Security Best Practices
 
 1. **Never commit .env files** to version control
 2. **Rotate encryption keys** regularly
@@ -382,7 +382,7 @@ redis-server
 6. **Implement proper access controls**
 7. **Regular security audits**
 
-## 📞 Incident Response
+##  Incident Response
 
 If you detect a security incident:
 1. Document the incident
@@ -392,7 +392,7 @@ If you detect a security incident:
 5. Implement fixes
 6. Post-incident review
 
-## 🔗 Additional Resources
+##  Additional Resources
 - Django Security Documentation
 - OWASP Top 10
 - Security Headers Best Practices
@@ -490,7 +490,7 @@ def main():
 - Security checklist: SECURITY_CHECKLIST.md
 - Configuration details in backend/security/
 
-🚨 Important reminders:
+ Important reminders:
 - Never commit .env files to version control
 - Use HTTPS in production
 - Monitor security logs regularly

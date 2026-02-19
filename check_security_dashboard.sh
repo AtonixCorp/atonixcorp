@@ -17,28 +17,28 @@ NC='\033[0m'
 # Check backend
 echo -n "Checking backend... "
 if curl -s http://localhost:8000/api/security/frameworks/ > /dev/null 2>&1; then
-  echo -e "${GREEN}✓ Backend is running${NC}"
+  echo -e "${GREEN} Backend is running${NC}"
 else
-  echo -e "${RED}✗ Backend not accessible${NC}"
+  echo -e "${RED} Backend not accessible${NC}"
   echo "  Start backend: cd backend && python manage.py runserver"
 fi
 
 # Check frontend
 echo -n "Checking frontend... "
 if curl -s http://localhost:3000 > /dev/null 2>&1; then
-  echo -e "${GREEN}✓ Frontend is running${NC}"
+  echo -e "${GREEN} Frontend is running${NC}"
 else
-  echo -e "${RED}✗ Frontend not accessible${NC}"
+  echo -e "${RED} Frontend not accessible${NC}"
   echo "  Start frontend: cd frontend && npm start"
 fi
 
 # Check database migrations
 echo -n "Checking migrations... "
 if cd backend && python manage.py showmigrations enterprises | grep -q "\[X\] 0002_add_security_models" 2>/dev/null; then
-  echo -e "${GREEN}✓ Security migrations applied${NC}"
+  echo -e "${GREEN} Security migrations applied${NC}"
   cd - > /dev/null
 else
-  echo -e "${YELLOW}⚠ Security migrations may not be applied${NC}"
+  echo -e "${YELLOW} Security migrations may not be applied${NC}"
   echo "  Run: cd backend && python manage.py migrate enterprises"
   cd - > /dev/null
 fi
@@ -47,9 +47,9 @@ fi
 echo -n "Checking security frameworks... "
 FRAMEWORK_COUNT=$(cd backend && python manage.py shell -c "from enterprises.security_models import SecurityFramework; print(SecurityFramework.objects.count())" 2>/dev/null)
 if [ "$FRAMEWORK_COUNT" -ge 8 ] 2>/dev/null; then
-  echo -e "${GREEN}✓ $FRAMEWORK_COUNT frameworks loaded${NC}"
+  echo -e "${GREEN} $FRAMEWORK_COUNT frameworks loaded${NC}"
 else
-  echo -e "${YELLOW}⚠ Only $FRAMEWORK_COUNT frameworks found (expected 8)${NC}"
+  echo -e "${YELLOW} Only $FRAMEWORK_COUNT frameworks found (expected 8)${NC}"
   echo "  Load frameworks: python manage.py shell < load_frameworks.py"
 fi
 
@@ -70,11 +70,11 @@ for endpoint in "${endpoints[@]}"; do
   echo -n "  $endpoint ... "
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer test" http://localhost:8000$endpoint 2>/dev/null)
   if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
-    echo -e "${GREEN}✓${NC}"
+    echo -e "${GREEN}${NC}"
   elif [ "$STATUS" = "404" ]; then
-    echo -e "${RED}✗ Not Found${NC}"
+    echo -e "${RED} Not Found${NC}"
   else
-    echo -e "${YELLOW}⚠ Status: $STATUS${NC}"
+    echo -e "${YELLOW} Status: $STATUS${NC}"
   fi
 done
 

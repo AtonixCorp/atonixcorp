@@ -16,7 +16,7 @@ The AtonixAI Engine provides AI-driven intelligence for platform operations:
 │           AtonixAI Intelligence Layer            │
 ├──────────────┬──────────────┬────────────────────┤
 │              │              │                    │
-▼              ▼              ▼                    ▼
+                                                
 Predictive  Anomaly       Autonomous         Intelligent
 Scaling     Detection     Security           Routing
 
@@ -30,7 +30,7 @@ Scaling     Detection     Security           Routing
     │  - Prediction engines              │
     └─────────────┬──────────────────────┘
                   │
-        ┌─────────▼──────────┐
+        ┌───────────────────┐
         │  Data Aggregation  │
         │                    │
         │  - Metrics         │

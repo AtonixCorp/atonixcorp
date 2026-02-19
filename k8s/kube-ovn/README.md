@@ -18,7 +18,7 @@ Kube-OVN provides:
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   OVN Central   │    │ OVN Controller  │    │  Kube-OVN CNI  │
-│   (ovn-nb/sb)   │◄──►│   (ovs-vswitchd)│◄──►│   (kube-ovn)   │
+│   (ovn-nb/sb)   │──│   (ovs-vswitchd)│──│   (kube-ovn)   │
 │                 │    │                 │    │                 │
 │ • NB Database   │    │ • Flow Rules    │    │ • IPAM          │
 │ • SB Database   │    │ • Port Binding  │    │ • CNI Plugin    │

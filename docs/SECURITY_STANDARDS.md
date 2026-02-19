@@ -180,11 +180,11 @@ subjects:
 
 **Never in code:**
 ```python
-# ❌ WRONG
+#  WRONG
 API_KEY = "sk-1234567890abcdef"
 DATABASE_PASSWORD = "supersecret123"
 
-# ✅ CORRECT
+#  CORRECT
 API_KEY = os.environ.get('API_KEY')
 DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
 ```
@@ -358,22 +358,22 @@ metadata:
   name: secure-app
 spec:
   securityContext:
-    runAsNonRoot: true           # ✓ Required
+    runAsNonRoot: true           #  Required
     runAsUser: 1000
     runAsGroup: 3000
     fsGroup: 2000
     seccompProfile:
-      type: RuntimeDefault       # ✓ Required
+      type: RuntimeDefault       #  Required
     
   containers:
   - name: app
     image: myapp:latest
     securityContext:
-      allowPrivilegeEscalation: false  # ✓ Required (must be false)
-      readOnlyRootFilesystem: true     # ✓ Recommended
+      allowPrivilegeEscalation: false  #  Required (must be false)
+      readOnlyRootFilesystem: true     #  Recommended
       capabilities:
         drop:
-        - ALL                         # ✓ Required
+        - ALL                         #  Required
       seccompProfile:
         type: RuntimeDefault
     

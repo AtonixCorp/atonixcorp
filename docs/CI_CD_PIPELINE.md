@@ -16,26 +16,26 @@ The AtonixCorp CI/CD pipeline automates the entire software delivery process fro
          PR/Merge to       Push to
          develop/main      develop/main
                 │                     │
-                ▼                     ▼
+                                     
         ┌──────────────┐      ┌──────────────┐
         │ Stage 1:     │      │ Stage 1:     │
         │ Lint/Format  │      │ Lint/Format  │
         └──────┬───────┘      └──────┬───────┘
                │                     │
-               ▼                     ▼
+                                    
         ┌──────────────┐      ┌──────────────┐
         │ Stage 2:     │      │ Stage 2:     │
         │ Unit Tests   │      │ Unit Tests   │
         └──────┬───────┘      └──────┬───────┘
                │                     │
-               ▼                     ▼
+                                    
         ┌──────────────┐      ┌──────────────┐
         │ Stage 3:     │      │ Stage 3:     │
         │ Security     │      │ Security     │
         │ Scanning     │      │ Scanning     │
         └──────┬───────┘      └──────┬───────┘
                │                     │
-               ▼                     ▼
+                                    
         ┌──────────────┐      ┌──────────────┐
         │ PR Review    │      │ Build &      │
         │ Required     │      │ Push Images  │
@@ -43,7 +43,7 @@ The AtonixCorp CI/CD pipeline automates the entire software delivery process fro
                                      │
                     ┌────────────────┼────────────────┐
                     │                │                │
-                    ▼                ▼                ▼
+                                                    
               ┌──────────┐   ┌──────────────┐   ┌────────────┐
               │Deploy to │   │Integration   │   │Production  │
               │Staging   │   │Tests         │   │Deployment  │
@@ -51,7 +51,7 @@ The AtonixCorp CI/CD pipeline automates the entire software delivery process fro
                    │                │                │
                    └────────┬───────┘                │
                             │                       │
-                            ▼                       ▼
+                                                   
                       ┌──────────────┐       ┌────────────┐
                       │  Smoke Tests │       │  Monitor   │
                       └──────────────┘       │ & Verify   │

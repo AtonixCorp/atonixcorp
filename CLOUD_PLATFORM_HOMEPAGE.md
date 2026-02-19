@@ -13,7 +13,7 @@
 │                                                                 │
 │   [Get Started]    [Explore Documentation]                     │
 │                                                                 │
-│   🌐 ☁️ 🚀 Abstract cloud + AI network visualization          │
+│      Abstract cloud + AI network visualization          │
 │   (Blue/White palette for trust and innovation)               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -29,46 +29,46 @@
 ┌─────────────────┬─────────────────┬──────────────────┬──────────────────┬──────────────────┐
 │   COMPUTE       │    STORAGE      │   NETWORKING     │   AUTOMATION     │  AI INTELLIGENCE │
 ├─────────────────┼─────────────────┼──────────────────┼──────────────────┼──────────────────┤
-│  🖥️  VMs        │  📦 Object      │  🌐 SDN          │  🔄 CI/CD        │  🔮 Predictive   │
-│  ☸️  Kubernetes │  💾 Block       │  ⚖️  Load Bal.   │  📝 IaC          │     Scaling      │
-│  🐳 Containers  │  📂 File        │  🌲 VPCs         │  🔨 Auto-scaling│  🚨 Anomaly      │
-│  ⚡ Serverless  │  ⚡ Caching     │  🛡️  DDoS Prot. │  🩹 Self-healing│     Detection    │
-│  🎮 GPU AI      │  📊 Tiering    │  🚀 CDN          │  🤖 Autonomic   │  🔐 Autonomous   │
+│    VMs        │   Object      │   SDN          │   CI/CD        │   Predictive   │
+│    Kubernetes │   Block       │    Load Bal.   │   IaC          │     Scaling      │
+│   Containers  │   File        │   VPCs         │   Auto-scaling│   Anomaly      │
+│   Serverless  │   Caching     │    DDoS Prot. │   Self-healing│     Detection    │
+│   GPU AI      │   Tiering    │   CDN          │   Autonomic   │   Autonomous   │
 │                 │                 │                  │     Ops (AOE)    │     Security     │
 └─────────────────┴─────────────────┴──────────────────┴──────────────────┴──────────────────┘
 ```
 
 ### Feature Descriptions
 
-#### 🖥️ **Compute**
+####  **Compute**
 - Virtual Machines for traditional workloads
 - Kubernetes orchestration for containers
 - Docker containerization
 - Serverless functions for event-driven apps
 - GPU clusters for AI/ML workloads
 
-#### 📦 **Storage**
+####  **Storage**
 - Object Storage (S3-compatible)
 - Block Storage (persistent volumes)
 - File Storage (NFS, SMB)
 - Intelligent Caching layer
 - Automated Tiering (hot/warm/cold)
 
-#### 🌐 **Networking**
+####  **Networking**
 - Software-Defined Networking (SDN)
 - Load Balancers (L4/L7)
 - Virtual Private Clouds (VPCs)
 - Content Delivery Network (CDN)
 - DDoS Protection & WAF
 
-#### 🔄 **Automation Engine (AOE)**
+####  **Automation Engine (AOE)**
 - CI/CD Pipelines (GitHub Actions, GitLab)
 - Infrastructure as Code (Terraform, Helm)
 - Auto-scaling (horizontal & vertical)
 - Self-healing services
 - GitOps Workflows
 
-#### 🔮 **AI Intelligence (Cloud AI)**
+####  **AI Intelligence (Cloud AI)**
 - Predictive Scaling (forecasting demand)
 - Anomaly Detection (isolation forest, LOF)
 - Autonomous Security (threat response)
@@ -80,16 +80,16 @@
 ## Developer Standards Checklist
 
 ```
-✅ Containerized Services (Docker)
-✅ Health Endpoints (/health, /ready, /metrics)
-✅ Structured JSON Logging
-✅ Zero-Trust Security Principles
-✅ OpenTelemetry Integration
-✅ SDK & CLI Tools (atonix)
-✅ Kubernetes-Native Deployment
-✅ RBAC & IAM
-✅ Encrypted Communication (mTLS)
-✅ Audit Logging & Compliance
+ Containerized Services (Docker)
+ Health Endpoints (/health, /ready, /metrics)
+ Structured JSON Logging
+ Zero-Trust Security Principles
+ OpenTelemetry Integration
+ SDK & CLI Tools (atonix)
+ Kubernetes-Native Deployment
+ RBAC & IAM
+ Encrypted Communication (mTLS)
+ Audit Logging & Compliance
 ```
 
 ### Requirements for Services
@@ -158,25 +158,25 @@ atonix monitor --service my-service
 
 ## Observability & Security – Side-by-Side
 
-### 📊 Observability Stack
+###  Observability Stack
 ```
 ┌─────────────────────────────────────────┐
 │  OBSERVABILITY LAYER                    │
 ├─────────────────────────────────────────┤
 │                                         │
-│  📝 Logging                             │
+│   Logging                             │
 │     • JSON structured logs              │
 │     • Loki log aggregation              │
 │     • Full-text search                  │
 │     • Retention policies                │
 │                                         │
-│  📈 Metrics                             │
+│   Metrics                             │
 │     • Prometheus collection             │
 │     • Custom application metrics        │
 │     • Alert rules (firing, pending)     │
 │     • Grafana dashboards                │
 │                                         │
-│  🔗 Tracing                             │
+│   Tracing                             │
 │     • OpenTelemetry standard            │
 │     • Jaeger/Tempo backend              │
 │     • Service dependencies              │
@@ -185,25 +185,25 @@ atonix monitor --service my-service
 └─────────────────────────────────────────┘
 ```
 
-### 🔒 Security Layer
+###  Security Layer
 ```
 ┌─────────────────────────────────────────┐
 │  SECURITY LAYER                         │
 ├─────────────────────────────────────────┤
 │                                         │
-│  🔐 IAM & Authentication                │
+│   IAM & Authentication                │
 │     • RBAC (Admin, Developer, Reader)   │
 │     • OAuth2 & JWT tokens               │
 │     • Service accounts                  │
 │     • MFA support                       │
 │                                         │
-│  🔒 Encryption                          │
+│   Encryption                          │
 │     • TLS/mTLS for all traffic          │
 │     • Data in transit & at rest         │
 │     • Secrets management                │
 │     • Key rotation                      │
 │                                         │
-│  🌐 Network Security                    │
+│   Network Security                    │
 │     • VPC isolation                     │
 │     • Network Policies                  │
 │     • WAF (Web Application Firewall)    │
@@ -216,37 +216,37 @@ atonix monitor --service my-service
 
 ## AI & Automation – Futuristic Intelligence
 
-### 🤖 Cloud AI Engine
+###  Cloud AI Engine
 
 ```
 ┌──────────────────────────────────────────────────────┐
 │         INTELLIGENT AUTOMATION ENGINE                │
 ├──────────────────────────────────────────────────────┤
 │                                                      │
-│  🔮 Predictive Scaling                              │
+│   Predictive Scaling                              │
 │     Forecast demand using ARIMA/FBProphet          │
 │     Auto-scale compute based on predictions        │
 │     Cost optimization through intelligence         │
 │                                                      │
-│  🚨 Anomaly Detection                               │
+│   Anomaly Detection                               │
 │     Real-time metric analysis                      │
 │     Isolation Forest for outliers                  │
 │     Local Outlier Factor (LOF)                     │
 │     Automatic alert generation                     │
 │                                                      │
-│  🔐 Autonomous Security                             │
+│   Autonomous Security                             │
 │     Detect security anomalies                      │
 │     Auto-block suspicious traffic                  │
 │     Auto-remediate compliance violations           │
 │     Incident response automation                   │
 │                                                      │
-│  🔍 Vector Search & Embeddings                      │
+│   Vector Search & Embeddings                      │
 │     Semantic search for logs/traces                │
 │     ML-powered insights                            │
 │     Similarity matching                            │
 │     Pattern recognition                           │
 │                                                      │
-│  ⚡ Intelligent Routing                             │
+│   Intelligent Routing                             │
 │     Dynamic service discovery                      │
 │     Health-aware load balancing                    │
 │     Canary deployments                             │
@@ -309,7 +309,7 @@ ai.deploy_policy(policy)
            │   ├─→ RBAC enforcement
            │   └─→ Audit logging
            │
-┌──────────▼──────────┐
+┌────────────────────┐
 │  atonixcorp         │
 │  Observability      │
 │  & Security Layer   │
@@ -328,28 +328,28 @@ ai.deploy_policy(policy)
 
 ### Engineering Teams
 
-#### 🏗️ **Platform Engineering**
+####  **Platform Engineering**
 - Infrastructure design and optimization
 - Service Architecture
 - Capacity planning
 - **Email**: platform-team@cloudplatform.io
 - **Slack**: #platform-core
 
-#### 🔧 **Cloud Infrastructure Team**
+####  **Cloud Infrastructure Team**
 - Kubernetes cluster management
 - Network & storage operations
 - Disaster recovery
 - **Email**: infra-team@cloudplatform.io
 - **Slack**: #infrastructure
 
-#### 🔒 **Security & Compliance Team**
+####  **Security & Compliance Team**
 - Security policy enforcement
 - Compliance audits (SOC 2, HIPAA, GDPR)
 - Incident response
 - **Email**: security-team@cloudplatform.io
 - **Slack**: #security-incidents
 
-#### 🤖 **AI/Automation Team**
+####  **AI/Automation Team**
 - Cloud AI engine development
 - Predictive analytics
 - Autonomous systems
@@ -366,22 +366,22 @@ ai.deploy_policy(policy)
 │  For large-scale deployments,           │
 │  custom SLAs, and dedicated support:    │
 │                                         │
-│  👔 Sales: sales@cloudplatform.io       │
-│  📞 Phone: +1 (XXX) XXX-XXXX            │
-│  🌍 Web: https://www.cloudplatform.io  │
+│   Sales: sales@cloudplatform.io       │
+│   Phone: +1 (XXX) XXX-XXXX            │
+│   Web: https://www.cloudplatform.io  │
 │                                         │
 └─────────────────────────────────────────┘
 ```
 
 ### Quick Links
 
-- 📖 [Getting Started Guide](./docs/QUICK_START.md)
-- 🏗️ [Architecture Overview](./docs/PLATFORM_IMPLEMENTATION_GUIDE.md)
-- 🔐 [Security Standards](./docs/SECURITY_STANDARDS.md)
-- 📈 [Observability Guide](./docs/OBSERVABILITY_GUIDE.md)
-- 🚀 [Deployment Workflow](./docs/DEPLOYMENT_WORKFLOW.md)
-- 💻 [Developer Requirements](./docs/DEVELOPER_REQUIREMENTS.md)
-- 🤖 [AI & Automation](./docs/AI_AUTOMATION_INTEGRATION.md)
+-  [Getting Started Guide](./docs/QUICK_START.md)
+-  [Architecture Overview](./docs/PLATFORM_IMPLEMENTATION_GUIDE.md)
+-  [Security Standards](./docs/SECURITY_STANDARDS.md)
+-  [Observability Guide](./docs/OBSERVABILITY_GUIDE.md)
+-  [Deployment Workflow](./docs/DEPLOYMENT_WORKFLOW.md)
+-  [Developer Requirements](./docs/DEVELOPER_REQUIREMENTS.md)
+-  [AI & Automation](./docs/AI_AUTOMATION_INTEGRATION.md)
 
 ---
 
