@@ -351,6 +351,18 @@ p  { color: var(--text-muted); }
 .channel-card p  { font-size: .82rem; color: var(--text-muted); }
 .channel-card a  { font-size: .83rem; font-weight: 500; color: var(--teal); }
 
+
+/* --------- SOCIAL ICONS --------- */
+.social-icons { display: flex; gap: .65rem; margin-top: 1.25rem; flex-wrap: wrap; }
+.social-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.07); color: #94a3b8;
+  text-decoration: none; transition: background .2s, color .2s, transform .18s;
+}
+.social-icon:hover { background: var(--teal); color: #fff; transform: translateY(-2px); }
+.social-icon svg { width: 17px; height: 17px; }
+
 /* --------- RESPONSIVE --------- */
 @media (max-width: 900px) {
   .footer-grid { grid-template-columns: 1fr 1fr; }
