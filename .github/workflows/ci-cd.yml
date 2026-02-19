@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 env:
-  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-platform-frontend
-  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-platform-backend
+  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
+  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
 
 jobs:
   test-frontend:
@@ -119,8 +119,8 @@ on:
     branches: [ main ]
 
 env:
-  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-platform-frontend
-  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-platform-backend
+  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
+  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
 
 jobs:
   test-frontend:
@@ -186,8 +186,8 @@ jobs:
               branches: [ main ]
 
           env:
-            IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-platform-frontend
-            IMAGE_REPO_BACKEND: atonixdev/atonixcorp-platform-backend
+            IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
+            IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
 
           jobs:
             test-frontend:

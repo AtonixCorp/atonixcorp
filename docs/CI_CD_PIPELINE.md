@@ -144,8 +144,8 @@ dependency-check  # All dependencies
 **Registry**: Docker Hub
 
 **Images Built**:
-- `atonixdev/atonixcorp-platform-frontend:<tag>`
-- `atonixdev/atonixcorp-platform-backend:<tag>`
+- `atonixdev/atonixcorp-frontend:<tag>`
+- `atonixdev/atonixcorp-backend:<tag>`
 
 **Tagging Strategy**:
 - Main branch: `latest`, `v1.0.0` (semver)

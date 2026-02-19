@@ -102,7 +102,7 @@ curl -X POST https://kas-webhooks.atonixcorp.com/webhook/quantum-deploy \
       "name": "pennylane.atnixcorp.com"
     },
     "source": {
-      "repo_url": "https://github.com/atonixcorp/atonixcorp-platform.git",
+      "repo_url": "https://github.com/atonixcorp/atonixcorp.git",
       "revision": "main"
     }
   }'
@@ -149,7 +149,7 @@ spec:
   - name: crd-name
     value: pennylane.atnixcorp.com
   - name: repo-url
-    value: https://github.com/atonixcorp/atonixcorp-platform.git
+    value: https://github.com/atonixcorp/atonixcorp.git
   - name: revision
     value: main
   workspaces:

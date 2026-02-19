@@ -19,7 +19,7 @@
         "unauthorized": true
     },
     "circleci.persistedProjectSelection": [
-        "gh/AtonixCorp/atonixcorp-platform"
+        "gh/AtonixCorp/atonixcorp"
     ],
     "github.copilot.chat.enableTerminalIntegration": true,
     "github.copilot.terminal.executeCommands": true,

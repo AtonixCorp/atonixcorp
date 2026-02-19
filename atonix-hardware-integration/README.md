@@ -148,8 +148,8 @@ git lfs install
 
 ```bash
 # Clone the repository
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-cd atonixcorp-platform/atonix-hardware-integration
+git clone https://github.com/AtonixCorp/atonixcorp.git
+cd atonixcorp/atonix-hardware-integration
 
 # Pull large files
 git lfs pull

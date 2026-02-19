@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "atonixcorp-platform.fullname" . }}-backend
+  name: {{ include "atonixcorp.fullname" . }}-backend
   labels:
-    {{- include "atonixcorp-platform.backend.labels" . | nindent 4 }}
+    {{- include "atonixcorp.backend.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.backend.autoscaling.enabled }}
   replicas: {{ .Values.backend.replicaCount }}
@@ -16,7 +16,7 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      {{- include "atonixcorp-platform.selectorLabels" . | nindent 6 }}
+      {{- include "atonixcorp.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: backend
   template:
     metadata:
@@ -24,30 +24,30 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/backend-configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/backend-secret.yaml") . | sha256sum }}
       labels:
-        {{- include "atonixcorp-platform.selectorLabels" . | nindent 8 }}
+        {{- include "atonixcorp.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "atonixcorp-platform.serviceAccountName" . }}
+      serviceAccountName: {{ include "atonixcorp.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
       - name: migrate
-        image: {{ include "atonixcorp-platform.backend.image" . }}
+        image: {{ include "atonixcorp.backend.image" . }}
         command: ["python", "manage.py", "migrate"]
         envFrom:
         - configMapRef:
-            name: {{ include "atonixcorp-platform.fullname" . }}-backend-config
+            name: {{ include "atonixcorp.fullname" . }}-backend-config
         - secretRef:
-            name: {{ include "atonixcorp-platform.fullname" . }}-backend-secret
+            name: {{ include "atonixcorp.fullname" . }}-backend-secret
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
       containers:
       - name: backend
-        image: {{ include "atonixcorp-platform.backend.image" . }}
+        image: {{ include "atonixcorp.backend.image" . }}
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         ports:
         - name: http
@@ -55,9 +55,9 @@ spec:
           protocol: TCP
         envFrom:
         - configMapRef:
-            name: {{ include "atonixcorp-platform.fullname" . }}-backend-config
+            name: {{ include "atonixcorp.fullname" . }}-backend-config
         - secretRef:
-            name: {{ include "atonixcorp-platform.fullname" . }}-backend-secret
+            name: {{ include "atonixcorp.fullname" . }}-backend-secret
         {{- if .Values.backend.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -91,7 +91,7 @@ spec:
       {{- if .Values.persistence.media.enabled }}
       - name: media-files
         persistentVolumeClaim:
-          claimName: {{ include "atonixcorp-platform.fullname" . }}-media
+          claimName: {{ include "atonixcorp.fullname" . }}-media
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -111,7 +111,7 @@ spec:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                - {{ include "atonixcorp-platform.name" . }}
+                - {{ include "atonixcorp.name" . }}
               - key: app.kubernetes.io/component
                 operator: In
                 values:
@@ -126,7 +126,7 @@ spec:
                 - key: app.kubernetes.io/name
                   operator: In
                   values:
-                  - {{ include "atonixcorp-platform.name" . }}
+                  - {{ include "atonixcorp.name" . }}
                 - key: app.kubernetes.io/component
                   operator: In
                   values:

@@ -6,7 +6,7 @@
 set -e
 
 ENVIRONMENT=${1:-production}
-PROJECT_DIR="/home/atonixdev/atonixcorp-platform"
+PROJECT_DIR="/home/atonixdev/atonixcorp"
 
 echo "[DEPLOY] Deploying AtonixCorp Platform to $ENVIRONMENT environment..."
 

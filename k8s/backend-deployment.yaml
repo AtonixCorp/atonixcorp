@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: atonixdev/atonixcorp-platform-backend:latest
+          image: atonixdev/atonixcorp-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

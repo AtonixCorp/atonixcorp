@@ -12,10 +12,10 @@ data:
     apiVersion: dashboard.tekton.dev/v1alpha1
     kind: Extension
     metadata:
-      name: atonixcorp-platform-extension
+      name: atonixcorp-extension
     spec:
       apiVersion: dashboard.tekton.dev/v1alpha1
-      name: atonixcorp-platform
+      name: atonixcorp
       displayname: AtonixCorp Platform
       bundlelocation: ./static/extensions/atonixcorp/
       source: |

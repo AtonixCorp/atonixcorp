@@ -14,7 +14,7 @@
 
 #### 1. Clone and Setup Environment
 ```bash
-cd /home/atonixdev/atonixcorp-platform/backend
+cd /home/atonixdev/atonixcorp/backend
 
 # Create virtual environment
 python3 -m venv venv

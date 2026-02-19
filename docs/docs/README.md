@@ -77,7 +77,7 @@ Welcome to the **AtonixCorp Platform** - a unified, production-grade cloud infra
 
 ```bash
 # Clone repository
-cd /home/atonixdev/atonixcorp-platform/backend
+cd /home/atonixdev/atonixcorp/backend
 
 # Setup environment
 python3 -m venv venv

@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: atonixcorp-platform-environments
+  name: atonixcorp-environments
   namespace: argocd
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
 spec:
   generators:
   - list:
@@ -15,7 +15,7 @@ spec:
         environment: development
         namespace: atonixcorp-dev
         branch: develop
-        project: atonixcorp-platform
+        project: atonixcorp
         valueFile: values-dev.yaml
         autoSync: true
         selfHeal: true
@@ -24,7 +24,7 @@ spec:
         environment: staging
         namespace: atonixcorp-staging
         branch: main
-        project: atonixcorp-platform
+        project: atonixcorp
         valueFile: values-staging.yaml
         autoSync: true
         selfHeal: false
@@ -40,16 +40,16 @@ spec:
   
   template:
     metadata:
-      name: 'atonixcorp-platform-{{environment}}'
+      name: 'atonixcorp-{{environment}}'
       labels:
-        app: atonixcorp-platform
+        app: atonixcorp
         environment: '{{environment}}'
     spec:
       project: '{{project}}'
       source:
-        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp.git
         targetRevision: '{{branch}}'
-        path: helm/atonixcorp-platform
+        path: helm/atonixcorp
         helm:
           valueFiles:
             - values.yaml
@@ -78,10 +78,10 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: atonixcorp-platform-feature-branches
+  name: atonixcorp-feature-branches
   namespace: argocd
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
     type: feature-branch
 spec:
   generators:
@@ -96,19 +96,19 @@ spec:
   
   template:
     metadata:
-      name: 'atonixcorp-platform-pr-{{number}}'
+      name: 'atonixcorp-pr-{{number}}'
       labels:
-        app: atonixcorp-platform
+        app: atonixcorp
         type: feature-branch
         pr-number: '{{number}}'
       annotations:
         link.argocd.argoproj.io/external-link: '{{url}}'
     spec:
-      project: atonixcorp-platform
+      project: atonixcorp
       source:
-        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp.git
         targetRevision: '{{head_sha}}'
-        path: helm/atonixcorp-platform
+        path: helm/atonixcorp
         helm:
           valueFiles:
             - values.yaml

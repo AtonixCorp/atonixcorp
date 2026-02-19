@@ -1,9 +1,9 @@
-# Kubernetes deployment for atonixcorp-platform
+# Kubernetes deployment for atonixcorp
 
 This folder contains minimal Kubernetes manifests to deploy the backend and frontend images you pushed as:
 
-- atonixdev/atonixcorp-platform-backend:latest
-- atonixdev/atonixcorp-platform-frontend:latest
+- atonixdev/atonixcorp-backend:latest
+- atonixdev/atonixcorp-frontend:latest
 
 Files:
 

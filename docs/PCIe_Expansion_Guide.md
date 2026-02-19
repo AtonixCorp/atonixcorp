@@ -151,4 +151,4 @@ Below is a simplified ASCII diagram of a full-stack server chassis with PCIe exp
 - **USB Expansion:** For additional peripherals.
 
 This setup ensures the server can handle diverse workloads from cloud computing to space exploration simulations.</content>
-<parameter name="filePath">/home/atonixdevmaster/atonixcorp-platform/docs/PCIe_Expansion_Guide.md
+<parameter name="filePath">/home/atonixdevmaster/atonixcorp/docs/PCIe_Expansion_Guide.md

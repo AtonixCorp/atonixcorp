@@ -54,7 +54,7 @@ A modern, professional dashboard interface with a left sidebar navigation design
 ### Installation
 ```bash
 # Navigate to frontend directory
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 
 # Install dependencies
 npm install

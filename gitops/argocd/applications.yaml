@@ -2,18 +2,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: atonixcorp-platform-dev
+  name: atonixcorp-dev
   namespace: argocd
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
     environment: development
 spec:
   project: default
   
   source:
-    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp.git
     targetRevision: develop
-    path: helm/atonixcorp-platform
+    path: helm/atonixcorp
     helm:
       valueFiles:
         - values.yaml
@@ -61,18 +61,18 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: atonixcorp-platform-staging
+  name: atonixcorp-staging
   namespace: argocd
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
     environment: staging
 spec:
   project: default
   
   source:
-    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp.git
     targetRevision: main
-    path: helm/atonixcorp-platform
+    path: helm/atonixcorp
     helm:
       valueFiles:
         - values.yaml
@@ -109,10 +109,10 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: atonixcorp-platform-prod
+  name: atonixcorp-prod
   namespace: argocd
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
     environment: production
   annotations:
     argocd.argoproj.io/sync-wave: "10"  # Deploy after infrastructure
@@ -120,9 +120,9 @@ spec:
   project: production
   
   source:
-    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp.git
     targetRevision: main
-    path: helm/atonixcorp-platform
+    path: helm/atonixcorp
     helm:
       valueFiles:
         - values.yaml

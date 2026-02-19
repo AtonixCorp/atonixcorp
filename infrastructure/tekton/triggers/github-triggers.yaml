@@ -176,7 +176,7 @@ spec:
       - name: revision
         value: $(tt.params.gitrevision)
       - name: image-reference
-        value: "atonixcorp-platform:$(tt.params.gitrevision)"
+        value: "atonixcorp:$(tt.params.gitrevision)"
       workspaces:
       - name: shared-data
         volumeClaimTemplate:
@@ -235,7 +235,7 @@ spec:
       - name: revision
         value: $(tt.params.gitrevision)
       - name: image-reference
-        value: "atonixcorp-platform:pr-$(tt.params.prnumber)"
+        value: "atonixcorp:pr-$(tt.params.prnumber)"
       - name: test-type
         value: "all"
       workspaces:
@@ -293,7 +293,7 @@ spec:
       - name: revision
         value: $(tt.params.gitrevision)
       - name: image-reference
-        value: "atonixcorp-platform:$(tt.params.releasetag)"
+        value: "atonixcorp:$(tt.params.releasetag)"
       - name: skip-production
         value: $(tt.params.releaseprerelease)
       workspaces:

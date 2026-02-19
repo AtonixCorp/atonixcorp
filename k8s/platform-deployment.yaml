@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: atonixcorp-platform
+  name: atonixcorp
   namespace: atonixcorp
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: atonixcorp-platform
+      app: atonixcorp
   template:
     metadata:
       labels:
-        app: atonixcorp-platform
+        app: atonixcorp
     spec:
       imagePullSecrets:
         - name: ghcr-regcred
       containers:
         - name: platform
-          image: ghcr.io/atonixdev/atonixcorp-platform:1.0.0
+          image: ghcr.io/atonixdev/atonixcorp:1.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

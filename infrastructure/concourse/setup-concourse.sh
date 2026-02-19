@@ -205,12 +205,12 @@ EOF
     
     # Set the pipeline
     fly -t atonixcorp set-pipeline \
-        -p atonixcorp-platform \
-        -c "$CONCOURSE_DIR/pipelines/atonixcorp-platform.yml" \
+        -p atonixcorp \
+        -c "$CONCOURSE_DIR/pipelines/atonixcorp.yml" \
         -l /tmp/concourse-secrets.yml
     
     # Unpause the pipeline
-    fly -t atonixcorp unpause-pipeline -p atonixcorp-platform
+    fly -t atonixcorp unpause-pipeline -p atonixcorp
     
     log_success "Pipeline set up successfully"
 }
@@ -334,13 +334,13 @@ print_access_info() {
     echo "🛠️  Fly CLI Commands:"
     echo "====================="
     echo "📋 List pipelines:     fly -t atonixcorp pipelines"
-    echo "▶️  Trigger build:      fly -t atonixcorp trigger-job -j atonixcorp-platform/ci-pipeline"
-    echo "📊 Watch build:        fly -t atonixcorp watch -j atonixcorp-platform/ci-pipeline"
-    echo "🔍 Get pipeline:       fly -t atonixcorp get-pipeline -p atonixcorp-platform"
+    echo "▶️  Trigger build:      fly -t atonixcorp trigger-job -j atonixcorp/ci-pipeline"
+    echo "📊 Watch build:        fly -t atonixcorp watch -j atonixcorp/ci-pipeline"
+    echo "🔍 Get pipeline:       fly -t atonixcorp get-pipeline -p atonixcorp"
     echo ""
     echo "📁 Pipeline Files:"
     echo "=================="
-    echo "🏗️  Main pipeline:     $CONCOURSE_DIR/pipelines/atonixcorp-platform.yml"
+    echo "🏗️  Main pipeline:     $CONCOURSE_DIR/pipelines/atonixcorp.yml"
     echo "🔒 Security pipeline:  $CONCOURSE_DIR/pipelines/security-pipeline.yml"
     echo "📝 Task definitions:   $CONCOURSE_DIR/tasks/"
     echo ""
@@ -350,7 +350,7 @@ print_access_info() {
     echo "2. Configure Git repository webhooks pointing to Concourse"
     echo "3. Set up Slack notifications (update webhook URL)"
     echo "4. Configure Docker registry credentials"
-    echo "5. Test pipeline: fly -t atonixcorp trigger-job -j atonixcorp-platform/ci-pipeline"
+    echo "5. Test pipeline: fly -t atonixcorp trigger-job -j atonixcorp/ci-pipeline"
     echo ""
     echo "🔗 Integration:"
     echo "==============="

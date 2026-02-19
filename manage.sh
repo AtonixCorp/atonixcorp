@@ -5,7 +5,7 @@
 
 set -e
 
-PROJECT_DIR="/home/atonixdev/atonixcorp-platform"
+PROJECT_DIR="/home/atonixdev/atonixcorp"
 cd $PROJECT_DIR
 
 # Colors for output

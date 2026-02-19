@@ -44,7 +44,7 @@ The AtonixCorp Platform is built with a modern, scalable, and production-ready i
 
 ```bash
 # 1. Clone and navigate to project
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 
 # 2. Copy environment configuration
 cp .env.example .env.local

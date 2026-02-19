@@ -7,7 +7,7 @@ import os
 import time
 
 # Add the backend directory to Python path
-sys.path.insert(0, '/home/atonixdev/atonixcorp-platform/backend')
+sys.path.insert(0, '/home/atonixdev/atonixcorp/backend')
 
 # Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'atonixcorp.settings')

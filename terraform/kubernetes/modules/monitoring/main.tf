@@ -244,7 +244,7 @@ resource "kubernetes_config_map" "prometheus_rules" {
       groups = [
         {
 <<<<<<< HEAD
-          name = "atonixcorp-platform"
+          name = "atonixcorp"
 =======
           name = "atonixcorp"
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

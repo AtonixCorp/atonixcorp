@@ -223,7 +223,7 @@ bash check_security_dashboard.sh
 ## File Structure
 
 ```
-atonixcorp-platform/
+atonixcorp/
 ├── backend/
 │   ├── enterprises/
 │   │   ├── security_models.py (7 models)

@@ -5,4 +5,4 @@ metadata:
   labels:
     name: atonixcorp
     environment: production
-    app: atonixcorp-platform
+    app: atonixcorp

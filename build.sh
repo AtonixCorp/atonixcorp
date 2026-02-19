@@ -8,8 +8,8 @@ echo "=================================================="
 
 # Configuration
 REGISTRY="quay.io/atonixdev"
-IMAGE_NAME="atonixcorp-platform"
-LOCAL_TAG="atonixcorp-platform:latest"
+IMAGE_NAME="atonixcorp"
+LOCAL_TAG="atonixcorp:latest"
 VERSION="${VERSION:-latest}"
 REGISTRY_TAG="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
 
@@ -46,7 +46,7 @@ show_usage() {
 build_container() {
     echo "📦 Building unified container..."
 <<<<<<< HEAD
-    nerdctl build -f Dockerfile.fullstack -t atonixcorp-platform:latest .
+    nerdctl build -f Dockerfile.fullstack -t atonixcorp:latest .
 =======
     nerdctl build -f Dockerfile.fullstack -t atonixcorpvm:latest .
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
@@ -105,7 +105,7 @@ show_logs() {
 clean_up() {
     echo "🧹 Cleaning up..."
     nerdctl compose -f docker-compose.unified.yml down -v
-    nerdctl image rm atonixcorp-platform:latest 2>/dev/null || true
+    nerdctl image rm atonixcorp:latest 2>/dev/null || true
 <<<<<<< HEAD
 =======
     nerdctl image rm atonixcorpvm:latest 2>/dev/null || true

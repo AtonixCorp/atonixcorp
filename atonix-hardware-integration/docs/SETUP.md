@@ -62,8 +62,8 @@ pip3 install --user \
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-cd atonixcorp-platform/atonix-hardware-integration
+git clone https://github.com/AtonixCorp/atonixcorp.git
+cd atonixcorp/atonix-hardware-integration
 
 # Pull large files
 git lfs pull

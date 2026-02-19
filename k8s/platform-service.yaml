@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: atonixcorp-platform
+  name: atonixcorp
   namespace: atonixcorp
   labels:
-    app: atonixcorp-platform
+    app: atonixcorp
 spec:
   selector:
-    app: atonixcorp-platform
+    app: atonixcorp
   ports:
     - protocol: TCP
       port: 8000

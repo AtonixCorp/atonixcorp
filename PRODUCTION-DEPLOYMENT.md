@@ -3,9 +3,9 @@
 ## [PACKAGE] Main Production Image
 
 <<<<<<< HEAD
-**Image to push to production:** `atonixcorp-platform:latest` or `quay.io/atonixdev/atonixcorp-platform:latest`
+**Image to push to production:** `atonixcorp:latest` or `quay.io/atonixdev/atonixcorp:latest`
 =======
-**Image to push to production:** `atonixcorpvm:latest` or `quay.io/atonixdev/atonixcorp-platform:latest`
+**Image to push to production:** `atonixcorpvm:latest` or `quay.io/atonixdev/atonixcorp:latest`
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 ## [DOMAINS] Production Domains
@@ -16,7 +16,7 @@
 
 ## [ARCHITECTURE] Architecture Overview
 
-### Single Unified Container: `atonixcorp-platform:latest`
+### Single Unified Container: `atonixcorp:latest`
 
 This container includes:
 
@@ -64,19 +64,19 @@ This container includes:
 ```bash
 # Export the main image
 <<<<<<< HEAD
-nerdctl save atonixcorp-platform:latest -o atonixcorp-platform.tar
+nerdctl save atonixcorp:latest -o atonixcorp.tar
 =======
-nerdctl save atonixcorpvm:latest -o atonixcorp-platform.tar
+nerdctl save atonixcorpvm:latest -o atonixcorp.tar
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
 
 # On production server
-docker load -i atonixcorp-platform.tar
+docker load -i atonixcorp.tar
 docker run -d -p 8080:8080 \
   -e DATABASE_URL="postgresql://user:pass@your-db:5432/dbname" \
   -e REDIS_URL="redis://your-redis:6379" \
   --name atonixcorp-app \
 <<<<<<< HEAD
-  atonixcorp-platform:latest
+  atonixcorp:latest
 =======
   atonixcorpvm:latest
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
@@ -95,7 +95,7 @@ docker-compose -f docker-compose.simple.yml up -d
 ### Option 3: Deploy from Quay.io Registry (Recommended)
 ```bash
 # Pull from Quay.io registry
-docker pull quay.io/atonixdev/atonixcorp-platform:latest
+docker pull quay.io/atonixdev/atonixcorp:latest
 
 # Deploy from registry
 docker run -d -p 8080:8080 \
@@ -104,7 +104,7 @@ docker run -d -p 8080:8080 \
   -e DEBUG=False \
   -e ALLOWED_HOSTS="your-domain.com" \
   --name atonixcorp-app \
-  quay.io/atonixdev/atonixcorp-platform:latest
+  quay.io/atonixdev/atonixcorp:latest
 ```
 
 ### Option 4: Deploy with Docker Compose from Registry
@@ -113,7 +113,7 @@ docker run -d -p 8080:8080 \
 version: '3.8'
 services:
   app:
-    image: quay.io/atonixdev/atonixcorp-platform:latest
+    image: quay.io/atonixdev/atonixcorp:latest
     ports:
       - "8080:8080"
     environment:
@@ -177,7 +177,7 @@ EMAIL_HOST_PASSWORD=your-email-password
 
 ```
 <<<<<<< HEAD
-Image: atonixcorp-platform:latest
+Image: atonixcorp:latest
 =======
 Image: atonixcorpvm:latest
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
@@ -202,7 +202,7 @@ curl -I http://localhost:8080/
 curl -I http://localhost:8080/api/
 
 # View container logs
-docker logs atonixcorp-platform-app-1
+docker logs atonixcorp-app-1
 ```
 
 ## [BENEFITS] Key Benefits of This Architecture
@@ -218,7 +218,7 @@ docker logs atonixcorp-platform-app-1
 
 - The **frontend is NOT running as a separate server** - it's built into static files and served by Nginx
 <<<<<<< HEAD
-- The **main container** (`atonixcorp-platform:latest`) is what you deploy to production  
+- The **main container** (`atonixcorp:latest`) is what you deploy to production  
 =======
 -- The **main container** (`atonixcorpvm:latest`) is what you deploy to production  
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

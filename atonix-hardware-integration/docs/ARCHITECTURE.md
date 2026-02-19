@@ -27,8 +27,8 @@ docs/
 ### Basic Setup
 ```bash
 # Clone and setup
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-cd atonixcorp-platform/atonix-hardware-integration
+git clone https://github.com/AtonixCorp/atonixcorp.git
+cd atonixcorp/atonix-hardware-integration
 git lfs pull
 
 # Start development environment
@@ -129,8 +129,8 @@ docker-compose -f docker/docker-compose.yml exec hardware-ci \
 ### 1. Environment Setup
 ```bash
 # Clone repository
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-cd atonixcorp-platform/atonix-hardware-integration
+git clone https://github.com/AtonixCorp/atonixcorp.git
+cd atonixcorp/atonix-hardware-integration
 
 # Setup development environment
 docker-compose -f docker/docker-compose.yml up -d

@@ -12,7 +12,7 @@ This guide explains how to set up Apache2 as a reverse proxy for the AtonixCorp 
 
 ### 1. Clone and Navigate
 ```bash
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 ```
 
 ### 2. Run Setup Script

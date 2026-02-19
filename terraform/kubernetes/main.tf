@@ -58,7 +58,7 @@ locals {
     "app.kubernetes.io/version"    = var.app_version
     "app.kubernetes.io/component"  = "platform"
 <<<<<<< HEAD
-    "app.kubernetes.io/part-of"    = "atonixcorp-platform"
+    "app.kubernetes.io/part-of"    = "atonixcorp"
 =======
     "app.kubernetes.io/part-of"    = "atonixcorp"
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

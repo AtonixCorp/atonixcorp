@@ -375,7 +375,7 @@ curl -X POST http://localhost:8000/api/security/audits/ \
 ## FILE LOCATIONS
 
 ```
-atonixcorp-platform/
+atonixcorp/
 ├── frontend/
 │   └── src/
 │       ├── pages/enterprise/

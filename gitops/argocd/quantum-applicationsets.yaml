@@ -64,9 +64,9 @@ spec:
         kas.atonixcorp.io/managed: "true"
         kas.atonixcorp.io/crd: '{{crd}}'
     spec:
-      project: atonixcorp-platform
+      project: atonixcorp
       source:
-        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:
@@ -139,9 +139,9 @@ spec:
         argocd.argoproj.io/sync-wave: "1"  # Deploy CRDs first
         kas.atonixcorp.io/crd-managed: "true"
     spec:
-      project: atonixcorp-platform
+      project: atonixcorp
       source:
-        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:
@@ -221,9 +221,9 @@ spec:
         argocd.argoproj.io/sync-wave: "3"  # Deploy operators after CRDs
         kas.atonixcorp.io/operator-managed: "true"
     spec:
-      project: atonixcorp-platform
+      project: atonixcorp
       source:
-        repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+        repoURL: https://github.com/atonixcorp/atonixcorp.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:

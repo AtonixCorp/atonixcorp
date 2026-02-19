@@ -4,7 +4,7 @@
 
 ### Option 1: Use the startup script (Recommended)
 ```bash
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 ./start_platform.sh
 ```
 
@@ -12,7 +12,7 @@ cd /home/atonixdev/atonixcorp-platform
 
 **Start Django Backend:**
 ```bash
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 source .venv/bin/activate
 cd backend
 python manage.py runserver
@@ -20,7 +20,7 @@ python manage.py runserver
 
 **Start React Frontend (in another terminal):**
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 npm start
 ```
 
@@ -28,7 +28,7 @@ npm start
 
 Run the status check script:
 ```bash
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 ./check_status.sh
 ```
 
@@ -115,7 +115,7 @@ cd backend && source ../.venv/bin/activate && python manage.py runserver
 
 **Backend (Django):**
 - Port: 8000
-- Virtual env: `/home/atonixdev/atonixcorp-platform/.venv`
+- Virtual env: `/home/atonixdev/atonixcorp/.venv`
 - Database: SQLite (dev)
 - Auth: Token-based authentication
 

@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: atonixcorp-platform
+  name: atonixcorp
   namespace: argocd
   labels:
-    project: atonixcorp-platform
+    project: atonixcorp
 spec:
   description: AtonixCorp Platform Project
   
@@ -61,26 +61,26 @@ spec:
     - name: developer
       description: Developer role with read access
       policies:
-        - p, proj:atonixcorp-platform:developer, applications, get, atonixcorp-platform/*, allow
-        - p, proj:atonixcorp-platform:developer, applications, sync, atonixcorp-platform/*-dev, allow
-        - p, proj:atonixcorp-platform:developer, logs, get, atonixcorp-platform/*, allow
-        - p, proj:atonixcorp-platform:developer, exec, create, atonixcorp-platform/*-dev, allow
+        - p, proj:atonixcorp:developer, applications, get, atonixcorp/*, allow
+        - p, proj:atonixcorp:developer, applications, sync, atonixcorp/*-dev, allow
+        - p, proj:atonixcorp:developer, logs, get, atonixcorp/*, allow
+        - p, proj:atonixcorp:developer, exec, create, atonixcorp/*-dev, allow
       groups:
         - atonixcorp:developers
     
     - name: devops
       description: DevOps role with full access
       policies:
-        - p, proj:atonixcorp-platform:devops, applications, *, atonixcorp-platform/*, allow
-        - p, proj:atonixcorp-platform:devops, logs, *, atonixcorp-platform/*, allow
-        - p, proj:atonixcorp-platform:devops, exec, *, atonixcorp-platform/*, allow
+        - p, proj:atonixcorp:devops, applications, *, atonixcorp/*, allow
+        - p, proj:atonixcorp:devops, logs, *, atonixcorp/*, allow
+        - p, proj:atonixcorp:devops, exec, *, atonixcorp/*, allow
       groups:
         - atonixcorp:devops
     
     - name: admin
       description: Admin role with cluster-wide access
       policies:
-        - p, proj:atonixcorp-platform:admin, *, *, */*, allow
+        - p, proj:atonixcorp:admin, *, *, */*, allow
       groups:
         - atonixcorp:admins
   

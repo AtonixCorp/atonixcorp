@@ -25,7 +25,7 @@ run:
       
       # Build Docker image
       echo "Building Docker image..."
-      docker build -f Dockerfile.fullstack -t atonixcorp-platform:build .
+      docker build -f Dockerfile.fullstack -t atonixcorp:build .
       
       # Create build artifacts
       echo "Creating build artifacts..."
@@ -37,13 +37,13 @@ run:
         "build_time": "$(date -Iseconds)",
         "git_commit": "$(git rev-parse HEAD)",
         "git_branch": "$(git branch --show-current)",
-        "docker_image": "atonixcorp-platform:build",
+        "docker_image": "atonixcorp:build",
         "build_number": "${BUILD_NAME:-unknown}"
       }
       EOF
       
       # Export image (optional)
       echo "Exporting Docker image..."
-      docker save atonixcorp-platform:build | gzip > ../build-output/atonixcorp-platform.tar.gz
+      docker save atonixcorp:build | gzip > ../build-output/atonixcorp.tar.gz
       
       echo "Build completed successfully"

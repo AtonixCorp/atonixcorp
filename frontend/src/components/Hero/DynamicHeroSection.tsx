@@ -41,7 +41,7 @@ const ___projectStories: ProjectStory[] = [
     ],
     animationType: 'circuit',
     ctaText: 'Explore Platform',
-    ctaLink: '/projects/atonixcorp-platform',
+    ctaLink: '/projects/atonixcorp',
     color: '#1e293b',
     gradient: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 50%, #6366f1 100%)',
     accentColor: '#3b82f6',

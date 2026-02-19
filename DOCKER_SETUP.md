@@ -193,7 +193,7 @@ docker-compose -f docker-compose.all-in-one.yml exec backend python manage.py cr
    
    # Clear node_modules
    docker-compose down
-   docker volume rm atonixcorp-platform_node_modules
+   docker volume rm atonixcorp_node_modules
    docker-compose up frontend
    ```
 
@@ -264,7 +264,7 @@ docker-compose pull
 docker-compose exec db pg_dump -U atonixcorp_user atonixcorp > backup.sql
 
 # Backup volumes
-docker run --rm -v atonixcorp-platform_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres-backup.tar.gz /data
+docker run --rm -v atonixcorp_postgres_data:/data -v $(pwd):/backup alpine tar czf /backup/postgres-backup.tar.gz /data
 ```
 
 ## [RESOURCES] Additional Resources

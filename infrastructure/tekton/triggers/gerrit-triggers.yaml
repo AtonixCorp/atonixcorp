@@ -139,7 +139,7 @@ spec:
       - name: revision
         value: $(tt.params.gitrevision)
       - name: image-reference
-        value: "atonixcorp-platform:change-$(tt.params.changenumber)-$(tt.params.patchsetnumber)"
+        value: "atonixcorp:change-$(tt.params.changenumber)-$(tt.params.patchsetnumber)"
       - name: test-type
         value: "all"
       workspaces:
@@ -198,7 +198,7 @@ spec:
       - name: revision
         value: $(tt.params.gitrevision)
       - name: image-reference
-        value: "atonixcorp-platform:$(tt.params.gitrevision)"
+        value: "atonixcorp:$(tt.params.gitrevision)"
       - name: target-environment
         value: "staging"
       - name: auto-approve

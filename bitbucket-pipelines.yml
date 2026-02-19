@@ -145,8 +145,8 @@ definitions:
           - sed -i "s|image:.*backend:.*|image: $DOCKER_REGISTRY/atonixcorp/backend:$IMAGE_TAG|g" k8s/overlays/$ENVIRONMENT/kustomization.yaml
           - sed -i "s|image:.*frontend:.*|image: $DOCKER_REGISTRY/atonixcorp/frontend:$IMAGE_TAG|g" k8s/overlays/$ENVIRONMENT/kustomization.yaml
           # Ensure project namespace exists and set as default
-          - kubectl create namespace atonixcorp-platform || true
-          - kubectl config set-context --current --namespace=atonixcorp-platform
+          - kubectl create namespace atonixcorp || true
+          - kubectl config set-context --current --namespace=atonixcorp
           # Deploy
           - kubectl apply -k k8s/overlays/$ENVIRONMENT/
           # Wait for rollout

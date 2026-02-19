@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/atonixcorp/atonixcorp-platform.git
+    repoURL: https://github.com/atonixcorp/atonixcorp.git
     targetRevision: main
     path: k8s/patches
   destination:

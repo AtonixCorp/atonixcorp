@@ -4,7 +4,7 @@ resources:
   - name: atonixcorp-source
     type: git
     source:
-      uri: https://github.com/atonixcorp/atonixcorp-platform.git
+      uri: https://github.com/atonixcorp/atonixcorp.git
       branch: main
       private_key: ((git-private-key))
     webhook_token: ((webhook-token))
@@ -13,7 +13,7 @@ resources:
   - name: atonixcorp-backend-image
     type: docker-image
     source:
-      repository: quay.io/atonixdev/atonixcorp-platform
+      repository: quay.io/atonixdev/atonixcorp
       username: ((docker-registry-username))
       password: ((docker-registry-password))
       tag: latest
@@ -23,7 +23,7 @@ resources:
     type: semver
     source:
       driver: git
-      uri: https://github.com/atonixdev/atonixcorp-platform.git
+      uri: https://github.com/atonixdev/atonixcorp.git
       branch: version
       file: version
       private_key: ((git-private-key))
@@ -91,7 +91,7 @@ jobs:
           text: |
             ✅ CI Pipeline completed successfully for commit $BUILD_NAME
             Branch: main
-            View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp-platform/jobs/ci-pipeline/builds/$BUILD_NAME
+            View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp/jobs/ci-pipeline/builds/$BUILD_NAME
 
     on_failure:
       put: slack-notification
@@ -100,7 +100,7 @@ jobs:
         text: |
           ❌ CI Pipeline failed for commit $BUILD_NAME
           Branch: main
-          View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp-platform/jobs/ci-pipeline/builds/$BUILD_NAME
+          View build: $ATC_EXTERNAL_URL/teams/main/pipelines/atonixcorp/jobs/ci-pipeline/builds/$BUILD_NAME
 
   # Build and Push Docker Image Job
   - name: build-and-push-image
@@ -135,7 +135,7 @@ jobs:
           text: |
             🐳 Docker image built and pushed successfully
             Version: $(cat version/version)
-            Image: quay.io/atonixdev/atonixcorp-platform:$(cat version/version)
+            Image: quay.io/atonixdev/atonixcorp:$(cat version/version)
 
   # Deploy to Development Environment
   - name: deploy-to-dev

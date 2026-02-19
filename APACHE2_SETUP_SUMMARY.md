@@ -203,7 +203,7 @@ docker-compose -f docker-compose.local.main.yml exec apache-proxy bash
 ## File Locations
 
 ```
-atonixcorp-platform/
+atonixcorp/
 ├── docker/
 │   ├── apache2/
 │   │   ├── httpd.conf

@@ -8,7 +8,7 @@ The AtonixCorp Platform is a modern, full-stack community platform built with Dj
 
 ```bash
 # 1. Navigate to project
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 
 # 2. Start the platform
 ./manage.sh start dev
@@ -31,7 +31,7 @@ Your platform now includes:
 ## [FOLDER] Project Structure
 
 ```
-atonixcorp-platform/
+atonixcorp/
 ├── backend/                 # Django API backend
 │   ├── atonixcorp/         # Main Django project
 │   ├── dashboard/          # Dashboard app with Celery tasks

@@ -2,26 +2,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "atonixcorp-platform.fullname" . }}-frontend
+  name: {{ include "atonixcorp.fullname" . }}-frontend
   labels:
-    {{- include "atonixcorp-platform.frontend.labels" . | nindent 4 }}
+    {{- include "atonixcorp.frontend.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "atonixcorp-platform.name" . }}
+      app.kubernetes.io/name: {{ include "atonixcorp.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/component: frontend
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "atonixcorp-platform.name" . }}
+        app.kubernetes.io/name: {{ include "atonixcorp.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: frontend
     spec:
       containers:
       - name: frontend
-        image: {{ include "atonixcorp-platform.frontend.image" . }}
+        image: {{ include "atonixcorp.frontend.image" . }}
         imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
         ports:
         - name: http

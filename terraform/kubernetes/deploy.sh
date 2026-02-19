@@ -176,10 +176,10 @@ show_access_info() {
     echo "  kubectl get pods -n $NAMESPACE -w"
     echo ""
     echo "  # Check logs:"
-    echo "  kubectl logs -f deployment/atonixcorp-platform-backend -n $NAMESPACE"
+    echo "  kubectl logs -f deployment/atonixcorp-backend -n $NAMESPACE"
     echo ""
     echo "  # Port forward for local access:"
-    echo "  kubectl port-forward svc/atonixcorp-platform-frontend 8080:80 -n $NAMESPACE"
+    echo "  kubectl port-forward svc/atonixcorp-frontend 8080:80 -n $NAMESPACE"
 }
 
 show_help() {

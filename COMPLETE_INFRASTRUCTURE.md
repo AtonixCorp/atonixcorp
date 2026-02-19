@@ -14,7 +14,7 @@ Your AtonixCorp Platform now includes a **complete enterprise-grade infrastructu
 ## [STRUCTURE] Complete Project Structure
 
 ```
-atonixcorp-platform/
+atonixcorp/
 ├── [DOCKER] Docker Infrastructure
 │   ├── docker-compose.yml              # Main services
 │   ├── docker-compose.prod.yml         # Production overrides
@@ -59,7 +59,7 @@ atonixcorp-platform/
 │   └── bitbucket-pipelines.yml         # Bitbucket alternative
 │
 ├── ⛵ Helm Charts
-│   └── helm/atonixcorp-platform/
+│   └── helm/atonixcorp/
 │       ├── Chart.yaml                  # Chart metadata
 │       ├── values.yaml                 # Default values
 │       ├── templates/                  # Template files
@@ -124,8 +124,8 @@ aws eks update-kubeconfig --name atonixcorp-prod
 kubectl apply -k k8s/overlays/production/
 
 # Using Helm
-helm install atonixcorp-platform helm/atonixcorp-platform/ \
-  -f helm/atonixcorp-platform/values-prod.yaml
+helm install atonixcorp helm/atonixcorp/ \
+  -f helm/atonixcorp/values-prod.yaml
 ```
 
 ### 4. **GitOps with ArgoCD**
@@ -204,7 +204,7 @@ cd terraform/aws
 terraform apply
 
 # 2. Deploy with Helm
-helm install atonixcorp-platform helm/atonixcorp-platform/
+helm install atonixcorp helm/atonixcorp/
 
 # 3. Set up GitOps
 kubectl apply -f gitops/argocd/

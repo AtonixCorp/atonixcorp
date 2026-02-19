@@ -10,7 +10,7 @@ echo ""
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
     echo "❌ Error: Please run this script from the frontend directory"
-    echo "   Navigate to: cd /home/atonixdev/atonixcorp-platform/frontend"
+    echo "   Navigate to: cd /home/atonixdev/atonixcorp/frontend"
     exit 1
 fi
 

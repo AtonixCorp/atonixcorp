@@ -35,14 +35,14 @@ Your frontend dependencies have been successfully installed and the project is r
 
 ### Option 1: Start Development (Quick Start)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 npm start
 # Opens browser at http://localhost:3000
 ```
 
 ### Option 2: Fix Code Warnings First (Recommended)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 
 # Automatically fix ESLint warnings
 ./fix-eslint.sh
@@ -56,7 +56,7 @@ npm start
 
 ### Option 3: Update All Dependencies (Advanced)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 
 # Update all packages
 npm update

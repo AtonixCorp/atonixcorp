@@ -73,8 +73,8 @@ git lfs install
 
 ```bash
 # Clone repository
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-cd atonixcorp-platform/atonix-hardware-integration
+git clone https://github.com/AtonixCorp/atonixcorp.git
+cd atonixcorp/atonix-hardware-integration
 
 # Pull large files
 git lfs pull
@@ -113,7 +113,7 @@ mkdir -p /opt/atonix/staging/hardware-integration
 cd /opt/atonix/staging/hardware-integration
 
 # Clone repository
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git .
+git clone https://github.com/AtonixCorp/atonixcorp.git .
 git checkout staging
 git lfs pull
 
@@ -208,7 +208,7 @@ sudo -u atonix bash
 
 # Deploy application
 cd /opt/atonix/production
-git clone https://github.com/AtonixCorp/atonixcorp-platform.git .
+git clone https://github.com/AtonixCorp/atonixcorp.git .
 git checkout production
 git lfs pull
 
@@ -388,8 +388,8 @@ runcmd:
   - usermod -aG docker ubuntu
   - git lfs install
   - cd /home/ubuntu
-  - git clone https://github.com/AtonixCorp/atonixcorp-platform.git
-  - cd atonixcorp-platform/atonix-hardware-integration
+  - git clone https://github.com/AtonixCorp/atonixcorp.git
+  - cd atonixcorp/atonix-hardware-integration
   - git lfs pull
   - cp docker/.env.aws docker/.env
   - docker-compose -f docker/docker-compose.yml up -d

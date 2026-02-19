@@ -45,21 +45,21 @@ run:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: atonixcorp-platform
+        name: atonixcorp
         namespace: $NAMESPACE
       spec:
         replicas: 2
         selector:
           matchLabels:
-            app: atonixcorp-platform
+            app: atonixcorp
         template:
           metadata:
             labels:
-              app: atonixcorp-platform
+              app: atonixcorp
           spec:
             containers:
             - name: platform
-              image: quay.io/atonixdev/atonixcorp-platform:$IMAGE_TAG
+              image: quay.io/atonixdev/atonixcorp:$IMAGE_TAG
               ports:
               - containerPort: 8080
               env:
@@ -73,11 +73,11 @@ run:
       apiVersion: v1
       kind: Service
       metadata:
-        name: atonixcorp-platform-service
+        name: atonixcorp-service
         namespace: $NAMESPACE
       spec:
         selector:
-          app: atonixcorp-platform
+          app: atonixcorp
         ports:
         - port: 80
           targetPort: 8080
@@ -88,10 +88,10 @@ run:
       fi
       
       # Wait for deployment to be ready
-      kubectl rollout status deployment/atonixcorp-platform -n $NAMESPACE --timeout=300s
+      kubectl rollout status deployment/atonixcorp -n $NAMESPACE --timeout=300s
       
       # Verify deployment
-      kubectl get pods -n $NAMESPACE -l app=atonixcorp-platform
-      kubectl get service -n $NAMESPACE atonixcorp-platform-service
+      kubectl get pods -n $NAMESPACE -l app=atonixcorp
+      kubectl get service -n $NAMESPACE atonixcorp-service
       
       echo "Deployment to $ENVIRONMENT completed successfully"

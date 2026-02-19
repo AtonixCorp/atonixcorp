@@ -207,7 +207,7 @@ case "$1" in
         systemctl status puppet --no-pager -l
         echo
         echo "Gerrit Services:"
-        cd /opt/atonixcorp-platform/infrastructure/gerrit
+        cd /opt/atonixcorp/infrastructure/gerrit
         docker-compose ps
         echo
         echo "CNI Status:"
@@ -223,7 +223,7 @@ case "$1" in
         ;;
     gerrit-restart)
         echo "Restarting Gerrit services..."
-        cd /opt/atonixcorp-platform/infrastructure/gerrit
+        cd /opt/atonixcorp/infrastructure/gerrit
         docker-compose restart
         ;;
     cni-restart)
@@ -236,7 +236,7 @@ case "$1" in
         tail -20 /var/log/puppetlabs/puppet/puppet.log
         echo
         echo "Gerrit logs:"
-        cd /opt/atonixcorp-platform/infrastructure/gerrit
+        cd /opt/atonixcorp/infrastructure/gerrit
         docker-compose logs --tail=20
         ;;
     *)
@@ -294,7 +294,7 @@ run_tests() {
 create_documentation() {
     log "Creating infrastructure documentation..."
     
-    cat > /opt/atonixcorp-platform/INFRASTRUCTURE_GUIDE.md << 'EOF'
+    cat > /opt/atonixcorp/INFRASTRUCTURE_GUIDE.md << 'EOF'
 # AtonixCorp Platform Infrastructure Guide
 
 ## Overview
@@ -431,7 +431,7 @@ main() {
     info "└── Monitoring: Prometheus + Grafana"
     echo
     info "Management: Use 'atonixcorp-infra-manage status' to check all services"
-    info "Documentation: See /opt/atonixcorp-platform/INFRASTRUCTURE_GUIDE.md"
+    info "Documentation: See /opt/atonixcorp/INFRASTRUCTURE_GUIDE.md"
     echo
 }
 

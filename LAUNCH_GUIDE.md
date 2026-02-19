@@ -27,7 +27,7 @@ Your atonixcorp rebranding is complete! Here's how to view, test, and deploy the
 
 ```bash
 # Navigate to the repository
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 
 # Open in your default browser
 open index.html        # macOS
@@ -36,7 +36,7 @@ xdg-open index.html   # Linux
 # OR
 start index.html      # Windows
 
-# Access at: file:///home/atonixdev/atonixcorp-platform/index.html
+# Access at: file:///home/atonixdev/atonixcorp/index.html
 ```
 
 ### Option 2: Serve with Python
@@ -217,7 +217,7 @@ git push origin main
 
 # Enable GitHub Pages:
 # Repository Settings → Pages → Source: main branch → /root
-# Access at: https://yourusername.github.io/atonixcorp-platform/
+# Access at: https://yourusername.github.io/atonixcorp/
 ```
 
 ### Option 2: AWS S3
@@ -338,7 +338,7 @@ Your atonixcorp landing page is:
 
 ```bash
 # Quick command to open
-open /home/atonixdev/atonixcorp-platform/index.html
+open /home/atonixdev/atonixcorp/index.html
 ```
 
 ---

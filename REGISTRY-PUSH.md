@@ -3,7 +3,7 @@
 ## [CLIPBOARD] Prerequisites
 
 1. **Quay.io Account**: You need an account at [quay.io](https://quay.io)
-2. **Repository**: Create a repository `atonixdev/atonixcorp-platform` on Quay.io
+2. **Repository**: Create a repository `atonixdev/atonixcorp` on Quay.io
 3. **Permissions**: Ensure your account has push permissions to the repository
 
 ## [LOCKED] Step 1: Login to Quay.io
@@ -37,7 +37,7 @@ When prompted, enter:
 VERSION=v1.0.0 ./build.sh tag
 ```
 
-This will create the tag: `quay.io/atonixdev/atonixcorp-platform:latest` (or your specified version)
+This will create the tag: `quay.io/atonixdev/atonixcorp:latest` (or your specified version)
 
 ## 📤 Step 4: Push to Quay.io
 
@@ -65,10 +65,10 @@ After pushing, you can verify the image is available:
 
 ```bash
 # Pull from registry to test
-nerdctl pull quay.io/atonixdev/atonixcorp-platform:latest
+nerdctl pull quay.io/atonixdev/atonixcorp:latest
 
 # Run from registry
-nerdctl run -d -p 8080:8080 quay.io/atonixdev/atonixcorp-platform:latest
+nerdctl run -d -p 8080:8080 quay.io/atonixdev/atonixcorp:latest
 ```
 
 ## [NETWORK] Production Deployment from Registry
@@ -77,7 +77,7 @@ Once pushed to Quay.io, you can deploy to production:
 
 ```bash
 # On production server
-docker pull quay.io/atonixdev/atonixcorp-platform:latest
+docker pull quay.io/atonixdev/atonixcorp:latest
 
 # Run in production
 docker run -d \
@@ -86,8 +86,8 @@ docker run -d \
   -e REDIS_URL="redis://your-redis:6379" \
   -e DEBUG=False \
   -e ALLOWED_HOSTS="your-domain.com" \
-  --name atonixcorp-platform \
-  quay.io/atonixdev/atonixcorp-platform:latest
+  --name atonixcorp \
+  quay.io/atonixdev/atonixcorp:latest
 ```
 
 ## [TOOLS] Advanced Usage
@@ -115,8 +115,8 @@ REGISTRY=your-registry.com/yourorg ./build.sh release
 ## [METRICS] Registry Information
 
 - **Registry**: `quay.io/atonixdev`
-- **Repository**: `atonixcorp-platform`
-- **Full Image Name**: `quay.io/atonixdev/atonixcorp-platform:latest`
+- **Repository**: `atonixcorp`
+- **Full Image Name**: `quay.io/atonixdev/atonixcorp:latest`
 - **Size**: ~505 MB
 - **Architecture**: linux/amd64
 
@@ -138,7 +138,7 @@ nerdctl logout quay.io
 ### Push Failures
 ```bash
 # Check if image exists locally
-nerdctl images | grep atonixcorp-platform
+nerdctl images | grep atonixcorp
 
 # Rebuild if necessary
 ./build.sh build
@@ -147,7 +147,7 @@ nerdctl images | grep atonixcorp-platform
 ```
 
 ### Permission Errors
-- Verify you have write access to `quay.io/atonixdev/atonixcorp-platform`
+- Verify you have write access to `quay.io/atonixdev/atonixcorp`
 - Check if the repository exists on Quay.io
 - Ensure you're logged in with the correct account
 
@@ -163,7 +163,7 @@ nerdctl images | grep atonixcorp-platform
 ./build.sh release
 
 # 3. Deploy from registry
-docker run -d -p 8080:8080 quay.io/atonixdev/atonixcorp-platform:latest
+docker run -d -p 8080:8080 quay.io/atonixdev/atonixcorp:latest
 ```
 
 [SUCCESS] **Your unified AtonixCorp Platform container is now ready for production deployment from Quay.io!**

@@ -53,7 +53,7 @@ data:
         
         # Project configuration
         projects:
-          - name: "atonixcorp-platform"
+          - name: "atonixcorp"
             branch_patterns:
               - "main"
               - "develop"
@@ -90,7 +90,7 @@ data:
           credentials_secret: "docker-registry-secret"
           
         image_config:
-          base_name: "atonixcorp-platform"
+          base_name: "atonixcorp"
           tag_strategy: "git-commit-sha"
           additional_tags:
             - "latest"

@@ -452,7 +452,7 @@ export const ____mockProjects: Project[] = [
   {
     id: 1,
     name: 'Atonixcorp-Platform',
-    slug: 'atonixcorp-platform',
+    slug: 'atonixcorp',
     overview: 'The backbone of AtonixCorp\'s infrastructure strategy.',
     description: 'This modular stack powers scalable services, persistent data layers, and distributed orchestration across domains like medicine, agriculture, security, and advanced analytics. It\'s not just a system—it\'s the foundation of our technical sovereignty.',
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
@@ -469,7 +469,7 @@ export const ____mockProjects: Project[] = [
     ],
     status: 'active',
     website_url: 'https://platform.atonixcorp.com',
-    github_url: 'https://github.com/AtonixCorp/atonixcorp-platform',
+    github_url: 'https://github.com/AtonixCorp/atonixcorp',
     documentation_url: 'https://docs.atonixcorp.com/platform',
     is_featured: true,
     focus_areas: [____mockFocusAreas[0]],

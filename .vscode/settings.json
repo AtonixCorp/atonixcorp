@@ -20,7 +20,7 @@
         "unauthorized": true
     },
     "circleci.persistedProjectSelection": [
-        "gh/AtonixCorp/atonixcorp-platform"
+        "gh/AtonixCorp/atonixcorp"
     ]
 }
 =======

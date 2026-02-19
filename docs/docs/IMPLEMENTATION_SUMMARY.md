@@ -274,7 +274,7 @@ All 9 use cases from your platform description are fully documented:
 
 All documentation is in:
 ```
-/home/atonixdev/atonixcorp-platform/backend/docs/
+/home/atonixdev/atonixcorp/backend/docs/
 
 ├── README.md                    (Main index & quick start)
 ├── PLATFORM_ARCHITECTURE.md     (Vision & capabilities)

@@ -22,14 +22,14 @@ Result:   ✅ 1,428 packages installed successfully
 
 ### Option A: Start Coding (2 minutes)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 npm start
 ```
 Browser opens at http://localhost:3000
 
 ### Option B: Fix Warnings First (5 minutes)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 ./fix-eslint.sh      # Auto-fix unused variables
 npm run build        # Verify build works
 npm start            # Start dev server
@@ -37,7 +37,7 @@ npm start            # Start dev server
 
 ### Option C: Full Setup (10 minutes)
 ```bash
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 ./fix-eslint.sh      # Fix ESLint warnings
 npm audit fix        # Fix vulnerabilities
 npm run build        # Test production build

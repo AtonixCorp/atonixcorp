@@ -32,7 +32,7 @@ variable "project_name" {
   description = "Name of the project"
   type        = string
 <<<<<<< HEAD
-  default     = "atonixcorp-platform"
+  default     = "atonixcorp"
 =======
   default     = "atonixcorp"
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
@@ -63,7 +63,7 @@ variable "namespace" {
   description = "Kubernetes namespace"
   type        = string
 <<<<<<< HEAD
-  default     = "atonixcorp-platform"
+  default     = "atonixcorp"
 =======
   default     = "atonixcorp"
 >>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb

@@ -9,7 +9,7 @@ sleep 2
 
 # Start Django server in background
 echo "Starting Django server..."
-cd /home/atonixdev/atonixcorp-platform
+cd /home/atonixdev/atonixcorp
 source .venv/bin/activate
 cd backend
 python manage.py runserver &
@@ -20,7 +20,7 @@ sleep 3
 
 # Start React server in background
 echo "Starting React server..."
-cd /home/atonixdev/atonixcorp-platform/frontend
+cd /home/atonixdev/atonixcorp/frontend
 npm start &
 REACT_PID=$!
 

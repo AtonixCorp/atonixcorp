@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "atonixcorp-platform.fullname" . }}-backend
+  name: {{ include "atonixcorp.fullname" . }}-backend
   labels:
-    {{- include "atonixcorp-platform.backend.labels" . | nindent 4 }}
+    {{- include "atonixcorp.backend.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.backend.service.type }}
   ports:
@@ -13,7 +13,7 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "atonixcorp-platform.name" . }}
+    app.kubernetes.io/name: {{ include "atonixcorp.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: backend
 {{- end }}

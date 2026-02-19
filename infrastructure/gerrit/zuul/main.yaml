@@ -7,7 +7,7 @@
         config-projects:
           - atonixcorp-config
         untrusted-projects:
-          - atonixcorp-platform
+          - atonixcorp
           - atonixcorp-frontend
           - atonixcorp-backend
           - atonixcorp-infrastructure
@@ -188,7 +188,7 @@
 
 # Project configurations
 - project:
-    name: atonixcorp-platform
+    name: atonixcorp
     check:
       jobs:
         - atonixcorp-lint

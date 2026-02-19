@@ -13,8 +13,8 @@ stages:
   - deploy
 
 variables:
-  IMAGE_REPO_FRONTEND: "atonixdev/atonixcorp-platform-frontend"
-  IMAGE_REPO_BACKEND: "atonixdev/atonixcorp-platform-backend"
+  IMAGE_REPO_FRONTEND: "atonixdev/atonixcorp-frontend"
+  IMAGE_REPO_BACKEND: "atonixdev/atonixcorp-backend"
   TAG: "${CI_COMMIT_SHORT_SHA}"
   K8S_NAMESPACE: "${K8S_NAMESPACE:-atonixcorp}"
 
