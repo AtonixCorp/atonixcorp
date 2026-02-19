@@ -485,10 +485,10 @@ Response Times (99th percentile):
 
 - **Documentation**: See ./docs/ directory
 - **Support Portal**: Check docs/QUICK_START.md
-- **Email**: support@cloudplatform.io
-- **Platform Team**: platform-team@cloudplatform.io
-- **Infrastructure Team**: infra-team@cloudplatform.io
-- **Security Team**: security-team@cloudplatform.io
+- **Email**: support@atonixcorp.com
+- **Platform Team**: platform-team@atonixcorp.com
+- **Infrastructure Team**: infra-team@atonixcorp.com
+- **Security Team**: security-team@atonixcorp.com
 
 ---
 
@@ -539,10 +539,10 @@ Upgrade Path:
 
 For questions, deployments, or custom configurations:
 
-- **Platform Engineering**: platform-team@cloudplatform.io
-- **Infrastructure**: infra-team@cloudplatform.io
-- **Security & Compliance**: security-team@cloudplatform.io
-- **AI & Automation**: ai-team@cloudplatform.io
+- **Platform Engineering**: platform-team@atonixcorp.com
+- **Infrastructure**: infra-team@atonixcorp.com
+- **Security & Compliance**: security-team@atonixcorp.com
+- **AI & Automation**: ai-team@atonixcorp.com
 
 ---
 

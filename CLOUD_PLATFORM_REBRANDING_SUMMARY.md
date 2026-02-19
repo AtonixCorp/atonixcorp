@@ -224,7 +224,7 @@ The `index.html` landing page includes:
 
 ###  Ready for Next Steps
 - [ ] Deploy index.html to web server
-- [ ] Set up cloudplatform.io domain
+- [ ] Set up atonixcorp.com domain
 - [ ] Update social media profiles
 - [ ] Announce rebranding to users
 - [ ] Update external partnerships
@@ -239,21 +239,21 @@ The `index.html` landing page includes:
 
 **Developers**
 - Documentation: See `docs/` directory
-- Platform Team: platform-team@cloudplatform.io
+- Platform Team: platform-team@atonixcorp.com
 - Quick Start: `docs/QUICK_START.md`
 
 **DevOps/SRE**
-- Infrastructure Team: infra-team@cloudplatform.io
+- Infrastructure Team: infra-team@atonixcorp.com
 - Deployment Guide: `docs/DEPLOYMENT_WORKFLOW.md`
 - CI/CD Pipelines: `.github/workflows/`
 
 **Security**
-- Security Team: security-team@cloudplatform.io
+- Security Team: security-team@atonixcorp.com
 - Standards: `docs/SECURITY_STANDARDS.md`
 - Compliance: SOC 2, HIPAA, GDPR ready
 
 **AI/Automation**
-- AI Team: ai-team@cloudplatform.io
+- AI Team: ai-team@atonixcorp.com
 - Integration: `docs/AI_AUTOMATION_INTEGRATION.md`
 - Examples: Python SDK, REST API
 

@@ -167,10 +167,10 @@ Edit the CSS `<style>` section (lines ~15-50):
 ### Update Domain/Links
 
 Email addresses to update:
-- `platform-team@cloudplatform.io`
-- `infra-team@cloudplatform.io`
-- `security-team@cloudplatform.io`
-- `ai-team@cloudplatform.io`
+- `platform-team@atonixcorp.com`
+- `infra-team@atonixcorp.com`
+- `security-team@atonixcorp.com`
+- `ai-team@atonixcorp.com`
 
 Replace with your actual domain.
 
@@ -249,7 +249,7 @@ sudo cp index.html /var/www/html/
 # Or configure in nginx.conf
 server {
     listen 80;
-    server_name cloudplatform.io;
+    server_name atonixcorp.com;
     root /var/www/html;
     location / {
         try_files $uri $uri/ /index.html;

@@ -332,28 +332,28 @@ ai.deploy_policy(policy)
 - Infrastructure design and optimization
 - Service Architecture
 - Capacity planning
-- **Email**: platform-team@cloudplatform.io
+- **Email**: platform-team@atonixcorp.com
 - **Slack**: #platform-core
 
 ####  **Cloud Infrastructure Team**
 - Kubernetes cluster management
 - Network & storage operations
 - Disaster recovery
-- **Email**: infra-team@cloudplatform.io
+- **Email**: infra-team@atonixcorp.com
 - **Slack**: #infrastructure
 
 ####  **Security & Compliance Team**
 - Security policy enforcement
 - Compliance audits (SOC 2, HIPAA, GDPR)
 - Incident response
-- **Email**: security-team@cloudplatform.io
+- **Email**: security-team@atonixcorp.com
 - **Slack**: #security-incidents
 
 ####  **AI/Automation Team**
 - Cloud AI engine development
 - Predictive analytics
 - Autonomous systems
-- **Email**: ai-team@cloudplatform.io
+- **Email**: ai-team@atonixcorp.com
 - **Slack**: #ai-automation
 
 ### Enterprise Support
@@ -366,9 +366,9 @@ ai.deploy_policy(policy)
 │  For large-scale deployments,           │
 │  custom SLAs, and dedicated support:    │
 │                                         │
-│   Sales: sales@cloudplatform.io       │
+│   Sales: sales@atonixcorp.com       │
 │   Phone: +1 (XXX) XXX-XXXX            │
-│   Web: https://www.cloudplatform.io  │
+│   Web: https://www.atonixcorp.com  │
 │                                         │
 └─────────────────────────────────────────┘
 ```

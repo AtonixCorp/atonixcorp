@@ -167,7 +167,7 @@ const DocsPage: React.FC = () => {
                 title: 'REST API Request',
                 code: `// Create a new resource
 const response = await fetch(
-  'https://api.cloudplatform.io/v1/resources',
+  'https://api.atonixcorp.com/v1/resources',
   {
     method: 'POST',
     headers: {
