@@ -6,6 +6,7 @@
   <meta name="description" content="AtonixCorp Platform – Compute, Storage, Networking, Automation, AI and Security services." />
   <title>Platform – AtonixCorp</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <meta name="manual-pin" content="8414">
 </head>
 <body>
 
@@ -425,7 +426,7 @@
           <li><a href="docs.html">Documentation</a></li>
           <li><a href="docs.html#api">API Reference</a></li>
           <li><a href="docs.html#guides">Getting Started</a></li>
-          <li><a href="assets/AtonixCorp_Manual.pdf" download="AtonixCorp_Manual.pdf">Platform Manual (PDF)</a></li>
+          <li><a href="#" onclick="showManualPinModal(event)">Platform Manual (PDF)</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -440,9 +441,9 @@
     </div>
     <div class="footer-bottom">
       <div style="margin-bottom:1rem;text-align:center;">
-        <a href="assets/AtonixCorp_Manual.pdf"
-           download="AtonixCorp_Manual.pdf"
-           style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.4rem;background:transparent;border:1.5px solid #2b6f8f;color:#cfeafe;border-radius:0.5rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all .2s;"
+        <a href="#"
+           onclick="showManualPinModal(event)"
+           style="display:inline-flex;cursor:pointer;align-items:center;gap:0.5rem;padding:0.55rem 1.4rem;background:transparent;border:1.5px solid #2b6f8f;color:#cfeafe;border-radius:0.5rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all .2s;"
            onmouseover="this.style.borderColor='#14b8a6';this.style.color='#14b8a6';"
            onmouseout="this.style.borderColor='#2b6f8f';this.style.color='#cfeafe';">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -455,6 +456,8 @@
     </div>
   </div>
 </footer>
+
+<script src="assets/js/manual-pin.js"></script>
 
 </body>
 </html>
