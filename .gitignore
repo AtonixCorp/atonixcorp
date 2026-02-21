@@ -58,4 +58,6 @@ htmlcov/
 .pytest_cache/
 
 # Docker
-.dockerignore
+.dockerignore.env
+docss/
+docs/
