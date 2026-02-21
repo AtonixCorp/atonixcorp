@@ -21,6 +21,7 @@ import {
   Lock,
   Email,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import SocialLoginButtons from './SocialLoginButtons';
 
@@ -32,6 +33,7 @@ interface SignupDialogProps {
 
 const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLogin }) => {
   const { signup } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -83,6 +85,7 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
         onClose();
         setSuccess(false);
         setFormData({ first_name: '', last_name: '', email: '', password: '', confirm_password: '', username: '' });
+        navigate('/dashboard');
       }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
