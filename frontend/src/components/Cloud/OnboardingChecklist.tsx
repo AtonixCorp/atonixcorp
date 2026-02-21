@@ -1,4 +1,4 @@
-// AtonixCorp Cloud – Onboarding Checklist (AWS-style)
+// AtonixCorp Cloud – Onboarding Checklist
 
 import React, { useState } from 'react';
 import {

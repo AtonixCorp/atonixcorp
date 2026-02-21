@@ -1,6 +1,6 @@
 # AtonixCorp Cloud – Onboarding Dashboard
 
-Enterprise-grade cloud onboarding experience for the AtonixCorp platform. Matches the quality of AWS, Azure, DigitalOcean, and OVHcloud.
+Enterprise-grade cloud onboarding experience for the AtonixCorp platform.
 
 ---
 
@@ -9,9 +9,9 @@ Enterprise-grade cloud onboarding experience for the AtonixCorp platform. Matche
 | Section | Description |
 |---|---|
 | **Welcome Hero** | Personalised greeting, quick-action buttons, subtle grid backdrop |
-| **Onboarding Checklist** | AWS-style 6-step progress tracker with auto-detection and manual marking |
+| **Onboarding Checklist** | 6-step guided progress tracker with auto-detection and manual marking |
 | **Cloud Overview Cards** | Real-time resource counts: Compute, Storage, Networking, Account |
-| **Deploy Wizard** | 3-step DigitalOcean-style server creation modal with image/flavor/network pickers |
+| **Deploy Wizard** | 3-step server creation modal with image, flavor, and network pickers |
 | **Docs & Support Panel** | Links to Getting Started, API Docs, CLI, Billing, Support |
 
 ---
@@ -22,8 +22,8 @@ Enterprise-grade cloud onboarding experience for the AtonixCorp platform. Matche
 frontend/src/
 ├── components/Cloud/
 │   ├── WelcomeHero.tsx          # Hero section with quick actions
-│   ├── OnboardingChecklist.tsx  # AWS-style step tracker
-│   ├── CloudOverviewCards.tsx   # Resource overview cards (OVHcloud-style)
+│   ├── OnboardingChecklist.tsx  # Step-by-step progress tracker
+│   ├── CloudOverviewCards.tsx   # Resource overview cards
 │   ├── DeployWizardModal.tsx    # 3-step server deploy wizard
 │   └── DocsSupportPanel.tsx    # Documentation & support links
 ├── pages/

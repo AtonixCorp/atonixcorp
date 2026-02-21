@@ -1,4 +1,4 @@
-// AtonixCorp Cloud – Overview Cards (OVHcloud-style)
+// AtonixCorp Cloud – Overview Cards
 
 import React from 'react';
 import {

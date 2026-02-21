@@ -1,4 +1,4 @@
-// AtonixCorp Cloud – Deploy Server Wizard Modal (DigitalOcean-style)
+// AtonixCorp Cloud – Deploy Server Wizard Modal
 
 import React, { useState, useEffect } from 'react';
 import {
