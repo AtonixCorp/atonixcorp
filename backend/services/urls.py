@@ -3,6 +3,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .onboarding_views import onboarding_checklist, onboarding_checklist_update, dashboard_stats, wizard_options
+from .openstack_views import (
+    cloud_status,
+    servers_list_create, server_detail_delete, server_start, server_stop, server_reboot,
+    flavors_list, images_list,
+    networks_list_create, network_delete, subnets_list_create,
+    security_groups_list_create, security_group_add_rule,
+    floating_ips,
+    volumes_list_create, volume_detail_delete, volume_attach, volume_detach,
+    snapshots_list_create, snapshot_delete,
+)
 
 # Import ViewSets
 from .compute_viewsets import (
@@ -71,4 +81,40 @@ urlpatterns = [
     path('onboarding/checklist/update/', onboarding_checklist_update, name='onboarding-checklist-update'),
     path('onboarding/stats/',            dashboard_stats,             name='dashboard-stats'),
     path('onboarding/wizard-options/',   wizard_options,              name='wizard-options'),
+
+    # ── OpenStack Cloud API ─────────────────────────────────────────────────
+    path('cloud/status/',                                cloud_status,              name='cloud-status'),
+
+    # Servers
+    path('cloud/servers/',                               servers_list_create,       name='cloud-servers'),
+    path('cloud/servers/<str:server_id>/',               server_detail_delete,      name='cloud-server-detail'),
+    path('cloud/servers/<str:server_id>/start/',         server_start,              name='cloud-server-start'),
+    path('cloud/servers/<str:server_id>/stop/',          server_stop,               name='cloud-server-stop'),
+    path('cloud/servers/<str:server_id>/reboot/',        server_reboot,             name='cloud-server-reboot'),
+
+    # Flavors & Images
+    path('cloud/flavors/',                               flavors_list,              name='cloud-flavors'),
+    path('cloud/images/',                                images_list,               name='cloud-images'),
+
+    # Networks
+    path('cloud/networks/',                              networks_list_create,      name='cloud-networks'),
+    path('cloud/networks/<str:network_id>/',             network_delete,            name='cloud-network-delete'),
+    path('cloud/networks/<str:network_id>/subnets/',     subnets_list_create,       name='cloud-subnets'),
+
+    # Security groups
+    path('cloud/security-groups/',                       security_groups_list_create, name='cloud-security-groups'),
+    path('cloud/security-groups/<str:sg_id>/rules/',     security_group_add_rule,   name='cloud-sg-rules'),
+
+    # Floating IPs
+    path('cloud/floating-ips/',                          floating_ips,              name='cloud-floating-ips'),
+
+    # Volumes
+    path('cloud/volumes/',                               volumes_list_create,       name='cloud-volumes'),
+    path('cloud/volumes/<str:volume_id>/',               volume_detail_delete,      name='cloud-volume-detail'),
+    path('cloud/volumes/<str:volume_id>/attach/',        volume_attach,             name='cloud-volume-attach'),
+    path('cloud/volumes/<str:volume_id>/detach/',        volume_detach,             name='cloud-volume-detach'),
+
+    # Snapshots
+    path('cloud/snapshots/',                             snapshots_list_create,     name='cloud-snapshots'),
+    path('cloud/snapshots/<str:snapshot_id>/',           snapshot_delete,           name='cloud-snapshot-delete'),
 ]
