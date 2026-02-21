@@ -59,6 +59,8 @@ from .networking_models import (
     NATGateway,
 )
 
+from .onboarding_models import OnboardingProgress
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
@@ -79,4 +81,6 @@ __all__ = [
     'DNSRecord', 'CDNDistribution',
     'VPNGateway', 'CustomerGateway', 'VPNConnection',
     'InternetGateway', 'NATGateway',
+    # Onboarding
+    'OnboardingProgress',
 ]

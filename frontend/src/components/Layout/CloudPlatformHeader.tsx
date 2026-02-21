@@ -25,6 +25,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
 import SignupDialog from '../Auth/SignupDialog';
@@ -48,6 +49,7 @@ const CloudPlatformHeader: React.FC = () => {
   };
 
   const navItems = [
+    { label: 'Dashboard', path: '/dashboard', submenu: [] },
     { label: 'Products', path: '/', submenu: ['Dedicated Servers', 'VPS', 'Public Cloud'] },
     { label: 'Resources', path: '/resources', submenu: ['Blog', 'Docs', 'Use Cases'] },
   ];
@@ -190,6 +192,9 @@ const CloudPlatformHeader: React.FC = () => {
                       <Typography variant="caption" color="text.secondary">{user.email}</Typography>
                     </Box>
                     <Divider />
+                    <MenuItem onClick={() => { setUserMenuAnchor(null); navigate('/dashboard'); }}>
+                      <DashboardIcon fontSize="small" sx={{ mr: 1 }} /> Dashboard
+                    </MenuItem>
                     <MenuItem onClick={() => { setUserMenuAnchor(null); navigate('/account'); }}>
                       <PersonIcon fontSize="small" sx={{ mr: 1 }} /> My Account
                     </MenuItem>

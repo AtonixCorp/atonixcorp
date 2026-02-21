@@ -1,0 +1,384 @@
+// AtonixCorp Cloud – Deploy Server Wizard Modal (DigitalOcean-style)
+
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Stepper, Step, StepLabel, Box, Typography, Grid, Button,
+  TextField, Stack, Chip, CircularProgress, Alert,
+  ToggleButton, ToggleButtonGroup, IconButton,
+  Divider,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import ComputerIcon from '@mui/icons-material/Computer';
+import StorageIcon from '@mui/icons-material/Storage';
+import HubIcon from '@mui/icons-material/Hub';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import { CloudImage, CloudFlavor, CloudNetwork, WizardOptions, CreateServerPayload } from '../../types/cloud';
+import { dashboardApi, serversApi, onboardingApi } from '../../services/cloudApi';
+
+interface DeployWizardModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const STEPS = ['Choose Image', 'Choose Flavor', 'Choose Network & Name'];
+
+const OS_ICONS: Record<string, string> = {
+  linux:   '🐧',
+  windows: '🪟',
+  custom:  '📦',
+};
+
+const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, onSuccess }) => {
+  const [activeStep, setActiveStep]     = useState(0);
+  const [options, setOptions]           = useState<WizardOptions | null>(null);
+  const [loadingOpts, setLoadingOpts]   = useState(false);
+  const [selectedImage, setSelectedImage]   = useState<CloudImage | null>(null);
+  const [selectedFlavor, setSelectedFlavor] = useState<CloudFlavor | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<CloudNetwork | null>(null);
+  const [serverName, setServerName]     = useState('');
+  const [submitting, setSubmitting]     = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [success, setSuccess]           = useState(false);
+
+  useEffect(() => {
+    if (open && !options) {
+      setLoadingOpts(true);
+      dashboardApi.getWizardOptions()
+        .then((r) => setOptions(r.data))
+        .catch(() => setOptions({ images: FALLBACK_IMAGES, flavors: FALLBACK_FLAVORS, networks: [] }))
+        .finally(() => setLoadingOpts(false));
+    }
+  }, [open]);
+
+  const reset = () => {
+    setActiveStep(0);
+    setSelectedImage(null);
+    setSelectedFlavor(null);
+    setSelectedNetwork(null);
+    setServerName('');
+    setError(null);
+    setSuccess(false);
+  };
+
+  const handleClose = () => { reset(); onClose(); };
+
+  const handleNext = () => setActiveStep((s) => s + 1);
+  const handleBack = () => setActiveStep((s) => s - 1);
+
+  const canNext = () => {
+    if (activeStep === 0) return !!selectedImage;
+    if (activeStep === 1) return !!selectedFlavor;
+    if (activeStep === 2) return serverName.trim().length >= 2;
+    return false;
+  };
+
+  const handleDeploy = async () => {
+    if (!selectedImage || !selectedFlavor) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const payload: CreateServerPayload = {
+        name:    serverName.trim(),
+        image:   selectedImage.image_id,
+        flavor:  selectedFlavor.flavor_id,
+        network: selectedNetwork?.id,
+      };
+      await serversApi.create(payload);
+      // Mark create_vm step as done
+      await onboardingApi.updateChecklist({ create_vm: true });
+      setSuccess(true);
+      setTimeout(() => { handleClose(); onSuccess(); }, 1500);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Failed to create server. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const images  = options?.images  ?? [];
+  const flavors = options?.flavors ?? [];
+  const networks = options?.networks ?? [];
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          background: '#0b1220',
+          border: '1px solid rgba(20,184,166,.25)',
+          borderRadius: 3,
+          color: '#e6eef7',
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <RocketLaunchIcon sx={{ color: '#14b8a6' }} />
+          <Typography fontWeight={800} fontSize="1.1rem" color="#fff">
+            Deploy Your First Server
+          </Typography>
+        </Stack>
+        <IconButton size="small" onClick={handleClose} sx={{ color: '#9ca3af' }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+
+      <Divider sx={{ borderColor: 'rgba(255,255,255,.07)' }} />
+
+      {/* Stepper */}
+      <Box sx={{ px: 3, pt: 2.5 }}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {STEPS.map((label) => (
+            <Step key={label}>
+              <StepLabel
+                sx={{
+                  '& .MuiStepLabel-label': { color: '#9ca3af', fontSize: '.8rem' },
+                  '& .MuiStepLabel-label.Mui-active': { color: '#fff', fontWeight: 700 },
+                  '& .MuiStepLabel-label.Mui-completed': { color: '#14b8a6' },
+                  '& .MuiStepIcon-root': { color: 'rgba(255,255,255,.1)' },
+                  '& .MuiStepIcon-root.Mui-active': { color: '#14b8a6' },
+                  '& .MuiStepIcon-root.Mui-completed': { color: '#14b8a6' },
+                }}
+              >
+                {label}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      <DialogContent sx={{ pt: 2 }}>
+        {success && (
+          <Alert severity="success" sx={{ mb: 2, bgcolor: 'rgba(20,184,166,.1)', color: '#14b8a6', border: '1px solid rgba(20,184,166,.3)' }}>
+            Server is being provisioned! Redirecting…
+          </Alert>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {loadingOpts ? (
+          <Box sx={{ textAlign: 'center', py: 5 }}>
+            <CircularProgress sx={{ color: '#14b8a6' }} />
+            <Typography mt={2} color="#9ca3af" fontSize=".9rem">Loading cloud options…</Typography>
+          </Box>
+        ) : (
+          <>
+            {/* STEP 0 – Choose Image */}
+            {activeStep === 0 && (
+              <Box>
+                <Typography fontWeight={700} color="#fff" mb={2}>Select an Operating System</Typography>
+                <Grid container spacing={1.5}>
+                  {(images.length ? images : FALLBACK_IMAGES).map((img) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={img.image_id}>
+                      <Box
+                        onClick={() => setSelectedImage(img)}
+                        sx={{
+                          p: 2, borderRadius: 2, cursor: 'pointer',
+                          border: '1px solid',
+                          borderColor: selectedImage?.image_id === img.image_id
+                            ? '#14b8a6' : 'rgba(255,255,255,.08)',
+                          bgcolor: selectedImage?.image_id === img.image_id
+                            ? 'rgba(20,184,166,.08)' : 'rgba(255,255,255,.03)',
+                          transition: 'all .15s',
+                          '&:hover': { borderColor: 'rgba(20,184,166,.5)', bgcolor: 'rgba(20,184,166,.05)' },
+                        }}
+                      >
+                        <Typography fontSize="1.5rem" mb={.5}>{OS_ICONS[img.os_type] ?? '💿'}</Typography>
+                        <Typography fontWeight={700} color="#fff" fontSize=".88rem">{img.os_name}</Typography>
+                        <Typography variant="caption" color="#9ca3af">{img.os_version}</Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+
+            {/* STEP 1 – Choose Flavor */}
+            {activeStep === 1 && (
+              <Box>
+                <Typography fontWeight={700} color="#fff" mb={2}>Select Instance Size</Typography>
+                <Stack spacing={1.5}>
+                  {(flavors.length ? flavors : FALLBACK_FLAVORS).map((fl) => (
+                    <Box
+                      key={fl.flavor_id}
+                      onClick={() => setSelectedFlavor(fl)}
+                      sx={{
+                        p: 2, borderRadius: 2, cursor: 'pointer',
+                        border: '1px solid',
+                        borderColor: selectedFlavor?.flavor_id === fl.flavor_id
+                          ? '#14b8a6' : 'rgba(255,255,255,.08)',
+                        bgcolor: selectedFlavor?.flavor_id === fl.flavor_id
+                          ? 'rgba(20,184,166,.08)' : 'rgba(255,255,255,.03)',
+                        display: 'flex', alignItems: 'center', gap: 2,
+                        transition: 'all .15s',
+                        '&:hover': { borderColor: 'rgba(20,184,166,.5)' },
+                      }}
+                    >
+                      <ComputerIcon sx={{ color: fl.is_gpu ? '#f59e0b' : '#14b8a6', fontSize: '1.8rem', flexShrink: 0 }} />
+                      <Box flex={1}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Typography fontWeight={700} color="#fff" fontSize=".9rem">{fl.name}</Typography>
+                          {fl.is_gpu && <Chip label="GPU" size="small" sx={{ bgcolor: 'rgba(245,158,11,.15)', color: '#f59e0b', fontWeight: 700, fontSize: '.65rem', height: 18 }} />}
+                        </Stack>
+                        <Typography variant="caption" color="#9ca3af">
+                          {fl.vcpus} vCPU · {(fl.memory_mb / 1024).toFixed(0)} GB RAM · {fl.disk_gb} GB SSD
+                        </Typography>
+                      </Box>
+                      <Typography fontWeight={700} color="#14b8a6" fontSize=".9rem">
+                        ${fl.hourly_cost_usd}/hr
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            {/* STEP 2 – Network & Name */}
+            {activeStep === 2 && (
+              <Box>
+                <Typography fontWeight={700} color="#fff" mb={2}>Name & Network</Typography>
+                <Stack spacing={2.5}>
+                  <TextField
+                    label="Server Name"
+                    placeholder="e.g. web-server-01"
+                    value={serverName}
+                    onChange={(e) => setServerName(e.target.value)}
+                    fullWidth
+                    size="small"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#fff',
+                        '& fieldset': { borderColor: 'rgba(255,255,255,.15)' },
+                        '&:hover fieldset': { borderColor: 'rgba(20,184,166,.5)' },
+                        '&.Mui-focused fieldset': { borderColor: '#14b8a6' },
+                      },
+                      '& .MuiInputLabel-root': { color: '#9ca3af' },
+                      '& .MuiInputLabel-root.Mui-focused': { color: '#14b8a6' },
+                    }}
+                  />
+
+                  <Box>
+                    <Typography fontWeight={600} color="#e6eef7" fontSize=".88rem" mb={1}>
+                      Network
+                    </Typography>
+                    <Stack spacing={1}>
+                      <Box
+                        onClick={() => setSelectedNetwork(null)}
+                        sx={{
+                          p: 1.5, borderRadius: 2, cursor: 'pointer',
+                          border: '1px solid',
+                          borderColor: !selectedNetwork ? '#14b8a6' : 'rgba(255,255,255,.08)',
+                          bgcolor: !selectedNetwork ? 'rgba(20,184,166,.08)' : 'rgba(255,255,255,.03)',
+                          display: 'flex', alignItems: 'center', gap: 1.5,
+                          transition: 'all .15s',
+                        }}
+                      >
+                        <HubIcon sx={{ color: '#14b8a6', fontSize: '1.1rem' }} />
+                        <Typography fontSize=".85rem" color="#e6eef7" fontWeight={600}>Default Network</Typography>
+                        <Chip label="Recommended" size="small" sx={{ ml: 'auto', bgcolor: 'rgba(20,184,166,.12)', color: '#14b8a6', fontSize: '.65rem', height: 18 }} />
+                      </Box>
+                      {networks.map((net) => (
+                        <Box
+                          key={net.id}
+                          onClick={() => setSelectedNetwork(net)}
+                          sx={{
+                            p: 1.5, borderRadius: 2, cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: selectedNetwork?.id === net.id ? '#14b8a6' : 'rgba(255,255,255,.08)',
+                            bgcolor: selectedNetwork?.id === net.id ? 'rgba(20,184,166,.08)' : 'rgba(255,255,255,.03)',
+                            display: 'flex', alignItems: 'center', gap: 1.5,
+                            transition: 'all .15s',
+                          }}
+                        >
+                          <HubIcon sx={{ color: '#8b5cf6', fontSize: '1.1rem' }} />
+                          <Typography fontSize=".85rem" color="#e6eef7">{net.name}</Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  {/* Summary */}
+                  <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)' }}>
+                    <Typography fontWeight={700} color="#fff" fontSize=".85rem" mb={1}>Summary</Typography>
+                    <Stack spacing={.5}>
+                      <SummaryRow label="Image"   value={selectedImage?.os_name ?? '—'} />
+                      <SummaryRow label="Flavor"  value={selectedFlavor?.name ?? '—'} />
+                      <SummaryRow label="Network" value={selectedNetwork?.name ?? 'Default'} />
+                      <SummaryRow label="Cost"    value={selectedFlavor ? `$${selectedFlavor.hourly_cost_usd}/hr` : '—'} highlight />
+                    </Stack>
+                  </Box>
+                </Stack>
+              </Box>
+            )}
+          </>
+        )}
+      </DialogContent>
+
+      <Divider sx={{ borderColor: 'rgba(255,255,255,.07)' }} />
+
+      <DialogActions sx={{ px: 3, py: 2, justifyContent: 'space-between' }}>
+        <Button
+          onClick={activeStep === 0 ? handleClose : handleBack}
+          sx={{ color: '#9ca3af', '&:hover': { color: '#e6eef7' } }}
+        >
+          {activeStep === 0 ? 'Cancel' : 'Back'}
+        </Button>
+
+        {activeStep < 2 ? (
+          <Button
+            variant="contained"
+            disabled={!canNext()}
+            onClick={handleNext}
+            sx={{ bgcolor: '#14b8a6', color: '#05243b', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#0ea5a4' } }}
+          >
+            Next
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            disabled={!canNext() || submitting}
+            onClick={handleDeploy}
+            startIcon={submitting ? <CircularProgress size={16} sx={{ color: '#05243b' }} /> : <RocketLaunchIcon />}
+            sx={{ bgcolor: '#14b8a6', color: '#05243b', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#0ea5a4' } }}
+          >
+            {submitting ? 'Deploying…' : 'Create Server'}
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const SummaryRow: React.FC<{ label: string; value: string; highlight?: boolean }> = ({ label, value, highlight }) => (
+  <Stack direction="row" justifyContent="space-between">
+    <Typography variant="caption" color="#9ca3af">{label}</Typography>
+    <Typography variant="caption" color={highlight ? '#14b8a6' : '#e6eef7'} fontWeight={highlight ? 700 : 400}>
+      {value}
+    </Typography>
+  </Stack>
+);
+
+// Fallback data if backend has no seeded records yet
+const FALLBACK_IMAGES: CloudImage[] = [
+  { image_id: 'ubuntu-22', name: 'Ubuntu 22.04 LTS', os_name: 'Ubuntu', os_type: 'linux', os_version: '22.04 LTS' },
+  { image_id: 'debian-12', name: 'Debian 12', os_name: 'Debian', os_type: 'linux', os_version: '12 Bookworm' },
+  { image_id: 'centos-9',  name: 'CentOS Stream 9', os_name: 'CentOS', os_type: 'linux', os_version: 'Stream 9' },
+  { image_id: 'win-2022',  name: 'Windows Server 2022', os_name: 'Windows', os_type: 'windows', os_version: '2022' },
+];
+
+const FALLBACK_FLAVORS: CloudFlavor[] = [
+  { flavor_id: 'small',   name: 'Starter',    vcpus: 1,  memory_mb: 1024,  disk_gb: 25,  hourly_cost_usd: '0.0075', is_gpu: false },
+  { flavor_id: 'medium',  name: 'Standard',   vcpus: 2,  memory_mb: 4096,  disk_gb: 80,  hourly_cost_usd: '0.0280', is_gpu: false },
+  { flavor_id: 'large',   name: 'Performance',vcpus: 4,  memory_mb: 8192,  disk_gb: 160, hourly_cost_usd: '0.0550', is_gpu: false },
+  { flavor_id: 'gpu-v1',  name: 'GPU Compute',vcpus: 8,  memory_mb: 32768, disk_gb: 400, hourly_cost_usd: '0.4900', is_gpu: true  },
+];
+
+export default DeployWizardModal;

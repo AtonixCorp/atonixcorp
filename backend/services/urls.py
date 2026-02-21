@@ -2,6 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from .onboarding_views import onboarding_checklist, onboarding_checklist_update, dashboard_stats, wizard_options
 
 # Import ViewSets
 from .compute_viewsets import (
@@ -65,4 +66,9 @@ router.register(r'nat-gateways', NATGatewayViewSet, basename='nat-gateway')
 # URL Patterns
 urlpatterns = [
     path('', include(router.urls)),
+    # Onboarding & Dashboard
+    path('onboarding/checklist/',        onboarding_checklist,        name='onboarding-checklist-get'),
+    path('onboarding/checklist/update/', onboarding_checklist_update, name='onboarding-checklist-update'),
+    path('onboarding/stats/',            dashboard_stats,             name='dashboard-stats'),
+    path('onboarding/wizard-options/',   wizard_options,              name='wizard-options'),
 ]
