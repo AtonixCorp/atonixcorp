@@ -1,10 +1,13 @@
 # AtonixCorp Storage Service - ViewSets
 
+import json
+from django.db.models import Sum
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from . import swift_service
 from .storage_models import (
     StorageBucket, S3Object, StorageVolume, StorageSnapshot,
     FileShare, FileShareMount, EncryptionKey,
@@ -95,6 +98,220 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
         bucket.log_target_bucket = log_bucket
         bucket.save()
         return Response({'status': 'Logging enabled'})
+
+    # ── OpenStack Swift integration actions ────────────────────────────────
+
+    @action(detail=True, methods=['post'])
+    def swift_sync(self, request, pk=None):
+        """
+        Create / update the corresponding Swift container and synchronise
+        this bucket's metadata to OpenStack object-storage.
+        """
+        bucket = self.get_object()
+        result = swift_service.create_swift_container(
+            bucket_name=bucket.bucket_name,
+            region=bucket.region,
+            storage_class='standard',
+            public=(bucket.acl == 'public-read'),
+        )
+        if result.get('success'):
+            bucket.status = 'active'
+            bucket.save(update_fields=['status'])
+        return Response(result)
+
+    @action(detail=True, methods=['post'])
+    def generate_presigned_url(self, request, pk=None):
+        """Generate a Swift TempURL (pre-signed) for an object in this bucket."""
+        bucket = self.get_object()
+        object_key = request.data.get('object_key')
+        expires_in = int(request.data.get('expires_in', 3600))
+        method     = request.data.get('method', 'GET').upper()
+
+        if not object_key:
+            return Response(
+                {'error': 'object_key is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = swift_service.generate_presigned_url(
+            bucket_name=bucket.bucket_name,
+            object_key=object_key,
+            expires_in=expires_in,
+            method=method,
+        )
+        return Response(result)
+
+    @action(detail=True, methods=['get', 'post'])
+    def lifecycle(self, request, pk=None):
+        """
+        GET  – return lifecycle rules stored in bucket metadata.
+        POST – save new lifecycle rules and apply to Swift container.
+        """
+        bucket = self.get_object()
+
+        if request.method == 'GET':
+            rules_raw = bucket.tags.get('lifecycle_rules', '[]') if bucket.tags else '[]'
+            try:
+                rules = json.loads(rules_raw) if isinstance(rules_raw, str) else rules_raw
+            except ValueError:
+                rules = []
+            return Response({'rules': rules, 'bucket': bucket.bucket_name})
+
+        # POST
+        rules = request.data.get('rules', [])
+        if not isinstance(rules, list):
+            return Response({'error': 'rules must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Persist rules as JSON inside bucket.tags
+        if bucket.tags is None:
+            bucket.tags = {}
+        bucket.tags['lifecycle_rules'] = json.dumps(rules)
+        bucket.save(update_fields=['tags'])
+
+        # Push to Swift
+        result = swift_service.apply_lifecycle_policy(bucket.bucket_name, rules)
+        return Response({'saved': True, 'rules_count': len(rules), 'swift': result})
+
+    @action(detail=True, methods=['post'])
+    def upload_object(self, request, pk=None):
+        """
+        Simulate an object upload – creates an S3Object record and
+        pushes the raw bytes to the Swift container (if available).
+        """
+        from .storage_models import S3Object
+        import hashlib
+
+        bucket     = self.get_object()
+        file_obj   = request.FILES.get('file')
+        object_key = request.data.get('object_key')
+
+        if not file_obj and not object_key:
+            return Response({'error': 'file or object_key required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if file_obj:
+            data         = file_obj.read()
+            object_key   = object_key or file_obj.name
+            content_type = file_obj.content_type or 'application/octet-stream'
+            size_bytes   = len(data)
+            etag         = hashlib.md5(data).hexdigest()
+        else:
+            # Metadata-only record (client-side upload)
+            data         = b''
+            content_type = request.data.get('content_type', 'application/octet-stream')
+            size_bytes   = int(request.data.get('size_bytes', 0))
+            etag         = request.data.get('etag', hashlib.md5(object_key.encode()).hexdigest())
+
+        s3_obj, created = S3Object.objects.get_or_create(
+            bucket=bucket,
+            object_key=object_key,
+            defaults={
+                'size_bytes':    size_bytes,
+                'content_type':  content_type,
+                'etag':          etag,
+                'storage_class': request.data.get('storage_class', 'standard'),
+            },
+        )
+
+        if not created:
+            s3_obj.size_bytes   = size_bytes
+            s3_obj.content_type = content_type
+            s3_obj.etag         = etag
+            s3_obj.save()
+
+        # Update aggregate counts
+        bucket.total_objects = bucket.s3_objects.count()
+        bucket.total_size_bytes = bucket.s3_objects.aggregate(
+            total=Sum('size_bytes')
+        )['total'] or 0
+        bucket.save(update_fields=['total_objects', 'total_size_bytes'])
+
+        # Forward to Swift
+        if data:
+            swift_service.upload_swift_object(
+                bucket_name=bucket.bucket_name,
+                object_key=object_key,
+                data=data,
+                content_type=content_type,
+            )
+
+        return Response({
+            'success':   True,
+            'object_key': object_key,
+            'size_bytes': size_bytes,
+            'etag':       etag,
+            'created':    created,
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def replicate(self, request, pk=None):
+        """Configure cross-region replication for this bucket."""
+        bucket        = self.get_object()
+        target_region = request.data.get('target_region')
+        if not target_region:
+            return Response({'error': 'target_region required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = swift_service.replicate_container(
+            source_bucket=bucket.bucket_name,
+            target_region=target_region,
+        )
+        return Response(result)
+
+    @action(detail=False, methods=['get'])
+    def storage_classes(self, request):
+        """Return the storage class catalogue with descriptions and pricing."""
+        return Response([
+            {
+                'id':          'standard',
+                'name':        'Standard',
+                'description': 'High availability, frequently accessed objects',
+                'durability':  '99.999999999%',
+                'availability':'99.99%',
+                'price_gb':    0.023,
+            },
+            {
+                'id':          'standard-ia',
+                'name':        'Standard-IA',
+                'description': 'Infrequently accessed, but rapid retrieval',
+                'durability':  '99.999999999%',
+                'availability':'99.9%',
+                'price_gb':    0.0125,
+            },
+            {
+                'id':          'intelligent-tiering',
+                'name':        'Intelligent-Tiering',
+                'description': 'Auto-moves objects between tiers based on access',
+                'durability':  '99.999999999%',
+                'availability':'99.9%',
+                'price_gb':    0.023,
+            },
+            {
+                'id':          'glacier',
+                'name':        'Glacier',
+                'description': 'Low-cost archive storage, retrieval in minutes',
+                'durability':  '99.999999999%',
+                'availability':'N/A',
+                'price_gb':    0.004,
+            },
+            {
+                'id':          'deep-archive',
+                'name':        'Glacier Deep Archive',
+                'description': 'Lowest cost, retrieval in 12 hours',
+                'durability':  '99.999999999%',
+                'availability':'N/A',
+                'price_gb':    0.00099,
+            },
+        ])
+
+    @action(detail=False, methods=['get'])
+    def regions(self, request):
+        """Return available regions for object storage."""
+        return Response([
+            {'id': 'us-east-1',  'name': 'US East — New York',         'flag': 'US'},
+            {'id': 'us-west-1',  'name': 'US West — Los Angeles',      'flag': 'US'},
+            {'id': 'eu-west-1',  'name': 'Europe — Frankfurt',         'flag': 'DE'},
+            {'id': 'ap-south-1', 'name': 'Asia Pacific — Singapore',   'flag': 'SG'},
+            {'id': 'af-south-1', 'name': 'Africa — Johannesburg',      'flag': 'ZA'},
+        ])
 
 
 # ============================================================================

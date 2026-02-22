@@ -10,6 +10,11 @@ import type {
   ContainerRepository, CreateRepositoryPayload, CreateTokenPayload,
   ReplicatePayload, RegistryToken, ScanResult,
 } from '../types/registry';
+import type {
+  StorageBucket, CreateBucketPayload, S3Object,
+  StorageVolume, LifecycleRule,
+  StorageClassInfo, StorageRegion, PresignedUrlResult, SwiftSyncResult,
+} from '../types/storage';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -71,9 +76,49 @@ export const serversApi = {
   delete: (id: string) => cloudClient.delete(`/instances/${id}/`),
 };
 
-// ---- Storage ----
+// ---- Block Volumes ----
 export const volumesApi = {
-  list: () => cloudClient.get('/volumes/'),
+  list:   ()           => cloudClient.get<StorageVolume[]>('/volumes/'),
+  create: (p: object) => cloudClient.post<StorageVolume>('/volumes/', p),
+  delete: (id: string)=> cloudClient.delete(`/volumes/${id}/`),
+};
+
+// ---- Cloud Object Storage (Swift / S3-compatible) ----
+export const storageApi = {
+  // Buckets
+  list:     ()                              => cloudClient.get<StorageBucket[]>('/buckets/'),
+  get:      (id: string)                    => cloudClient.get<StorageBucket>(`/buckets/${id}/`),
+  create:   (p: CreateBucketPayload)        => cloudClient.post<StorageBucket>('/buckets/', p),
+  update:   (id: string, p: Partial<CreateBucketPayload>) =>
+                                               cloudClient.patch<StorageBucket>(`/buckets/${id}/`, p),
+  delete:   (id: string)                    => cloudClient.delete(`/buckets/${id}/`),
+  // Objects
+  objects:  (id: string)                    => cloudClient.get<S3Object[]>(`/buckets/${id}/objects/`),
+  statistics:(id: string)                   => cloudClient.get(`/buckets/${id}/statistics/`),
+  // Versioning / logging
+  enableVersioning: (id: string)            => cloudClient.post(`/buckets/${id}/enable_versioning/`),
+  enableLogging: (id: string, target: string) =>
+                                               cloudClient.post(`/buckets/${id}/enable_logging/`, { log_target_bucket: target }),
+  // Lifecycle
+  getLifecycle:  (id: string)               => cloudClient.get<{ rules: LifecycleRule[] }>(`/buckets/${id}/lifecycle/`),
+  setLifecycle:  (id: string, rules: LifecycleRule[]) =>
+                                               cloudClient.post(`/buckets/${id}/lifecycle/`, { rules }),
+  // Swift
+  swiftSync:     (id: string)               => cloudClient.post<SwiftSyncResult>(`/buckets/${id}/swift_sync/`),
+  presignedUrl:  (id: string, key: string, expires = 3600, method = 'GET') =>
+                                               cloudClient.post<PresignedUrlResult>(`/buckets/${id}/generate_presigned_url/`, {
+                                                 object_key: key, expires_in: expires, method,
+                                               }),
+  replicate:     (id: string, target_region: string) =>
+                                               cloudClient.post(`/buckets/${id}/replicate/`, { target_region }),
+  // Object upload
+  uploadObject:  (id: string, form: FormData) =>
+                                               cloudClient.post(`/buckets/${id}/upload_object/`, form, {
+                                                 headers: { 'Content-Type': 'multipart/form-data' },
+                                               }),
+  // Catalogues
+  storageClasses: ()                        => cloudClient.get<StorageClassInfo[]>('/buckets/storage_classes/'),
+  regions:       ()                         => cloudClient.get<StorageRegion[]>('/buckets/regions/'),
 };
 
 // ---- Networking ----

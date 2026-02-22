@@ -25,6 +25,7 @@ import AccountSettingsPage       from './pages/AccountSettingsPage';
 import DatabasePage              from './pages/DatabasePage';
 import ContainerRegistryPage     from './pages/ContainerRegistryPage';
 import ComputePage               from './pages/ComputePage';
+import StoragePage               from './pages/StoragePage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -52,6 +53,8 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/databases/:id"           element={<DatabasePage />} />
             <Route path="/dashboard/containers"              element={<ContainerRegistryPage />} />
             <Route path="/dashboard/containers/:id"          element={<ContainerRegistryPage />} />
+            <Route path="/dashboard/storage"                  element={<StoragePage />} />
+            <Route path="/dashboard/storage/:id"              element={<StoragePage />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>
         </DashboardLayout>
