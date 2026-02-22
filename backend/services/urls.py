@@ -44,6 +44,11 @@ from .monitoring_viewsets import (
     AlertRuleViewSet, AlertViewSet,
     IncidentViewSet, LogViewSet,
 )
+from .billing_viewsets import (
+    BillingOverviewViewSet, BillingAccountViewSet,
+    PaymentMethodViewSet, InvoiceViewSet,
+    UsageViewSet, CreditViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -127,6 +132,14 @@ router.register(r'alert-rules',         AlertRuleViewSet,          basename='ale
 router.register(r'alerts',              AlertViewSet,              basename='alert')
 router.register(r'incidents',           IncidentViewSet,           basename='incident')
 router.register(r'logs',                LogViewSet,                basename='log')
+
+# ── Billing ─────────────────────────────────────────────────────────────────
+router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')
+router.register(r'billing/account',         BillingAccountViewSet,   basename='billing-account')
+router.register(r'billing/payment-methods', PaymentMethodViewSet,    basename='payment-method')
+router.register(r'billing/invoices',        InvoiceViewSet,          basename='invoice')
+router.register(r'billing/usage',           UsageViewSet,            basename='billing-usage')
+router.register(r'billing/credits',         CreditViewSet,           basename='credit')
 
 # URL Patterns
 urlpatterns = [

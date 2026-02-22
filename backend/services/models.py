@@ -70,6 +70,15 @@ from .monitoring_models import (
     IncidentUpdate,
 )
 
+from .billing_models import (
+    BillingAccount,
+    PaymentMethod,
+    Invoice,
+    InvoiceLineItem,
+    UsageRecord,
+    CreditNote,
+)
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',

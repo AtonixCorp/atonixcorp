@@ -29,6 +29,7 @@ import StoragePage               from './pages/StoragePage';
 import DomainPage                from './pages/DomainPage';
 import EmailMarketingPage        from './pages/EmailMarketingPage';
 import MonitoringPage            from './pages/MonitoringPage';
+import BillingPage               from './pages/BillingPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -62,6 +63,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<EmailMarketingPage />} />
             <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />
+            <Route path="/dashboard/billing"                  element={<BillingPage />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>
         </DashboardLayout>

@@ -35,6 +35,11 @@ import type {
   AlertRule, CreateAlertRulePayload,
   Alert, Incident, CreateIncidentPayload, LogStream,
 } from '../types/monitoring';
+import type {
+  BillingOverview, BillingAccount, UpdateBillingAccountPayload,
+  PaymentMethod, AddPaymentMethodPayload,
+  Invoice, CurrentUsage, CreditNote,
+} from '../types/billing';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -357,4 +362,32 @@ export const monitoringApi = {
     if (filters?.limit)   p.set('limit',   String(filters.limit));
     return cloudClient.get<LogStream>(`/logs/?${p.toString()}`);
   },
+};
+
+// ---- Billing ----
+export const billingApi = {
+  // Overview
+  overview:             ()                              => cloudClient.get<BillingOverview>('/billing/overview/'),
+
+  // Account
+  getAccount:           ()                              => cloudClient.get<BillingAccount>('/billing/account/'),
+  updateAccount:        (p: UpdateBillingAccountPayload) => cloudClient.patch<BillingAccount>('/billing/account/', p),
+  changePlan:           (plan: string)                  => cloudClient.post<{ old_plan: string; new_plan: string; new_price: number; message: string }>('/billing/account/change-plan/', { plan }),
+
+  // Payment Methods
+  listPaymentMethods:   ()                              => cloudClient.get<PaymentMethod[]>('/billing/payment-methods/'),
+  addPaymentMethod:     (p: AddPaymentMethodPayload)    => cloudClient.post<PaymentMethod>('/billing/payment-methods/', p),
+  deletePaymentMethod:  (id: number)                   => cloudClient.delete(`/billing/payment-methods/${id}/`),
+  setDefaultPaymentMethod: (id: number)                => cloudClient.post(`/billing/payment-methods/${id}/set-default/`),
+
+  // Invoices
+  listInvoices:         ()                              => cloudClient.get<Invoice[]>('/billing/invoices/'),
+  getInvoice:           (id: number)                   => cloudClient.get<Invoice>(`/billing/invoices/${id}/`),
+  payInvoice:           (id: number)                   => cloudClient.post<Invoice>(`/billing/invoices/${id}/pay/`),
+
+  // Usage
+  currentUsage:         ()                              => cloudClient.get<CurrentUsage>('/billing/usage/'),
+
+  // Credits
+  listCredits:          ()                              => cloudClient.get<CreditNote[]>('/billing/credits/'),
 };
