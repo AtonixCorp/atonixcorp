@@ -2,6 +2,7 @@
 // Shows all VMs with status, IP, flavor, actions (start / stop / delete)
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTheme } from '@mui/material/styles';
 import {
   Box, Typography, Stack, Chip, IconButton, Tooltip,
   Skeleton, Alert, Button, Divider,
@@ -46,6 +47,8 @@ interface VMListPanelProps {
 // ── Main component ────────────────────────────────────────────────────────────
 
 const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [vms,     setVms]     = useState<VMInstance[]>([]);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
@@ -125,8 +128,8 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
     <Box
       sx={{
         borderRadius: 3,
-        border: '1px solid #E5E7EB',
-        bgcolor: '#ffffff',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
+        bgcolor: isDark ? '#132336' : '#ffffff',
         overflow: 'hidden',
       }}
     >
@@ -135,11 +138,11 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ px: 2.5, py: 1.75, borderBottom: '1px solid rgba(0,0,0,.08)' }}
+        sx={{ px: 2.5, py: 1.75, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}` }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
           <DnsIcon sx={{ color: '#18366A', fontSize: '1.1rem' }} />
-          <Typography fontWeight={700} color="#0f172a" fontSize=".95rem">
+          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".95rem">
             Virtual Machines
           </Typography>
           {!loading && vms.length > 0 && (
@@ -183,16 +186,16 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         )}
 
         {loading ? (
-          <Stack spacing={0} divider={<Divider sx={{ borderColor: 'rgba(0,0,0,.06)' }} />}>
+          <Stack spacing={0} divider={<Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)' }} />}>
             {[1, 2, 3].map((i) => (
               <Box key={i} sx={{ px: 2.5, py: 2 }}>
                 <Stack direction="row" alignItems="center" spacing={2}>
-                  <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: 'rgba(0,0,0,.07)', flexShrink: 0 }} />
+                  <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.07)', flexShrink: 0 }} />
                   <Box flex={1}>
-                    <Skeleton width="40%" height={18} sx={{ bgcolor: 'rgba(0,0,0,.07)' }} />
-                    <Skeleton width="60%" height={14} sx={{ bgcolor: 'rgba(0,0,0,.05)', mt: .5 }} />
+                    <Skeleton width="40%" height={18} sx={{ bgcolor: isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.07)' }} />
+                    <Skeleton width="60%" height={14} sx={{ bgcolor: isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)', mt: .5 }} />
                   </Box>
-                  <Skeleton width={70} height={24} sx={{ bgcolor: 'rgba(255,255,255,.06)', borderRadius: 10 }} />
+                  <Skeleton width={70} height={24} sx={{ bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)', borderRadius: 10 }} />
                 </Stack>
               </Box>
             ))}
@@ -200,7 +203,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         ) : vms.length === 0 ? (
           <EmptyState onCreateClick={onCreateClick} />
         ) : (
-          <Stack divider={<Divider sx={{ borderColor: 'rgba(0,0,0,.06)' }} />}>
+          <Stack divider={<Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)' }} />}>
             {vms.map((vm) => (
               <VMRow
                 key={vm.id}
@@ -222,19 +225,19 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         onClose={() => setConfirmDelete(null)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { background: '#ffffff', border: '1px solid rgba(239,68,68,.35)', borderRadius: '8px' } }}
+        PaperProps={{ sx: { background: isDark ? '#132336' : '#ffffff', border: '1px solid rgba(239,68,68,.35)', borderRadius: '8px' } }}
       >
         <DialogTitle sx={{ color: '#EF4444', fontWeight: 800, fontSize: '1rem' }}>
           Delete Virtual Machine?
         </DialogTitle>
         <DialogContent>
-          <Typography color="#64748b" fontSize=".9rem">
-            <strong style={{ color: '#0f172a' }}>{confirmDelete?.name}</strong> will be permanently deleted.
+          <Typography color={isDark ? '#ffffff' : '#64748b'} fontSize=".9rem">
+            <strong style={{ color: isDark ? '#ffffff' : '#0f172a' }}>{confirmDelete?.name}</strong> will be permanently deleted.
             This cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setConfirmDelete(null)} sx={{ color: '#64748b' }}>Cancel</Button>
+          <Button onClick={() => setConfirmDelete(null)} sx={{ color: isDark ? '#ffffff' : '#64748b' }}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleDeleteConfirm}
@@ -260,6 +263,8 @@ interface VMRowProps {
 }
 
 const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReboot, onDelete }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const st = statusStyle(vm.status);
   const busy = !!actionLoading;
   const isRunning = vm.status === 'ACTIVE';
@@ -273,7 +278,7 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
     : '—';
 
   return (
-    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: 'rgba(20,184,166,.04)' }, transition: 'background .15s' }}>
+    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(24,54,106,.03)' }, transition: 'background .15s' }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2}>
 
         {/* Icon */}
@@ -292,14 +297,14 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
         {/* Name + meta */}
         <Box flex={1} minWidth={0}>
           <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-            <Typography fontWeight={700} color="#0f172a" fontSize=".9rem" noWrap>{vm.name}</Typography>
+            <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".9rem" noWrap>{vm.name}</Typography>
             <Chip
               label={st.label}
               size="small"
               sx={{ bgcolor: st.bg, color: st.text, fontWeight: 700, fontSize: '.65rem', height: 18, border: `1px solid ${st.text}30` }}
             />
           </Stack>
-          <Typography variant="caption" color="#64748b" mt={.25} display="block">
+          <Typography variant="caption" color={isDark ? '#ffffff' : '#64748b'} mt={.25} display="block">
             {flavor} &nbsp;·&nbsp; IP: {ip} &nbsp;·&nbsp; Created {created}
           </Typography>
         </Box>
@@ -377,21 +382,25 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
 
 // ── Empty State ───────────────────────────────────────────────────────────────
 
-const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick }) => (
+const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  return (
   <Box sx={{ textAlign: 'center', py: 6, px: 3 }}>
     <Box
       sx={{
         width: 64, height: 64, borderRadius: '50%',
-        bgcolor: 'rgba(24,54,106,.07)', border: '1px solid rgba(24,54,106,.2)',
+        bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.07)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'rgba(24,54,106,.2)'}`,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 2,
       }}
     >
       <DnsIcon sx={{ color: '#18366A', fontSize: '1.8rem' }} />
     </Box>
-    <Typography fontWeight={700} color="#0A0F1F" fontSize=".95rem" mb={.75}>
+    <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} fontSize=".95rem" mb={.75}>
       No Virtual Machines Yet
     </Typography>
-    <Typography color="#6B7280" fontSize=".85rem" mb={2.5}>
+    <Typography color={isDark ? '#ffffff' : '#6B7280'} fontSize=".85rem" mb={2.5}>
       Launch your first server to start building your infrastructure.
     </Typography>
     {onCreateClick && (
@@ -409,6 +418,7 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
       </Button>
     )}
   </Box>
-);
+  );
+};
 
 export default VMListPanel;

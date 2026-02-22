@@ -1,6 +1,7 @@
 // AtonixCorp Cloud – Documentation & Support Panel
 
 import React from 'react';
+import { useTheme } from '@mui/material/styles';
 import {
   Box, Typography, Paper, Grid, Stack, Button, Divider, Chip,
 } from '@mui/material';
@@ -70,25 +71,27 @@ const DOC_LINKS: DocLink[] = [
 
 const DocsSupportPanel: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Paper
       elevation={0}
       sx={{
-        background: '#ffffff',
-        border: '1px solid #E5E7EB',
+        background: isDark ? '#132336' : '#ffffff',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
         borderRadius: '8px',
         overflow: 'hidden',
       }}
     >
       {/* Header */}
-      <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid rgba(0,0,0,.08)' }}>
+      <Box sx={{ px: 3, py: 2.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}` }}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <MenuBookIcon sx={{ color: '#18366A', fontSize: '1.2rem' }} />
-          <Typography fontWeight={700} color="#0f172a" fontSize="1rem">
+          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize="1rem">
             Documentation & Support
           </Typography>
-          <Typography variant="caption" sx={{ color: '#64748b', ml: .5 }}>
+          <Typography variant="caption" sx={{ color: isDark ? '#ffffff' : '#64748b', ml: .5 }}>
             — everything you need to build on AtonixCorp Cloud
           </Typography>
         </Stack>
@@ -101,14 +104,14 @@ const DocsSupportPanel: React.FC = () => {
               onClick={() => navigate(link.path)}
               sx={{
                 p: 2, borderRadius: 2, cursor: 'pointer',
-                border: '1px solid rgba(0,0,0,.08)',
-                bgcolor: '#fafafa',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.08)'}`,
+                bgcolor: isDark ? '#162A42' : '#fafafa',
                 height: '100%',
                 display: 'flex', flexDirection: 'column',
                 transition: 'all .18s',
                 '&:hover': {
                   borderColor: 'rgba(24,54,106,.4)',
-                  bgcolor: 'rgba(24,54,106,.04)',
+                  bgcolor: isDark ? '#1A3050' : 'rgba(24,54,106,.04)',
                   transform: 'translateY(-2px)',
                 },
               }}
@@ -125,7 +128,7 @@ const DocsSupportPanel: React.FC = () => {
                 >
                   {link.icon}
                 </Box>
-                <Typography fontWeight={700} color="#0f172a" fontSize=".88rem">
+                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".88rem">
                   {link.title}
                 </Typography>
                 {link.badge && (
@@ -134,12 +137,12 @@ const DocsSupportPanel: React.FC = () => {
                     size="small"
                     sx={{
                       ml: 'auto', bgcolor: link.badgeColor ?? 'rgba(0,0,0,.06)',
-                      color: '#374151', fontWeight: 700, fontSize: '.62rem', height: 18,
+                      color: isDark ? '#ffffff' : '#374151', fontWeight: 700, fontSize: '.62rem', height: 18,
                     }}
                   />
                 )}
               </Stack>
-              <Typography variant="caption" sx={{ color: '#64748b', lineHeight: 1.55, flex: 1 }}>
+              <Typography variant="caption" sx={{ color: isDark ? '#ffffff' : '#64748b', lineHeight: 1.55, flex: 1 }}>
                 {link.description}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={.5} mt={1.5}>

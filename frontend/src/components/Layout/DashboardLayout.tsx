@@ -45,7 +45,10 @@ import LogoutIcon            from '@mui/icons-material/Logout';
 import BillingIcon           from '@mui/icons-material/ReceiptLong';
 import TeamIcon              from '@mui/icons-material/Group';
 import MonitorIcon           from '@mui/icons-material/QueryStats';
+import LightModeIcon         from '@mui/icons-material/LightMode';
+import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import { useAuth }           from '../../contexts/AuthContext';
+import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -261,6 +264,13 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
 const SidebarContent: React.FC = () => {
   const { user } = useAuth() as any;
   const navigate  = useNavigate();
+  const { mode }  = useColorMode();
+  const isDark    = mode === 'dark';
+
+  // Sidebar surface colours switch with the theme
+  const SB_BG     = isDark ? '#0D1826' : NAVY;    // main sidebar bg
+  const SB_ORG    = isDark ? '#132336' : NAVY3;    // org selector bg
+  const SB_DIV    = isDark ? 'rgba(255,255,255,0.08)' : DIVIDER_COLOR;
 
   return (
     <Box
@@ -268,7 +278,7 @@ const SidebarContent: React.FC = () => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: NAVY,
+        bgcolor: SB_BG,
         overflow: 'hidden',
       }}
     >
@@ -282,7 +292,7 @@ const SidebarContent: React.FC = () => {
           alignItems: 'center',
           gap: 1.5,
           cursor: 'pointer',
-          borderBottom: `1px solid ${DIVIDER_COLOR}`,
+          borderBottom: `1px solid ${SB_DIV}`,
           flexShrink: 0,
         }}
       >
@@ -308,13 +318,13 @@ const SidebarContent: React.FC = () => {
       </Box>
 
       {/* Org selector */}
-      <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${DIVIDER_COLOR}`, flexShrink: 0 }}>
+      <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${SB_DIV}`, flexShrink: 0 }}>
         <Box
           sx={{
             display: 'flex', alignItems: 'center', gap: 1,
             px: 1.5, py: 0.75, borderRadius: '6px',
             border: '1px solid rgba(255,255,255,0.1)',
-            cursor: 'pointer', bgcolor: NAVY3,
+            cursor: 'pointer', bgcolor: SB_ORG,
             '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
             transition: 'background .15s',
           }}
@@ -356,7 +366,7 @@ const SidebarContent: React.FC = () => {
           ))}
         </List>
 
-        <Divider sx={{ borderColor: DIVIDER_COLOR, my: 1, mx: 2 }} />
+        <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />
 
         <NavSectionLabel>Account</NavSectionLabel>
         <List disablePadding>
@@ -365,7 +375,7 @@ const SidebarContent: React.FC = () => {
           ))}
         </List>
 
-        <Divider sx={{ borderColor: DIVIDER_COLOR, my: 1, mx: 2 }} />
+        <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />
 
         <NavSectionLabel>Support</NavSectionLabel>
         <List disablePadding>
@@ -379,7 +389,7 @@ const SidebarContent: React.FC = () => {
       <Box
         sx={{
           px: 2, py: 1.5,
-          borderTop: `1px solid ${DIVIDER_COLOR}`,
+          borderTop: `1px solid ${SB_DIV}`,
           flexShrink: 0,
         }}
       >
@@ -412,6 +422,8 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout }  = useAuth() as any;
   const navigate           = useNavigate();
+  const { mode, toggleTheme } = useColorMode();
+  const isDark             = mode === 'dark';
   const [mobileOpen,    setMobileOpen]    = useState(false);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
@@ -422,7 +434,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F9FAFB' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
       <Box component="nav" sx={{ width: { lg: SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
@@ -433,7 +445,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', lg: 'none' },
-            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: NAVY },
+            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: isDark ? '#0D1826' : NAVY },
           }}
         >
           <SidebarContent />
@@ -444,7 +456,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
               width: SIDEBAR_WIDTH, border: 'none',
-              borderRight: '1px solid rgba(0,0,0,.08)', bgcolor: NAVY,
+              borderRight: `1px solid ${isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.08)'}`,
+              bgcolor: isDark ? '#0D1826' : NAVY,
             },
           }}
           open
@@ -469,18 +482,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           position="sticky"
           elevation={0}
           sx={{
-            bgcolor: '#fff',
-            borderBottom: '1px solid #E5E7EB',
-            color: '#111827',
+            bgcolor: isDark ? '#0F1E30' : '#fff',
+            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
+            color: isDark ? '#ffffff' : '#111827',
             zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
           <Toolbar sx={{ gap: 1.5, px: { xs: 2, md: 3 }, minHeight: '64px !important' }}>
 
             <IconButton
-              onClick={() => setMobileOpen(true)}
-              sx={{ display: { lg: 'none' }, color: '#6B7280' }}
-            >
+                onClick={() => setMobileOpen(true)}
+                sx={{ display: { lg: 'none' }, color: isDark ? '#ffffff' : '#6B7280' }}
+              >
               <MenuIcon />
             </IconButton>
 
@@ -489,25 +502,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               sx={{
                 display: 'flex', alignItems: 'center',
                 flex: 1, maxWidth: 420,
-                bgcolor: '#F3F4F6', borderRadius: '6px',
+                bgcolor: isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6',
+                borderRadius: '6px',
                 px: 1.5, py: 0.5, gap: 1,
-                border: '1px solid transparent',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'transparent'}`,
                 transition: 'border .15s',
-                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: '#fff' },
+                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#fff' },
               }}
             >
               <SearchIcon sx={{ color: '#9CA3AF', fontSize: '1rem', flexShrink: 0 }} />
               <InputBase
                 placeholder="Search resources…"
                 sx={{
-                  flex: 1, fontSize: '.875rem', color: '#111827',
-                  '& input::placeholder': { color: '#9CA3AF' },
+                  flex: 1, fontSize: '.875rem', color: isDark ? '#ffffff' : '#111827',
+                  '& input::placeholder': { color: isDark ? '#ffffff' : '#9CA3AF' },
                 }}
               />
               <Typography
                 sx={{
-                  fontSize: '.7rem', color: '#9CA3AF',
-                  bgcolor: '#E5E7EB', px: 0.75, py: 0.25,
+                  fontSize: '.7rem', color: isDark ? '#ffffff' : '#9CA3AF',
+                  bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB', px: 0.75, py: 0.25,
                   borderRadius: '4px', flexShrink: 0,
                   display: { xs: 'none', md: 'block' },
                 }}
@@ -518,11 +532,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
             <Box sx={{ flex: 1 }} />
 
+            {/* Dark / Light mode toggle */}
+            <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+              <IconButton
+                onClick={toggleTheme}
+                sx={{
+                  color: isDark ? '#ffffff' : '#6B7280',
+                  bgcolor: isDark ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  borderRadius: '8px',
+                  '&:hover': {
+                    bgcolor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(24,54,106,0.08)',
+                    color: isDark ? '#fff' : '#18366A',
+                  },
+                  transition: 'all .15s',
+                }}
+              >
+                {isDark
+                  ? <LightModeIcon sx={{ fontSize: '1.15rem' }} />
+                  : <DarkModeIcon  sx={{ fontSize: '1.15rem' }} />}
+              </IconButton>
+            </Tooltip>
+
             {/* Notifications */}
             <Tooltip title="Notifications">
               <IconButton
                 onClick={(e) => setNotifAnchor(e.currentTarget)}
-                sx={{ color: '#6B7280', '&:hover': { color: '#111827' } }}
+                sx={{ color: isDark ? '#ffffff' : '#6B7280', '&:hover': { color: isDark ? '#ffffff' : '#111827' } }}
               >
                 <Badge
                   badgeContent={3}
@@ -538,12 +573,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               open={Boolean(notifAnchor)}
               onClose={() => setNotifAnchor(null)}
               PaperProps={{
-                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.12)', border: '1px solid #E5E7EB' },
+                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}` },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6'}` }}>
                 <Typography fontWeight={700} fontSize=".9rem">Notifications</Typography>
               </Box>
               {[
@@ -567,7 +602,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               sx={{
                 display: 'flex', alignItems: 'center', gap: 1,
                 px: 1, py: 0.5, borderRadius: '8px',
-                cursor: 'pointer', border: '1px solid #E5E7EB',
+                cursor: 'pointer', border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : '#E5E7EB'}`,
                 transition: 'border .15s',
                 '&:hover': { borderColor: BLUE },
               }}
@@ -579,14 +614,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Avatar>
               <Typography
                 sx={{
-                  fontSize: '.82rem', fontWeight: 600, color: '#111827',
+                  fontSize: '.82rem', fontWeight: 600, color: isDark ? '#ffffff' : '#111827',
                   display: { xs: 'none', sm: 'block' },
                 }}
               >
                 {user?.first_name || user?.username}
               </Typography>
               <KeyboardArrowDownIcon
-                sx={{ fontSize: '.85rem', color: '#6B7280', display: { xs: 'none', sm: 'block' } }}
+                sx={{ fontSize: '.85rem', color: isDark ? '#ffffff' : '#6B7280', display: { xs: 'none', sm: 'block' } }}
               />
             </Box>
             <Menu
@@ -594,12 +629,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               open={Boolean(profileAnchor)}
               onClose={() => setProfileAnchor(null)}
               PaperProps={{
-                sx: { minWidth: 220, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.12)', border: '1px solid #E5E7EB' },
+                sx: { minWidth: 220, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}` },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6'}` }}>
                 <Typography fontWeight={700} fontSize=".875rem">
                   {user?.first_name
                     ? `${user.first_name} ${user.last_name || ''}`.trim()
@@ -611,13 +646,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 onClick={() => { setProfileAnchor(null); navigate('/dashboard/settings'); }}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
               >
-                <PersonIcon sx={{ fontSize: '1rem', color: '#6B7280' }} /> Account Settings
+                <PersonIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} /> Account Settings
               </MenuItem>
               <MenuItem
                 onClick={() => { setProfileAnchor(null); navigate('/dashboard/billing'); }}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
               >
-                <BillingIcon sx={{ fontSize: '1rem', color: '#6B7280' }} /> Billing
+                <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} /> Billing
               </MenuItem>
               <Divider sx={{ my: 0.5 }} />
               <MenuItem
@@ -632,7 +667,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </AppBar>
 
         {/* ── Page content ──────────────────────────────────────────────────── */}
-        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: '#F9FAFB' }}>
+        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
           {children}
         </Box>
       </Box>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Box, Typography, Button, Stack, Chip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import StorageIcon from '@mui/icons-material/Storage';
 import HubIcon from '@mui/icons-material/Hub';
@@ -22,17 +23,21 @@ const quickActions = [
 
 const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const greeting = username ? `Welcome back, ${username}` : 'Welcome to AtonixCorp Cloud';
 
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f0f7ff 60%, #eaf1ff 100%)',
+        background: isDark
+          ? 'linear-gradient(135deg, #0F1E30 0%, #132336 60%, #162A42 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #f0f7ff 60%, #eaf1ff 100%)',
         borderRadius: '8px',
         p: { xs: 3, md: 5 },
         position: 'relative',
         overflow: 'hidden',
-        border: '1px solid rgba(24,54,106,.2)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(24,54,106,.2)'}`,
       }}
     >
       {/* Subtle grid backdrop */}
@@ -71,7 +76,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         <Typography
           variant="h3"
           fontWeight={800}
-          color="#0A0F1F"
+          color={isDark ? '#ffffff' : '#0A0F1F'}
           sx={{ letterSpacing: '-.02em', mb: 1.5, lineHeight: 1.15 }}
         >
           {greeting}
@@ -79,7 +84,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
 
         <Typography
           variant="body1"
-          sx={{ color: '#6B7280', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
+          sx={{ color: isDark ? '#ffffff' : '#6B7280', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
         >
           Your infrastructure starts here.{' '}
           <Box component="span" sx={{ color: '#18366A', fontWeight: 600 }}>Deploy</Box>,{' '}

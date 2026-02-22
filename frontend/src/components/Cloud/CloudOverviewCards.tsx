@@ -5,6 +5,7 @@ import {
   Box, Typography, Grid, Paper, Button, Stack, Chip,
   Skeleton, Divider,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import ComputerIcon from '@mui/icons-material/Computer';
 import StorageIcon from '@mui/icons-material/Storage';
 import HubIcon from '@mui/icons-material/Hub';
@@ -108,6 +109,8 @@ function buildCards(stats: DashboardStats | null): CardDef[] {
 
 const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const cards = buildCards(stats);
 
   return (
@@ -117,9 +120,9 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
           <Paper
             elevation={0}
             sx={{
-              background: '#ffffff',
+              background: isDark ? '#132336' : '#ffffff',
               border: '1px solid',
-              borderColor: card.borderColor,
+              borderColor: isDark ? 'rgba(255,255,255,.12)' : card.borderColor,
               borderRadius: '8px',
               p: 2.5,
               height: '100%',
@@ -145,16 +148,16 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 {card.icon}
               </Box>
               <Box>
-                <Typography fontWeight={700} color="#0A0F1F" fontSize=".95rem" lineHeight={1.2}>
+                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} fontSize=".95rem" lineHeight={1.2}>
                   {card.title}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#6B7280' }}>
+                <Typography variant="caption" sx={{ color: isDark ? '#ffffff' : '#6B7280' }}>
                   {card.subtitle}
                 </Typography>
               </Box>
             </Stack>
 
-            <Divider sx={{ borderColor: 'rgba(0,0,0,.08)', mb: 2 }} />
+            <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)', mb: 2 }} />
 
             {/* Stats rows */}
             <Stack spacing={1} flex={1}>
@@ -162,7 +165,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 <Stack key={row.label} direction="row" justifyContent="space-between" alignItems="center">
                   <Stack direction="row" alignItems="center" spacing={.75}>
                     <FiberManualRecordIcon sx={{ fontSize: 8, color: '#94a3b8' }} />
-                    <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '.82rem' }}>
+                    <Typography variant="body2" sx={{ color: isDark ? '#ffffff' : '#6B7280', fontSize: '.82rem' }}>
                       {row.label}
                     </Typography>
                   </Stack>
@@ -173,8 +176,8 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                       label={row.value}
                       size="small"
                       sx={{
-                        bgcolor: row.highlight ? card.iconBg : 'rgba(0,0,0,.05)',
-                        color: row.highlight ? card.iconColor : '#374151',
+                        bgcolor: row.highlight ? card.iconBg : isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.05)',
+                        color: row.highlight ? card.iconColor : isDark ? '#ffffff' : '#374151',
                         fontWeight: 700, fontSize: '.75rem', height: 22,
                       }}
                     />

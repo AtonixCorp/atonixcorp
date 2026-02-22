@@ -312,24 +312,24 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#60a5fa', // Lighter blue for dark mode
+      main: '#18366A',   // AtonixCorp brand blue — same in dark & light
+      dark: '#102548',
+      light: '#2B5FA0',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#60a5fa',
       dark: '#3b82f6',
       light: '#93c5fd',
       contrastText: '#0f172a',
     },
-    secondary: {
-      main: '#f59e0b', // Warm orange for dark mode
-      dark: '#d97706',
-      light: '#fbbf24',
-      contrastText: '#0f172a',
-    },
     background: {
-      default: '#0f172a', // Dark navy
-      paper: '#1e293b', // Darker slate
+      default: '#0D1826',   // deep dark navy — page background
+      paper:   '#132336',   // slightly lighter — cards / panels
     },
     text: {
-      primary: '#f1f5f9', // Light gray
-      secondary: '#cbd5e1', // Medium gray
+      primary:   '#ffffff',
+      secondary: 'rgba(255,255,255,0.75)',
     },
     grey: {
       50: '#f8fafc',

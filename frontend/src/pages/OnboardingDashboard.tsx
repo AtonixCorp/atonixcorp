@@ -5,6 +5,7 @@ import {
   Box, Container, Typography, Stack, Alert, Snackbar,
   Breadcrumbs, Link, Button,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import DashboardIcon      from '@mui/icons-material/Dashboard';
 import AddIcon            from '@mui/icons-material/Add';
 import NavigateNextIcon   from '@mui/icons-material/NavigateNext';
@@ -22,6 +23,8 @@ import VMListPanel         from '../components/Cloud/VMListPanel';
 
 const OnboardingDashboard: React.FC = () => {
   const { user } = useAuth() as any;
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   const [progress, setProgress]   = useState<OnboardingProgress | null>(null);
   const [stats, setStats]         = useState<DashboardStats | null>(null);
@@ -70,13 +73,13 @@ const OnboardingDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB', pb: 6 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff', pb: 6 }}>
 
       {/* ── Page Header ────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          bgcolor: '#fff',
-          borderBottom: '1px solid #E5E7EB',
+          bgcolor: isDark ? '#0F1E30' : '#fff',
+          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
           px: { xs: 3, md: 4 },
           pt: 2.5,
           pb: 2,
@@ -90,12 +93,12 @@ const OnboardingDashboard: React.FC = () => {
           <Link
             href="/"
             underline="hover"
-            sx={{ fontSize: '12px', color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: isDark ? '#ffffff' : '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             Home
           </Link>
           <Typography
-            sx={{ fontSize: '12px', color: '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: isDark ? '#ffffff' : '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             <DashboardIcon sx={{ fontSize: '.8rem' }} />
             Dashboard
@@ -108,7 +111,7 @@ const OnboardingDashboard: React.FC = () => {
             sx={{
               fontSize: '24px',
               fontWeight: 600,
-              color: '#0A0F1F',
+              color: isDark ? '#ffffff' : '#0A0F1F',
               letterSpacing: '-.02em',
               lineHeight: 1.2,
             }}
@@ -219,16 +222,20 @@ const OnboardingDashboard: React.FC = () => {
   );
 };
 
-const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Typography
-    fontWeight={700}
-    fontSize="12px"
-    letterSpacing=".08em"
-    textTransform="uppercase"
-    sx={{ color: '#6B7280', mb: 1.5 }}
-  >
-    {children}
-  </Typography>
-);
+const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  return (
+    <Typography
+      fontWeight={700}
+      fontSize="12px"
+      letterSpacing=".08em"
+      textTransform="uppercase"
+      sx={{ color: isDark ? '#ffffff' : '#6B7280', mb: 1.5 }}
+    >
+      {children}
+    </Typography>
+  );
+};
 
 export default OnboardingDashboard;

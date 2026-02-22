@@ -6,6 +6,7 @@ import {
   LinearProgress, Tooltip, Collapse, IconButton,
   CircularProgress,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -65,6 +66,8 @@ const STEPS: OnboardingStepDef[] = [
 
 const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loading, onRefresh }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [expanded, setExpanded] = useState(true);
   const [marking, setMarking] = useState<string | null>(null);
 
@@ -92,23 +95,23 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: allDone ? 'rgba(24,54,106,.4)' : '#E5E7EB',
+        borderColor: allDone ? 'rgba(24,54,106,.4)' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
         borderRadius: '8px',
         overflow: 'hidden',
-        background: '#ffffff',
+        background: isDark ? '#132336' : '#ffffff',
       }}
     >
       {/* Header */}
       <Box
         sx={{
           px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: '1px solid rgba(0,0,0,.08)',
+          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}`,
           cursor: 'pointer',
         }}
         onClick={() => setExpanded((p) => !p)}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="h6" fontWeight={700} color="#0A0F1F" fontSize="1rem">
+          <Typography variant="h6" fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} fontSize="1rem">
             Getting Started Checklist
           </Typography>
           <Chip
@@ -143,7 +146,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
             <CircularProgress size={28} sx={{ color: '#18366A' }} />
           </Box>
         ) : (
-          <Stack divider={<Box sx={{ borderTop: '1px solid rgba(0,0,0,.06)' }} />}>
+          <Stack divider={<Box sx={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'}` }} />}>
             {STEPS.map((step) => {
               const done = isComplete(step.key as string);
               return (
@@ -165,14 +168,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                     <Typography
                       fontWeight={600}
                       sx={{
-                        color: done ? '#9CA3AF' : '#0A0F1F',
+                        color: done ? '#9CA3AF' : isDark ? '#ffffff' : '#0A0F1F',
                         textDecoration: done ? 'line-through' : 'none',
                         fontSize: '.92rem',
                       }}
                     >
                       {step.label}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#6B7280', mt: .3, lineHeight: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: isDark ? '#ffffff' : '#6B7280', mt: .3, lineHeight: 1.5 }}>
                       {step.description}
                     </Typography>
                   </Box>
