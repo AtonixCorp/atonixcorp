@@ -13,8 +13,8 @@ import ComputerIcon from '@mui/icons-material/Computer';
 import StorageIcon from '@mui/icons-material/Storage';
 import HubIcon from '@mui/icons-material/Hub';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import { CloudImage, CloudFlavor, CloudNetwork, WizardOptions, CreateServerPayload } from '../../types/cloud';
-import { dashboardApi, serversApi, onboardingApi } from '../../services/cloudApi';
+import { CloudImage, CloudFlavor, CloudNetwork, CreateVMPayload } from '../../types/cloud';
+import { vmApi, onboardingApi } from '../../services/cloudApi';
 
 interface DeployWizardModalProps {
   open: boolean;
@@ -32,25 +32,42 @@ const OS_ICONS: Record<string, string> = {
 
 const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, onSuccess }) => {
   const [activeStep, setActiveStep]     = useState(0);
-  const [options, setOptions]           = useState<WizardOptions | null>(null);
+  const [images,   setImages]           = useState<CloudImage[]>([]);
+  const [flavors,  setFlavors]          = useState<CloudFlavor[]>([]);
+  const [networks, setNetworks]         = useState<CloudNetwork[]>([]);
   const [loadingOpts, setLoadingOpts]   = useState(false);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
   const [selectedImage, setSelectedImage]   = useState<CloudImage | null>(null);
   const [selectedFlavor, setSelectedFlavor] = useState<CloudFlavor | null>(null);
   const [selectedNetwork, setSelectedNetwork] = useState<CloudNetwork | null>(null);
   const [serverName, setServerName]     = useState('');
+  const [keyName, setKeyName]           = useState('');
   const [submitting, setSubmitting]     = useState(false);
   const [error, setError]               = useState<string | null>(null);
   const [success, setSuccess]           = useState(false);
 
   useEffect(() => {
-    if (open && !options) {
-      setLoadingOpts(true);
-      dashboardApi.getWizardOptions()
-        .then((r) => setOptions(r.data))
-        .catch(() => setOptions({ images: FALLBACK_IMAGES, flavors: FALLBACK_FLAVORS, networks: [] }))
-        .finally(() => setLoadingOpts(false));
-    }
-  }, [open]);
+    if (!open || optionsLoaded) return;
+    setLoadingOpts(true);
+    Promise.allSettled([
+      vmApi.listImages(),
+      vmApi.listFlavors(),
+      vmApi.listNetworks(),
+    ]).then(([imgRes, flvRes, netRes]) => {
+      setImages(
+        imgRes.status === 'fulfilled' && imgRes.value.data?.length
+          ? imgRes.value.data
+          : FALLBACK_IMAGES,
+      );
+      setFlavors(
+        flvRes.status === 'fulfilled' && flvRes.value.data?.length
+          ? flvRes.value.data
+          : FALLBACK_FLAVORS,
+      );
+      if (netRes.status === 'fulfilled') setNetworks(netRes.value.data ?? []);
+      setOptionsLoaded(true);
+    }).finally(() => setLoadingOpts(false));
+  }, [open, optionsLoaded]);
 
   const reset = () => {
     setActiveStep(0);
@@ -58,8 +75,10 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
     setSelectedFlavor(null);
     setSelectedNetwork(null);
     setServerName('');
+    setKeyName('');
     setError(null);
     setSuccess(false);
+    // Don't reset optionsLoaded — reuse cached flavors/images
   };
 
   const handleClose = () => { reset(); onClose(); };
@@ -79,27 +98,32 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
     setSubmitting(true);
     setError(null);
     try {
-      const payload: CreateServerPayload = {
-        name:    serverName.trim(),
-        image:   selectedImage.image_id,
-        flavor:  selectedFlavor.flavor_id,
-        network: selectedNetwork?.id,
+      const payload: CreateVMPayload = {
+        name:       serverName.trim(),
+        image_id:   selectedImage.image_id,
+        flavor_id:  selectedFlavor.flavor_id,
+        network_id: selectedNetwork?.id,
+        key_name:   keyName.trim() || undefined,
+        wait:       false,
       };
-      await serversApi.create(payload);
-      // Mark create_vm step as done
-      await onboardingApi.updateChecklist({ create_vm: true });
+      await vmApi.create(payload);
+      // Mark create_vm step as done in onboarding checklist
+      try { await onboardingApi.updateChecklist({ create_vm: true }); } catch { /* best-effort */ }
       setSuccess(true);
       setTimeout(() => { handleClose(); onSuccess(); }, 1500);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || 'Failed to create server. Please try again.');
+      const detail = e?.response?.data?.detail || '';
+      if (detail.includes('not configured') || e?.response?.status === 503) {
+        setError('OpenStack is not connected. Configure your cloud credentials in Settings to provision real servers.');
+      } else {
+        setError(detail || 'Failed to create server. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  const images  = options?.images  ?? [];
-  const flavors = options?.flavors ?? [];
-  const networks = options?.networks ?? [];
+  // images / flavors / networks come directly from state (fallbacks applied during load)
 
   return (
     <Dialog
@@ -173,10 +197,10 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
           <>
             {/* STEP 0 – Choose Image */}
             {activeStep === 0 && (
-              <Box>
+              <Box>                  {/* STEP 0 – Choose Image */}
                 <Typography fontWeight={700} color="#fff" mb={2}>Select an Operating System</Typography>
                 <Grid container spacing={1.5}>
-                  {(images.length ? images : FALLBACK_IMAGES).map((img) => (
+                  {images.map((img) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={img.image_id}>
                       <Box
                         onClick={() => setSelectedImage(img)}
@@ -206,7 +230,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
               <Box>
                 <Typography fontWeight={700} color="#fff" mb={2}>Select Instance Size</Typography>
                 <Stack spacing={1.5}>
-                  {(flavors.length ? flavors : FALLBACK_FLAVORS).map((fl) => (
+                  {flavors.map((fl) => (
                     <Box
                       key={fl.flavor_id}
                       onClick={() => setSelectedFlavor(fl)}
@@ -253,16 +277,19 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                     onChange={(e) => setServerName(e.target.value)}
                     fullWidth
                     size="small"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: '#fff',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,.15)' },
-                        '&:hover fieldset': { borderColor: 'rgba(20,184,166,.5)' },
-                        '&.Mui-focused fieldset': { borderColor: '#14b8a6' },
-                      },
-                      '& .MuiInputLabel-root': { color: '#9ca3af' },
-                      '& .MuiInputLabel-root.Mui-focused': { color: '#14b8a6' },
-                    }}
+                    sx={textFieldSx}
+                  />
+
+                  <TextField
+                    label="SSH Key Name (optional)"
+                    placeholder="e.g. my-ssh-key"
+                    value={keyName}
+                    onChange={(e) => setKeyName(e.target.value)}
+                    fullWidth
+                    size="small"
+                    helperText="Name of a key pair registered in OpenStack. Leave blank to skip."
+                    FormHelperTextProps={{ sx: { color: '#6b7280' } }}
+                    sx={textFieldSx}
                   />
 
                   <Box>
@@ -312,6 +339,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                       <SummaryRow label="Image"   value={selectedImage?.os_name ?? '—'} />
                       <SummaryRow label="Flavor"  value={selectedFlavor?.name ?? '—'} />
                       <SummaryRow label="Network" value={selectedNetwork?.name ?? 'Default'} />
+                      {keyName && <SummaryRow label="SSH Key" value={keyName} />}
                       <SummaryRow label="Cost"    value={selectedFlavor ? `$${selectedFlavor.hourly_cost_usd}/hr` : '—'} highlight />
                     </Stack>
                   </Box>
@@ -380,5 +408,16 @@ const FALLBACK_FLAVORS: CloudFlavor[] = [
   { flavor_id: 'large',   name: 'Performance',vcpus: 4,  memory_mb: 8192,  disk_gb: 160, hourly_cost_usd: '0.0550', is_gpu: false },
   { flavor_id: 'gpu-v1',  name: 'GPU Compute',vcpus: 8,  memory_mb: 32768, disk_gb: 400, hourly_cost_usd: '0.4900', is_gpu: true  },
 ];
+
+const textFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    color: '#fff',
+    '& fieldset': { borderColor: 'rgba(255,255,255,.15)' },
+    '&:hover fieldset': { borderColor: 'rgba(20,184,166,.5)' },
+    '&.Mui-focused fieldset': { borderColor: '#14b8a6' },
+  },
+  '& .MuiInputLabel-root': { color: '#9ca3af' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#14b8a6' },
+};
 
 export default DeployWizardModal;

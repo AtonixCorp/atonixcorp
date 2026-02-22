@@ -97,3 +97,39 @@ export interface CreateServerPayload {
   network?: string;   // VPC id
   key_name?: string;
 }
+
+// ---- VM Instance (OpenStack /cloud/servers/) ----
+
+export type VMStatus =
+  | 'ACTIVE'
+  | 'SHUTOFF'
+  | 'BUILD'
+  | 'ERROR'
+  | 'PAUSED'
+  | 'SUSPENDED'
+  | 'REBOOT'
+  | 'HARD_REBOOT'
+  | 'DELETED';
+
+export interface VMInstance {
+  id: string;
+  name: string;
+  status: VMStatus;
+  ip_address: string | null;
+  flavor: { id: string; name?: string };
+  image: { id: string; name?: string };
+  availability_zone: string;
+  created_at: string;
+  updated_at: string;
+  key_name: string | null;
+  security_groups: string[];
+}
+
+export interface CreateVMPayload {
+  name: string;
+  image_id: string;
+  flavor_id: string;
+  network_id?: string;
+  key_name?: string;
+  wait?: boolean;
+}

@@ -16,6 +16,7 @@ import OnboardingChecklist from '../components/Cloud/OnboardingChecklist';
 import CloudOverviewCards  from '../components/Cloud/CloudOverviewCards';
 import DeployWizardModal   from '../components/Cloud/DeployWizardModal';
 import DocsSupportPanel    from '../components/Cloud/DocsSupportPanel';
+import VMListPanel         from '../components/Cloud/VMListPanel';
 
 const OnboardingDashboard: React.FC = () => {
   const { user } = useAuth() as any;
@@ -25,6 +26,7 @@ const OnboardingDashboard: React.FC = () => {
   const [loadingProgress, setLoadingProgress] = useState(false);
   const [loadingStats, setLoadingStats]       = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [vmRefreshKey, setVmRefreshKey] = useState(0);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   const fetchProgress = useCallback(async () => {
@@ -59,7 +61,8 @@ const OnboardingDashboard: React.FC = () => {
   }, [fetchProgress, fetchStats]);
 
   const handleDeploySuccess = () => {
-    setToast({ msg: 'Server is being provisioned! Check Compute for status.', type: 'success' });
+    setToast({ msg: 'Server is being provisioned! Check Virtual Machines for status.', type: 'success' });
+    setVmRefreshKey(k => k + 1);
     fetchProgress();
     fetchStats();
   };
@@ -111,7 +114,16 @@ const OnboardingDashboard: React.FC = () => {
             <CloudOverviewCards stats={stats} loading={loadingStats} />
           </Box>
 
-          {/* 4 ── Documentation & Support */}
+          {/* 4 –– Virtual Machines */}
+          <Box>
+            <SectionHeading>Virtual Machines</SectionHeading>
+            <VMListPanel
+              refreshKey={vmRefreshKey}
+              onCreateClick={() => setWizardOpen(true)}
+            />
+          </Box>
+
+          {/* 5 –– Documentation & Support */}
           <Box>
             <SectionHeading>Documentation & Support</SectionHeading>
             <DocsSupportPanel />

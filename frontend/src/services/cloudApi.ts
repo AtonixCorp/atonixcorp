@@ -7,10 +7,13 @@ import {
   DashboardStats,
   WizardOptions,
   CreateServerPayload,
+  VMInstance,
+  CreateVMPayload,
 } from '../types/cloud';
 
+// Cloud API client – routes under /api/services/*
 const cloudClient = axios.create({
-  baseURL: config.API_BASE_URL,
+  baseURL: config.API_BASE_URL + '/services',
   timeout: config.API_TIMEOUT,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -68,4 +71,19 @@ export const volumesApi = {
 // ---- Networking ----
 export const networksApi = {
   list: () => cloudClient.get('/vpcs/'),
+};
+
+// ---- OpenStack VM management (/cloud/*) ----
+export const vmApi = {
+  list:         ()              => cloudClient.get<VMInstance[]>('/cloud/servers/'),
+  create:       (p: CreateVMPayload) => cloudClient.post<VMInstance>('/cloud/servers/', p),
+  get:          (id: string)   => cloudClient.get<VMInstance>(`/cloud/servers/${id}/`),
+  delete:       (id: string)   => cloudClient.delete(`/cloud/servers/${id}/`),
+  start:        (id: string)   => cloudClient.post(`/cloud/servers/${id}/start/`),
+  stop:         (id: string)   => cloudClient.post(`/cloud/servers/${id}/stop/`),
+  reboot:       (id: string)   => cloudClient.post(`/cloud/servers/${id}/reboot/`),
+  listFlavors:  ()             => cloudClient.get('/cloud/flavors/'),
+  listImages:   ()             => cloudClient.get('/cloud/images/'),
+  listNetworks: ()             => cloudClient.get('/cloud/networks/'),
+  cloudStatus:  ()             => cloudClient.get('/cloud/status/'),
 };
