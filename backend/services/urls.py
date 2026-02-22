@@ -33,6 +33,12 @@ from .networking_viewsets import (
 )
 from .database_viewsets import ManagedDatabaseViewSet
 from .container_registry_viewsets import ContainerRepositoryViewSet
+from .domain_viewsets import DomainViewSet, SslCertificateViewSet
+from .email_viewsets import EmailDomainViewSet, MailboxViewSet, EmailAliasViewSet
+from .marketing_viewsets import (
+    CampaignViewSet, ContactListViewSet, ContactViewSet,
+    EmailTemplateViewSet, AutomationViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -84,6 +90,28 @@ router.register(r'databases', ManagedDatabaseViewSet, basename='database')
 # CONTAINER REGISTRY ENDPOINTS
 # ============================================================================
 router.register(r'registries', ContainerRepositoryViewSet, basename='registry')
+
+# ============================================================================
+# DOMAIN SERVICE ENDPOINTS
+# ============================================================================
+router.register(r'domains', DomainViewSet, basename='domain')
+router.register(r'ssl-certificates', SslCertificateViewSet, basename='ssl-certificate')
+
+# ============================================================================
+# EMAIL SERVICE ENDPOINTS
+# ============================================================================
+router.register(r'email-domains', EmailDomainViewSet, basename='email-domain')
+router.register(r'mailboxes',     MailboxViewSet,     basename='mailbox')
+router.register(r'email-aliases', EmailAliasViewSet,  basename='email-alias')
+
+# ============================================================================
+# EMAIL MARKETING ENDPOINTS
+# ============================================================================
+router.register(r'campaigns',       CampaignViewSet,       basename='campaign')
+router.register(r'contact-lists',   ContactListViewSet,    basename='contact-list')
+router.register(r'contacts',        ContactViewSet,        basename='contact')
+router.register(r'email-templates', EmailTemplateViewSet,  basename='email-template')
+router.register(r'automations',     AutomationViewSet,     basename='automation')
 
 # URL Patterns
 urlpatterns = [

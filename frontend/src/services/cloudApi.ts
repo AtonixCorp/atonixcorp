@@ -15,6 +15,21 @@ import type {
   StorageVolume, LifecycleRule,
   StorageClassInfo, StorageRegion, PresignedUrlResult, SwiftSyncResult,
 } from '../types/storage';
+import type {
+  Domain, DnsRecord, SslCertificate, TldInfo,
+  RegisterDomainPayload, TransferDomainPayload, CreateDnsRecordPayload,
+  AvailabilityResult,
+} from '../types/domain';
+import type {
+  EmailDomain, Mailbox, EmailAlias, DkimKey,
+  MailClientSettings, EmailActivityLog,
+  CreateMailboxPayload, UpdateMailboxPayload, CreateAliasPayload,
+} from '../types/email';
+import type {
+  Campaign, ContactList, Contact, EmailTemplate, Automation,
+  AccountStats, CreateCampaignPayload, CreateContactListPayload,
+  CreateContactPayload, CreateTemplatePayload, CreateAutomationPayload,
+} from '../types/marketing';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -193,4 +208,103 @@ export const registryApi = {
   scan:         (id: string, tag: string)       => cloudClient.post<ScanResult>(`/registries/${id}/scan/`, { tag }),
   // Catalogue
   regions:      ()                              => cloudClient.get('/registries/regions/'),
+};
+
+// ---- Domains ----
+export const domainApi = {
+  // CRUD
+  list:              ()                                           => cloudClient.get<Domain[]>('/domains/'),
+  get:               (id: string)                                 => cloudClient.get<Domain>(`/domains/${id}/`),
+  delete:            (id: string)                                 => cloudClient.delete(`/domains/${id}/`),
+  // Search & catalogue
+  checkAvailability: (name: string, tlds?: string[])              => cloudClient.post<AvailabilityResult>('/domains/check_availability/', { domain_name: name, tlds }),
+  tldCatalogue:      ()                                           => cloudClient.get<TldInfo[]>('/domains/tld_catalogue/'),
+  // Registration & transfer
+  register:          (p: RegisterDomainPayload)                   => cloudClient.post<Domain>('/domains/register/', p),
+  transfer:          (p: TransferDomainPayload)                   => cloudClient.post<Domain>('/domains/transfer/', p),
+  // Renewal
+  renew:             (id: string, years: number)                  => cloudClient.post(`/domains/${id}/renew/`, { years }),
+  // DNS
+  dnsZone:           (id: string)                                 => cloudClient.get(`/domains/${id}/dns_zone/`),
+  dnsRecords:        (id: string)                                 => cloudClient.get<DnsRecord[]>(`/domains/${id}/dns_records/`),
+  addDnsRecord:      (id: string, p: CreateDnsRecordPayload)      => cloudClient.post<DnsRecord>(`/domains/${id}/add_dns_record/`, p),
+  deleteDnsRecord:   (id: string, recordset_id: string)           => cloudClient.post(`/domains/${id}/delete_dns_record/`, { recordset_id }),
+  // SSL
+  sslCerts:          (id: string)                                 => cloudClient.get<SslCertificate[]>(`/domains/${id}/ssl_certs/`),
+  requestSsl:        (id: string)                                 => cloudClient.post(`/domains/${id}/request_ssl/`),
+  // Settings
+  updateNameservers: (id: string, nameservers: string[])          => cloudClient.post(`/domains/${id}/update_nameservers/`, { nameservers }),
+  setPrivacy:        (id: string, enable: boolean)                => cloudClient.post(`/domains/${id}/set_privacy/`, { enable }),
+  enableDnssec:      (id: string)                                 => cloudClient.post(`/domains/${id}/enable_dnssec/`),
+};
+
+// ---- Email Marketing ----
+export const marketingApi = {
+  // Campaigns
+  listCampaigns:      ()                                          => cloudClient.get<Campaign[]>('/campaigns/'),
+  getCampaign:        (id: string)                               => cloudClient.get<Campaign>(`/campaigns/${id}/`),
+  createCampaign:     (p: CreateCampaignPayload)                 => cloudClient.post<Campaign>('/campaigns/', p),
+  updateCampaign:     (id: string, p: Partial<CreateCampaignPayload>) => cloudClient.patch<Campaign>(`/campaigns/${id}/`, p),
+  deleteCampaign:     (id: string)                               => cloudClient.delete(`/campaigns/${id}/`),
+  sendCampaign:       (id: string)                               => cloudClient.post(`/campaigns/${id}/send/`),
+  sendTest:           (id: string, email: string)                => cloudClient.post(`/campaigns/${id}/send_test/`, { email }),
+  scheduleCampaign:   (id: string, at: string)                   => cloudClient.post(`/campaigns/${id}/schedule/`, { scheduled_at: at }),
+  cancelCampaign:     (id: string)                               => cloudClient.post(`/campaigns/${id}/cancel/`),
+  duplicateCampaign:  (id: string)                               => cloudClient.post<Campaign>(`/campaigns/${id}/duplicate/`),
+  campaignAnalytics:  (id: string)                               => cloudClient.get(`/campaigns/${id}/analytics/`),
+  accountStats:       ()                                          => cloudClient.get<AccountStats>('/campaigns/account_stats/'),
+
+  // Contact Lists
+  listContactLists:   ()                                          => cloudClient.get<ContactList[]>('/contact-lists/'),
+  createContactList:  (p: CreateContactListPayload)               => cloudClient.post<ContactList>('/contact-lists/', p),
+  deleteContactList:  (id: string)                               => cloudClient.delete(`/contact-lists/${id}/`),
+  importContacts:     (id: string, csv: string)                  => cloudClient.post(`/contact-lists/${id}/import_csv/`, { csv }),
+  exportContactsUrl:  (id: string)                               => `/contact-lists/${id}/export_csv/`,
+
+  // Contacts
+  listContacts:       (listId: string)                           => cloudClient.get<Contact[]>(`/contacts/?list=${listId}`),
+  createContact:      (p: CreateContactPayload)                  => cloudClient.post<Contact>('/contacts/', p),
+  deleteContact:      (id: number)                               => cloudClient.delete(`/contacts/${id}/`),
+  unsubscribeContact: (id: number)                               => cloudClient.post(`/contacts/${id}/unsubscribe/`),
+
+  // Templates
+  listTemplates:      ()                                          => cloudClient.get<EmailTemplate[]>('/email-templates/'),
+  createTemplate:     (p: CreateTemplatePayload)                 => cloudClient.post<EmailTemplate>('/email-templates/', p),
+  updateTemplate:     (id: string, p: Partial<CreateTemplatePayload>) => cloudClient.patch<EmailTemplate>(`/email-templates/${id}/`, p),
+  deleteTemplate:     (id: string)                               => cloudClient.delete(`/email-templates/${id}/`),
+  duplicateTemplate:  (id: string)                               => cloudClient.post<EmailTemplate>(`/email-templates/${id}/duplicate/`),
+
+  // Automations
+  listAutomations:    ()                                          => cloudClient.get<Automation[]>('/automations/'),
+  createAutomation:   (p: CreateAutomationPayload)               => cloudClient.post<Automation>('/automations/', p),
+  deleteAutomation:   (id: string)                               => cloudClient.delete(`/automations/${id}/`),
+  activateAutomation: (id: string)                               => cloudClient.post(`/automations/${id}/activate/`),
+  deactivateAutomation: (id: string)                             => cloudClient.post(`/automations/${id}/deactivate/`),
+};
+
+// ---- Email Service ----
+export const emailApi = {
+  // Email domains
+  emailDomains:     ()                                           => cloudClient.get<EmailDomain[]>('/email-domains/'),
+  getEmailDomain:   (id: number)                                 => cloudClient.get<EmailDomain>(`/email-domains/${id}/`),
+  enableEmail:      (domain_resource_id: string)                 => cloudClient.post<EmailDomain>('/email-domains/', { domain_resource_id }),
+  provisionDns:     (id: number)                                 => cloudClient.post<EmailDomain>(`/email-domains/${id}/provision_dns/`),
+  generateDkim:     (id: number, selector?: string)              => cloudClient.post<DkimKey>(`/email-domains/${id}/generate_dkim/`, { selector }),
+  clientSettings:   (id: number)                                 => cloudClient.get<MailClientSettings>(`/email-domains/${id}/client_settings/`),
+  emailActivity:    (id: number)                                 => cloudClient.get<EmailActivityLog[]>(`/email-domains/${id}/activity/`),
+  // Mailboxes
+  listMailboxes:    ()                                           => cloudClient.get<Mailbox[]>('/mailboxes/'),
+  getMailbox:       (id: string)                                 => cloudClient.get<Mailbox>(`/mailboxes/${id}/`),
+  createMailbox:    (p: CreateMailboxPayload)                    => cloudClient.post<Mailbox>('/mailboxes/', p),
+  updateMailbox:    (id: string, p: UpdateMailboxPayload)        => cloudClient.patch<Mailbox>(`/mailboxes/${id}/`, p),
+  deleteMailbox:    (id: string)                                 => cloudClient.delete(`/mailboxes/${id}/`),
+  changePassword:   (id: string, new_password: string)          => cloudClient.post(`/mailboxes/${id}/change_password/`, { new_password }),
+  suspendMailbox:   (id: string)                                 => cloudClient.post(`/mailboxes/${id}/suspend/`),
+  activateMailbox:  (id: string)                                 => cloudClient.post(`/mailboxes/${id}/activate/`),
+  mailboxUsage:     (id: string)                                 => cloudClient.get(`/mailboxes/${id}/usage/`),
+  generatePassword: (length?: number)                            => cloudClient.post<{ password: string }>('/mailboxes/generate_password/', { length }),
+  // Aliases
+  listAliases:      ()                                           => cloudClient.get<EmailAlias[]>('/email-aliases/'),
+  createAlias:      (p: CreateAliasPayload)                      => cloudClient.post<EmailAlias>('/email-aliases/', p),
+  deleteAlias:      (id: number)                                 => cloudClient.delete(`/email-aliases/${id}/`),
 };

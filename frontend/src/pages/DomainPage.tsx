@@ -1,0 +1,514 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Box, Typography, Button, Chip, IconButton, Tooltip,
+  Table, TableHead, TableRow, TableCell, TableBody,
+  Tabs, Tab, CircularProgress, Alert, Switch,
+  FormControlLabel, Divider, TextField,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import AddIcon           from '@mui/icons-material/Add';
+import SwapHorizIcon     from '@mui/icons-material/SwapHoriz';
+import RefreshIcon       from '@mui/icons-material/Refresh';
+import DomainIcon        from '@mui/icons-material/Language';
+import DeleteIcon        from '@mui/icons-material/DeleteOutline';
+import LockIcon          from '@mui/icons-material/Lock';
+import LockOpenIcon      from '@mui/icons-material/LockOpen';
+import VerifiedUserIcon  from '@mui/icons-material/VerifiedUser';
+import HttpsIcon         from '@mui/icons-material/Https';
+import AutorenewIcon     from '@mui/icons-material/Autorenew';
+import { domainApi }     from '../services/cloudApi';
+import type { Domain, DnsRecord, SslCertificate, DnsRecordType } from '../types/domain';
+import RegisterDomainModal  from '../components/Cloud/RegisterDomainModal';
+import TransferDomainModal  from '../components/Cloud/TransferDomainModal';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const STATUS_COLOUR: Record<string, string> = {
+  active:       '#22C55E',
+  pending:      '#F59E0B',
+  expired:      '#EF4444',
+  suspended:    '#EF4444',
+  transferring: '#3B82F6',
+  deleting:     '#6B7280',
+  error:        '#EF4444',
+};
+
+const SSL_COLOUR: Record<string, string> = {
+  active:  '#22C55E',
+  pending: '#F59E0B',
+  expired: '#EF4444',
+  revoked: '#6B7280',
+  error:   '#EF4444',
+};
+
+const DNS_TYPES: DnsRecordType[] = ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA','PTR'];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+const DomainPage: React.FC = () => {
+  const theme  = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  const t = {
+    panelBg: isDark ? '#0D1826' : '#F9FAFB',
+    cardBg:  isDark ? '#132336' : '#FFFFFF',
+    border:  isDark ? '#1E3A5F' : '#E5E7EB',
+    brand:   '#18366A',
+    hover:   isDark ? '#102548' : '#EFF6FF',
+    text:    isDark ? '#e0e9f4' : '#0A0F1F',
+    muted:   isDark ? '#6b8aab' : '#6B7280',
+  };
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  const [domains,      setDomains]      = useState<Domain[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState('');
+  const [selected,     setSelected]     = useState<Domain | null>(null);
+  const [detailTab,    setDetailTab]    = useState(0);
+  const [dnsRecords,   setDnsRecords]   = useState<DnsRecord[]>([]);
+  const [sslCerts,     setSslCerts]     = useState<SslCertificate[]>([]);
+  const [dnsLoading,   setDnsLoading]   = useState(false);
+  const [sslLoading,   setSslLoading]   = useState(false);
+
+  // Modals
+  const [showRegister, setShowRegister] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+
+  // DNS add form
+  const [newDnsName,    setNewDnsName]    = useState('');
+  const [newDnsType,    setNewDnsType]    = useState<DnsRecordType>('A');
+  const [newDnsValue,   setNewDnsValue]   = useState('');
+  const [newDnsTtl,     setNewDnsTtl]     = useState(300);
+  const [addingDns,     setAddingDns]     = useState(false);
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
+  const loadDomains = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const r   = await domainApi.list();
+      const raw = Array.isArray(r.data) ? r.data : (r.data as any).results ?? [];
+      setDomains(raw);
+    } catch {
+      setError('Failed to load domains.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadDomains(); }, [loadDomains]);
+
+  const loadDns = useCallback(async (id: string) => {
+    setDnsLoading(true);
+    try {
+      const r = await domainApi.dnsRecords(id);
+      setDnsRecords(Array.isArray(r.data) ? r.data : []);
+    } catch { setDnsRecords([]); }
+    finally { setDnsLoading(false); }
+  }, []);
+
+  const loadSsl = useCallback(async (id: string) => {
+    setSslLoading(true);
+    try {
+      const r = await domainApi.sslCerts(id);
+      setSslCerts(Array.isArray(r.data) ? r.data : []);
+    } catch { setSslCerts([]); }
+    finally { setSslLoading(false); }
+  }, []);
+
+  const handleSelect = (d: Domain) => {
+    setSelected(d);
+    setDetailTab(0);
+    setDnsRecords([]);
+    setSslCerts([]);
+  };
+
+  useEffect(() => {
+    if (!selected) return;
+    if (detailTab === 1) loadDns(selected.resource_id);
+    if (detailTab === 2) loadSsl(selected.resource_id);
+  }, [detailTab, selected, loadDns, loadSsl]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this domain?')) return;
+    await domainApi.delete(id).catch(() => {});
+    if (selected?.resource_id === id) setSelected(null);
+    loadDomains();
+  };
+
+  const handleAddDns = async () => {
+    if (!selected || !newDnsName || !newDnsValue) return;
+    setAddingDns(true);
+    try {
+      await domainApi.addDnsRecord(selected.resource_id, {
+        name:        newDnsName,
+        record_type: newDnsType,
+        records:     [newDnsValue],
+        ttl:         newDnsTtl,
+      });
+      setNewDnsName(''); setNewDnsValue('');
+      loadDns(selected.resource_id);
+    } catch {} finally { setAddingDns(false); }
+  };
+
+  const handleDeleteDns = async (recordset_id: string) => {
+    if (!selected) return;
+    await domainApi.deleteDnsRecord(selected.resource_id, recordset_id).catch(() => {});
+    loadDns(selected.resource_id);
+  };
+
+  const handleRequestSsl = async () => {
+    if (!selected) return;
+    await domainApi.requestSsl(selected.resource_id).catch(() => {});
+    loadSsl(selected.resource_id);
+  };
+
+  const handleTogglePrivacy = async () => {
+    if (!selected) return;
+    await domainApi.setPrivacy(selected.resource_id, !selected.whois_privacy).catch(() => {});
+    loadDomains();
+  };
+
+  const handleEnableDnssec = async () => {
+    if (!selected) return;
+    await domainApi.enableDnssec(selected.resource_id).catch(() => {});
+    loadDomains();
+  };
+
+  // ── Render helpers ────────────────────────────────────────────────────────
+  const fieldSx = {
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: t.border },
+    '& .MuiInputBase-input': { color: t.text },
+    '& .MuiInputLabel-root': { color: t.muted },
+  };
+
+  const thSx = { color: t.muted, fontSize: '0.75rem', textTransform: 'uppercase' as const, fontWeight: 600 };
+  const tdSx = { color: t.text, borderColor: t.border };
+
+  const expireLabel = (d: Domain) => {
+    if (!d.days_until_expiry) return '—';
+    if (d.days_until_expiry < 0)  return <span style={{ color: '#EF4444' }}>Expired</span>;
+    if (d.days_until_expiry < 30) return <span style={{ color: '#F59E0B' }}>{d.days_until_expiry}d</span>;
+    return `${d.days_until_expiry}d`;
+  };
+
+  // ── Main render ───────────────────────────────────────────────────────────
+  return (
+    <Box sx={{ display: 'flex', height: '100%', bgcolor: t.panelBg }}>
+
+      {/* ── Left panel ─────────────────────────────────────────────────── */}
+      <Box sx={{
+        width: 320, minWidth: 260, flexShrink: 0,
+        borderRight: `1px solid ${t.border}`,
+        display: 'flex', flexDirection: 'column',
+      }}>
+        {/* Header */}
+        <Box sx={{ p: 2, borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DomainIcon sx={{ color: t.muted, fontSize: 20 }} />
+          <Typography sx={{ color: t.text, fontWeight: 700, flex: 1 }}>Domains</Typography>
+          <Tooltip title="Refresh"><IconButton size="small" onClick={loadDomains}><RefreshIcon sx={{ color: t.muted, fontSize: 18 }} /></IconButton></Tooltip>
+        </Box>
+
+        {/* Actions */}
+        <Box sx={{ p: 2, display: 'flex', gap: 1, borderBottom: `1px solid ${t.border}` }}>
+          <Button
+            size="small" variant="contained" startIcon={<AddIcon />}
+            onClick={() => setShowRegister(true)}
+            sx={{ bgcolor: t.brand, flex: 1, '&:hover': { bgcolor: '#102548' } }}
+          >Register</Button>
+          <Button
+            size="small" variant="outlined" startIcon={<SwapHorizIcon />}
+            onClick={() => setShowTransfer(true)}
+            sx={{ color: t.text, borderColor: t.border, flex: 1 }}
+          >Transfer</Button>
+        </Box>
+
+        {/* List */}
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
+          {loading && <Box sx={{ p: 3, textAlign: 'center' }}><CircularProgress size={24} /></Box>}
+          {error   && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
+          {!loading && domains.length === 0 && (
+            <Box sx={{ p: 3, textAlign: 'center' }}>
+              <DomainIcon sx={{ fontSize: 40, color: t.muted, mb: 1 }} />
+              <Typography sx={{ color: t.muted }}>No domains registered</Typography>
+            </Box>
+          )}
+          {domains.map(d => (
+            <Box
+              key={d.resource_id}
+              onClick={() => handleSelect(d)}
+              sx={{
+                px: 2, py: 1.5,
+                cursor: 'pointer',
+                bgcolor: selected?.resource_id === d.resource_id ? t.hover : 'transparent',
+                borderLeft: selected?.resource_id === d.resource_id ? `3px solid ${t.brand}` : '3px solid transparent',
+                '&:hover': { bgcolor: t.hover },
+                borderBottom: `1px solid ${t.border}`,
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography sx={{ color: t.text, fontWeight: 600, fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                  {d.domain_name}
+                </Typography>
+                <Chip
+                  size="small"
+                  label={d.status}
+                  sx={{ bgcolor: STATUS_COLOUR[d.status] ?? '#6B7280', color: '#FFF', fontSize: '0.65rem' }}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                <Typography sx={{ color: t.muted, fontSize: '0.75rem' }}>Expires: {expireLabel(d)}</Typography>
+                {d.auto_renew && <AutorenewIcon sx={{ fontSize: 14, color: '#22C55E' }} />}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      {/* ── Right detail panel ──────────────────────────────────────────── */}
+      {!selected ? (
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}>
+          <DomainIcon sx={{ fontSize: 56, color: t.muted }} />
+          <Typography sx={{ color: t.muted }}>Select a domain to view details</Typography>
+        </Box>
+      ) : (
+        <Box sx={{ flex: 1, overflow: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* Domain header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="h5" sx={{ color: t.text, fontWeight: 700, fontFamily: 'monospace' }}>
+                {selected.domain_name}
+              </Typography>
+              <Chip
+                size="small"
+                label={selected.status}
+                sx={{ mt: 0.5, bgcolor: STATUS_COLOUR[selected.status] ?? '#6B7280', color: '#FFF' }}
+              />
+            </Box>
+            <Tooltip title="Delete domain">
+              <IconButton onClick={() => handleDelete(selected.resource_id)}>
+                <DeleteIcon sx={{ color: '#EF4444' }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          {/* Tabs */}
+          <Tabs
+            value={detailTab}
+            onChange={(_, v) => setDetailTab(v)}
+            sx={{
+              borderBottom: `1px solid ${t.border}`,
+              '& .MuiTab-root': { color: t.muted, textTransform: 'none' },
+              '& .Mui-selected': { color: t.text },
+              '& .MuiTabs-indicator': { bgcolor: t.brand },
+            }}
+          >
+            <Tab label="Overview" />
+            <Tab label="DNS Records" />
+            <Tab label="SSL Certificates" />
+            <Tab label="Transfers" />
+            <Tab label="Settings" />
+          </Tabs>
+
+          {/* ── Overview ─────────────────────────────────────────────── */}
+          {detailTab === 0 && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              {[
+                ['Resource ID',    selected.resource_id],
+                ['Registered',     selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : '—'],
+                ['Expires',        selected.expires_at   ? new Date(selected.expires_at).toLocaleDateString()    : '—'],
+                ['Days Until Expiry', selected.days_until_expiry ?? '—'],
+                ['Auto-Renew',     selected.auto_renew   ? 'Yes' : 'No'],
+                ['WHOIS Privacy',  selected.whois_privacy ? 'Enabled' : 'Disabled'],
+                ['DNSSEC',         selected.dnssec_enabled ? 'Enabled' : 'Disabled'],
+                ['Linked Compute', selected.linked_compute_id || '—'],
+              ].map(([k, v]) => (
+                <Box key={k as string} sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                  <Typography sx={{ color: t.muted, fontSize: '0.75rem', mb: 0.5 }}>{k}</Typography>
+                  <Typography sx={{ color: t.text, fontWeight: 600, wordBreak: 'break-all' }}>{v as React.ReactNode}</Typography>
+                </Box>
+              ))}
+              {/* Nameservers */}
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}`, gridColumn: '1/-1' }}>
+                <Typography sx={{ color: t.muted, fontSize: '0.75rem', mb: 1 }}>Nameservers</Typography>
+                {(selected.nameservers ?? []).map(ns => (
+                  <Typography key={ns} sx={{ color: t.text, fontSize: '0.85rem', fontFamily: 'monospace' }}>{ns}</Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* ── DNS Records ───────────────────────────────────────────── */}
+          {detailTab === 1 && (
+            <Box>
+              {/* Add record form */}
+              <Box sx={{ bgcolor: t.cardBg, p: 2, border: `1px solid ${t.border}`, borderRadius: 1, mb: 2 }}>
+                <Typography sx={{ color: t.text, fontWeight: 600, mb: 1.5 }}>Add DNS Record</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'flex-end' }}>
+                  <TextField size="small" label="Name" placeholder="@ or subdomain" value={newDnsName}
+                    onChange={e => setNewDnsName(e.target.value)} sx={{ ...fieldSx, width: 160 }} />
+                  <TextField size="small" label="Type" select SelectProps={{ native: true }} value={newDnsType}
+                    onChange={e => setNewDnsType(e.target.value as DnsRecordType)} sx={{ ...fieldSx, width: 100 }}>
+                    {DNS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </TextField>
+                  <TextField size="small" label="Value" value={newDnsValue}
+                    onChange={e => setNewDnsValue(e.target.value)} sx={{ ...fieldSx, flex: 1, minWidth: 180 }} />
+                  <TextField size="small" label="TTL" type="number" value={newDnsTtl}
+                    onChange={e => setNewDnsTtl(Number(e.target.value))} sx={{ ...fieldSx, width: 80 }} />
+                  <Button variant="contained" size="small" onClick={handleAddDns}
+                    disabled={addingDns || !newDnsName || !newDnsValue}
+                    sx={{ bgcolor: t.brand, height: 40 }}>
+                    {addingDns ? <CircularProgress size={18} color="inherit" /> : 'Add'}
+                  </Button>
+                </Box>
+              </Box>
+
+              {dnsLoading
+                ? <CircularProgress size={24} />
+                : (
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        {['Name','Type','Records','TTL',''].map(h => (
+                          <TableCell key={h} sx={{ ...thSx, borderColor: t.border }}>{h}</TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {dnsRecords.map(r => (
+                        <TableRow key={r.id} hover>
+                          <TableCell sx={{ ...tdSx, fontFamily: 'monospace' }}>{r.name}</TableCell>
+                          <TableCell sx={tdSx}><Chip size="small" label={r.record_type} /></TableCell>
+                          <TableCell sx={{ ...tdSx, fontFamily: 'monospace', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {r.records.join(', ')}
+                          </TableCell>
+                          <TableCell sx={tdSx}>{r.ttl}</TableCell>
+                          <TableCell sx={{ ...tdSx, width: 40 }}>
+                            <IconButton size="small" onClick={() => handleDeleteDns(r.recordset_id)}>
+                              <DeleteIcon sx={{ fontSize: 16, color: '#EF4444' }} />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {dnsRecords.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} sx={{ ...tdSx, textAlign: 'center', py: 3 }}>
+                            No DNS records yet
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )
+              }
+            </Box>
+          )}
+
+          {/* ── SSL Certificates ──────────────────────────────────────── */}
+          {detailTab === 2 && (
+            <Box>
+              <Button
+                size="small" variant="contained" startIcon={<HttpsIcon />}
+                onClick={handleRequestSsl}
+                sx={{ bgcolor: t.brand, mb: 2, '&:hover': { bgcolor: '#102548' } }}
+              >Request SSL Certificate</Button>
+
+              {sslLoading
+                ? <CircularProgress size={24} />
+                : sslCerts.length === 0
+                  ? <Typography sx={{ color: t.muted }}>No certificates found.</Typography>
+                  : sslCerts.map(cert => (
+                    <Box key={cert.cert_id} sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}`, mb: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography sx={{ color: t.text, fontWeight: 600, fontFamily: 'monospace' }}>{cert.common_name}</Typography>
+                        <Chip size="small" label={cert.status}
+                          sx={{ bgcolor: SSL_COLOUR[cert.status] ?? '#6B7280', color: '#FFF' }} />
+                      </Box>
+                      <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>
+                        Issuer: {cert.issuer} · Expires: {cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : '—'}
+                      </Typography>
+                    </Box>
+                  ))
+              }
+            </Box>
+          )}
+
+          {/* ── Transfers ─────────────────────────────────────────────── */}
+          {detailTab === 3 && (
+            <Box>
+              {(selected.transfers ?? []).length === 0
+                ? <Typography sx={{ color: t.muted }}>No transfer history.</Typography>
+                : (
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        {['Status','Initiated','Completed','Notes'].map(h => (
+                          <TableCell key={h} sx={{ ...thSx, borderColor: t.border }}>{h}</TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selected.transfers!.map(tr => (
+                        <TableRow key={tr.id} hover>
+                          <TableCell sx={tdSx}><Chip size="small" label={tr.status} /></TableCell>
+                          <TableCell sx={tdSx}>{new Date(tr.initiated_at).toLocaleDateString()}</TableCell>
+                          <TableCell sx={tdSx}>{tr.completed_at ? new Date(tr.completed_at).toLocaleDateString() : '—'}</TableCell>
+                          <TableCell sx={tdSx}>{tr.error_message ?? '—'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )
+              }
+            </Box>
+          )}
+
+          {/* ── Settings ──────────────────────────────────────────────── */}
+          {detailTab === 4 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Privacy */}
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography sx={{ color: t.text, fontWeight: 600 }}>WHOIS Privacy</Typography>
+                    <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>Hide registrant contact info</Typography>
+                  </Box>
+                  <Switch checked={selected.whois_privacy} onChange={handleTogglePrivacy} />
+                </Box>
+              </Box>
+
+              {/* DNSSEC */}
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography sx={{ color: t.text, fontWeight: 600 }}>DNSSEC</Typography>
+                    <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>Enable DNS Security Extensions</Typography>
+                  </Box>
+                  {selected.dnssec_enabled
+                    ? <VerifiedUserIcon sx={{ color: '#22C55E' }} />
+                    : <Button size="small" variant="outlined" onClick={handleEnableDnssec}
+                        sx={{ color: t.text, borderColor: t.border }}>Enable</Button>
+                  }
+                </Box>
+              </Box>
+
+              {/* Nameservers */}
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Typography sx={{ color: t.text, fontWeight: 600, mb: 1 }}>Custom Nameservers</Typography>
+                {(selected.nameservers ?? []).map((ns, i) => (
+                  <Typography key={i} sx={{ color: t.muted, fontSize: '0.85rem', fontFamily: 'monospace' }}>{ns}</Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {/* Modals */}
+      <RegisterDomainModal open={showRegister} onClose={() => setShowRegister(false)} onCreated={loadDomains} />
+      <TransferDomainModal open={showTransfer} onClose={() => setShowTransfer(false)} onCreated={loadDomains} />
+    </Box>
+  );
+};
+
+export default DomainPage;

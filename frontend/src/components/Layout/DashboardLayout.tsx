@@ -50,6 +50,8 @@ import ApiIcon               from '@mui/icons-material/Api';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import TeamIcon              from '@mui/icons-material/Group';
 import MonitorIcon           from '@mui/icons-material/QueryStats';
+import DomainIcon            from '@mui/icons-material/Language';
+import CampaignIcon          from '@mui/icons-material/Campaign';
 import LightModeIcon         from '@mui/icons-material/LightMode';
 import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import { useAuth }           from '../../contexts/AuthContext';
@@ -111,7 +113,9 @@ const NAV: NavItem[] = [
       { label: 'Orchestration',     icon: <OrchestrateIcon {...I('.95rem')} />, path: '/dashboard/orchestration' },
     ],
   },
-  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dashboard/monitoring' },
+  { label: 'Monitoring',     icon: <MonitorIcon  {...I()} />, path: '/dashboard/monitoring' },
+  { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
+  { label: 'Email Marketing', icon: <CampaignIcon  {...I()} />, path: '/dashboard/email-marketing' },
 ];
 
 const ACCOUNT_NAV: NavItem[] = [
