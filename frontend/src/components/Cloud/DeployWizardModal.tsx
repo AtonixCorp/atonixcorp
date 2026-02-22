@@ -5,14 +5,16 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Stepper, Step, StepLabel, Box, Typography, Grid, Button,
   TextField, Stack, Chip, CircularProgress, Alert,
-  ToggleButton, ToggleButtonGroup, IconButton,
-  Divider,
+  IconButton, Divider,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ComputerIcon from '@mui/icons-material/Computer';
-import StorageIcon from '@mui/icons-material/Storage';
 import HubIcon from '@mui/icons-material/Hub';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import AlbumIcon from '@mui/icons-material/Album';
 import { CloudImage, CloudFlavor, CloudNetwork, CreateVMPayload } from '../../types/cloud';
 import { vmApi, onboardingApi } from '../../services/cloudApi';
 
@@ -24,11 +26,12 @@ interface DeployWizardModalProps {
 
 const STEPS = ['Choose Image', 'Choose Flavor', 'Choose Network & Name'];
 
-const OS_ICONS: Record<string, string> = {
-  linux:   '🐧',
-  windows: '🪟',
-  custom:  '📦',
+const OS_ICONS: Record<string, React.ReactElement> = {
+  linux:   <TerminalIcon sx={{ fontSize: '1.5rem', color: '#9ca3af' }} />,
+  windows: <DesktopWindowsIcon sx={{ fontSize: '1.5rem', color: '#9ca3af' }} />,
+  custom:  <ExtensionIcon sx={{ fontSize: '1.5rem', color: '#9ca3af' }} />,
 };
+const OS_ICON_FALLBACK = <AlbumIcon sx={{ fontSize: '1.5rem', color: '#9ca3af' }} />;
 
 const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, onSuccess }) => {
   const [activeStep, setActiveStep]     = useState(0);
@@ -215,7 +218,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                           '&:hover': { borderColor: 'rgba(20,184,166,.5)', bgcolor: 'rgba(20,184,166,.05)' },
                         }}
                       >
-                        <Typography fontSize="1.5rem" mb={.5}>{OS_ICONS[img.os_type] ?? '💿'}</Typography>
+                        <Box mb={.5} sx={{ lineHeight: 1 }}>{OS_ICONS[img.os_type] ?? OS_ICON_FALLBACK}</Box>
                         <Typography fontWeight={700} color="#fff" fontSize=".88rem">{img.os_name}</Typography>
                         <Typography variant="caption" color="#9ca3af">{img.os_version}</Typography>
                       </Box>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
-  Box, Typography, Paper, Grid, Stack, Button, Divider, Chip,
+  Box, Typography, Paper, Grid, Stack, Chip,
 } from '@mui/material';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CodeIcon from '@mui/icons-material/Code';

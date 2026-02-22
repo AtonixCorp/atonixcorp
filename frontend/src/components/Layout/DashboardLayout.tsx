@@ -29,7 +29,6 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DashboardIcon         from '@mui/icons-material/Dashboard';
 import ComputerIcon          from '@mui/icons-material/Computer';
 import StorageIcon           from '@mui/icons-material/Storage';
-import HubIcon               from '@mui/icons-material/Hub';
 import ClusterIcon           from '@mui/icons-material/DeviceHub';
 import FunctionsIcon         from '@mui/icons-material/Code';
 import ContainerIcon         from '@mui/icons-material/ViewInAr';
@@ -526,7 +525,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   display: { xs: 'none', md: 'block' },
                 }}
               >
-                ⌘K
+                Ctrl K
               </Typography>
             </Box>
 
