@@ -39,6 +39,11 @@ from .marketing_viewsets import (
     CampaignViewSet, ContactListViewSet, ContactViewSet,
     EmailTemplateViewSet, AutomationViewSet,
 )
+from .monitoring_viewsets import (
+    MonitoringOverviewViewSet, MetricViewSet,
+    AlertRuleViewSet, AlertViewSet,
+    IncidentViewSet, LogViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -112,6 +117,16 @@ router.register(r'contact-lists',   ContactListViewSet,    basename='contact-lis
 router.register(r'contacts',        ContactViewSet,        basename='contact')
 router.register(r'email-templates', EmailTemplateViewSet,  basename='email-template')
 router.register(r'automations',     AutomationViewSet,     basename='automation')
+
+# ============================================================================
+# MONITORING & INCIDENT MANAGEMENT ENDPOINTS
+# ============================================================================
+router.register(r'monitoring/overview', MonitoringOverviewViewSet, basename='monitoring-overview')
+router.register(r'metrics',             MetricViewSet,             basename='metric')
+router.register(r'alert-rules',         AlertRuleViewSet,          basename='alert-rule')
+router.register(r'alerts',              AlertViewSet,              basename='alert')
+router.register(r'incidents',           IncidentViewSet,           basename='incident')
+router.register(r'logs',                LogViewSet,                basename='log')
 
 # URL Patterns
 urlpatterns = [

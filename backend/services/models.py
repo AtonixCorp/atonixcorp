@@ -61,6 +61,15 @@ from .networking_models import (
 
 from .onboarding_models import OnboardingProgress
 
+from .monitoring_models import (
+    ServiceHealth,
+    MetricSnapshot,
+    AlertRule,
+    MonitoringAlert,
+    Incident,
+    IncidentUpdate,
+)
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
@@ -83,4 +92,7 @@ __all__ = [
     'InternetGateway', 'NATGateway',
     # Onboarding
     'OnboardingProgress',
+    # Monitoring
+    'ServiceHealth', 'MetricSnapshot', 'AlertRule',
+    'MonitoringAlert', 'Incident', 'IncidentUpdate',
 ]

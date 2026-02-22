@@ -30,6 +30,11 @@ import type {
   AccountStats, CreateCampaignPayload, CreateContactListPayload,
   CreateContactPayload, CreateTemplatePayload, CreateAutomationPayload,
 } from '../types/marketing';
+import type {
+  MonitoringOverview, MetricSeries, MetricName,
+  AlertRule, CreateAlertRulePayload,
+  Alert, Incident, CreateIncidentPayload, LogStream,
+} from '../types/monitoring';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -307,4 +312,49 @@ export const emailApi = {
   listAliases:      ()                                           => cloudClient.get<EmailAlias[]>('/email-aliases/'),
   createAlias:      (p: CreateAliasPayload)                      => cloudClient.post<EmailAlias>('/email-aliases/', p),
   deleteAlias:      (id: number)                                 => cloudClient.delete(`/email-aliases/${id}/`),
+};
+
+// ---- Monitoring & Incidents ----
+export const monitoringApi = {
+  // Overview
+  overview:          ()                                          => cloudClient.get<MonitoringOverview>('/monitoring/overview/'),
+
+  // Metrics
+  metricSeries:      (resource: string, metric: MetricName, hours?: number) =>
+    cloudClient.get<MetricSeries>(`/metrics/?resource=${resource}&metric=${metric}&hours=${hours ?? 24}`),
+  availableMetrics:  ()                                          => cloudClient.get('/metrics/available/'),
+  ingestMetric:      (p: { resource_id: string; service: string; metric: string; value: number; unit?: string }) =>
+    cloudClient.post('/metrics/ingest/', p),
+
+  // Alert Rules
+  listAlertRules:    ()                                          => cloudClient.get<AlertRule[]>('/alert-rules/'),
+  createAlertRule:   (p: CreateAlertRulePayload)                 => cloudClient.post<AlertRule>('/alert-rules/', p),
+  updateAlertRule:   (id: string, p: Partial<CreateAlertRulePayload>) => cloudClient.patch<AlertRule>(`/alert-rules/${id}/`, p),
+  deleteAlertRule:   (id: string)                               => cloudClient.delete(`/alert-rules/${id}/`),
+  enableAlertRule:   (id: string)                               => cloudClient.post(`/alert-rules/${id}/enable/`),
+  disableAlertRule:  (id: string)                               => cloudClient.post(`/alert-rules/${id}/disable/`),
+
+  // Fired Alerts
+  listAlerts:        (state?: string)                           => cloudClient.get<Alert[]>(`/alerts/${state ? `?state=${state}` : ''}`),
+  resolveAlert:      (id: number)                               => cloudClient.post(`/alerts/${id}/resolve/`),
+  silenceAlert:      (id: number)                               => cloudClient.post(`/alerts/${id}/silence/`),
+
+  // Incidents
+  listIncidents:     (filters?: { service?: string; status?: string }) =>
+    cloudClient.get<Incident[]>(`/incidents/${filters?.service ? `?service=${filters.service}` : filters?.status ? `?status=${filters.status}` : ''}`),
+  getIncident:       (id: string)                               => cloudClient.get<Incident>(`/incidents/${id}/`),
+  createIncident:    (p: CreateIncidentPayload)                  => cloudClient.post<Incident>('/incidents/', p),
+  updateIncidentStatus: (id: string, status: string, message: string) =>
+    cloudClient.post(`/incidents/${id}/update_status/`, { status, message }),
+  assignIncident:    (id: string, user_id: number)              => cloudClient.post(`/incidents/${id}/assign/`, { user_id }),
+
+  // Logs
+  logs:              (filters?: { service?: string; search?: string; hours?: number; limit?: number }) => {
+    const p = new URLSearchParams();
+    if (filters?.service) p.set('service', filters.service);
+    if (filters?.search)  p.set('search',  filters.search);
+    if (filters?.hours)   p.set('hours',   String(filters.hours));
+    if (filters?.limit)   p.set('limit',   String(filters.limit));
+    return cloudClient.get<LogStream>(`/logs/?${p.toString()}`);
+  },
 };
