@@ -23,18 +23,27 @@ import LockIcon           from '@mui/icons-material/Lock';
 import InfoOutlinedIcon   from '@mui/icons-material/InfoOutlined';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface OS {
+interface OSVersion {
   id: string;
+  version: string;
+  badge?: string;
+  badgeColor?: string;
+}
+
+interface OSGroup {
+  groupId: string;
   family: string;
   name: string;
-  version: string;
-  logo: string;       // emoji / text avatar
+  logo: string;
   logoColor: string;
   description: string;
   badge?: string;
   badgeColor?: string;
-  eol?: boolean;
+  versions: OSVersion[];
 }
+
+// Keep legacy type alias for review step lookup
+type OS = OSGroup & { id: string; version: string; };
 
 interface Flavor {
   id: string;
@@ -48,33 +57,75 @@ interface Flavor {
   recommended?: boolean;
 }
 
-// ── OS catalogue ──────────────────────────────────────────────────────────────
-const OS_LIST: OS[] = [
+// ── OS catalogue (grouped) ──────────────────────────────────────────────────
+const OS_GROUPS: OSGroup[] = [
   // ── Debian family ──────────────────────────────────────────────────────────
-  { id: 'debian-12',       family: 'Debian',  name: 'Debian',       version: '12 Bookworm',     logo: 'Deb',  logoColor: '#A80030', description: 'Rock-solid, minimal, universal OS of the Debian family', badge: 'Recommended', badgeColor: '#10B981' },
-  { id: 'ubuntu-2404',     family: 'Ubuntu',  name: 'Ubuntu',       version: '24.04 LTS',        logo: 'Ubu',  logoColor: '#E95420', description: 'Most popular Linux distro, backed by Canonical' },
-  { id: 'ubuntu-2204',     family: 'Ubuntu',  name: 'Ubuntu',       version: '22.04 LTS',        logo: 'Ubu',  logoColor: '#E95420', description: 'Ubuntu LTS — long-term support through 2027' },
-  { id: 'ubuntu-2004',     family: 'Ubuntu',  name: 'Ubuntu',       version: '20.04 LTS',        logo: 'Ubu',  logoColor: '#E95420', description: 'Ubuntu LTS — long-term support through 2025', badge: 'EOL Soon', badgeColor: '#F59E0B' },
-  { id: 'linuxmint-22',    family: 'Linux Mint', name: 'Linux Mint', version: '22 Wilma',        logo: 'Mint', logoColor: '#87CF3E', description: 'User-friendly desktop-oriented Ubuntu derivative' },
-  { id: 'kali-2024',       family: 'Kali',    name: 'Kali Linux',   version: '2024.4',           logo: 'Kali', logoColor: '#268BEE', description: 'Advanced penetration testing & security auditing', badge: 'Security', badgeColor: '#6366F1' },
-  { id: 'mxlinux-23',      family: 'MX Linux',name: 'MX Linux',     version: '23 Libretto',      logo: 'MX',   logoColor: '#4A90D9', description: 'Antipatterns-free, cooperative development Linux' },
-  { id: 'deepin-23',       family: 'Deepin',  name: 'Deepin',       version: '23',               logo: 'Dpe',  logoColor: '#0098D8', description: 'Beautiful, intuitive Chinese Linux distribution' },
-  { id: 'zorin-17',        family: 'Zorin',   name: 'Zorin OS',     version: '17',               logo: 'Zrn',  logoColor: '#15A6F0', description: 'Windows-familiar interface, built on Ubuntu LTS' },
-  { id: 'elementaryos-8',  family: 'Elementary', name: 'Elementary OS', version: '8 Circe',      logo: 'eos',  logoColor: '#64BAFF', description: 'macOS-inspired, privacy-first Ubuntu derivative' },
-  { id: 'popos-2204',      family: 'Pop!_OS', name: 'Pop!_OS',      version: '22.04 LTS',        logo: 'Pop',  logoColor: '#48B9C7', description: 'System76 developer-focused Ubuntu variant' },
-  { id: 'antix-23',        family: 'antiX',   name: 'antiX',        version: '23 Arditi del Popolo', logo: 'aX', logoColor: '#6B7280', description: 'Fast, lightweight, systemd-free Debian derivative' },
-  { id: 'pureos-10',       family: 'PureOS',  name: 'PureOS',       version: '10 Byzantium',     logo: 'Pur',  logoColor: '#5B3A8E', description: 'Privacy-respecting, FSF-endorsed Debian derivative' },
-  { id: 'parrotos-6',      family: 'Parrot',  name: 'Parrot OS',    version: '6.2',              logo: 'Par',  logoColor: '#05A6E3', description: 'Security & forensics-oriented Debian fork', badge: 'Security', badgeColor: '#6366F1' },
-  { id: 'bodhi-7',         family: 'Bodhi',   name: 'Bodhi Linux',  version: '7.0',              logo: 'Boh',  logoColor: '#4CAF50', description: 'Lightweight, elegantly minimal Ubuntu derivative' },
-  { id: 'peppermint-11',   family: 'Peppermint', name: 'Peppermint OS', version: '11',           logo: 'Pep',  logoColor: '#e44426', description: 'Cloud-oriented Debian lightweight desktop OS' },
-  // ── Other Linux ────────────────────────────────────────────────────────────
-  { id: 'centos-stream-9', family: 'RHEL',    name: 'CentOS',       version: 'Stream 9',         logo: 'CeS',  logoColor: '#9B0000', description: 'Enterprise-grade RHEL upstream tracking distro', badge: 'Enterprise', badgeColor: '#6B7280' },
-  // ── Windows ────────────────────────────────────────────────────────────────
-  { id: 'windows-2022',    family: 'Windows', name: 'Windows',      version: 'Server 2022',      logo: 'Win',  logoColor: '#0078D4', description: 'Microsoft Windows Server 2022 Datacenter Edition' },
-  { id: 'windows-2019',    family: 'Windows', name: 'Windows',      version: 'Server 2019',      logo: 'Win',  logoColor: '#0078D4', description: 'Microsoft Windows Server 2019 Standard Edition' },
+  { groupId: 'debian',      family: 'Debian',     name: 'Debian',        logo: 'Deb',  logoColor: '#A80030', badge: 'Recommended', badgeColor: '#10B981', description: 'Rock-solid, minimal, universal OS — the mother of all Debian distros', versions: [
+    { id: 'debian-13', version: '13 Trixie',   badge: 'New',      badgeColor: '#6366F1' },
+    { id: 'debian-12', version: '12 Bookworm', badge: 'Stable',   badgeColor: '#10B981' },
+    { id: 'debian-11', version: '11 Bullseye' },
+    { id: 'debian-10', version: '10 Buster',  badge: 'EOL',      badgeColor: '#EF4444' },
+  ]},
+  { groupId: 'ubuntu',      family: 'Ubuntu',     name: 'Ubuntu',        logo: 'Ubu',  logoColor: '#E95420', description: 'Most popular Linux distro, backed by Canonical', versions: [
+    { id: 'ubuntu-2404', version: '24.04 LTS', badge: 'Latest',   badgeColor: '#10B981' },
+    { id: 'ubuntu-2204', version: '22.04 LTS' },
+    { id: 'ubuntu-2004', version: '20.04 LTS', badge: 'EOL Soon', badgeColor: '#F59E0B' },
+  ]},
+  { groupId: 'linuxmint',   family: 'Linux Mint', name: 'Linux Mint',    logo: 'Mint', logoColor: '#87CF3E', description: 'User-friendly desktop-oriented Ubuntu derivative', versions: [
+    { id: 'linuxmint-22', version: '22 Wilma' },
+    { id: 'linuxmint-21', version: '21 Vera'  },
+  ]},
+  { groupId: 'kali',        family: 'Kali',       name: 'Kali Linux',    logo: 'Kali', logoColor: '#268BEE', badge: 'Security', badgeColor: '#6366F1', description: 'Advanced penetration testing & security auditing distro', versions: [
+    { id: 'kali-2024', version: '2024.4' },
+    { id: 'kali-2023', version: '2023.4' },
+  ]},
+  { groupId: 'mxlinux',     family: 'MX Linux',   name: 'MX Linux',      logo: 'MX',   logoColor: '#4A90D9', description: 'Antipatterns-free, cooperative development Linux', versions: [
+    { id: 'mxlinux-23', version: '23 Libretto' },
+  ]},
+  { groupId: 'deepin',      family: 'Deepin',     name: 'Deepin',        logo: 'Dpe',  logoColor: '#0098D8', description: 'Beautiful, intuitive Chinese Linux distribution', versions: [
+    { id: 'deepin-23', version: '23' },
+  ]},
+  { groupId: 'zorin',       family: 'Zorin',      name: 'Zorin OS',      logo: 'Zrn',  logoColor: '#15A6F0', description: 'Windows-familiar interface, built on Ubuntu LTS', versions: [
+    { id: 'zorin-17', version: '17' },
+    { id: 'zorin-16', version: '16' },
+  ]},
+  { groupId: 'elementary',  family: 'Elementary', name: 'Elementary OS', logo: 'eos',  logoColor: '#64BAFF', description: 'macOS-inspired, privacy-first Ubuntu derivative', versions: [
+    { id: 'elementaryos-8', version: '8 Circe' },
+  ]},
+  { groupId: 'popos',       family: 'Pop!_OS',    name: 'Pop!_OS',       logo: 'Pop',  logoColor: '#48B9C7', description: 'System76 developer-focused Ubuntu variant', versions: [
+    { id: 'popos-2204', version: '22.04 LTS' },
+  ]},
+  { groupId: 'antix',       family: 'antiX',      name: 'antiX',         logo: 'aX',   logoColor: '#6B7280', description: 'Fast, lightweight, systemd-free Debian derivative', versions: [
+    { id: 'antix-23', version: '23 Arditi del Popolo' },
+  ]},
+  { groupId: 'pureos',      family: 'PureOS',     name: 'PureOS',        logo: 'Pur',  logoColor: '#5B3A8E', description: 'Privacy-respecting, FSF-endorsed Debian derivative', versions: [
+    { id: 'pureos-10', version: '10 Byzantium' },
+  ]},
+  { groupId: 'parrot',      family: 'Parrot',     name: 'Parrot OS',     logo: 'Par',  logoColor: '#05A6E3', badge: 'Security', badgeColor: '#6366F1', description: 'Security & forensics-oriented Debian fork', versions: [
+    { id: 'parrotos-6', version: '6.2' },
+    { id: 'parrotos-5', version: '5.3' },
+  ]},
+  { groupId: 'bodhi',       family: 'Bodhi',      name: 'Bodhi Linux',   logo: 'Boh',  logoColor: '#4CAF50', description: 'Lightweight, elegantly minimal Ubuntu derivative', versions: [
+    { id: 'bodhi-7', version: '7.0' },
+  ]},
+  { groupId: 'peppermint',  family: 'Peppermint', name: 'Peppermint OS', logo: 'Pep',  logoColor: '#e44426', description: 'Cloud-oriented Debian lightweight desktop OS', versions: [
+    { id: 'peppermint-11', version: '11' },
+  ]},
+  // ── Other ──────────────────────────────────────────────────────────────────
+  { groupId: 'centos',      family: 'RHEL',       name: 'CentOS',        logo: 'CeS',  logoColor: '#9B0000', badge: 'Enterprise', badgeColor: '#6B7280', description: 'Enterprise-grade RHEL upstream tracking distro', versions: [
+    { id: 'centos-stream-9', version: 'Stream 9' },
+    { id: 'centos-stream-8', version: 'Stream 8' },
+  ]},
+  { groupId: 'windows',     family: 'Windows',    name: 'Windows Server',logo: 'Win',  logoColor: '#0078D4', description: 'Microsoft Windows Server — Datacenter & Standard editions', versions: [
+    { id: 'windows-2022', version: 'Server 2022', badge: 'Latest', badgeColor: '#10B981' },
+    { id: 'windows-2019', version: 'Server 2019' },
+    { id: 'windows-2016', version: 'Server 2016' },
+  ]},
 ];
 
-const OS_FAMILIES = ['All', 'Debian', 'Ubuntu', 'Linux Mint', 'Kali', 'MX Linux', 'Deepin', 'Zorin', 'Elementary', 'Pop!_OS', 'antiX', 'PureOS', 'Parrot', 'Bodhi', 'Peppermint', 'RHEL', 'Windows'];
+// Flat map used only for review-step lookup
+const OS_FLAT: { id: string; name: string; version: string; logoColor: string }[] =
+  OS_GROUPS.flatMap(g => g.versions.map(v => ({ id: v.id, name: g.name, version: v.version, logoColor: g.logoColor })));
 
 // ── Flavors ───────────────────────────────────────────────────────────────────
 const FLAVORS: Flavor[] = [
@@ -133,41 +184,100 @@ function SSection({ title, subtitle, children, isDark }: { title: string; subtit
   );
 }
 
-// ── OS card ───────────────────────────────────────────────────────────────────
-function OSCard({ os, selected, onClick, isDark }: { os: OS; selected: boolean; onClick: () => void; isDark: boolean }) {
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+// ── OS card (with inline version dropdown) ──────────────────────────────────
+function OSCard({ group, selectedVersionId, onSelect, isDark }: {
+  group: OSGroup;
+  selectedVersionId: string;
+  onSelect: (id: string) => void;
+  isDark: boolean;
+}) {
+  const border    = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+  const textSec   = isDark ? 'rgba(255,255,255,.45)' : '#9CA3AF';
+  // The group is 'active' if any of its versions is the selected one
+  const activeVer = group.versions.find(v => v.id === selectedVersionId);
+  const isGroupActive = !!activeVer;
+  // Local state: which version tab is highlighted (defaults to first version)
+  const [hoveredVer, setHoveredVer] = useState<string>(group.versions[0].id);
+  const displayVer = activeVer ?? group.versions.find(v => v.id === hoveredVer) ?? group.versions[0];
+
   return (
-    <Box onClick={onClick} sx={{
-      p: 1.75, cursor: 'pointer', borderRadius: '10px',
-      border: `2px solid ${selected ? '#18366A' : border}`,
-      bgcolor: selected
+    <Box sx={{
+      borderRadius: '12px', overflow: 'hidden',
+      border: `2px solid ${isGroupActive ? '#18366A' : border}`,
+      bgcolor: isGroupActive
         ? isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)'
         : isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA',
-      position: 'relative', transition: 'all .12s',
-      '&:hover': { border: `2px solid ${selected ? '#18366A' : (isDark ? 'rgba(255,255,255,.2)' : '#94A3B8')}` },
+      transition: 'border-color .12s',
+      '&:hover': { borderColor: isGroupActive ? '#18366A' : isDark ? 'rgba(255,255,255,.22)' : '#94A3B8' },
     }}>
-      {selected && (
-        <Box sx={{ position: 'absolute', top: 8, right: 8, width: 18, height: 18, bgcolor: '#18366A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <CheckIcon sx={{ fontSize: '.72rem', color: '#fff' }} />
-        </Box>
-      )}
-      <Box display="flex" alignItems="center" gap={1.25}>
-        <Box sx={{ width: 38, height: 38, borderRadius: '8px', bgcolor: `${os.logoColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Typography sx={{ fontFamily: 'monospace', fontSize: '.7rem', fontWeight: 800, color: os.logoColor }}>{os.logo}</Typography>
+      {/* ── Header row ── */}
+      <Box sx={{ p: '14px 14px 10px', display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
+        <Box sx={{ width: 40, height: 40, borderRadius: '9px', bgcolor: `${group.logoColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Typography sx={{ fontFamily: 'monospace', fontSize: '.72rem', fontWeight: 800, color: group.logoColor }}>{group.logo}</Typography>
         </Box>
         <Box flex={1} minWidth={0}>
           <Box display="flex" alignItems="center" gap={.6} flexWrap="wrap">
-            <Typography fontWeight={700} fontSize=".86rem" color={isDark ? '#ffffff' : '#0A0F1F'} noWrap>{os.name}</Typography>
-            {os.badge && (
-              <Chip size="small" label={os.badge} sx={{ height: 14, fontSize: '.58rem', fontWeight: 700, bgcolor: `${os.badgeColor}18`, color: os.badgeColor }} />
+            <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{group.name}</Typography>
+            {group.badge && (
+              <Chip size="small" label={group.badge} sx={{ height: 14, fontSize: '.58rem', fontWeight: 700, bgcolor: `${group.badgeColor}18`, color: group.badgeColor }} />
+            )}
+            {isGroupActive && (
+              <Box sx={{ ml: 'auto', width: 18, height: 18, bgcolor: '#18366A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckIcon sx={{ fontSize: '.7rem', color: '#fff' }} />
+              </Box>
             )}
           </Box>
-          <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.45)' : '#9CA3AF' }}>{os.version}</Typography>
+          <Typography variant="caption" sx={{ color: textSec, lineHeight: 1.4, display: 'block', mt: .25 }}>
+            {group.description}
+          </Typography>
         </Box>
       </Box>
-      <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', display: 'block', mt: .75, lineHeight: 1.4 }}>
-        {os.description}
-      </Typography>
+
+      {/* ── Version pills ── */}
+      <Box sx={{ px: 1.5, pb: 1.5, display: 'flex', gap: .6, flexWrap: 'wrap' }}>
+        {group.versions.map(v => {
+          const isSelected = v.id === selectedVersionId;
+          const isHovered  = v.id === hoveredVer;
+          return (
+            <Box
+              key={v.id}
+              onClick={e => { e.stopPropagation(); onSelect(v.id); }}
+              onMouseEnter={() => !activeVer && setHoveredVer(v.id)}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: .5,
+                px: 1.25, py: .45, borderRadius: '20px', cursor: 'pointer',
+                border: `1.5px solid ${
+                  isSelected
+                    ? '#18366A'
+                    : isHovered && !activeVer
+                      ? isDark ? 'rgba(255,255,255,.25)' : '#94A3B8'
+                      : border
+                }`,
+                bgcolor: isSelected
+                  ? '#18366A'
+                  : isHovered && !activeVer
+                    ? isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.04)'
+                    : 'transparent',
+                transition: 'all .1s',
+              }}
+            >
+              <Typography sx={{
+                fontSize: '.72rem', fontWeight: isSelected ? 700 : 500, lineHeight: 1,
+                color: isSelected ? '#fff' : isDark ? 'rgba(255,255,255,.8)' : '#374151',
+              }}>
+                {v.version}
+              </Typography>
+              {v.badge && (
+                <Chip size="small" label={v.badge}
+                  sx={{ height: 13, fontSize: '.55rem', fontWeight: 700, pointerEvents: 'none',
+                    bgcolor: isSelected ? 'rgba(255,255,255,.2)' : `${v.badgeColor}18`,
+                    color:   isSelected ? '#fff' : v.badgeColor,
+                  }} />
+              )}
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 }
@@ -218,73 +328,60 @@ function FlavorCard({ fl, selected, onClick, isDark }: { fl: Flavor; selected: b
 
 // ── Step 1 — Choose Image ─────────────────────────────────────────────────────
 function StepImage({ selectedOS, onSelect, isDark }: { selectedOS: string; onSelect: (id: string) => void; isDark: boolean }) {
-  const [family, setFamily] = useState('All');
+  const [tab,    setTab]    = useState<'debian' | 'other' | 'windows'>('debian');
   const [search, setSearch] = useState('');
   const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
 
-  const filtered = OS_LIST.filter(os => {
-    const fam = family === 'All' || os.family === family;
-    const q   = !search || os.name.toLowerCase().includes(search.toLowerCase()) || os.version.toLowerCase().includes(search.toLowerCase());
-    return fam && q;
-  });
+  const DEBIAN_FAMILIES = ['Debian','Ubuntu','Linux Mint','Kali','MX Linux','Deepin','Zorin','Elementary','Pop!_OS','antiX','PureOS','Parrot','Bodhi','Peppermint'];
 
-  // group into Debian family & Others
-  const debianFamilies = ['Debian','Ubuntu','Linux Mint','Kali','MX Linux','Deepin','Zorin','Elementary','Pop!_OS','antiX','PureOS','Parrot','Bodhi','Peppermint'];
-  const debs = filtered.filter(o => debianFamilies.includes(o.family));
-  const others = filtered.filter(o => !debianFamilies.includes(o.family));
+  const matchSearch = (g: OSGroup) =>
+    !search ||
+    g.name.toLowerCase().includes(search.toLowerCase()) ||
+    g.versions.some(v => v.version.toLowerCase().includes(search.toLowerCase()));
+
+  const debGroups   = OS_GROUPS.filter(g => DEBIAN_FAMILIES.includes(g.family) && matchSearch(g));
+  const otherGroups = OS_GROUPS.filter(g => !DEBIAN_FAMILIES.includes(g.family) && g.family !== 'Windows' && matchSearch(g));
+  const winGroups   = OS_GROUPS.filter(g => g.family === 'Windows' && matchSearch(g));
+
+  const visibleGroups = tab === 'debian' ? debGroups : tab === 'windows' ? winGroups : otherGroups;
+
+  const TABS: { key: typeof tab; label: string; count: number }[] = [
+    { key: 'debian',  label: 'Debian Family', count: debGroups.length   },
+    { key: 'other',   label: 'Other Linux',   count: otherGroups.length },
+    { key: 'windows', label: 'Windows',       count: winGroups.length   },
+  ];
 
   return (
     <SSection title="Select an Operating System" subtitle="Choose the base image for your server. All images are pre-hardened and include cloud-init." isDark={isDark}>
       {/* Search */}
-      <Box display="flex" gap={1.5} mb={2} flexWrap="wrap">
-        <TextField size="small" placeholder="Search distros…" value={search} onChange={e => setSearch(e.target.value)}
-          sx={{ flex: '0 0 220px', '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : '#F9FAFB', borderRadius: '8px', '& fieldset': { borderColor: border } }, '& .MuiInputBase-input': { color: isDark ? '#fff' : '#0A0F1F', fontSize: '.85rem' } }} />
-      </Box>
-      {/* Family tabs */}
+      <TextField size="small" placeholder="Search distros or versions…" value={search} onChange={e => setSearch(e.target.value)}
+        sx={{ mb: 2.5, width: 260, '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : '#F9FAFB', borderRadius: '8px', '& fieldset': { borderColor: border } }, '& .MuiInputBase-input': { color: isDark ? '#fff' : '#0A0F1F', fontSize: '.85rem' } }} />
+
+      {/* Tabs */}
       <Box display="flex" gap={.75} mb={2.5} flexWrap="wrap">
-        {['All', 'Debian family', 'Windows', 'RHEL'].map(f => {
-          const key = f === 'Debian family' ? 'All' : f;
-          const active = f === 'Debian family' ? family === 'All' : family === f;
-          return (
-            <Chip key={f} label={f} size="small" onClick={() => setFamily(key)}
-              sx={{ height: 26, fontSize: '.75rem', fontWeight: active ? 700 : 400, cursor: 'pointer',
-                bgcolor: active ? '#18366A' : (isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6'),
-                color: active ? '#fff' : (isDark ? 'rgba(255,255,255,.7)' : '#374151'),
-                '&:hover': { bgcolor: active ? '#102548' : (isDark ? 'rgba(255,255,255,.12)' : '#E5E7EB') } }} />
-          );
-        })}
+        {TABS.map(t => (
+          <Box key={t.key} onClick={() => setTab(t.key)} sx={{
+            display: 'flex', alignItems: 'center', gap: .6, px: 1.5, py: .6, borderRadius: '8px', cursor: 'pointer',
+            bgcolor: tab === t.key ? '#18366A' : isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6',
+            border: `1.5px solid ${tab === t.key ? '#18366A' : border}`,
+            transition: 'all .12s',
+          }}>
+            <Typography sx={{ fontSize: '.78rem', fontWeight: tab === t.key ? 700 : 500, color: tab === t.key ? '#fff' : isDark ? 'rgba(255,255,255,.7)' : '#374151' }}>{t.label}</Typography>
+            <Box sx={{ px: .6, py: .1, borderRadius: '10px', bgcolor: tab === t.key ? 'rgba(255,255,255,.2)' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB', minWidth: 20, textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '.62rem', fontWeight: 700, color: tab === t.key ? '#fff' : isDark ? 'rgba(255,255,255,.55)' : '#6B7280' }}>{t.count}</Typography>
+            </Box>
+          </Box>
+        ))}
       </Box>
 
-      {/* Debian family */}
-      {debs.length > 0 && (
-        <>
-          {family === 'All' && (
-            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
-              <Typography fontWeight={700} fontSize=".78rem" sx={{ color: isDark ? 'rgba(255,255,255,.55)' : '#6B7280', textTransform: 'uppercase', letterSpacing: '.07em' }}>Debian Family</Typography>
-              <Chip size="small" label={`${debs.length} distros`} sx={{ height: 15, fontSize: '.6rem', bgcolor: isDark ? 'rgba(168,0,48,.12)' : 'rgba(168,0,48,.07)', color: '#A80030' }} />
-            </Box>
-          )}
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1.5, mb: others.length > 0 ? 3 : 0 }}>
-            {debs.map(os => <OSCard key={os.id} os={os} selected={selectedOS === os.id} onClick={() => onSelect(os.id)} isDark={isDark} />)}
-          </Box>
-        </>
-      )}
-
-      {/* Others */}
-      {others.length > 0 && (
-        <>
-          {family === 'All' && (
-            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
-              <Typography fontWeight={700} fontSize=".78rem" sx={{ color: isDark ? 'rgba(255,255,255,.55)' : '#6B7280', textTransform: 'uppercase', letterSpacing: '.07em' }}>Other Operating Systems</Typography>
-            </Box>
-          )}
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1.5 }}>
-            {others.map(os => <OSCard key={os.id} os={os} selected={selectedOS === os.id} onClick={() => onSelect(os.id)} isDark={isDark} />)}
-          </Box>
-        </>
-      )}
-
-      {filtered.length === 0 && (
+      {/* Grid */}
+      {visibleGroups.length > 0 ? (
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 1.5 }}>
+          {visibleGroups.map(g => (
+            <OSCard key={g.groupId} group={g} selectedVersionId={selectedOS} onSelect={onSelect} isDark={isDark} />
+          ))}
+        </Box>
+      ) : (
         <Box textAlign="center" py={5}>
           <Typography sx={{ color: isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF' }}>No distros match your search</Typography>
         </Box>
@@ -405,7 +502,7 @@ function StepReview({ osId, flavorId, netConfig, isDark }: {
   netConfig: { hostname: string; region: string; network: string; sshKey: string; password: string; backups: boolean; ipv6: boolean };
   isDark: boolean;
 }) {
-  const os     = OS_LIST.find(o => o.id === osId);
+  const os     = OS_FLAT.find(o => o.id === osId);
   const fl     = FLAVORS.find(f => f.id === flavorId);
   const region = REGIONS.find(r => r.id === netConfig.region);
   const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
@@ -489,7 +586,7 @@ const ComputePage: React.FC = () => {
 
   // selected items for price bar
   const fl     = FLAVORS.find(f => f.id === selectedFlavor);
-  const os     = OS_LIST.find(o => o.id === selectedOS);
+  const os     = OS_FLAT.find(o => o.id === selectedOS);
   const monthlyCost = (fl?.price_mo ?? 0) * (netConfig.backups ? 1.2 : 1);
 
   if (deployed) {
