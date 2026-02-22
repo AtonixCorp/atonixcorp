@@ -48,9 +48,9 @@ function buildCards(stats: DashboardStats | null): CardDef[] {
       title: 'Compute',
       subtitle: 'Virtual Machines',
       icon: <ComputerIcon />,
-      iconColor: '#14b8a6',
-      iconBg: 'rgba(20,184,166,.12)',
-      borderColor: 'rgba(20,184,166,.25)',
+      iconColor: '#1A73FF',
+      iconBg: 'rgba(26,115,255,.1)',
+      borderColor: 'rgba(26,115,255,.2)',
       rows: [
         { label: 'Total VMs',    value: c?.total_vms ?? 0 },
         { label: 'Running',      value: c?.running ?? 0, highlight: true },
@@ -120,7 +120,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
               background: '#ffffff',
               border: '1px solid',
               borderColor: card.borderColor,
-              borderRadius: 3,
+              borderRadius: '8px',
               p: 2.5,
               height: '100%',
               display: 'flex',
@@ -145,10 +145,10 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 {card.icon}
               </Box>
               <Box>
-                <Typography fontWeight={700} color="#0f172a" fontSize=".95rem" lineHeight={1.2}>
+                <Typography fontWeight={700} color="#0A0F1F" fontSize=".95rem" lineHeight={1.2}>
                   {card.title}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                <Typography variant="caption" sx={{ color: '#6B7280' }}>
                   {card.subtitle}
                 </Typography>
               </Box>
@@ -162,7 +162,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 <Stack key={row.label} direction="row" justifyContent="space-between" alignItems="center">
                   <Stack direction="row" alignItems="center" spacing={.75}>
                     <FiberManualRecordIcon sx={{ fontSize: 8, color: '#94a3b8' }} />
-                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '.82rem' }}>
+                    <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '.82rem' }}>
                       {row.label}
                     </Typography>
                   </Stack>

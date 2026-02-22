@@ -1,11 +1,13 @@
-// AtonixCorp Cloud – Onboarding Dashboard Page
+// AtonixCorp Cloud – Dashboard Overview Page
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Container, Typography, Stack, Alert, Snackbar,
-  Breadcrumbs, Link,
+  Breadcrumbs, Link, Button,
 } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
+import DashboardIcon      from '@mui/icons-material/Dashboard';
+import AddIcon            from '@mui/icons-material/Add';
+import NavigateNextIcon   from '@mui/icons-material/NavigateNext';
 
 import { useAuth } from '../contexts/AuthContext';
 import { onboardingApi, dashboardApi } from '../services/cloudApi';
@@ -68,26 +70,79 @@ const OnboardingDashboard: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: '#f8fafc',
-        pb: 8,
-      }}
-    >
-      <Container maxWidth="xl" sx={{ pt: { xs: 3, md: 4 } }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB', pb: 6 }}>
 
-        {/* Breadcrumb */}
-        <Breadcrumbs sx={{ mb: 2.5, '& .MuiBreadcrumbs-separator': { color: '#94a3b8' } }}>
-          <Link href="/" underline="hover" sx={{ color: '#64748b', fontSize: '.8rem' }}>
+      {/* ── Page Header ────────────────────────────────────────────────────── */}
+      <Box
+        sx={{
+          bgcolor: '#fff',
+          borderBottom: '1px solid #E5E7EB',
+          px: { xs: 3, md: 4 },
+          pt: 2.5,
+          pb: 2,
+        }}
+      >
+        {/* Breadcrumbs — 12px, Graphite Gray */}
+        <Breadcrumbs
+          separator={<NavigateNextIcon sx={{ fontSize: '.75rem', color: '#9CA3AF' }} />}
+          sx={{ mb: 1.5 }}
+        >
+          <Link
+            href="/"
+            underline="hover"
+            sx={{ fontSize: '12px', color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
             Home
           </Link>
-          <Stack direction="row" alignItems="center" spacing={.5}>
-            <DashboardIcon sx={{ fontSize: '.85rem', color: '#14b8a6' }} />
-            <Typography fontSize=".8rem" color="#14b8a6" fontWeight={600}>Dashboard</Typography>
-          </Stack>
+          <Typography
+            sx={{ fontSize: '12px', color: '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            <DashboardIcon sx={{ fontSize: '.8rem' }} />
+            Dashboard
+          </Typography>
         </Breadcrumbs>
 
+        {/* Title row — title left, actions right */}
+        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1.5}>
+          <Typography
+            sx={{
+              fontSize: '24px',
+              fontWeight: 600,
+              color: '#0A0F1F',
+              letterSpacing: '-.02em',
+              lineHeight: 1.2,
+            }}
+          >
+            Dashboard
+          </Typography>
+
+          {/* Right-aligned action buttons — primary first */}
+          <Stack direction="row" spacing={1.25} alignItems="center">
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => setWizardOpen(true)}
+              sx={{
+                bgcolor: '#1A73FF',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '.82rem',
+                textTransform: 'none',
+                borderRadius: '6px',
+                px: 2,
+                boxShadow: 'none',
+                '&:hover': { bgcolor: '#1558cc', boxShadow: '0 2px 8px rgba(26,115,255,.35)' },
+              }}
+            >
+              Deploy Server
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
+      <Container maxWidth="xl" sx={{ pt: 3.5 }}>
         <Stack spacing={3.5}>
 
           {/* 1 ── Welcome Hero */}
@@ -151,9 +206,9 @@ const OnboardingDashboard: React.FC = () => {
             severity={toast.type}
             onClose={() => setToast(null)}
             sx={{
-              bgcolor: toast.type === 'success' ? 'rgba(20,184,166,.08)' : undefined,
-              border: `1px solid ${toast.type === 'success' ? 'rgba(20,184,166,.4)' : 'rgba(244,63,94,.4)'}`,
-              color: toast.type === 'success' ? '#0f766e' : undefined,
+              bgcolor: toast.type === 'success' ? 'rgba(26,115,255,.08)' : undefined,
+              border: `1px solid ${toast.type === 'success' ? 'rgba(26,115,255,.4)' : 'rgba(239,68,68,.4)'}`,
+              color: toast.type === 'success' ? '#1558cc' : undefined,
             }}
           >
             {toast.msg}
@@ -167,10 +222,10 @@ const OnboardingDashboard: React.FC = () => {
 const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Typography
     fontWeight={700}
-    fontSize=".8rem"
+    fontSize="12px"
     letterSpacing=".08em"
     textTransform="uppercase"
-    sx={{ color: '#64748b', mb: 1.5 }}
+    sx={{ color: '#6B7280', mb: 1.5 }}
   >
     {children}
   </Typography>

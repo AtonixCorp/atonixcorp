@@ -27,12 +27,12 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf9 60%, #ecfdf5 100%)',
-        borderRadius: 3,
+        background: 'linear-gradient(135deg, #ffffff 0%, #f0f7ff 60%, #eaf1ff 100%)',
+        borderRadius: '8px',
         p: { xs: 3, md: 5 },
         position: 'relative',
         overflow: 'hidden',
-        border: '1px solid rgba(20,184,166,.3)',
+        border: '1px solid rgba(26,115,255,.2)',
       }}
     >
       {/* Subtle grid backdrop */}
@@ -40,8 +40,8 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         sx={{
           position: 'absolute', inset: 0, zIndex: 0, borderRadius: 3,
           backgroundImage: `
-            linear-gradient(rgba(20,184,166,.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(20,184,166,.08) 1px, transparent 1px)`,
+            linear-gradient(rgba(26,115,255,.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(26,115,255,.05) 1px, transparent 1px)`,
 
           backgroundSize: '40px 40px',
           maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
@@ -53,7 +53,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         sx={{
           position: 'absolute', top: -80, right: -80, width: 320, height: 320,
           borderRadius: '50%', zIndex: 0,
-          background: 'radial-gradient(circle, rgba(20,184,166,.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(26,115,255,.12) 0%, transparent 70%)',
         }}
       />
 
@@ -62,8 +62,8 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
           label="AtonixCorp Cloud Platform"
           size="small"
           sx={{
-            mb: 2, bgcolor: 'rgba(20,184,166,.15)', color: '#14b8a6',
-            border: '1px solid rgba(20,184,166,.3)', fontWeight: 700,
+            mb: 2, bgcolor: 'rgba(26,115,255,.1)', color: '#1A73FF',
+            border: '1px solid rgba(26,115,255,.25)', fontWeight: 700,
             fontSize: '.7rem', letterSpacing: '.05em', textTransform: 'uppercase',
           }}
         />
@@ -71,7 +71,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         <Typography
           variant="h3"
           fontWeight={800}
-          color="#0f172a"
+          color="#0A0F1F"
           sx={{ letterSpacing: '-.02em', mb: 1.5, lineHeight: 1.15 }}
         >
           {greeting}
@@ -79,10 +79,10 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
 
         <Typography
           variant="body1"
-          sx={{ color: '#475569', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
+          sx={{ color: '#6B7280', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
         >
           Your infrastructure starts here.{' '}
-          <Box component="span" sx={{ color: '#14b8a6', fontWeight: 600 }}>Deploy</Box>,{' '}
+          <Box component="span" sx={{ color: '#1A73FF', fontWeight: 600 }}>Deploy</Box>,{' '}
           scale, and manage cloud resources with enterprise‑grade power.
         </Typography>
 
@@ -93,9 +93,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
             startIcon={<RocketLaunchIcon />}
             onClick={onDeployClick}
             sx={{
-              bgcolor: '#14b8a6', color: '#05243b', fontWeight: 700,
-              px: 3, borderRadius: 2,
-              '&:hover': { bgcolor: '#0ea5a4', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(20,184,166,.4)' },
+              bgcolor: '#1A73FF', color: '#fff', fontWeight: 700,
+              px: 3, borderRadius: '6px',
+              '&:hover': { bgcolor: '#1558cc', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(26,115,255,.35)' },
               transition: 'all .2s',
             }}
           >
@@ -110,9 +110,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
               startIcon={action.icon}
               onClick={() => navigate(action.path)}
               sx={{
-                borderColor: 'rgba(20,184,166,.35)', color: '#cfeafe', fontWeight: 600,
-                px: 2.5, borderRadius: 2,
-                '&:hover': { borderColor: '#14b8a6', color: '#14b8a6', bgcolor: 'rgba(20,184,166,.08)' },
+                borderColor: 'rgba(26,115,255,.3)', color: '#1A73FF', fontWeight: 600,
+                px: 2.5, borderRadius: '6px',
+                '&:hover': { borderColor: '#1A73FF', color: '#1558cc', bgcolor: 'rgba(26,115,255,.06)' },
                 transition: 'all .2s',
               }}
             >

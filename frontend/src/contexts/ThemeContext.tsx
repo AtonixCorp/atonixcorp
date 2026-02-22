@@ -24,15 +24,15 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1e293b', // Modern dark slate
-      dark: '#0f172a',
-      light: '#334155',
+      main: '#1A73FF', // AtonixCorp Electric Blue
+      dark: '#1155CC',
+      light: '#4D92FF',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#3b82f6', // Professional blue
-      dark: '#2563eb',
-      light: '#60a5fa',
+      main: '#0A0F1F', // Deep Navy
+      dark: '#06091A',
+      light: '#1B3B8B',
       contrastText: '#ffffff',
     },
     background: {
@@ -177,11 +177,16 @@ const ___lightTheme = createTheme({
           scrollBehavior: 'smooth',
         },
         body: {
-          backgroundColor: '#f8fafc',
-          // Make default body text use the darker primary color
-          color: '#0f172a',
+          backgroundColor: '#F9FAFB',
+          color: '#0A0F1F',
+          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+        },
+        'input, button, textarea, select': {
+          fontFamily: 'inherit',
         },
       },
     },

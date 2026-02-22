@@ -50,16 +50,25 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const SIDEBAR_WIDTH = 256;
+const SIDEBAR_WIDTH = 260;
 
-// AtonixCorp design tokens
-const NAVY         = '#0A0F1F';
-const NAVY3        = '#141D35';
-const BLUE         = '#1A73FF';
-const BLUE_DIM     = 'rgba(26,115,255,0.15)';
-const TEXT_PRIMARY  = '#E5E7EB';
-const TEXT_SECONDARY = '#8B95A8';
-const DIVIDER_COLOR  = 'rgba(255,255,255,0.07)';
+// ── AtonixCorp unified design tokens ──────────────────────────────────────────
+// Sidebar — Electric Blue family
+const NAVY          = '#18366A';   // deep royal blue sidebar background
+const NAVY2         = '#1C3E78';   // slightly lighter section areas
+const NAVY3         = '#204585';   // org‑selector / hover depth
+// Brand accent
+const BLUE          = '#1A73FF';
+const BLUE_DIM      = 'rgba(255,255,255,0.12)';  // active highlight on blue bg
+const BLUE_HOVER    = 'rgba(255,255,255,0.07)';  // hover shimmer on blue bg
+// Typography on blue sidebar
+const TEXT_PRIMARY   = '#F0F4FF';
+const TEXT_SECONDARY = '#93A8CC';
+const DIVIDER_COLOR  = 'rgba(255,255,255,0.12)';
+// Status
+const SUCCESS = '#22C55E';
+const WARNING = '#F59E0B';
+const DANGER  = '#EF4444';
 
 // ── Nav structure ──────────────────────────────────────────────────────────────
 
@@ -72,118 +81,57 @@ interface NavItem {
   children?: NavItem[];
 }
 
+// ── Nav definition — exact order from spec ────────────────────────────────────
+const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
+
 const NAV: NavItem[] = [
-  {
-    label: 'Dashboard',
-    icon: <DashboardIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard',
-  },
+  { label: 'Dashboard', icon: <DashboardIcon {...I()} />, path: '/dashboard' },
   {
     label: 'Products',
-    icon: <ComputerIcon sx={{ fontSize: '1.05rem' }} />,
+    icon: <ComputerIcon {...I()} />,
     children: [
-      {
-        label: 'Compute',
-        icon: <ComputerIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/compute',
-      },
-      {
-        label: 'Cloud Storage',
-        icon: <StorageIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/storage',
-      },
-      {
-        label: 'Kubernetes',
-        icon: <ClusterIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/kubernetes',
-      },
-      {
-        label: 'Serverless',
-        icon: <FunctionsIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/serverless',
-        badge: 'New',
-        badgeColor: 'success',
-      },
-      {
-        label: 'Container Registry',
-        icon: <ContainerIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/registry',
-      },
+      { label: 'Compute',           icon: <ComputerIcon  {...I('.95rem')} />, path: '/dashboard/compute'    },
+      { label: 'Cloud Storage',     icon: <StorageIcon   {...I('.95rem')} />, path: '/dashboard/storage'    },
+      { label: 'Kubernetes',        icon: <ClusterIcon   {...I('.95rem')} />, path: '/dashboard/kubernetes' },
+      { label: 'Serverless',        icon: <FunctionsIcon {...I('.95rem')} />, path: '/dashboard/serverless', badge: 'New',  badgeColor: 'success' },
+      { label: 'Container Registry',icon: <ContainerIcon {...I('.95rem')} />, path: '/dashboard/registry'   },
+      { label: 'Databases',         icon: <DatabaseIcon  {...I('.95rem')} />, path: '/dashboard/databases'  },
+      { label: 'Load Balancers',    icon: <BalancerIcon  {...I('.95rem')} />, path: '/dashboard/load-balancers' },
+      { label: 'CDN',               icon: <CdnIcon       {...I('.95rem')} />, path: '/dashboard/cdn',  badge: 'Beta', badgeColor: 'warning' },
+      { label: 'Network',           icon: <NetworkIcon   {...I('.95rem')} />, path: '/dashboard/network'    },
+      { label: 'Orchestration',     icon: <OrchestrateIcon {...I('.95rem')} />, path: '/dashboard/orchestration' },
     ],
   },
-  {
-    label: 'Databases',
-    icon: <DatabaseIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/databases',
-  },
-  {
-    label: 'Load Balancers',
-    icon: <BalancerIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/load-balancers',
-  },
-  {
-    label: 'CDN',
-    icon: <CdnIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/cdn',
-    badge: 'Beta',
-    badgeColor: 'warning',
-  },
-  {
-    label: 'Network',
-    icon: <NetworkIcon sx={{ fontSize: '1.05rem' }} />,
-    children: [
-      {
-        label: 'VPC',
-        icon: <HubIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/network/vpc',
-      },
-      {
-        label: 'Firewall',
-        icon: <NetworkIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/network/firewall',
-      },
-      {
-        label: 'Reserved IPs',
-        icon: <NetworkIcon sx={{ fontSize: '.95rem' }} />,
-        path: '/dashboard/network/ips',
-      },
-    ],
-  },
-  {
-    label: 'Orchestration',
-    icon: <OrchestrateIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/orchestration',
-  },
-  {
-    label: 'Monitoring',
-    icon: <MonitorIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/monitoring',
-  },
+  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dashboard/monitoring' },
 ];
 
-const BOTTOM_NAV: NavItem[] = [
-  {
-    label: 'Billing',
-    icon: <BillingIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/billing',
-  },
-  {
-    label: 'Team',
-    icon: <TeamIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/team',
-  },
-  {
-    label: 'Settings',
-    icon: <SettingsIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/settings',
-  },
-  {
-    label: 'Help & Docs',
-    icon: <HelpIcon sx={{ fontSize: '1.05rem' }} />,
-    path: '/dashboard/help',
-  },
+const ACCOUNT_NAV: NavItem[] = [
+  { label: 'Billing',   icon: <BillingIcon {...I()} />, path: '/dashboard/billing'  },
+  { label: 'Team',      icon: <TeamIcon    {...I()} />, path: '/dashboard/team'     },
+  { label: 'Settings',  icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
 ];
 
+const SUPPORT_NAV: NavItem[] = [
+  { label: 'Support',          icon: <HelpIcon    {...I()} />, path: '/dashboard/help'     },
+  { label: 'Referral Program', icon: <TeamIcon    {...I()} />, path: '/dashboard/referral', badge: '$25', badgeColor: 'success' },
+];
+// Suppress unused-var — tokens are exported for child components to import if needed
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _tokens = { NAVY2, SUCCESS, WARNING, DANGER, BLUE_HOVER };
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const NavSectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Typography
+    sx={{
+      px: 2.5, mb: 0.5, mt: 0.25,
+      fontSize: '.62rem', fontWeight: 700,
+      letterSpacing: '.1em', textTransform: 'uppercase',
+      color: TEXT_SECONDARY,
+    }}
+  >
+    {children}
+  </Typography>
+);
 // ── NavRow ─────────────────────────────────────────────────────────────────────
 
 interface NavRowProps {
@@ -230,15 +178,15 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
           userSelect: 'none',
           background: isActive && !hasChildren ? BLUE_DIM : 'transparent',
           borderLeft: isActive && !hasChildren ? `2px solid ${BLUE}` : '2px solid transparent',
-          transition: 'all .15s',
+          transition: 'background .12s',
           '&:hover': {
-            background: isActive && !hasChildren ? BLUE_DIM : 'rgba(255,255,255,0.05)',
+            background: isActive && !hasChildren ? BLUE_DIM : BLUE_HOVER,
           },
         }}
       >
         <Box
           sx={{
-            color: isActive ? BLUE : TEXT_SECONDARY,
+            color: isActive ? '#fff' : TEXT_SECONDARY,
             display: 'flex',
             alignItems: 'center',
             flexShrink: 0,
@@ -293,7 +241,7 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
       </Box>
 
       {hasChildren && (
-        <Collapse in={open} timeout="auto" unmountOnExit>
+        <Collapse in={open} timeout={0} unmountOnExit>
           <Box sx={{ ml: 1.5, borderLeft: `1px solid ${DIVIDER_COLOR}`, mb: 0.5 }}>
             {item.children!.map(child => (
               <NavRow key={child.label} item={child} depth={depth + 1} />
@@ -407,19 +355,18 @@ const SidebarContent: React.FC = () => {
 
         <Divider sx={{ borderColor: DIVIDER_COLOR, my: 1, mx: 2 }} />
 
-        <Typography
-          sx={{
-            px: 2.5, mb: 0.5,
-            fontSize: '.65rem', fontWeight: 700,
-            letterSpacing: '.1em', textTransform: 'uppercase',
-            color: TEXT_SECONDARY,
-          }}
-        >
-          Account
-        </Typography>
-
+        <NavSectionLabel>Account</NavSectionLabel>
         <List disablePadding>
-          {BOTTOM_NAV.map(item => (
+          {ACCOUNT_NAV.map(item => (
+            <NavRow key={item.label} item={item} />
+          ))}
+        </List>
+
+        <Divider sx={{ borderColor: DIVIDER_COLOR, my: 1, mx: 2 }} />
+
+        <NavSectionLabel>Support</NavSectionLabel>
+        <List disablePadding>
+          {SUPPORT_NAV.map(item => (
             <NavRow key={item.label} item={item} />
           ))}
         </List>
@@ -525,7 +472,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
-          <Toolbar sx={{ gap: 1.5, px: { xs: 2, md: 3 }, minHeight: '56px !important' }}>
+          <Toolbar sx={{ gap: 1.5, px: { xs: 2, md: 3 }, minHeight: '64px !important' }}>
 
             <IconButton
               onClick={() => setMobileOpen(true)}

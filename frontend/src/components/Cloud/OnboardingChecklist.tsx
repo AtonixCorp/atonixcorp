@@ -92,8 +92,8 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: allDone ? 'rgba(20,184,166,.5)' : 'rgba(0,0,0,.1)',
-        borderRadius: 3,
+        borderColor: allDone ? 'rgba(26,115,255,.4)' : '#E5E7EB',
+        borderRadius: '8px',
         overflow: 'hidden',
         background: '#ffffff',
       }}
@@ -108,15 +108,15 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         onClick={() => setExpanded((p) => !p)}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="h6" fontWeight={700} color="#0f172a" fontSize="1rem">
+          <Typography variant="h6" fontWeight={700} color="#0A0F1F" fontSize="1rem">
             Getting Started Checklist
           </Typography>
           <Chip
             label={`${pct}% Complete`}
             size="small"
             sx={{
-              bgcolor: allDone ? 'rgba(20,184,166,.15)' : 'rgba(0,0,0,.06)',
-              color: allDone ? '#0f766e' : '#64748b',
+              bgcolor: allDone ? 'rgba(26,115,255,.1)' : 'rgba(0,0,0,.05)',
+              color: allDone ? '#1A73FF' : '#6B7280',
               fontWeight: 700, fontSize: '.7rem',
             }}
           />
@@ -133,14 +133,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         sx={{
           height: 3,
           bgcolor: '#e2e8f0',
-          '& .MuiLinearProgress-bar': { bgcolor: '#14b8a6' },
+          '& .MuiLinearProgress-bar': { bgcolor: '#1A73FF' },
         }}
       />
 
       <Collapse in={expanded}>
         {loading ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
-            <CircularProgress size={28} sx={{ color: '#14b8a6' }} />
+            <CircularProgress size={28} sx={{ color: '#1A73FF' }} />
           </Box>
         ) : (
           <Stack divider={<Box sx={{ borderTop: '1px solid rgba(0,0,0,.06)' }} />}>
@@ -156,7 +156,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                   }}
                 >
                   {done ? (
-                    <CheckCircleIcon sx={{ color: '#14b8a6', mt: .3, flexShrink: 0 }} />
+                    <CheckCircleIcon sx={{ color: '#1A73FF', mt: .3, flexShrink: 0 }} />
                   ) : (
                     <RadioButtonUncheckedIcon sx={{ color: '#cbd5e1', mt: .3, flexShrink: 0 }} />
                   )}
@@ -165,14 +165,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                     <Typography
                       fontWeight={600}
                       sx={{
-                        color: done ? '#94a3b8' : '#0f172a',
+                        color: done ? '#9CA3AF' : '#0A0F1F',
                         textDecoration: done ? 'line-through' : 'none',
                         fontSize: '.92rem',
                       }}
                     >
                       {step.label}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748b', mt: .3, lineHeight: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: '#6B7280', mt: .3, lineHeight: 1.5 }}>
                       {step.description}
                     </Typography>
                   </Box>
@@ -191,14 +191,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                           }
                         }}
                         sx={{
-                          borderColor: 'rgba(20,184,166,.4)', color: '#14b8a6',
-                          fontWeight: 600, fontSize: '.78rem', borderRadius: 1.5,
+                          borderColor: 'rgba(26,115,255,.35)', color: '#1A73FF',
+                          fontWeight: 600, fontSize: '.78rem', borderRadius: '6px',
                           whiteSpace: 'nowrap', flexShrink: 0,
-                          '&:hover': { borderColor: '#14b8a6', bgcolor: 'rgba(20,184,166,.08)' },
+                          '&:hover': { borderColor: '#1A73FF', bgcolor: 'rgba(26,115,255,.06)' },
                         }}
                       >
                         {marking === step.key
-                          ? <CircularProgress size={14} sx={{ color: '#14b8a6' }} />
+                          ? <CircularProgress size={14} sx={{ color: '#1A73FF' }} />
                           : step.actionLabel}
                       </Button>
                     </Tooltip>

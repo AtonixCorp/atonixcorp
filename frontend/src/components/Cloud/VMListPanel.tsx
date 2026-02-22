@@ -21,15 +21,15 @@ import { vmApi } from '../../services/cloudApi';
 // ── Status colour map ─────────────────────────────────────────────────────────
 
 const STATUS_COLOR: Record<VMStatus | string, { bg: string; text: string; label: string }> = {
-  ACTIVE:       { bg: 'rgba(20,184,166,.15)', text: '#14b8a6', label: 'Running'  },
-  BUILD:        { bg: 'rgba(245,158,11,.15)', text: '#f59e0b', label: 'Building' },
-  REBOOT:       { bg: 'rgba(245,158,11,.15)', text: '#f59e0b', label: 'Rebooting'},
-  HARD_REBOOT:  { bg: 'rgba(245,158,11,.15)', text: '#f59e0b', label: 'Rebooting'},
-  SHUTOFF:      { bg: 'rgba(156,163,175,.12)', text: '#9ca3af', label: 'Stopped' },
-  PAUSED:       { bg: 'rgba(139,92,246,.15)', text: '#8b5cf6', label: 'Paused'  },
-  SUSPENDED:    { bg: 'rgba(139,92,246,.15)', text: '#8b5cf6', label: 'Suspended'},
-  ERROR:        { bg: 'rgba(244,63,94,.15)',  text: '#f43f5e', label: 'Error'    },
-  DELETED:      { bg: 'rgba(156,163,175,.12)', text: '#6b7280', label: 'Deleted' },
+  ACTIVE:       { bg: 'rgba(34,197,94,.12)',  text: '#22C55E', label: 'Running'  },
+  BUILD:        { bg: 'rgba(245,158,11,.12)', text: '#F59E0B', label: 'Building' },
+  REBOOT:       { bg: 'rgba(245,158,11,.12)', text: '#F59E0B', label: 'Rebooting'},
+  HARD_REBOOT:  { bg: 'rgba(245,158,11,.12)', text: '#F59E0B', label: 'Rebooting'},
+  SHUTOFF:      { bg: 'rgba(107,114,128,.1)', text: '#6B7280', label: 'Stopped' },
+  PAUSED:       { bg: 'rgba(139,92,246,.12)', text: '#8b5cf6', label: 'Paused'  },
+  SUSPENDED:    { bg: 'rgba(139,92,246,.12)', text: '#8b5cf6', label: 'Suspended'},
+  ERROR:        { bg: 'rgba(239,68,68,.12)',  text: '#EF4444', label: 'Error'    },
+  DELETED:      { bg: 'rgba(107,114,128,.1)', text: '#9CA3AF', label: 'Deleted' },
 };
 
 function statusStyle(s: string) {
@@ -125,7 +125,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
     <Box
       sx={{
         borderRadius: 3,
-        border: '1px solid rgba(0,0,0,.1)',
+        border: '1px solid #E5E7EB',
         bgcolor: '#ffffff',
         overflow: 'hidden',
       }}
@@ -138,7 +138,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         sx={{ px: 2.5, py: 1.75, borderBottom: '1px solid rgba(0,0,0,.08)' }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DnsIcon sx={{ color: '#14b8a6', fontSize: '1.1rem' }} />
+          <DnsIcon sx={{ color: '#1A73FF', fontSize: '1.1rem' }} />
           <Typography fontWeight={700} color="#0f172a" fontSize=".95rem">
             Virtual Machines
           </Typography>
@@ -146,7 +146,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
             <Chip
               label={vms.length}
               size="small"
-              sx={{ bgcolor: 'rgba(20,184,166,.12)', color: '#14b8a6', fontWeight: 700, fontSize: '.7rem', height: 18 }}
+              sx={{ bgcolor: 'rgba(26,115,255,.1)', color: '#1A73FF', fontWeight: 700, fontSize: '.7rem', height: 18 }}
             />
           )}
         </Stack>
@@ -163,9 +163,9 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
               startIcon={<AddIcon />}
               onClick={onCreateClick}
               sx={{
-                bgcolor: '#14b8a6', color: '#05243b', fontWeight: 700,
-                fontSize: '.75rem', borderRadius: 1.5, px: 1.5, py: .5,
-                '&:hover': { bgcolor: '#0ea5a4' },
+                bgcolor: '#1A73FF', color: '#fff', fontWeight: 700,
+                fontSize: '.75rem', borderRadius: '6px', px: 1.5, py: .5,
+                '&:hover': { bgcolor: '#1558cc' },
               }}
             >
               Create VM
@@ -222,9 +222,9 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         onClose={() => setConfirmDelete(null)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { background: '#ffffff', border: '1px solid rgba(244,63,94,.4)', borderRadius: 3 } }}
+        PaperProps={{ sx: { background: '#ffffff', border: '1px solid rgba(239,68,68,.35)', borderRadius: '8px' } }}
       >
-        <DialogTitle sx={{ color: '#e11d48', fontWeight: 800, fontSize: '1rem' }}>
+        <DialogTitle sx={{ color: '#EF4444', fontWeight: 800, fontSize: '1rem' }}>
           Delete Virtual Machine?
         </DialogTitle>
         <DialogContent>
@@ -313,10 +313,10 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
                   size="small"
                   disabled={busy}
                   onClick={onStart}
-                  sx={{ color: '#14b8a6', '&:hover': { bgcolor: 'rgba(20,184,166,.1)' } }}
+                  sx={{ color: '#1A73FF', '&:hover': { bgcolor: 'rgba(26,115,255,.1)' } }}
                 >
                   {actionLoading === 'start'
-                    ? <CircularProgress size={16} sx={{ color: '#14b8a6' }} />
+                    ? <CircularProgress size={16} sx={{ color: '#1A73FF' }} />
                     : <PlayArrowIcon fontSize="small" />}
                 </IconButton>
               </span>
@@ -382,16 +382,16 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
     <Box
       sx={{
         width: 64, height: 64, borderRadius: '50%',
-        bgcolor: 'rgba(20,184,166,.08)', border: '1px solid rgba(20,184,166,.2)',
+        bgcolor: 'rgba(26,115,255,.07)', border: '1px solid rgba(26,115,255,.2)',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 2,
       }}
     >
-      <DnsIcon sx={{ color: '#14b8a6', fontSize: '1.8rem' }} />
+      <DnsIcon sx={{ color: '#1A73FF', fontSize: '1.8rem' }} />
     </Box>
-    <Typography fontWeight={700} color="#0f172a" fontSize=".95rem" mb={.75}>
+    <Typography fontWeight={700} color="#0A0F1F" fontSize=".95rem" mb={.75}>
       No Virtual Machines Yet
     </Typography>
-    <Typography color="#64748b" fontSize=".85rem" mb={2.5}>
+    <Typography color="#6B7280" fontSize=".85rem" mb={2.5}>
       Launch your first server to start building your infrastructure.
     </Typography>
     {onCreateClick && (
@@ -400,9 +400,9 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
         startIcon={<AddIcon />}
         onClick={onCreateClick}
         sx={{
-          bgcolor: '#14b8a6', color: '#05243b', fontWeight: 700,
-          borderRadius: 2, px: 3,
-          '&:hover': { bgcolor: '#0ea5a4' },
+          bgcolor: '#1A73FF', color: '#fff', fontWeight: 700,
+          borderRadius: '6px', px: 3,
+          '&:hover': { bgcolor: '#1558cc' },
         }}
       >
         Create Your First VM
