@@ -17,7 +17,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import SearchIcon from '@mui/icons-material/Search';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
 import { monitoringApi } from '../services/cloudApi';
 import type {
   MonitoringOverview, ServiceHealth, Alert, AlertRule, CreateAlertRulePayload,
@@ -27,7 +27,8 @@ import type {
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function useThemeTokens() {
-  const { isDark } = useTheme() as any;
+  const theme  = useMuiTheme();
+  const isDark = theme.palette.mode === 'dark';
   return {
     isDark,
     panelBg:  isDark ? '#0D1826' : '#F9FAFB',
