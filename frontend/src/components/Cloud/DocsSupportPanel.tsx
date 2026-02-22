@@ -75,20 +75,20 @@ const DocsSupportPanel: React.FC = () => {
     <Paper
       elevation={0}
       sx={{
-        background: '#0b1220',
-        border: '1px solid rgba(255,255,255,.07)',
+        background: '#ffffff',
+        border: '1px solid rgba(0,0,0,.1)',
         borderRadius: 3,
         overflow: 'hidden',
       }}
     >
       {/* Header */}
-      <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+      <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid rgba(0,0,0,.08)' }}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <MenuBookIcon sx={{ color: '#14b8a6', fontSize: '1.2rem' }} />
-          <Typography fontWeight={700} color="#fff" fontSize="1rem">
+          <Typography fontWeight={700} color="#0f172a" fontSize="1rem">
             Documentation & Support
           </Typography>
-          <Typography variant="caption" sx={{ color: '#9ca3af', ml: .5 }}>
+          <Typography variant="caption" sx={{ color: '#64748b', ml: .5 }}>
             — everything you need to build on AtonixCorp Cloud
           </Typography>
         </Stack>
@@ -101,14 +101,14 @@ const DocsSupportPanel: React.FC = () => {
               onClick={() => navigate(link.path)}
               sx={{
                 p: 2, borderRadius: 2, cursor: 'pointer',
-                border: '1px solid rgba(255,255,255,.06)',
-                bgcolor: 'rgba(255,255,255,.02)',
+                border: '1px solid rgba(0,0,0,.08)',
+                bgcolor: '#fafafa',
                 height: '100%',
                 display: 'flex', flexDirection: 'column',
                 transition: 'all .18s',
                 '&:hover': {
-                  borderColor: 'rgba(20,184,166,.35)',
-                  bgcolor: 'rgba(20,184,166,.04)',
+                  borderColor: 'rgba(20,184,166,.45)',
+                  bgcolor: 'rgba(20,184,166,.05)',
                   transform: 'translateY(-2px)',
                 },
               }}
@@ -125,7 +125,7 @@ const DocsSupportPanel: React.FC = () => {
                 >
                   {link.icon}
                 </Box>
-                <Typography fontWeight={700} color="#e6eef7" fontSize=".88rem">
+                <Typography fontWeight={700} color="#0f172a" fontSize=".88rem">
                   {link.title}
                 </Typography>
                 {link.badge && (
@@ -133,13 +133,13 @@ const DocsSupportPanel: React.FC = () => {
                     label={link.badge}
                     size="small"
                     sx={{
-                      ml: 'auto', bgcolor: link.badgeColor ?? 'rgba(255,255,255,.07)',
-                      color: '#e6eef7', fontWeight: 700, fontSize: '.62rem', height: 18,
+                      ml: 'auto', bgcolor: link.badgeColor ?? 'rgba(0,0,0,.06)',
+                      color: '#374151', fontWeight: 700, fontSize: '.62rem', height: 18,
                     }}
                   />
                 )}
               </Stack>
-              <Typography variant="caption" sx={{ color: '#9ca3af', lineHeight: 1.55, flex: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748b', lineHeight: 1.55, flex: 1 }}>
                 {link.description}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={.5} mt={1.5}>

@@ -71,15 +71,15 @@ const OnboardingDashboard: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #07121a 0%, #0b1220 40%, #0f172a 100%)',
+        background: '#f8fafc',
         pb: 8,
       }}
     >
       <Container maxWidth="xl" sx={{ pt: { xs: 3, md: 4 } }}>
 
         {/* Breadcrumb */}
-        <Breadcrumbs sx={{ mb: 2.5, '& .MuiBreadcrumbs-separator': { color: '#4b5563' } }}>
-          <Link href="/" underline="hover" sx={{ color: '#9ca3af', fontSize: '.8rem' }}>
+        <Breadcrumbs sx={{ mb: 2.5, '& .MuiBreadcrumbs-separator': { color: '#94a3b8' } }}>
+          <Link href="/" underline="hover" sx={{ color: '#64748b', fontSize: '.8rem' }}>
             Home
           </Link>
           <Stack direction="row" alignItems="center" spacing={.5}>
@@ -151,9 +151,9 @@ const OnboardingDashboard: React.FC = () => {
             severity={toast.type}
             onClose={() => setToast(null)}
             sx={{
-              bgcolor: toast.type === 'success' ? 'rgba(20,184,166,.1)' : undefined,
-              border: `1px solid ${toast.type === 'success' ? 'rgba(20,184,166,.3)' : 'rgba(244,63,94,.3)'}`,
-              color: toast.type === 'success' ? '#14b8a6' : undefined,
+              bgcolor: toast.type === 'success' ? 'rgba(20,184,166,.08)' : undefined,
+              border: `1px solid ${toast.type === 'success' ? 'rgba(20,184,166,.4)' : 'rgba(244,63,94,.4)'}`,
+              color: toast.type === 'success' ? '#0f766e' : undefined,
             }}
           >
             {toast.msg}
@@ -170,7 +170,7 @@ const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) =
     fontSize=".8rem"
     letterSpacing=".08em"
     textTransform="uppercase"
-    sx={{ color: '#9ca3af', mb: 1.5 }}
+    sx={{ color: '#64748b', mb: 1.5 }}
   >
     {children}
   </Typography>

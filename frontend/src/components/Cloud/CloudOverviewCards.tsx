@@ -117,7 +117,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
           <Paper
             elevation={0}
             sx={{
-              background: '#0b1220',
+              background: '#ffffff',
               border: '1px solid',
               borderColor: card.borderColor,
               borderRadius: 3,
@@ -128,7 +128,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
               transition: 'transform .2s, box-shadow .2s',
               '&:hover': {
                 transform: 'translateY(-4px)',
-                boxShadow: `0 12px 32px rgba(0,0,0,.4)`,
+                boxShadow: `0 12px 32px rgba(0,0,0,.1)`,
               },
             }}
           >
@@ -145,36 +145,36 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 {card.icon}
               </Box>
               <Box>
-                <Typography fontWeight={700} color="#fff" fontSize=".95rem" lineHeight={1.2}>
+                <Typography fontWeight={700} color="#0f172a" fontSize=".95rem" lineHeight={1.2}>
                   {card.title}
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#9ca3af' }}>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>
                   {card.subtitle}
                 </Typography>
               </Box>
             </Stack>
 
-            <Divider sx={{ borderColor: 'rgba(255,255,255,.06)', mb: 2 }} />
+            <Divider sx={{ borderColor: 'rgba(0,0,0,.08)', mb: 2 }} />
 
             {/* Stats rows */}
             <Stack spacing={1} flex={1}>
               {card.rows.map((row) => (
                 <Stack key={row.label} direction="row" justifyContent="space-between" alignItems="center">
                   <Stack direction="row" alignItems="center" spacing={.75}>
-                    <FiberManualRecordIcon sx={{ fontSize: 8, color: '#4b5563' }} />
-                    <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '.82rem' }}>
+                    <FiberManualRecordIcon sx={{ fontSize: 8, color: '#94a3b8' }} />
+                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '.82rem' }}>
                       {row.label}
                     </Typography>
                   </Stack>
                   {loading ? (
-                    <Skeleton width={28} height={18} sx={{ bgcolor: 'rgba(255,255,255,.07)' }} />
+                    <Skeleton width={28} height={18} sx={{ bgcolor: 'rgba(0,0,0,.08)' }} />
                   ) : (
                     <Chip
                       label={row.value}
                       size="small"
                       sx={{
-                        bgcolor: row.highlight ? card.iconBg : 'rgba(255,255,255,.05)',
-                        color: row.highlight ? card.iconColor : '#e6eef7',
+                        bgcolor: row.highlight ? card.iconBg : 'rgba(0,0,0,.05)',
+                        color: row.highlight ? card.iconColor : '#374151',
                         fontWeight: 700, fontSize: '.75rem', height: 22,
                       }}
                     />

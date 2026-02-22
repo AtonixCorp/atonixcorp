@@ -1,3 +1,6 @@
+// AtonixCorp Cloud Dashboard – Layout
+// Enterprise-grade cloud dashboard layout following AtonixCorp design system.
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -8,577 +11,681 @@ import {
   Typography,
   Divider,
   IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Avatar,
   Menu,
   MenuItem,
   Badge,
-  Chip,
-  useTheme,
-  useMediaQuery,
+  InputBase,
+  Tooltip,
   Collapse,
+  Stack,
+  Chip,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  ExpandLess,
-  ExpandMore,
-  Folder,
-  Assignment,
-  // People (unused)
-  Timeline
-} from '@mui/icons-material';
-import * as MuiIcons from '@mui/icons-material';
-import { useAuth } from '../../contexts/AuthContext';
+import MenuIcon              from '@mui/icons-material/Menu';
+import SearchIcon            from '@mui/icons-material/Search';
+import NotificationsIcon     from '@mui/icons-material/Notifications';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import DashboardIcon         from '@mui/icons-material/Dashboard';
+import ComputerIcon          from '@mui/icons-material/Computer';
+import StorageIcon           from '@mui/icons-material/Storage';
+import HubIcon               from '@mui/icons-material/Hub';
+import ClusterIcon           from '@mui/icons-material/DeviceHub';
+import FunctionsIcon         from '@mui/icons-material/Code';
+import ContainerIcon         from '@mui/icons-material/ViewInAr';
+import DatabaseIcon          from '@mui/icons-material/StorageRounded';
+import BalancerIcon          from '@mui/icons-material/CompareArrows';
+import CdnIcon               from '@mui/icons-material/PublicRounded';
+import NetworkIcon           from '@mui/icons-material/RouterRounded';
+import OrchestrateIcon       from '@mui/icons-material/AccountTree';
+import SettingsIcon          from '@mui/icons-material/Settings';
+import HelpIcon              from '@mui/icons-material/HelpOutline';
+import PersonIcon            from '@mui/icons-material/Person';
+import LogoutIcon            from '@mui/icons-material/Logout';
+import BillingIcon           from '@mui/icons-material/ReceiptLong';
+import TeamIcon              from '@mui/icons-material/Group';
+import MonitorIcon           from '@mui/icons-material/QueryStats';
+import { useAuth }           from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Icon imports removed: this file builds local icon aliases from the
-// `MuiIcons` mapping above to provide fallbacks and avoid redeclaration.
 
-// Map commonly used icon variable names (ending with "Icon") to the corresponding
-// material icon export (base name without the "Icon" suffix). If the exact base
-// isn't available in the library, fall back to HelpOutline so the UI still renders.
-const _DashboardIcon = MuiIcons['Dashboard'] ?? MuiIcons['HelpOutline'];
-const _EnterpriseIcon = MuiIcons['Business'] ?? MuiIcons['HelpOutline'];
-const _AnalyticsIcon = MuiIcons['Analytics'] ?? MuiIcons['BarChart'] ?? MuiIcons['HelpOutline'];
-const _TasksIcon = MuiIcons['Assignment'] ?? MuiIcons['HelpOutline'];
-const _ScheduleIcon = MuiIcons['Schedule'] ?? MuiIcons['Today'] ?? MuiIcons['HelpOutline'];
-const _ProjectsIcon = MuiIcons['Folder'] ?? MuiIcons['HelpOutline'];
-const _StorefrontIcon = MuiIcons['Storefront'] ?? MuiIcons['Store'] ?? MuiIcons['HelpOutline'];
-const _FocusAreasIcon = MuiIcons['Widgets'] ?? MuiIcons['Category'] ?? MuiIcons['HelpOutline'];
-const _ResourcesIcon = MuiIcons['MenuBook'] ?? MuiIcons['HelpOutline'];
-const _CommunityIcon = MuiIcons['People'] ?? MuiIcons['Groups'] ?? MuiIcons['HelpOutline'];
-const _ContactIcon = MuiIcons['ContactMail'] ?? MuiIcons['Mail'] ?? MuiIcons['HelpOutline'];
-const _SecurityIcon = MuiIcons['Security'] ?? MuiIcons['Shield'] ?? MuiIcons['HelpOutline'];
-const _HelpIcon = MuiIcons['HelpOutline'] ?? MuiIcons['Help'] ?? MuiIcons['HelpOutline'];
-const _SettingsIcon = MuiIcons['Settings'] ?? MuiIcons['Tune'] ?? MuiIcons['HelpOutline'];
-const _NotificationsIcon = MuiIcons['Notifications'] ?? MuiIcons['NotificationsActive'] ?? MuiIcons['HelpOutline'];
-const _PersonIcon = MuiIcons['Person'] ?? MuiIcons['AccountCircle'] ?? MuiIcons['HelpOutline'];
-const _LogoutIcon = MuiIcons['Logout'] ?? MuiIcons['ExitToApp'] ?? MuiIcons['HelpOutline'];
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const ____drawerWidth = 280;
+const SIDEBAR_WIDTH = 256;
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
+// AtonixCorp design tokens
+const NAVY         = '#0A0F1F';
+const NAVY3        = '#141D35';
+const BLUE         = '#1A73FF';
+const BLUE_DIM     = 'rgba(26,115,255,0.15)';
+const TEXT_PRIMARY  = '#E5E7EB';
+const TEXT_SECONDARY = '#8B95A8';
+const DIVIDER_COLOR  = 'rgba(255,255,255,0.07)';
+
+// ── Nav structure ──────────────────────────────────────────────────────────────
 
 interface NavItem {
-  text: string;
+  label: string;
   icon: React.ReactNode;
   path?: string;
-  badge?: number;
+  badge?: string | number;
+  badgeColor?: 'error' | 'warning' | 'success' | 'info';
   children?: NavItem[];
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const { user, logout, isOrganizationRegistered } = useAuth();
+const NAV: NavItem[] = [
+  {
+    label: 'Dashboard',
+    icon: <DashboardIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard',
+  },
+  {
+    label: 'Products',
+    icon: <ComputerIcon sx={{ fontSize: '1.05rem' }} />,
+    children: [
+      {
+        label: 'Compute',
+        icon: <ComputerIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/compute',
+      },
+      {
+        label: 'Cloud Storage',
+        icon: <StorageIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/storage',
+      },
+      {
+        label: 'Kubernetes',
+        icon: <ClusterIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/kubernetes',
+      },
+      {
+        label: 'Serverless',
+        icon: <FunctionsIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/serverless',
+        badge: 'New',
+        badgeColor: 'success',
+      },
+      {
+        label: 'Container Registry',
+        icon: <ContainerIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/registry',
+      },
+    ],
+  },
+  {
+    label: 'Databases',
+    icon: <DatabaseIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/databases',
+  },
+  {
+    label: 'Load Balancers',
+    icon: <BalancerIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/load-balancers',
+  },
+  {
+    label: 'CDN',
+    icon: <CdnIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/cdn',
+    badge: 'Beta',
+    badgeColor: 'warning',
+  },
+  {
+    label: 'Network',
+    icon: <NetworkIcon sx={{ fontSize: '1.05rem' }} />,
+    children: [
+      {
+        label: 'VPC',
+        icon: <HubIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/network/vpc',
+      },
+      {
+        label: 'Firewall',
+        icon: <NetworkIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/network/firewall',
+      },
+      {
+        label: 'Reserved IPs',
+        icon: <NetworkIcon sx={{ fontSize: '.95rem' }} />,
+        path: '/dashboard/network/ips',
+      },
+    ],
+  },
+  {
+    label: 'Orchestration',
+    icon: <OrchestrateIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/orchestration',
+  },
+  {
+    label: 'Monitoring',
+    icon: <MonitorIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/monitoring',
+  },
+];
+
+const BOTTOM_NAV: NavItem[] = [
+  {
+    label: 'Billing',
+    icon: <BillingIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/billing',
+  },
+  {
+    label: 'Team',
+    icon: <TeamIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/team',
+  },
+  {
+    label: 'Settings',
+    icon: <SettingsIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/settings',
+  },
+  {
+    label: 'Help & Docs',
+    icon: <HelpIcon sx={{ fontSize: '1.05rem' }} />,
+    path: '/dashboard/help',
+  },
+];
+
+// ── NavRow ─────────────────────────────────────────────────────────────────────
+
+interface NavRowProps {
+  item: NavItem;
+  depth?: number;
+  defaultOpen?: boolean;
+}
+
+const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [open, setOpen] = useState(defaultOpen);
 
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'workspace']);
+  const hasChildren = !!item.children?.length;
+  const isActive =
+    item.path
+      ? location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+      : item.children?.some(
+          c => c.path && (location.pathname === c.path || location.pathname.startsWith(c.path + '/'))
+        );
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleProfileMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseProfileMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    handleCloseProfileMenu();
-  };
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    if (isMobile) {
-      setMobileOpen(false);
+  const handleClick = () => {
+    if (hasChildren) {
+      setOpen(p => !p);
+    } else if (item.path) {
+      navigate(item.path);
     }
   };
 
-  const toggleExpanded = (item: string) => {
-    setExpandedItems(prev =>
-      prev.includes(item)
-        ? prev.filter(i => i !== item)
-        : [...prev, item]
-    );
-  };
+  return (
+    <>
+      <Box
+        onClick={handleClick}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          px: depth === 0 ? 1.5 : 2.25,
+          py: 0.75,
+          mx: 1,
+          mb: 0.25,
+          borderRadius: '6px',
+          cursor: 'pointer',
+          userSelect: 'none',
+          background: isActive && !hasChildren ? BLUE_DIM : 'transparent',
+          borderLeft: isActive && !hasChildren ? `2px solid ${BLUE}` : '2px solid transparent',
+          transition: 'all .15s',
+          '&:hover': {
+            background: isActive && !hasChildren ? BLUE_DIM : 'rgba(255,255,255,0.05)',
+          },
+        }}
+      >
+        <Box
+          sx={{
+            color: isActive ? BLUE : TEXT_SECONDARY,
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {item.icon}
+        </Box>
 
-  const isActivePath = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+        <Typography
+          sx={{
+            flex: 1,
+            fontSize: depth === 0 ? '.875rem' : '.8rem',
+            fontWeight: isActive ? 600 : 400,
+            color: isActive ? '#fff' : TEXT_PRIMARY,
+            letterSpacing: '.01em',
+            lineHeight: 1,
+          }}
+        >
+          {item.label}
+        </Typography>
 
-  const navigationItems: NavItem[] = [
-    {
-      text: 'Dashboard',
-      icon: <_DashboardIcon />,
-      path: '/dashboard',
-    },
-    ...(isOrganizationRegistered ? [{
-      text: 'Enterprise',
-      icon: <_EnterpriseIcon />,
-      path: '/dashboard/enterprise',
-    }] : []),
-    {
-      text: 'Analytics',
-      icon: <_AnalyticsIcon />,
-      path: '/dashboard/analytics',
-      badge: 3,
-    },
-    {
-      text: 'My Tasks',
-      icon: <_TasksIcon />,
-      path: '/dashboard/tasks',
-      badge: 12,
-    },
-    {
-      text: 'Schedule',
-      icon: <_ScheduleIcon />,
-      path: '/dashboard/schedule',
-    },
-    {
-      text: 'Projects',
-      icon: <_ProjectsIcon />,
-      children: [
-        {
-          text: 'All Projects',
-          icon: <Folder />,
-          path: '/dashboard/projects',
-        },
-        {
-          text: 'My Projects',
-          icon: <Assignment />,
-          path: '/dashboard/my-projects',
-          badge: 5,
-        },
-        {
-          text: 'Project Analytics',
-          icon: <Timeline />,
-          path: '/dashboard/project-analytics',
-        },
-      ],
-    },
-    {
-      text: 'Focus Areas',
-      icon: <_FocusAreasIcon />,
-      path: '/dashboard/focus-areas',
-    },
-    {
-      text: 'Resources',
-      icon: <_ResourcesIcon />,
-      path: '/dashboard/resources',
-    },
-    {
-      text: 'Marketplace',
-      icon: <_StorefrontIcon />,
-      path: '/dashboard/marketplace',
-    },
-    // Workspace moved inside Enterprise for enterprise-scoped access
-    {
-      text: 'Community',
-      icon: <_CommunityIcon />,
-      path: '/dashboard/community',
-      badge: 8,
-    },
-    {
-      text: 'Contact',
-      icon: <_ContactIcon />,
-      path: '/dashboard/contact',
-    },
-  ];
-
-  const bottomNavigationItems: NavItem[] = [
-    {
-      text: 'Security',
-      icon: <_SecurityIcon />,
-      path: '/dashboard/security',
-    },
-    {
-      text: 'Help & Support',
-      icon: <_HelpIcon />,
-      path: '/dashboard/help',
-    },
-    {
-      text: 'Settings',
-      icon: <_SettingsIcon />,
-      path: '/dashboard/settings',
-    },
-  ];
-
-  const renderNavItem = (item: NavItem, depth: number = 0) => {
-    const isExpanded = expandedItems.includes(item.text.toLowerCase().replace(' ', ''));
-    const hasChildren = item.children && item.children.length > 0;
-    const isActive = item.path ? isActivePath(item.path) : false;
-
-    return (
-      <React.Fragment key={item.text}>
-        <ListItem disablePadding>
-          <ListItemButton
-            onClick={() => {
-              if (hasChildren) {
-                toggleExpanded(item.text.toLowerCase().replace(' ', ''));
-              } else if (item.path) {
-                handleNavigation(item.path);
-              }
-            }}
+        {item.badge && (
+          <Chip
+            label={item.badge}
+            size="small"
             sx={{
-              pl: 2 + (depth * 2),
-              pr: 2,
-              py: 1,
-              borderRadius: '12px',
-              mx: 1,
-              mb: 0.5,
-              backgroundColor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-              borderLeft: isActive ? '3px solid #3b82f6' : '3px solid transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                transform: 'translateX(4px)',
-              },
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              height: 16,
+              fontSize: '.6rem',
+              fontWeight: 700,
+              px: 0.25,
+              bgcolor:
+                item.badgeColor === 'success' ? 'rgba(34,197,94,.2)'
+                : item.badgeColor === 'warning' ? 'rgba(245,158,11,.2)'
+                : item.badgeColor === 'error'   ? 'rgba(239,68,68,.2)'
+                : BLUE_DIM,
+              color:
+                item.badgeColor === 'success' ? '#22C55E'
+                : item.badgeColor === 'warning' ? '#F59E0B'
+                : item.badgeColor === 'error'   ? '#EF4444'
+                : BLUE,
             }}
-          >
-            <ListItemIcon
-              sx={{
-                color: isActive ? '#3b82f6' : 'text.secondary',
-                minWidth: 40,
-                '& .MuiSvgIcon-root': {
-                  fontSize: '1.25rem',
-                },
-              }}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.text}
-              primaryTypographyProps={{
-                fontSize: '0.95rem',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? '#3b82f6' : '#1e293b',
-              }}
-            />
-            {item.badge && (
-              <Chip
-                label={item.badge}
-                size="small"
-                sx={{
-                  height: '20px',
-                  fontSize: '0.75rem',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  fontWeight: 600,
-                }}
-              />
-            )}
-            {hasChildren && (
-              <IconButton size="small" sx={{ color: 'text.secondary' }}>
-                {isExpanded ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
-            )}
-          </ListItemButton>
-        </ListItem>
-        {hasChildren && (
-          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {item.children!.map((child) => renderNavItem(child, depth + 1))}
-            </List>
-          </Collapse>
+          />
         )}
-      </React.Fragment>
-    );
-  };
 
-  const drawer = (
+        {hasChildren && (
+          <Box sx={{ color: TEXT_SECONDARY, display: 'flex', alignItems: 'center' }}>
+            {open
+              ? <KeyboardArrowDownIcon  sx={{ fontSize: '.85rem' }} />
+              : <KeyboardArrowRightIcon sx={{ fontSize: '.85rem' }} />}
+          </Box>
+        )}
+      </Box>
+
+      {hasChildren && (
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <Box sx={{ ml: 1.5, borderLeft: `1px solid ${DIVIDER_COLOR}`, mb: 0.5 }}>
+            {item.children!.map(child => (
+              <NavRow key={child.label} item={child} depth={depth + 1} />
+            ))}
+          </Box>
+        </Collapse>
+      )}
+    </>
+  );
+};
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
+
+const SidebarContent: React.FC = () => {
+  const { user } = useAuth() as any;
+  const navigate  = useNavigate();
+
+  return (
     <Box
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        bgcolor: NAVY,
+        overflow: 'hidden',
       }}
     >
       {/* Logo */}
       <Box
+        onClick={() => navigate('/dashboard')}
         sx={{
-          p: 3,
-          borderBottom: '1px solid #e2e8f0',
-          background: 'rgba(255, 255, 255, 0.7)',
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          AtonixCorp
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Professional Dashboard
-        </Typography>
-      </Box>
-
-      {/* User Profile */}
-      <Box
-        sx={{
-          p: 2,
-          borderBottom: '1px solid #e2e8f0',
-          background: 'rgba(255, 255, 255, 0.5)',
+          px: 2.5,
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          cursor: 'pointer',
+          borderBottom: `1px solid ${DIVIDER_COLOR}`,
+          flexShrink: 0,
         }}
       >
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            p: 2,
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.8)',
-            border: '1px solid #e2e8f0',
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            },
+            width: 32, height: 32, borderRadius: '8px',
+            background: 'linear-gradient(135deg, #1A73FF 0%, #0ea5e9 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 800, color: '#fff', fontSize: '.85rem',
+            letterSpacing: '-.02em', flexShrink: 0,
           }}
-          onClick={handleProfileMenu}
         >
-          <Avatar
-            src={user?.avatar}
-            sx={{
-              width: 48,
-              height: 48,
-              mr: 2,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
-              border: '2px solid white',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {user?.first_name?.[0] || 'U'}
-          </Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" fontWeight={600} color="#1e293b">
-              {user?.first_name} {user?.last_name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              @{user?.username}
-            </Typography>
-          </Box>
-          <Badge
-            variant="dot"
-            color="success"
-            sx={{
-              '& .MuiBadge-badge': {
-                right: 8,
-                top: 8,
-              },
-            }}
-          />
+          Ax
+        </Box>
+        <Box>
+          <Typography sx={{ fontWeight: 700, fontSize: '.95rem', color: '#fff', lineHeight: 1.1 }}>
+            AtonixCorp
+          </Typography>
+          <Typography sx={{ fontSize: '.65rem', color: TEXT_SECONDARY, lineHeight: 1 }}>
+            Cloud Platform
+          </Typography>
         </Box>
       </Box>
 
-      {/* Main Navigation */}
-      <Box sx={{ flex: 1, overflowY: 'auto', py: 1 }}>
-        <List>
-          {navigationItems.map((item) => renderNavItem(item))}
+      {/* Org selector */}
+      <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${DIVIDER_COLOR}`, flexShrink: 0 }}>
+        <Box
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            px: 1.5, py: 0.75, borderRadius: '6px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            cursor: 'pointer', bgcolor: NAVY3,
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
+            transition: 'background .15s',
+          }}
+        >
+          <Box
+            sx={{
+              width: 22, height: 22, borderRadius: '4px',
+              bgcolor: BLUE, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', flexShrink: 0,
+            }}
+          >
+            <Typography sx={{ fontSize: '.6rem', fontWeight: 800, color: '#fff' }}>
+              {(user?.username || 'U')[0].toUpperCase()}
+            </Typography>
+          </Box>
+          <Typography sx={{ flex: 1, fontSize: '.8rem', fontWeight: 500, color: TEXT_PRIMARY }} noWrap>
+            {user?.username || 'My Organization'}
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
+        </Box>
+      </Box>
+
+      {/* Navigation */}
+      <Box
+        sx={{
+          flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 1,
+          '&::-webkit-scrollbar': { width: 4 },
+          '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
+          '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,.1)', borderRadius: 2 },
+        }}
+      >
+        <List disablePadding>
+          {NAV.map(item => (
+            <NavRow
+              key={item.label}
+              item={item}
+              defaultOpen={item.label === 'Products' || item.label === 'Network'}
+            />
+          ))}
+        </List>
+
+        <Divider sx={{ borderColor: DIVIDER_COLOR, my: 1, mx: 2 }} />
+
+        <Typography
+          sx={{
+            px: 2.5, mb: 0.5,
+            fontSize: '.65rem', fontWeight: 700,
+            letterSpacing: '.1em', textTransform: 'uppercase',
+            color: TEXT_SECONDARY,
+          }}
+        >
+          Account
+        </Typography>
+
+        <List disablePadding>
+          {BOTTOM_NAV.map(item => (
+            <NavRow key={item.label} item={item} />
+          ))}
         </List>
       </Box>
 
-      {/* Bottom Navigation */}
-      <Box sx={{ borderTop: '1px solid #e2e8f0', background: 'rgba(255, 255, 255, 0.5)' }}>
-        <List>
-          {bottomNavigationItems.map((item) => renderNavItem(item))}
-        </List>
+      {/* User strip */}
+      <Box
+        sx={{
+          px: 2, py: 1.5,
+          borderTop: `1px solid ${DIVIDER_COLOR}`,
+          flexShrink: 0,
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1.25}>
+          <Avatar sx={{ width: 30, height: 30, bgcolor: BLUE, fontSize: '.8rem', fontWeight: 700 }}>
+            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontSize: '.8rem', fontWeight: 600, color: '#fff' }} noWrap>
+              {user?.first_name
+                ? `${user.first_name} ${user.last_name || ''}`.trim()
+                : user?.username}
+            </Typography>
+            <Typography sx={{ fontSize: '.68rem', color: TEXT_SECONDARY }} noWrap>
+              {user?.email || ''}
+            </Typography>
+          </Box>
+        </Stack>
       </Box>
     </Box>
   );
+};
+
+// ── Main layout ────────────────────────────────────────────────────────────────
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+  const { user, logout }  = useAuth() as any;
+  const navigate           = useNavigate();
+  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+  const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Top AppBar - Mobile Only */}
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { lg: `calc(100% - ${____drawerWidth}px)` },
-          ml: { lg: `${____drawerWidth}px` },
-          display: { lg: 'none' },
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid #e2e8f0',
-          color: '#1e293b',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Dashboard
-          </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="error">
-              <_NotificationsIcon />
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F9FAFB' }}>
 
-      {/* Sidebar Drawer */}
-      <Box
-        component="nav"
-        sx={{ width: { lg: ____drawerWidth }, flexShrink: { lg: 0 } }}
-      >
+      {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
+      <Box component="nav" sx={{ width: { lg: SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
         <Drawer
           variant="temporary"
           open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', lg: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: ____drawerWidth,
-              border: 'none',
-            },
+            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: NAVY },
           }}
         >
-          {drawer}
+          <SidebarContent />
         </Drawer>
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: ____drawerWidth,
-              border: 'none',
-              borderRight: '1px solid #e2e8f0',
+              width: SIDEBAR_WIDTH, border: 'none',
+              borderRight: '1px solid rgba(0,0,0,.08)', bgcolor: NAVY,
             },
           }}
           open
         >
-          {drawer}
+          <SidebarContent />
         </Drawer>
       </Box>
 
-      {/* Main Content */}
+      {/* ── Right column ─────────────────────────────────────────────────────── */}
       <Box
-        component="main"
         sx={{
           flexGrow: 1,
-          width: { lg: `calc(100% - ${____drawerWidth}px)` },
+          width: { lg: `calc(100% - ${SIDEBAR_WIDTH}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* Mobile top spacing */}
-        <Toolbar sx={{ display: { lg: 'none' } }} />
 
-        {/* Content - Full Width with No Gaps */}
-        <Box
+        {/* ── Top AppBar ─────────────────────────────────────────────────────── */}
+        <AppBar
+          position="sticky"
+          elevation={0}
           sx={{
-            flexGrow: 1,
-            width: '100%',
-            overflow: 'auto',
-            margin: 0,
-            padding: 0,
+            bgcolor: '#fff',
+            borderBottom: '1px solid #E5E7EB',
+            color: '#111827',
+            zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
+          <Toolbar sx={{ gap: 1.5, px: { xs: 2, md: 3 }, minHeight: '56px !important' }}>
+
+            <IconButton
+              onClick={() => setMobileOpen(true)}
+              sx={{ display: { lg: 'none' }, color: '#6B7280' }}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            {/* Global search */}
+            <Box
+              sx={{
+                display: 'flex', alignItems: 'center',
+                flex: 1, maxWidth: 420,
+                bgcolor: '#F3F4F6', borderRadius: '6px',
+                px: 1.5, py: 0.5, gap: 1,
+                border: '1px solid transparent',
+                transition: 'border .15s',
+                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: '#fff' },
+              }}
+            >
+              <SearchIcon sx={{ color: '#9CA3AF', fontSize: '1rem', flexShrink: 0 }} />
+              <InputBase
+                placeholder="Search resources…"
+                sx={{
+                  flex: 1, fontSize: '.875rem', color: '#111827',
+                  '& input::placeholder': { color: '#9CA3AF' },
+                }}
+              />
+              <Typography
+                sx={{
+                  fontSize: '.7rem', color: '#9CA3AF',
+                  bgcolor: '#E5E7EB', px: 0.75, py: 0.25,
+                  borderRadius: '4px', flexShrink: 0,
+                  display: { xs: 'none', md: 'block' },
+                }}
+              >
+                ⌘K
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: 1 }} />
+
+            {/* Notifications */}
+            <Tooltip title="Notifications">
+              <IconButton
+                onClick={(e) => setNotifAnchor(e.currentTarget)}
+                sx={{ color: '#6B7280', '&:hover': { color: '#111827' } }}
+              >
+                <Badge
+                  badgeContent={3}
+                  color="error"
+                  sx={{ '& .MuiBadge-badge': { fontSize: '.6rem', minWidth: 16, height: 16 } }}
+                >
+                  <NotificationsIcon sx={{ fontSize: '1.2rem' }} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={notifAnchor}
+              open={Boolean(notifAnchor)}
+              onClose={() => setNotifAnchor(null)}
+              PaperProps={{
+                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.12)', border: '1px solid #E5E7EB' },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <Typography fontWeight={700} fontSize=".9rem">Notifications</Typography>
+              </Box>
+              {[
+                { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#1A73FF' },
+                { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
+              ].map((n, i) => (
+                <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: n.dot, mt: 0.75, flexShrink: 0 }} />
+                  <Box>
+                    <Typography fontSize=".82rem" fontWeight={500}>{n.title}</Typography>
+                    <Typography fontSize=".72rem" color="text.secondary">{n.time}</Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Menu>
+
+            {/* User profile */}
+            <Box
+              onClick={(e) => setProfileAnchor(e.currentTarget)}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 1,
+                px: 1, py: 0.5, borderRadius: '8px',
+                cursor: 'pointer', border: '1px solid #E5E7EB',
+                transition: 'border .15s',
+                '&:hover': { borderColor: BLUE },
+              }}
+            >
+              <Avatar
+                sx={{ width: 28, height: 28, bgcolor: BLUE, fontSize: '.75rem', fontWeight: 700 }}
+              >
+                {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+              </Avatar>
+              <Typography
+                sx={{
+                  fontSize: '.82rem', fontWeight: 600, color: '#111827',
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              >
+                {user?.first_name || user?.username}
+              </Typography>
+              <KeyboardArrowDownIcon
+                sx={{ fontSize: '.85rem', color: '#6B7280', display: { xs: 'none', sm: 'block' } }}
+              />
+            </Box>
+            <Menu
+              anchorEl={profileAnchor}
+              open={Boolean(profileAnchor)}
+              onClose={() => setProfileAnchor(null)}
+              PaperProps={{
+                sx: { minWidth: 220, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.12)', border: '1px solid #E5E7EB' },
+              }}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <Typography fontWeight={700} fontSize=".875rem">
+                  {user?.first_name
+                    ? `${user.first_name} ${user.last_name || ''}`.trim()
+                    : user?.username}
+                </Typography>
+                <Typography fontSize=".75rem" color="text.secondary">{user?.email}</Typography>
+              </Box>
+              <MenuItem
+                onClick={() => { setProfileAnchor(null); navigate('/dashboard/settings'); }}
+                sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
+              >
+                <PersonIcon sx={{ fontSize: '1rem', color: '#6B7280' }} /> Account Settings
+              </MenuItem>
+              <MenuItem
+                onClick={() => { setProfileAnchor(null); navigate('/dashboard/billing'); }}
+                sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
+              >
+                <BillingIcon sx={{ fontSize: '1rem', color: '#6B7280' }} /> Billing
+              </MenuItem>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                onClick={handleLogout}
+                sx={{ gap: 1.5, fontSize: '.85rem', py: 1, color: '#EF4444' }}
+              >
+                <LogoutIcon sx={{ fontSize: '1rem', color: '#EF4444' }} /> Sign Out
+              </MenuItem>
+            </Menu>
+
+          </Toolbar>
+        </AppBar>
+
+        {/* ── Page content ──────────────────────────────────────────────────── */}
+        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: '#F9FAFB' }}>
           {children}
         </Box>
       </Box>
-
-      {/* Profile Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleCloseProfileMenu}
-        onClick={handleCloseProfileMenu}
-        PaperProps={{
-          sx: {
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            backdropFilter: 'blur(20px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            mt: 1,
-            minWidth: 200,
-          },
-        }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem
-          onClick={() => handleNavigation('/dashboard/profile')}
-          sx={{
-            borderRadius: '8px',
-            mx: 1,
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              backgroundColor: 'rgba(59, 130, 246, 0.08)',
-              transform: 'translateX(4px)',
-            },
-          }}
-        >
-          <_PersonIcon sx={{ mr: 2, color: 'text.secondary' }} />
-          <Typography variant="body2">Profile</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => handleNavigation('/dashboard/settings')}
-          sx={{
-            borderRadius: '8px',
-            mx: 1,
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              backgroundColor: 'rgba(59, 130, 246, 0.08)',
-              transform: 'translateX(4px)',
-            },
-          }}
-        >
-          <_SettingsIcon sx={{ mr: 2, color: 'text.secondary' }} />
-          <Typography variant="body2">Settings</Typography>
-        </MenuItem>
-        <Divider sx={{ my: 1, backgroundColor: '#e2e8f0' }} />
-        <MenuItem
-          onClick={handleLogout}
-          sx={{
-            borderRadius: '8px',
-            mx: 1,
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              backgroundColor: 'rgba(239, 68, 68, 0.08)',
-              transform: 'translateX(4px)',
-            },
-          }}
-        >
-          <_LogoutIcon sx={{ mr: 2, color: '#ef4444' }} />
-          <Typography variant="body2" sx={{ color: '#ef4444' }}>Logout</Typography>
-        </MenuItem>
-      </Menu>
     </Box>
   );
 };

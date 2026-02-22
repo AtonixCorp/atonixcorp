@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 // Context
@@ -13,6 +13,7 @@ import { TelemetryErrorBoundary } from './observability/hooks';
 // Components
 import CloudPlatformHeader from './components/Layout/CloudPlatformHeader';
 import Footer from './components/Layout/Footer';
+import DashboardLayout from './components/Layout/DashboardLayout';
 
 // Pages
 import EnhancedHomepage from './pages/EnhancedHomepage';
@@ -28,9 +29,47 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Renders the correct shell depending on whether we are inside /dashboard/*
+const AppShell: React.FC = () => {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
+
+  if (isDashboard) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <Routes>
+            <Route path="/dashboard"   element={<OnboardingDashboard />} />
+            <Route path="/dashboard/*" element={<OnboardingDashboard />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <CloudPlatformHeader />
+      <Box component="main" sx={{ flex: 1 }}>
+        <Routes>
+          <Route path="/"          element={<EnhancedHomepage />} />
+          <Route path="/features"  element={<FeaturesPage />} />
+          <Route path="/docs"      element={<DocsPage />} />
+          <Route path="/about"     element={<AboutPage />} />
+          <Route path="/resources" element={<DocsPage />} />
+          <Route path="/support"   element={<DocsPage />} />
+          <Route path="/contact"   element={<AboutPage />} />
+          <Route path="/account"   element={<AboutPage />} />
+          <Route path="*"          element={<EnhancedHomepage />} />
+        </Routes>
+      </Box>
+      <Footer />
+    </Box>
+  );
+};
+
 function App() {
   useEffect(() => {
-    // Initialize telemetry on app startup
     initializeOpenTelemetry();
   }, []);
 
@@ -39,24 +78,7 @@ function App() {
       <TelemetryErrorBoundary componentName="App">
         <AuthProvider>
           <Router>
-            <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-              <CloudPlatformHeader />
-              <Box component="main" sx={{ flex: 1 }}>
-                <Routes>
-                  <Route path="/"          element={<EnhancedHomepage />} />
-                  <Route path="/features"  element={<FeaturesPage />} />
-                  <Route path="/docs"      element={<DocsPage />} />
-                  <Route path="/about"     element={<AboutPage />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><OnboardingDashboard /></ProtectedRoute>} />
-                  <Route path="/resources" element={<DocsPage />} />
-                  <Route path="/support"   element={<DocsPage />} />
-                  <Route path="/contact"   element={<AboutPage />} />
-                  <Route path="/account"   element={<AboutPage />} />
-                  <Route path="*"          element={<EnhancedHomepage />} />
-                </Routes>
-              </Box>
-              <Footer />
-            </Box>
+            <AppShell />
           </Router>
         </AuthProvider>
       </TelemetryErrorBoundary>

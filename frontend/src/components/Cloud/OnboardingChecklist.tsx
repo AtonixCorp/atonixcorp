@@ -92,36 +92,36 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: allDone ? 'rgba(20,184,166,.4)' : 'rgba(255,255,255,.08)',
+        borderColor: allDone ? 'rgba(20,184,166,.5)' : 'rgba(0,0,0,.1)',
         borderRadius: 3,
         overflow: 'hidden',
-        background: '#0b1220',
+        background: '#ffffff',
       }}
     >
       {/* Header */}
       <Box
         sx={{
           px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: '1px solid rgba(255,255,255,.06)',
+          borderBottom: '1px solid rgba(0,0,0,.08)',
           cursor: 'pointer',
         }}
         onClick={() => setExpanded((p) => !p)}
       >
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="h6" fontWeight={700} color="#fff" fontSize="1rem">
+          <Typography variant="h6" fontWeight={700} color="#0f172a" fontSize="1rem">
             Getting Started Checklist
           </Typography>
           <Chip
             label={`${pct}% Complete`}
             size="small"
             sx={{
-              bgcolor: allDone ? 'rgba(20,184,166,.2)' : 'rgba(255,255,255,.07)',
-              color: allDone ? '#14b8a6' : '#9ca3af',
+              bgcolor: allDone ? 'rgba(20,184,166,.15)' : 'rgba(0,0,0,.06)',
+              color: allDone ? '#0f766e' : '#64748b',
               fontWeight: 700, fontSize: '.7rem',
             }}
           />
         </Stack>
-        <IconButton size="small" sx={{ color: '#9ca3af' }}>
+        <IconButton size="small" sx={{ color: '#64748b' }}>
           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </IconButton>
       </Box>
@@ -132,7 +132,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         value={pct}
         sx={{
           height: 3,
-          bgcolor: 'rgba(255,255,255,.06)',
+          bgcolor: '#e2e8f0',
           '& .MuiLinearProgress-bar': { bgcolor: '#14b8a6' },
         }}
       />
@@ -143,7 +143,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
             <CircularProgress size={28} sx={{ color: '#14b8a6' }} />
           </Box>
         ) : (
-          <Stack divider={<Box sx={{ borderTop: '1px solid rgba(255,255,255,.05)' }} />}>
+          <Stack divider={<Box sx={{ borderTop: '1px solid rgba(0,0,0,.06)' }} />}>
             {STEPS.map((step) => {
               const done = isComplete(step.key as string);
               return (
@@ -158,21 +158,21 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                   {done ? (
                     <CheckCircleIcon sx={{ color: '#14b8a6', mt: .3, flexShrink: 0 }} />
                   ) : (
-                    <RadioButtonUncheckedIcon sx={{ color: '#4b5563', mt: .3, flexShrink: 0 }} />
+                    <RadioButtonUncheckedIcon sx={{ color: '#cbd5e1', mt: .3, flexShrink: 0 }} />
                   )}
 
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       fontWeight={600}
                       sx={{
-                        color: done ? '#6b7280' : '#e6eef7',
+                        color: done ? '#94a3b8' : '#0f172a',
                         textDecoration: done ? 'line-through' : 'none',
                         fontSize: '.92rem',
                       }}
                     >
                       {step.label}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#9ca3af', mt: .3, lineHeight: 1.5 }}>
+                    <Typography variant="body2" sx={{ color: '#64748b', mt: .3, lineHeight: 1.5 }}>
                       {step.description}
                     </Typography>
                   </Box>

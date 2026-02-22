@@ -27,12 +27,12 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #0b1220 0%, #071829 60%, #0a1a2f 100%)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf9 60%, #ecfdf5 100%)',
         borderRadius: 3,
         p: { xs: 3, md: 5 },
         position: 'relative',
         overflow: 'hidden',
-        border: '1px solid rgba(20,184,166,.25)',
+        border: '1px solid rgba(20,184,166,.3)',
       }}
     >
       {/* Subtle grid backdrop */}
@@ -40,8 +40,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         sx={{
           position: 'absolute', inset: 0, zIndex: 0, borderRadius: 3,
           backgroundImage: `
-            linear-gradient(rgba(20,184,166,.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(20,184,166,.04) 1px, transparent 1px)`,
+            linear-gradient(rgba(20,184,166,.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(20,184,166,.08) 1px, transparent 1px)`,
+
           backgroundSize: '40px 40px',
           maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
         }}
@@ -70,7 +71,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         <Typography
           variant="h3"
           fontWeight={800}
-          color="#fff"
+          color="#0f172a"
           sx={{ letterSpacing: '-.02em', mb: 1.5, lineHeight: 1.15 }}
         >
           {greeting}
@@ -78,7 +79,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
 
         <Typography
           variant="body1"
-          sx={{ color: '#cfeafe', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
+          sx={{ color: '#475569', maxWidth: 560, mb: 3.5, lineHeight: 1.75, fontSize: '1.05rem' }}
         >
           Your infrastructure starts here.{' '}
           <Box component="span" sx={{ color: '#14b8a6', fontWeight: 600 }}>Deploy</Box>,{' '}
