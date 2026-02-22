@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from django.views.decorators.csrf import csrf_exempt
 import json
 
 
@@ -16,6 +17,7 @@ def health_check(request):
     return Response({'status': 'ok', 'service': 'atonixcorp-backend'})
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -48,6 +50,7 @@ def login_view(request):
     })
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup_view(request):
