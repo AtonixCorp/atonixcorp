@@ -20,7 +20,8 @@ import EnhancedHomepage from './pages/EnhancedHomepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
 import AboutPage from './pages/AboutPage';
-import OnboardingDashboard from './pages/OnboardingDashboard';
+import OnboardingDashboard  from './pages/OnboardingDashboard';
+import AccountSettingsPage  from './pages/AccountSettingsPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,8 +40,10 @@ const AppShell: React.FC = () => {
       <ProtectedRoute>
         <DashboardLayout>
           <Routes>
-            <Route path="/dashboard"   element={<OnboardingDashboard />} />
-            <Route path="/dashboard/*" element={<OnboardingDashboard />} />
+            <Route path="/dashboard"                         element={<OnboardingDashboard />} />
+            <Route path="/dashboard/settings"                element={<AccountSettingsPage />} />
+            <Route path="/dashboard/settings/:section"       element={<AccountSettingsPage />} />
+            <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

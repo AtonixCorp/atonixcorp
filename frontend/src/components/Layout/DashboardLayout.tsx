@@ -42,6 +42,12 @@ import HelpIcon              from '@mui/icons-material/HelpOutline';
 import PersonIcon            from '@mui/icons-material/Person';
 import LogoutIcon            from '@mui/icons-material/Logout';
 import BillingIcon           from '@mui/icons-material/ReceiptLong';
+import LockIcon              from '@mui/icons-material/Lock';
+import KeyIcon               from '@mui/icons-material/Key';
+import TuneIcon              from '@mui/icons-material/Tune';
+import GppGoodIcon           from '@mui/icons-material/GppGood';
+import ApiIcon               from '@mui/icons-material/Api';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import TeamIcon              from '@mui/icons-material/Group';
 import MonitorIcon           from '@mui/icons-material/QueryStats';
 import LightModeIcon         from '@mui/icons-material/LightMode';
@@ -572,7 +578,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               open={Boolean(notifAnchor)}
               onClose={() => setNotifAnchor(null)}
               PaperProps={{
-                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}` },
+                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -628,37 +634,89 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               open={Boolean(profileAnchor)}
               onClose={() => setProfileAnchor(null)}
               PaperProps={{
-                sx: { minWidth: 220, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}` },
+                sx: { minWidth: 240, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
+              {/* User info header */}
               <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6'}` }}>
-                <Typography fontWeight={700} fontSize=".875rem">
+                <Typography fontWeight={700} fontSize=".875rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
                   {user?.first_name
                     ? `${user.first_name} ${user.last_name || ''}`.trim()
                     : user?.username}
                 </Typography>
                 <Typography fontSize=".75rem" color="text.secondary">{user?.email}</Typography>
               </Box>
-              <MenuItem
-                onClick={() => { setProfileAnchor(null); navigate('/dashboard/settings'); }}
-                sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
-              >
-                <PersonIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} /> Account Settings
+
+              {/* Account group */}
+              <Box sx={{ px: 1.5, pt: 1, pb: .25 }}>
+                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Account</Typography>
+              </Box>
+              {[
+                { label: 'Profile',       icon: <PersonIcon />,            path: '/dashboard/settings/profile' },
+                { label: 'Preferences',   icon: <TuneIcon />,              path: '/dashboard/settings/preferences' },
+                { label: 'Notifications', icon: <NotificationsNoneIcon />, path: '/dashboard/settings/notifications' },
+              ].map(item => (
+                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
+                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
+                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
+                </MenuItem>
+              ))}
+
+              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
+
+              {/* Security group */}
+              <Box sx={{ px: 1.5, pb: .25 }}>
+                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Security</Typography>
+              </Box>
+              {[
+                { label: 'Authentication', icon: <LockIcon />,    path: '/dashboard/settings/authentication' },
+                { label: 'SSH Keys',       icon: <KeyIcon />,     path: '/dashboard/settings/ssh-keys' },
+                { label: 'Compliance',     icon: <GppGoodIcon />, path: '/dashboard/settings/compliance' },
+              ].map(item => (
+                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
+                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
+                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
+                </MenuItem>
+              ))}
+
+              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
+
+              {/* Developer group */}
+              <Box sx={{ px: 1.5, pb: .25 }}>
+                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Developer</Typography>
+              </Box>
+              {[
+                { label: 'API',   icon: <ApiIcon />,    path: '/dashboard/settings/api' },
+                { label: 'Users', icon: <TeamIcon />, path: '/dashboard/settings/users' },
+              ].map(item => (
+                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
+                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
+                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
+                </MenuItem>
+              ))}
+
+              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
+
+              {/* Billing + Sign out */}
+              <MenuItem onClick={() => { setProfileAnchor(null); navigate('/dashboard/billing'); }}
+                sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
+                  '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
+                <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>Billing</Typography>
               </MenuItem>
-              <MenuItem
-                onClick={() => { setProfileAnchor(null); navigate('/dashboard/billing'); }}
-                sx={{ gap: 1.5, fontSize: '.85rem', py: 1 }}
-              >
-                <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} /> Billing
-              </MenuItem>
-              <Divider sx={{ my: 0.5 }} />
-              <MenuItem
-                onClick={handleLogout}
-                sx={{ gap: 1.5, fontSize: '.85rem', py: 1, color: '#EF4444' }}
-              >
-                <LogoutIcon sx={{ fontSize: '1rem', color: '#EF4444' }} /> Sign Out
+              <MenuItem onClick={handleLogout}
+                sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, mb: .5, borderRadius: '6px',
+                  '&:hover': { bgcolor: 'rgba(239,68,68,.08)' } }}>
+                <LogoutIcon sx={{ fontSize: '1rem', color: '#EF4444' }} />
+                <Typography fontSize=".85rem" color="#EF4444">Sign Out</Typography>
               </MenuItem>
             </Menu>
 
