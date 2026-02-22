@@ -29,7 +29,7 @@ const DOC_LINKS: DocLink[] = [
     title: 'Getting Started',
     description: 'Step-by-step guide from account setup to your first deployment.',
     badge: 'Recommended',
-    badgeColor: 'rgba(26,115,255,.12)',
+    badgeColor: 'rgba(24,54,106,.12)',
     path: '/docs#getting-started',
   },
   {
@@ -84,7 +84,7 @@ const DocsSupportPanel: React.FC = () => {
       {/* Header */}
       <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid rgba(0,0,0,.08)' }}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <MenuBookIcon sx={{ color: '#1A73FF', fontSize: '1.2rem' }} />
+          <MenuBookIcon sx={{ color: '#18366A', fontSize: '1.2rem' }} />
           <Typography fontWeight={700} color="#0f172a" fontSize="1rem">
             Documentation & Support
           </Typography>
@@ -107,8 +107,8 @@ const DocsSupportPanel: React.FC = () => {
                 display: 'flex', flexDirection: 'column',
                 transition: 'all .18s',
                 '&:hover': {
-                  borderColor: 'rgba(26,115,255,.4)',
-                  bgcolor: 'rgba(26,115,255,.04)',
+                  borderColor: 'rgba(24,54,106,.4)',
+                  bgcolor: 'rgba(24,54,106,.04)',
                   transform: 'translateY(-2px)',
                 },
               }}
@@ -117,7 +117,7 @@ const DocsSupportPanel: React.FC = () => {
                 <Box
                   sx={{
                     width: 32, height: 32, borderRadius: 1.5,
-                    bgcolor: 'rgba(26,115,255,.08)', color: '#1A73FF',
+                    bgcolor: 'rgba(24,54,106,.08)', color: '#18366A',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                     '& svg': { fontSize: '1rem' },
@@ -143,10 +143,10 @@ const DocsSupportPanel: React.FC = () => {
                 {link.description}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={.5} mt={1.5}>
-              <Typography variant="caption" sx={{ color: '#1A73FF', fontWeight: 600, fontSize: '.75rem' }}>
+              <Typography variant="caption" sx={{ color: '#18366A', fontWeight: 600, fontSize: '.75rem' }}>
                 Read more
               </Typography>
-              <ArrowForwardIcon sx={{ color: '#1A73FF', fontSize: '.85rem' }} />
+              <ArrowForwardIcon sx={{ color: '#18366A', fontSize: '.85rem' }} />
               </Stack>
             </Box>
           </Grid>

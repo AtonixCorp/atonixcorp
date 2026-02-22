@@ -124,7 +124,7 @@ const OnboardingDashboard: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setWizardOpen(true)}
               sx={{
-                bgcolor: '#1A73FF',
+                bgcolor: '#18366A',
                 color: '#fff',
                 fontWeight: 600,
                 fontSize: '.82rem',
@@ -132,7 +132,7 @@ const OnboardingDashboard: React.FC = () => {
                 borderRadius: '6px',
                 px: 2,
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#1558cc', boxShadow: '0 2px 8px rgba(26,115,255,.35)' },
+                '&:hover': { bgcolor: '#102548', boxShadow: '0 2px 8px rgba(24,54,106,.35)' },
               }}
             >
               Deploy Server
@@ -206,9 +206,9 @@ const OnboardingDashboard: React.FC = () => {
             severity={toast.type}
             onClose={() => setToast(null)}
             sx={{
-              bgcolor: toast.type === 'success' ? 'rgba(26,115,255,.08)' : undefined,
-              border: `1px solid ${toast.type === 'success' ? 'rgba(26,115,255,.4)' : 'rgba(239,68,68,.4)'}`,
-              color: toast.type === 'success' ? '#1558cc' : undefined,
+              bgcolor: toast.type === 'success' ? 'rgba(24,54,106,.08)' : undefined,
+              border: `1px solid ${toast.type === 'success' ? 'rgba(24,54,106,.4)' : 'rgba(239,68,68,.4)'}`,
+              color: toast.type === 'success' ? '#102548' : undefined,
             }}
           >
             {toast.msg}

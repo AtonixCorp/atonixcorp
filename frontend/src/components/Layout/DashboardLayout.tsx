@@ -51,6 +51,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const SIDEBAR_WIDTH = 260;
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // ── AtonixCorp unified design tokens ──────────────────────────────────────────
 // Sidebar — Electric Blue family
@@ -58,7 +59,7 @@ const NAVY          = '#18366A';   // deep royal blue sidebar background
 const NAVY2         = '#1C3E78';   // slightly lighter section areas
 const NAVY3         = '#204585';   // org‑selector / hover depth
 // Brand accent
-const BLUE          = '#1A73FF';
+const BLUE          = '#18366A';
 const BLUE_DIM      = 'rgba(255,255,255,0.12)';  // active highlight on blue bg
 const BLUE_HOVER    = 'rgba(255,255,255,0.07)';  // hover shimmer on blue bg
 // Typography on blue sidebar
@@ -127,6 +128,7 @@ const NavSectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) 
       fontSize: '.62rem', fontWeight: 700,
       letterSpacing: '.1em', textTransform: 'uppercase',
       color: TEXT_SECONDARY,
+      fontFamily: FONT,
     }}
   >
     {children}
@@ -198,11 +200,12 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
         <Typography
           sx={{
             flex: 1,
-            fontSize: depth === 0 ? '.875rem' : '.8rem',
+            fontSize: depth === 0 ? '.875rem' : '.82rem',
             fontWeight: isActive ? 600 : 400,
             color: isActive ? '#fff' : TEXT_PRIMARY,
-            letterSpacing: '.01em',
-            lineHeight: 1,
+            letterSpacing: depth === 0 ? '-.01em' : '-.005em',
+            lineHeight: 1.2,
+            fontFamily: FONT,
           }}
         >
           {item.label}
@@ -286,7 +289,7 @@ const SidebarContent: React.FC = () => {
         <Box
           sx={{
             width: 32, height: 32, borderRadius: '8px',
-            background: 'linear-gradient(135deg, #1A73FF 0%, #0ea5e9 100%)',
+            background: 'linear-gradient(135deg, #18366A 0%, #2B5FA0 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, color: '#fff', fontSize: '.85rem',
             letterSpacing: '-.02em', flexShrink: 0,
@@ -295,10 +298,10 @@ const SidebarContent: React.FC = () => {
           Ax
         </Box>
         <Box>
-          <Typography sx={{ fontWeight: 700, fontSize: '.95rem', color: '#fff', lineHeight: 1.1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#fff', lineHeight: 1.15, letterSpacing: '-.02em', fontFamily: FONT }}>
             AtonixCorp
           </Typography>
-          <Typography sx={{ fontSize: '.65rem', color: TEXT_SECONDARY, lineHeight: 1 }}>
+          <Typography sx={{ fontSize: '.67rem', color: TEXT_SECONDARY, lineHeight: 1, fontFamily: FONT, letterSpacing: '.02em' }}>
             Cloud Platform
           </Typography>
         </Box>
@@ -327,7 +330,7 @@ const SidebarContent: React.FC = () => {
               {(user?.username || 'U')[0].toUpperCase()}
             </Typography>
           </Box>
-          <Typography sx={{ flex: 1, fontSize: '.8rem', fontWeight: 500, color: TEXT_PRIMARY }} noWrap>
+          <Typography sx={{ flex: 1, fontSize: '.82rem', fontWeight: 500, color: TEXT_PRIMARY, fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
             {user?.username || 'My Organization'}
           </Typography>
           <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
@@ -385,12 +388,12 @@ const SidebarContent: React.FC = () => {
             {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: '.8rem', fontWeight: 600, color: '#fff' }} noWrap>
+            <Typography sx={{ fontSize: '.82rem', fontWeight: 700, color: '#fff', fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
               {user?.first_name
                 ? `${user.first_name} ${user.last_name || ''}`.trim()
                 : user?.username}
             </Typography>
-            <Typography sx={{ fontSize: '.68rem', color: TEXT_SECONDARY }} noWrap>
+            <Typography sx={{ fontSize: '.7rem', color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.005em' }} noWrap>
               {user?.email || ''}
             </Typography>
           </Box>
@@ -545,7 +548,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Box>
               {[
                 { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#1A73FF' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#18366A' },
                 { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
               ].map((n, i) => (
                 <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>

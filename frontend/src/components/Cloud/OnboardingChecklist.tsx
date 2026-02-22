@@ -92,7 +92,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: allDone ? 'rgba(26,115,255,.4)' : '#E5E7EB',
+        borderColor: allDone ? 'rgba(24,54,106,.4)' : '#E5E7EB',
         borderRadius: '8px',
         overflow: 'hidden',
         background: '#ffffff',
@@ -115,8 +115,8 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
             label={`${pct}% Complete`}
             size="small"
             sx={{
-              bgcolor: allDone ? 'rgba(26,115,255,.1)' : 'rgba(0,0,0,.05)',
-              color: allDone ? '#1A73FF' : '#6B7280',
+              bgcolor: allDone ? 'rgba(24,54,106,.1)' : 'rgba(0,0,0,.05)',
+              color: allDone ? '#18366A' : '#6B7280',
               fontWeight: 700, fontSize: '.7rem',
             }}
           />
@@ -133,14 +133,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         sx={{
           height: 3,
           bgcolor: '#e2e8f0',
-          '& .MuiLinearProgress-bar': { bgcolor: '#1A73FF' },
+          '& .MuiLinearProgress-bar': { bgcolor: '#18366A' },
         }}
       />
 
       <Collapse in={expanded}>
         {loading ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
-            <CircularProgress size={28} sx={{ color: '#1A73FF' }} />
+            <CircularProgress size={28} sx={{ color: '#18366A' }} />
           </Box>
         ) : (
           <Stack divider={<Box sx={{ borderTop: '1px solid rgba(0,0,0,.06)' }} />}>
@@ -156,7 +156,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                   }}
                 >
                   {done ? (
-                    <CheckCircleIcon sx={{ color: '#1A73FF', mt: .3, flexShrink: 0 }} />
+                    <CheckCircleIcon sx={{ color: '#18366A', mt: .3, flexShrink: 0 }} />
                   ) : (
                     <RadioButtonUncheckedIcon sx={{ color: '#cbd5e1', mt: .3, flexShrink: 0 }} />
                   )}
@@ -191,14 +191,14 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                           }
                         }}
                         sx={{
-                          borderColor: 'rgba(26,115,255,.35)', color: '#1A73FF',
+                          borderColor: 'rgba(24,54,106,.35)', color: '#18366A',
                           fontWeight: 600, fontSize: '.78rem', borderRadius: '6px',
                           whiteSpace: 'nowrap', flexShrink: 0,
-                          '&:hover': { borderColor: '#1A73FF', bgcolor: 'rgba(26,115,255,.06)' },
+                          '&:hover': { borderColor: '#18366A', bgcolor: 'rgba(24,54,106,.06)' },
                         }}
                       >
                         {marking === step.key
-                          ? <CircularProgress size={14} sx={{ color: '#1A73FF' }} />
+                          ? <CircularProgress size={14} sx={{ color: '#18366A' }} />
                           : step.actionLabel}
                       </Button>
                     </Tooltip>

@@ -138,7 +138,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         sx={{ px: 2.5, py: 1.75, borderBottom: '1px solid rgba(0,0,0,.08)' }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DnsIcon sx={{ color: '#1A73FF', fontSize: '1.1rem' }} />
+          <DnsIcon sx={{ color: '#18366A', fontSize: '1.1rem' }} />
           <Typography fontWeight={700} color="#0f172a" fontSize=".95rem">
             Virtual Machines
           </Typography>
@@ -146,7 +146,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
             <Chip
               label={vms.length}
               size="small"
-              sx={{ bgcolor: 'rgba(26,115,255,.1)', color: '#1A73FF', fontWeight: 700, fontSize: '.7rem', height: 18 }}
+              sx={{ bgcolor: 'rgba(24,54,106,.1)', color: '#18366A', fontWeight: 700, fontSize: '.7rem', height: 18 }}
             />
           )}
         </Stack>
@@ -163,9 +163,9 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
               startIcon={<AddIcon />}
               onClick={onCreateClick}
               sx={{
-                bgcolor: '#1A73FF', color: '#fff', fontWeight: 700,
+                bgcolor: '#18366A', color: '#fff', fontWeight: 700,
                 fontSize: '.75rem', borderRadius: '6px', px: 1.5, py: .5,
-                '&:hover': { bgcolor: '#1558cc' },
+                '&:hover': { bgcolor: '#102548' },
               }}
             >
               Create VM
@@ -313,10 +313,10 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
                   size="small"
                   disabled={busy}
                   onClick={onStart}
-                  sx={{ color: '#1A73FF', '&:hover': { bgcolor: 'rgba(26,115,255,.1)' } }}
+                  sx={{ color: '#18366A', '&:hover': { bgcolor: 'rgba(24,54,106,.1)' } }}
                 >
                   {actionLoading === 'start'
-                    ? <CircularProgress size={16} sx={{ color: '#1A73FF' }} />
+                    ? <CircularProgress size={16} sx={{ color: '#18366A' }} />
                     : <PlayArrowIcon fontSize="small" />}
                 </IconButton>
               </span>
@@ -382,11 +382,11 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
     <Box
       sx={{
         width: 64, height: 64, borderRadius: '50%',
-        bgcolor: 'rgba(26,115,255,.07)', border: '1px solid rgba(26,115,255,.2)',
+        bgcolor: 'rgba(24,54,106,.07)', border: '1px solid rgba(24,54,106,.2)',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 2,
       }}
     >
-      <DnsIcon sx={{ color: '#1A73FF', fontSize: '1.8rem' }} />
+      <DnsIcon sx={{ color: '#18366A', fontSize: '1.8rem' }} />
     </Box>
     <Typography fontWeight={700} color="#0A0F1F" fontSize=".95rem" mb={.75}>
       No Virtual Machines Yet
@@ -400,9 +400,9 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
         startIcon={<AddIcon />}
         onClick={onCreateClick}
         sx={{
-          bgcolor: '#1A73FF', color: '#fff', fontWeight: 700,
+          bgcolor: '#18366A', color: '#fff', fontWeight: 700,
           borderRadius: '6px', px: 3,
-          '&:hover': { bgcolor: '#1558cc' },
+          '&:hover': { bgcolor: '#102548' },
         }}
       >
         Create Your First VM

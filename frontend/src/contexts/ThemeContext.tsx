@@ -24,9 +24,9 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1A73FF', // AtonixCorp Electric Blue
-      dark: '#1155CC',
-      light: '#4D92FF',
+      main: '#18366A', // AtonixCorp Electric Blue
+      dark: '#102548',
+      light: '#2B5FA0',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -73,7 +73,7 @@ const ___lightTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "SF Pro Display", "Segoe UI", "Roboto", "Helvetica Neue", sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     h1: {
       fontWeight: 800,
       fontSize: '3.5rem',
@@ -360,7 +360,7 @@ const ___darkTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "SF Pro Display", "Segoe UI", "Roboto", "Helvetica Neue", sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     h1: {
       fontWeight: 800,
       fontSize: '3.5rem',
