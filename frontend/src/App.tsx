@@ -21,8 +21,9 @@ import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
 import AboutPage from './pages/AboutPage';
 import OnboardingDashboard  from './pages/OnboardingDashboard';
-import AccountSettingsPage  from './pages/AccountSettingsPage';
-import DatabasePage         from './pages/DatabasePage';
+import AccountSettingsPage       from './pages/AccountSettingsPage';
+import DatabasePage              from './pages/DatabasePage';
+import ContainerRegistryPage     from './pages/ContainerRegistryPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,6 +47,8 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/settings/:section"       element={<AccountSettingsPage />} />
             <Route path="/dashboard/databases"               element={<DatabasePage />} />
             <Route path="/dashboard/databases/:id"           element={<DatabasePage />} />
+            <Route path="/dashboard/containers"              element={<ContainerRegistryPage />} />
+            <Route path="/dashboard/containers/:id"          element={<ContainerRegistryPage />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>
         </DashboardLayout>

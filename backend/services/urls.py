@@ -32,6 +32,7 @@ from .networking_viewsets import (
     VPNGatewayViewSet, InternetGatewayViewSet, NATGatewayViewSet
 )
 from .database_viewsets import ManagedDatabaseViewSet
+from .container_registry_viewsets import ContainerRepositoryViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -78,6 +79,11 @@ router.register(r'nat-gateways', NATGatewayViewSet, basename='nat-gateway')
 # DATABASE SERVICE ENDPOINTS
 # ============================================================================
 router.register(r'databases', ManagedDatabaseViewSet, basename='database')
+
+# ============================================================================
+# CONTAINER REGISTRY ENDPOINTS
+# ============================================================================
+router.register(r'registries', ContainerRepositoryViewSet, basename='registry')
 
 # URL Patterns
 urlpatterns = [

@@ -103,7 +103,7 @@ const NAV: NavItem[] = [
       { label: 'Cloud Storage',     icon: <StorageIcon   {...I('.95rem')} />, path: '/dashboard/storage'    },
       { label: 'Kubernetes',        icon: <ClusterIcon   {...I('.95rem')} />, path: '/dashboard/kubernetes' },
       { label: 'Serverless',        icon: <FunctionsIcon {...I('.95rem')} />, path: '/dashboard/serverless', badge: 'New',  badgeColor: 'success' },
-      { label: 'Container Registry',icon: <ContainerIcon {...I('.95rem')} />, path: '/dashboard/registry'   },
+      { label: 'Container Registry',icon: <ContainerIcon {...I('.95rem')} />, path: '/dashboard/containers' },
       { label: 'Databases',         icon: <DatabaseIcon  {...I('.95rem')} />, path: '/dashboard/databases'  },
       { label: 'Load Balancers',    icon: <BalancerIcon  {...I('.95rem')} />, path: '/dashboard/load-balancers' },
       { label: 'CDN',               icon: <CdnIcon       {...I('.95rem')} />, path: '/dashboard/cdn',  badge: 'Beta', badgeColor: 'warning' },

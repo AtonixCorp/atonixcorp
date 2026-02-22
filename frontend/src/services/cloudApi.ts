@@ -6,6 +6,10 @@ import type {
   ManagedDatabase, CreateDatabasePayload, ScaleDatabasePayload,
   DBEngineCatalogue, MigratePayload, DBMigrationResult,
 } from '../types/database';
+import type {
+  ContainerRepository, CreateRepositoryPayload, CreateTokenPayload,
+  ReplicatePayload, RegistryToken, ScanResult,
+} from '../types/registry';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -116,4 +120,32 @@ export const vmApi = {
   listImages:   ()             => cloudClient.get('/cloud/images/'),
   listNetworks: ()             => cloudClient.get('/cloud/networks/'),
   cloudStatus:  ()             => cloudClient.get('/cloud/status/'),
+};
+
+// ---- Container Registry ----
+export const registryApi = {
+  // Repositories
+  list:         ()                              => cloudClient.get<ContainerRepository[]>('/registries/'),
+  get:          (id: string)                    => cloudClient.get<ContainerRepository>(`/registries/${id}/`),
+  create:       (p: CreateRepositoryPayload)    => cloudClient.post<ContainerRepository>('/registries/', p),
+  delete:       (id: string)                    => cloudClient.delete(`/registries/${id}/`),
+  // Images
+  images:       (id: string)                    => cloudClient.get(`/registries/${id}/images/`),
+  deleteTag:    (id: string, tag: string)       => cloudClient.post(`/registries/${id}/delete_tag/`, { tag }),
+  // Tokens (repo-scoped)
+  tokens:       (id: string)                    => cloudClient.get<RegistryToken[]>(`/registries/${id}/tokens/`),
+  createToken:  (id: string, p: CreateTokenPayload) => cloudClient.post<RegistryToken>(`/registries/${id}/create_token/`, p),
+  revokeToken:  (id: string, token_id: string)  => cloudClient.post(`/registries/${id}/revoke_token/`, { token_id }),
+  // Global tokens
+  myTokens:           ()                        => cloudClient.get<RegistryToken[]>('/registries/my_tokens/'),
+  createGlobalToken:  (p: CreateTokenPayload)   => cloudClient.post<RegistryToken>('/registries/create_global_token/', p),
+  revokeGlobalToken:  (token_id: string)        => cloudClient.post('/registries/revoke_global_token/', { token_id }),
+  // Replication
+  replication:  (id: string)                    => cloudClient.get(`/registries/${id}/replication/`),
+  replicate:    (id: string, p: ReplicatePayload) => cloudClient.post(`/registries/${id}/replicate/`, p),
+  // Usage & scan
+  usage:        (id: string)                    => cloudClient.get(`/registries/${id}/usage/`),
+  scan:         (id: string, tag: string)       => cloudClient.post<ScanResult>(`/registries/${id}/scan/`, { tag }),
+  // Catalogue
+  regions:      ()                              => cloudClient.get('/registries/regions/'),
 };
