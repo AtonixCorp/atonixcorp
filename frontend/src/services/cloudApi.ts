@@ -2,6 +2,10 @@
 
 import axios from 'axios';
 import { config } from '../config/environment';
+import type {
+  ManagedDatabase, CreateDatabasePayload, ScaleDatabasePayload,
+  DBEngineCatalogue, MigratePayload, DBMigrationResult,
+} from '../types/database';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -71,6 +75,32 @@ export const volumesApi = {
 // ---- Networking ----
 export const networksApi = {
   list: () => cloudClient.get('/vpcs/'),
+};
+
+// ---- Managed Databases ----
+export const databaseApi = {
+  // CRUD
+  list:    ()                         => cloudClient.get<ManagedDatabase[]>('/databases/'),
+  get:     (id: string)               => cloudClient.get<ManagedDatabase>(`/databases/${id}/`),
+  create:  (p: CreateDatabasePayload) => cloudClient.post<ManagedDatabase>('/databases/', p),
+  delete:  (id: string)               => cloudClient.delete(`/databases/${id}/`),
+  // Lifecycle actions
+  scale:   (id: string, p: ScaleDatabasePayload) => cloudClient.post<ManagedDatabase>(`/databases/${id}/scale/`, p),
+  restart: (id: string)               => cloudClient.post(`/databases/${id}/restart/`),
+  // Credentials
+  credentials: (id: string)           => cloudClient.get(`/databases/${id}/credentials/`),
+  rotate:  (id: string, username?: string) => cloudClient.post(`/databases/${id}/rotate/`, { username }),
+  // Backups
+  backups: (id: string)               => cloudClient.get(`/databases/${id}/backups/`),
+  backup:  (id: string, type = 'manual') => cloudClient.post(`/databases/${id}/backup/`, { backup_type: type }),
+  restore: (id: string, backup_id: string) => cloudClient.post(`/databases/${id}/restore/`, { backup_id }),
+  // Metrics
+  metrics: (id: string)               => cloudClient.get(`/databases/${id}/metrics/`),
+  // Migration
+  migrate: (id: string, p: MigratePayload) => cloudClient.post<DBMigrationResult>(`/databases/${id}/migrate/`, p),
+  // Catalogue
+  engines: ()                         => cloudClient.get<DBEngineCatalogue[]>('/databases/engines/'),
+  regions: ()                         => cloudClient.get('/databases/regions/'),
 };
 
 // ---- OpenStack VM management (/cloud/*) ----

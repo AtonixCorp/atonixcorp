@@ -31,6 +31,7 @@ from .networking_viewsets import (
     DNSRecordViewSet, CDNDistributionViewSet, VPNConnectionViewSet,
     VPNGatewayViewSet, InternetGatewayViewSet, NATGatewayViewSet
 )
+from .database_viewsets import ManagedDatabaseViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -72,6 +73,11 @@ router.register(r'vpn-connections', VPNConnectionViewSet, basename='vpn-connecti
 router.register(r'vpn-gateways', VPNGatewayViewSet, basename='vpn-gateway')
 router.register(r'internet-gateways', InternetGatewayViewSet, basename='internet-gateway')
 router.register(r'nat-gateways', NATGatewayViewSet, basename='nat-gateway')
+
+# ============================================================================
+# DATABASE SERVICE ENDPOINTS
+# ============================================================================
+router.register(r'databases', ManagedDatabaseViewSet, basename='database')
 
 # URL Patterns
 urlpatterns = [
