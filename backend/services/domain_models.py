@@ -56,6 +56,12 @@ CERT_STATUS = [
 ]
 
 
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def _default_cert_id():
+    return f'cert-{uuid.uuid4().hex[:10]}'
+
+
 # ── Domain ────────────────────────────────────────────────────────────────────
 
 class Domain(ResourceModel):
@@ -133,10 +139,12 @@ class DnsZone(TimeStampedModel):
 
 # ── DNS Record ────────────────────────────────────────────────────────────────
 
-class DnsRecord(TimeStampedModel):
+class DomainDnsRecord(TimeStampedModel):
     """
     A single DNS record inside a DnsZone (backed by Designate recordset).
     """
+    RECORD_TYPES = DNS_RECORD_TYPE
+
     zone            = models.ForeignKey(DnsZone, on_delete=models.CASCADE, related_name='records')
     recordset_id    = models.CharField(max_length=64, blank=True, db_index=True)  # Designate recordset id
     name            = models.CharField(max_length=255)   # e.g. 'www.example.com.'
@@ -147,6 +155,7 @@ class DnsRecord(TimeStampedModel):
     is_managed      = models.BooleanField(default=False, help_text='Auto-managed by platform')
 
     class Meta:
+        db_table = 'services_domainrecord'
         ordering = ['record_type', 'name']
 
     def __str__(self):
@@ -178,7 +187,7 @@ class SslCertificate(TimeStampedModel):
     A Let's Encrypt (or other CA) SSL/TLS certificate for a domain.
     """
     domain          = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name='ssl_certs')
-    cert_id         = models.CharField(max_length=64, unique=True, default=lambda: f'cert-{uuid.uuid4().hex[:10]}')
+    cert_id         = models.CharField(max_length=64, unique=True, default=_default_cert_id)
     common_name     = models.CharField(max_length=253)
     sans            = models.JSONField(default=list, help_text='Subject Alternative Names')
     issuer          = models.CharField(max_length=128, default='Let\'s Encrypt')

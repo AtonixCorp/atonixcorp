@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .domain_models import Domain, DnsZone, DnsRecord, DomainTransfer, SslCertificate
+from .domain_models import Domain, DnsZone, DomainDnsRecord, DomainTransfer, SslCertificate
 
 
 # ── DNS ───────────────────────────────────────────────────────────────────────
 
 class DnsRecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model  = DnsRecord
+        model  = DomainDnsRecord
         fields = [
             'id', 'recordset_id', 'name', 'record_type',
             'records', 'ttl', 'is_managed', 'created_at', 'updated_at',
@@ -16,7 +16,7 @@ class DnsRecordSerializer(serializers.ModelSerializer):
 
 class DnsRecordCreateSerializer(serializers.Serializer):
     name        = serializers.CharField(max_length=255)
-    record_type = serializers.ChoiceField(choices=DnsRecord.RECORD_TYPES)
+    record_type = serializers.ChoiceField(choices=DomainDnsRecord.RECORD_TYPES)
     records     = serializers.ListField(child=serializers.CharField(), min_length=1)
     ttl         = serializers.IntegerField(min_value=60, max_value=86400, default=300)
 

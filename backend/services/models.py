@@ -79,6 +79,14 @@ from .billing_models import (
     CreditNote,
 )
 
+from .domain_models import (
+    Domain,
+    DnsZone,
+    DomainDnsRecord,
+    DomainTransfer,
+    SslCertificate,
+)
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
@@ -104,4 +112,6 @@ __all__ = [
     # Monitoring
     'ServiceHealth', 'MetricSnapshot', 'AlertRule',
     'MonitoringAlert', 'Incident', 'IncidentUpdate',
+    # Domain
+    'Domain', 'DnsZone', 'DomainDnsRecord', 'DomainTransfer', 'SslCertificate',
 ]

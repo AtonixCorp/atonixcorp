@@ -8,7 +8,7 @@ import {
   DialogContent, DialogActions, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, MenuItem, Alert,
   Switch, FormControlLabel, Tooltip, CircularProgress, Divider,
-  LinearProgress, Avatar,
+  LinearProgress, Avatar, List, ListItem, ListItemText,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -32,12 +32,15 @@ import BarChartIcon        from '@mui/icons-material/BarChart';
 import PlayArrowIcon       from '@mui/icons-material/PlayArrow';
 import StopIcon            from '@mui/icons-material/Stop';
 import AlternateEmailIcon  from '@mui/icons-material/AlternateEmail';
+import StarIcon             from '@mui/icons-material/Star';
+import LocalOfferIcon       from '@mui/icons-material/LocalOffer';
 
-import { marketingApi } from '../services/cloudApi';
+import { marketingApi, billingApi } from '../services/cloudApi';
 import type {
   Campaign, ContactList, Contact, EmailTemplate, Automation,
   AccountStats, CampaignStatus, CreateCampaignPayload,
 } from '../types/marketing';
+import type { PlanTier } from '../types/billing';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -892,6 +895,130 @@ function AutomationsTab() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+// ── Email Plan Tab ──────────────────────────────────────────────────────────────────
+
+const EMAIL_PLAN_COLOR: Record<PlanTier, string> = {
+  free: '#6b7280', starter: '#3b82f6', professional: '#8b5cf6', enterprise: '#f59e0b',
+};
+
+const EMAIL_PLAN_PRICES: Record<PlanTier, number> = {
+  free: 0, starter: 15, professional: 49, enterprise: 99,
+};
+
+const EMAIL_PLAN_FEATURES: Record<PlanTier, string[]> = {
+  free:         ['500 contacts', '1,000 emails/mo', '1 sending domain', 'Basic templates'],
+  starter:      ['5,000 contacts', '50,000 emails/mo', '3 sending domains', 'A/B testing', 'Analytics'],
+  professional: ['25,000 contacts', '250,000 emails/mo', '10 sending domains', 'Automations', 'Priority support'],
+  enterprise:   ['Unlimited contacts', 'Unlimited emails', 'Custom domains', 'Dedicated IP', '24/7 support', 'Custom contracts'],
+};
+
+function EmailPlanTab() {
+  const theme  = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const t = {
+    cardBg: isDark ? '#132336' : '#FFFFFF',
+    border: isDark ? '#1E3A5F' : '#E5E7EB',
+    text:   isDark ? '#e0e9f4' : '#0A0F1F',
+    sub:    isDark ? '#8BAAC8' : '#6B7280',
+  };
+  const fmtPrice = (n: number) => n === 0 ? 'Free' : `$${n}`;
+
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
+  const [changing, setChanging]       = useState<PlanTier | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+
+  useEffect(() => {
+    billingApi.getAccount()
+      .then((r: any) => setCurrentPlan(r.data.plan ?? 'free'))
+      .catch(() => {})
+      .finally(() => setPlanLoading(false));
+  }, []);
+
+  const changePlan = (plan: PlanTier) => {
+    setChanging(plan);
+    billingApi.changePlan(plan)
+      .then(() => setCurrentPlan(plan))
+      .catch(() => {})
+      .finally(() => setChanging(null));
+  };
+
+  if (planLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
+
+  return (
+    <Box>
+      <Typography variant="h6" sx={{ color: t.text, mb: 1 }}>Email Marketing Plans</Typography>
+      <Typography variant="body2" sx={{ color: t.sub, mb: 3 }}>
+        Current plan:{' '}
+        <span style={{ color: EMAIL_PLAN_COLOR[currentPlan], fontWeight: 700, textTransform: 'uppercase' }}>{currentPlan}</span>
+        {' '}at{' '}
+        <span style={{ color: t.text, fontWeight: 700 }}>{fmtPrice(EMAIL_PLAN_PRICES[currentPlan])}/month</span>
+      </Typography>
+
+      <Grid container spacing={3}>
+        {(Object.keys(EMAIL_PLAN_PRICES) as PlanTier[]).map((tier) => {
+          const isCurrentPlan = tier === currentPlan;
+          const color = EMAIL_PLAN_COLOR[tier];
+          return (
+            <Grid key={tier} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{
+                bgcolor: t.cardBg,
+                border: `2px solid ${isCurrentPlan ? color : t.border}`,
+                position: 'relative',
+                height: '100%',
+                display: 'flex', flexDirection: 'column',
+              }}>
+                {isCurrentPlan && (
+                  <Box sx={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)' }}>
+                    <Chip label="CURRENT PLAN" size="small"
+                      sx={{ bgcolor: color, color: '#fff', fontWeight: 700, fontSize: '0.6rem', borderRadius: '0 0 6px 6px' }} />
+                  </Box>
+                )}
+                <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    {tier === 'enterprise' && <StarIcon sx={{ color, fontSize: 20 }} />}
+                    <Typography sx={{ color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tier}</Typography>
+                  </Box>
+                  <Typography sx={{ color: t.text, fontWeight: 800, fontSize: '1.8rem', mb: 0.5 }}>
+                    {fmtPrice(EMAIL_PLAN_PRICES[tier])}
+                    {tier !== 'free' && <Typography component="span" variant="caption" sx={{ color: t.sub }}>/mo</Typography>}
+                  </Typography>
+                  <Divider sx={{ borderColor: t.border, my: 1.5 }} />
+                  <List dense sx={{ flex: 1, p: 0 }}>
+                    {EMAIL_PLAN_FEATURES[tier].map(f => (
+                      <ListItem key={f} sx={{ px: 0, py: 0.25 }}>
+                        <CheckCircleIcon sx={{ fontSize: 14, color, mr: 1, flexShrink: 0 }} />
+                        <ListItemText primary={<Typography variant="caption" sx={{ color: t.text }}>{f}</Typography>} />
+                      </ListItem>
+                    ))}
+                  </List>
+                  <Button
+                    fullWidth variant={isCurrentPlan ? 'outlined' : 'contained'}
+                    disabled={isCurrentPlan || changing !== null}
+                    onClick={() => changePlan(tier)}
+                    sx={{
+                      mt: 2,
+                      bgcolor: isCurrentPlan ? 'transparent' : color,
+                      borderColor: color,
+                      color: isCurrentPlan ? color : '#fff',
+                      '&:hover': { bgcolor: isCurrentPlan ? `${color}11` : `${color}dd` },
+                    }}
+                  >
+                    {changing === tier ? <CircularProgress size={16} /> :
+                     isCurrentPlan ? 'Current Plan' :
+                     EMAIL_PLAN_PRICES[tier] > EMAIL_PLAN_PRICES[currentPlan] ? 'Upgrade' : 'Downgrade'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
+}
+
+// ── Main EmailMarketingPage ──────────────────────────────────────────────────────────────────
+
 export default function EmailMarketingPage() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -943,6 +1070,7 @@ export default function EmailMarketingPage() {
         <Tab label="Contacts" icon={<PeopleAltIcon sx={{ fontSize: 18 }} />} iconPosition="start" />
         <Tab label="Templates" icon={<EditIcon sx={{ fontSize: 18 }} />} iconPosition="start" />
         <Tab label="Automations" icon={<AutorenewIcon sx={{ fontSize: 18 }} />} iconPosition="start" />
+        <Tab label="Plan" icon={<LocalOfferIcon sx={{ fontSize: 18 }} />} iconPosition="start" />
       </Tabs>
 
       {/* Tab content */}
@@ -951,6 +1079,7 @@ export default function EmailMarketingPage() {
       {tab === 2 && <ContactsTab />}
       {tab === 3 && <TemplatesTab />}
       {tab === 4 && <AutomationsTab />}
+      {tab === 5 && <EmailPlanTab />}
     </Box>
   );
 }

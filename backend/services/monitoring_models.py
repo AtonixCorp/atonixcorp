@@ -152,7 +152,7 @@ class MonitoringAlert(TimeStampedModel):
     ]
 
     rule        = models.ForeignKey(AlertRule, on_delete=models.CASCADE, related_name='alerts')
-    owner       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='alerts')
+    owner       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='monitoring_alerts')
     state       = models.CharField(max_length=16, choices=STATE_CHOICES, default='firing')
     value       = models.FloatField(help_text='Metric value that triggered the alert')
     fired_at    = models.DateTimeField(auto_now_add=True)

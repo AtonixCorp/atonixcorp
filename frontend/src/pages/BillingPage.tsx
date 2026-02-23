@@ -56,16 +56,7 @@ const PLAN_COLOR: Record<PlanTier, string> = {
   free: '#6b7280', starter: '#3b82f6', professional: '#8b5cf6', enterprise: '#f59e0b',
 };
 
-const PLAN_PRICES: Record<PlanTier, number> = {
-  free: 0, starter: 29, professional: 99, enterprise: 499,
-};
 
-const PLAN_FEATURES: Record<PlanTier, string[]> = {
-  free:         ['100 compute hours', '5 GB storage', '10 GB bandwidth', '10K API calls', 'Community support'],
-  starter:      ['500 compute hours', '50 GB storage', '100 GB bandwidth', '100K API calls', 'Email support'],
-  professional: ['2,000 compute hours', '500 GB storage', '1 TB bandwidth', '1M API calls', 'Priority support', 'Custom domains'],
-  enterprise:   ['Unlimited compute', 'Unlimited storage', 'Unlimited bandwidth', 'Unlimited API calls', '24/7 dedicated support', 'SLA guarantee', 'Custom contracts'],
-};
 
 const SERVICE_COLORS: Record<string, string> = {
   compute: '#3b82f6', storage: '#22c55e', database: '#8b5cf6',
@@ -621,96 +612,11 @@ function PaymentMethodsTab() {
   );
 }
 
-// ── Subscription Tab ──────────────────────────────────────────────────────────
 
-function SubscriptionTab({ account, onPlanChange }: { account: BillingAccount | null; onPlanChange: () => void }) {
-  const t = useT();
-  const [changing, setChanging] = useState<PlanTier | null>(null);
-
-  const changePlan = (plan: PlanTier) => {
-    setChanging(plan);
-    billingApi.changePlan(plan)
-      .then(() => onPlanChange())
-      .catch(() => {})
-      .finally(() => setChanging(null));
-  };
-
-  const currentPlan = account?.plan ?? 'free';
-
-  return (
-    <Box>
-      <Typography variant="h6" sx={{ color: t.text, mb: 1 }}>Subscription Plans</Typography>
-      <Typography variant="body2" sx={{ color: t.sub, mb: 3 }}>
-        Current plan: <span style={{ color: PLAN_COLOR[currentPlan], fontWeight: 700, textTransform: 'uppercase' }}>{currentPlan}</span>
-        {' '}at <span style={{ color: t.text, fontWeight: 700 }}>{fmt(PLAN_PRICES[currentPlan])}/month</span>
-      </Typography>
-
-      <Grid container spacing={3}>
-        {(Object.keys(PLAN_PRICES) as PlanTier[]).map((tier) => {
-          const isCurrentPlan = tier === currentPlan;
-          const color = PLAN_COLOR[tier];
-          return (
-            <Grid key={tier} size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card sx={{
-                bgcolor: t.cardBg,
-                border: `2px solid ${isCurrentPlan ? color : t.border}`,
-                position: 'relative',
-                height: '100%',
-                display: 'flex', flexDirection: 'column',
-              }}>
-                {isCurrentPlan && (
-                  <Box sx={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)' }}>
-                    <Chip label="CURRENT PLAN" size="small"
-                      sx={{ bgcolor: color, color: '#fff', fontWeight: 700, fontSize: '0.6rem', borderRadius: '0 0 6px 6px' }} />
-                  </Box>
-                )}
-                <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    {tier === 'enterprise' && <StarIcon sx={{ color, fontSize: 20 }} />}
-                    <Typography sx={{ color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tier}</Typography>
-                  </Box>
-                  <Typography sx={{ color: t.text, fontWeight: 800, fontSize: '1.8rem', mb: 0.5 }}>
-                    {tier === 'free' ? 'Free' : `${fmt(PLAN_PRICES[tier])}`}
-                    {tier !== 'free' && <Typography component="span" variant="caption" sx={{ color: t.sub }}>/mo</Typography>}
-                  </Typography>
-                  <Divider sx={{ borderColor: t.border, my: 1.5 }} />
-                  <List dense sx={{ flex: 1, p: 0 }}>
-                    {PLAN_FEATURES[tier].map(f => (
-                      <ListItem key={f} sx={{ px: 0, py: 0.25 }}>
-                        <CheckCircleIcon sx={{ fontSize: 14, color, mr: 1, flexShrink: 0 }} />
-                        <ListItemText primary={<Typography variant="caption" sx={{ color: t.text }}>{f}</Typography>} />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Button
-                    fullWidth variant={isCurrentPlan ? 'outlined' : 'contained'}
-                    disabled={isCurrentPlan || changing !== null}
-                    onClick={() => changePlan(tier)}
-                    sx={{
-                      mt: 2,
-                      bgcolor: isCurrentPlan ? 'transparent' : color,
-                      borderColor: color,
-                      color: isCurrentPlan ? color : '#fff',
-                      '&:hover': { bgcolor: isCurrentPlan ? `${color}11` : `${color}dd` },
-                    }}
-                  >
-                    {changing === tier ? <CircularProgress size={16} /> :
-                     isCurrentPlan ? 'Current Plan' :
-                     PLAN_PRICES[tier] > PLAN_PRICES[currentPlan] ? 'Upgrade' : 'Downgrade'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-    </Box>
-  );
-}
 
 // ── Main BillingPage ──────────────────────────────────────────────────────────
 
-const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods', 'Subscription'] as const;
+const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods'] as const;
 
 export default function BillingPage() {
   const t = useT();
@@ -774,7 +680,7 @@ export default function BillingPage() {
       {tab === 1 && <InvoicesTab />}
       {tab === 2 && <UsageTab />}
       {tab === 3 && <PaymentMethodsTab />}
-      {tab === 4 && <SubscriptionTab account={overview?.account ?? null} onPlanChange={loadOverview} />}
+
     </Box>
   );
 }

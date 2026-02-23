@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .domain_models import Domain, DnsZone, DnsRecord, SslCertificate
+from .domain_models import Domain, DnsZone, DomainDnsRecord, SslCertificate
 from .domain_serializers import (
     DomainListSerializer,
     DomainDetailSerializer,
@@ -207,7 +207,7 @@ class DomainViewSet(ModelViewSet):
             return Response({'error': result.get('error', 'Failed to create record.')},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        record = DnsRecord.objects.create(
+        record = DomainDnsRecord.objects.create(
             zone=zone,
             recordset_id=result.get('recordset_id', ''),
             name=d['name'],

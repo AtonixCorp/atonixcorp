@@ -2,298 +2,24 @@ name: CI / Build / Push / Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
+  release:
+    types: [published]
 
 env:
-  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
-  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
 
 jobs:
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Install dependencies
-        working-directory: frontend
-        run: |
-          npm ci --legacy-peer-deps
-      - name: Run frontend tests
-        working-directory: frontend
-        run: |
-          npm test -- --watchAll=false || true
 
+  # ── Test Backend ────────────────────────────────────────────────────────────
   test-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install backend deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt || true
-      - name: Run backend tests
-        run: |
-          pushd backend
-          python manage.py test || true
-          popd
-
-  build-and-push:
-    runs-on: ubuntu-latest
-    needs: [test-frontend, test-backend]
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push frontend
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_FRONTEND }}:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_FRONTEND }}:latest
-
-      - name: Build and push backend
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_BACKEND }}:${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_BACKEND }}:latest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    if: github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_DATA != ''
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: '1.30.0'
-      - name: Restore kubeconfig
-        run: |
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > kubeconfig
-          export KUBECONFIG=$PWD/kubeconfig
-      - name: Apply k8s manifests
-        run: |
-          kubectl apply -f k8s/namespace.yaml
-          kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/backend-deployment.yaml
-          kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/backend-service.yaml
-          kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/frontend-deployment.yaml
-          kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/frontend-service.yaml
-          kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/ingress.yaml || true
-name: CI / Build / Push / Deploy
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-env:
-  IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
-  IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
-
-jobs:
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Install dependencies
-        working-directory: frontend
-        run: |
-          npm ci --legacy-peer-deps
-      - name: Run frontend tests
-        working-directory: frontend
-        run: |
-          npm test -- --watchAll=false || true
-
-  test-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install backend deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt || true
-      - name: Run backend tests
-        run: |
-          pushd backend
-          python manage.py test || true
-          popd
-
-  build-and-push:
-    runs-on: ubuntu-latest
-    needs: [test-frontend, test-backend]
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          name: CI / Build / Push / Deploy
-
-          on:
-            push:
-              branches: [ main ]
-            pull_request:
-              branches: [ main ]
-
-          env:
-            IMAGE_REPO_FRONTEND: atonixdev/atonixcorp-frontend
-            IMAGE_REPO_BACKEND: atonixdev/atonixcorp-backend
-
-          jobs:
-            test-frontend:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v4
-                - name: Use Node.js
-                  uses: actions/setup-node@v4
-                  with:
-                    node-version: 18
-                - name: Install dependencies
-                  working-directory: frontend
-                  run: |
-                    npm ci --legacy-peer-deps
-                - name: Run frontend tests
-                  working-directory: frontend
-                  run: |
-                    npm test -- --watchAll=false || true
-
-            test-backend:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v4
-                - name: Set up Python
-                  uses: actions/setup-python@v4
-                  with:
-                    python-version: '3.11'
-                - name: Install backend deps
-                  run: |
-                    python -m pip install --upgrade pip
-                    pip install -r backend/requirements.txt || true
-                - name: Run backend tests
-                  run: |
-                    pushd backend
-                    python manage.py test || true
-                    popd
-
-            build-and-push:
-              runs-on: ubuntu-latest
-              needs: [test-frontend, test-backend]
-              permissions:
-                contents: read
-                packages: write
-              steps:
-                - uses: actions/checkout@v4
-
-                - name: Set up QEMU
-                  uses: docker/setup-qemu-action@v2
-
-                - name: Set up Docker Buildx
-                  uses: docker/setup-buildx-action@v2
-
-                - name: Log in to registry
-                  uses: docker/login-action@v2
-                  with:
-                    registry: ${{ secrets.DOCKER_REGISTRY }}
-                    username: ${{ secrets.DOCKER_USERNAME }}
-                    password: ${{ secrets.DOCKER_PASSWORD }}
-
-                - name: Build and push frontend
-                  uses: docker/build-push-action@v4
-                  with:
-                    context: ./frontend
-                    file: ./frontend/Dockerfile
-                    push: true
-                    tags: |
-                      ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_FRONTEND }}:${{ github.sha }}
-                      ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_FRONTEND }}:latest
-
-                - name: Build and push backend
-                  uses: docker/build-push-action@v4
-                  with:
-                    context: ./backend
-                    file: ./backend/Dockerfile
-                    push: true
-                    tags: |
-                      ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_BACKEND }}:${{ github.sha }}
-                      ${{ secrets.DOCKER_REGISTRY }}/${{ env.IMAGE_REPO_BACKEND }}:latest
-
-            deploy:
-              runs-on: ubuntu-latest
-              needs: build-and-push
-              if: github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_DATA != ''
-              steps:
-                - uses: actions/checkout@v4
-                - name: Set up kubectl
-                  uses: azure/setup-kubectl@v3
-                  with:
-                    version: '1.30.0'
-                - name: Restore kubeconfig
-                  run: |
-                    echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > kubeconfig
-                    export KUBECONFIG=$PWD/kubeconfig
-                - name: Apply k8s manifests
-                  run: |
-                    kubectl apply -f k8s/namespace.yaml
-                    kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/backend-deployment.yaml
-                    kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/backend-service.yaml
-                    kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/frontend-deployment.yaml
-                    kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/frontend-service.yaml
-                    kubectl -n ${K8S_NAMESPACE:-atonixcorp} apply -f k8s/ingress.yaml || true
-  jobs:
-    test-backend:
     name: Test Backend
-    runs-on: self-hosted
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
+    runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:15
@@ -307,10 +33,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-<<<<<<< HEAD
-      
-=======
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
+
       redis:
         image: redis:7
         options: >-
@@ -320,13 +43,7 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-<<<<<<< HEAD
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-=======
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -371,7 +88,7 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
-          DEBUG: True
+          DEBUG: 'True'
         run: |
           cd backend
           python manage.py collectstatic --noinput
@@ -385,10 +102,12 @@ jobs:
           flags: backend
           name: backend-coverage
 
-    test-frontend:
-      name: Test Frontend
-      runs-on: self-hosted
-      steps:
+  # ── Test Frontend ───────────────────────────────────────────────────────────
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -402,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: Run linting
         run: |
@@ -427,13 +146,15 @@ jobs:
           flags: frontend
           name: frontend-coverage
 
+  # ── Security Scan ───────────────────────────────────────────────────────────
   security-scan:
     name: Security Scan
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'pull_request'
     permissions:
       security-events: write
       contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -452,17 +173,19 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
+  # ── Build & Push Docker Images ──────────────────────────────────────────────
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    needs: [ test-backend, test-frontend ]
+    needs: [test-backend, test-frontend]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        component: [ backend, frontend ]
+        component: [backend, frontend]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -499,12 +222,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # ── Deploy to Development ───────────────────────────────────────────────────
   deploy-dev:
     name: Deploy to Development
     runs-on: ubuntu-latest
-    needs: [ build-and-push ]
+    needs: [build-and-push]
     if: github.ref == 'refs/heads/develop'
     environment: development
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -516,6 +241,7 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
+          mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
 
       - name: Deploy to Kubernetes
@@ -526,12 +252,14 @@ jobs:
           kubectl rollout status deployment/backend -n atonixcorp-dev
           kubectl rollout status deployment/frontend -n atonixcorp-dev
 
+  # ── Deploy to Production ────────────────────────────────────────────────────
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [ build-and-push ]
+    needs: [build-and-push]
     if: github.ref == 'refs/heads/main'
     environment: production
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -560,12 +288,15 @@ jobs:
           sleep 30
           curl -f https://api.atonixcorp.com/api/health/ || exit 1
           curl -f https://atonixcorp.com/ || exit 1
+          echo "Deployment successful and smoke tests passed"
 
+  # ── Notify ──────────────────────────────────────────────────────────────────
   notify:
     name: Notify Team
     runs-on: ubuntu-latest
-    needs: [ deploy-dev, deploy-prod ]
-    if: always()
+    needs: [deploy-dev, deploy-prod]
+    if: always() && (needs.deploy-dev.result != 'skipped' || needs.deploy-prod.result != 'skipped')
+
     steps:
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
@@ -574,484 +305,3 @@ jobs:
           channel: '#deployments'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
-
-            webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-            fields: repo,message,commit,author,action,eventName,ref,workflow
-    push:
-      branches: [main, develop]
-      pull_request:
-       branches: [main, develop]
-      release:
-    types: [published]
-
-  env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
-      IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
-
-  jobs:
-  # Test Backend
-  test-backend:
-    name: Test Backend
-    runs-on: self-hosted
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Cache Python dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Install dependencies
-      run: |
-        cd backend
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-django pytest-cov
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run linting
-      run: |
-        cd backend
-        pip install flake8 black isort
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        black --check .
-        isort --check-only .
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run security checks
-      run: |
-        cd backend
-        pip install bandit safety
-        bandit -r . -x tests
-        safety check
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        REDIS_URL: redis://localhost:6379/0
-        SECRET_KEY: test-secret-key
-        DEBUG: True
-      run: |
-        cd backend
-        python manage.py collectstatic --noinput
-        pytest --cov=. --cov-report=xml --cov-report=html
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./backend/coverage.xml
-        flags: backend
-        name: backend-coverage
-
-  # Test Frontend
-  test-frontend:
-    name: Test Frontend
-<<<<<<< HEAD
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-=======
-    runs-on: self-hosted
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run linting
-      run: |
-        cd frontend
-        npm run lint
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run type checking
-      run: |
-        cd frontend
-        npm run type-check
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run tests
-      run: |
-        cd frontend
-        npm run test:coverage
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./frontend/coverage/lcov.info
-        flags: frontend
-        name: frontend-coverage
-
-  # Security Scanning
-  security-scan:
-    name: Security Scan
-<<<<<<< HEAD
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-=======
-    runs-on: self-hosted
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    -
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v4
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  # Build and Push Images
-  build-and-push:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-<<<<<<< HEAD
-    
-    permissions:
-      contents: read
-      packages: write
-    
-    strategy:
-      matrix:
-        component: [backend, frontend]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-=======
-
-    permissions:
-      contents: read
-      packages: write
-
-    strategy:
-      matrix:
-        component: [backend, frontend]
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.component }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./${{ matrix.component }}
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-  # Deploy to Development
-  deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [build-and-push]
-    if: github.ref == 'refs/heads/develop'
-    environment: development
-<<<<<<< HEAD
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-=======
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Configure kubeconfig
-      run: |
-        # Configure kubectl with your Kubernetes cluster
-        # Replace this with your cluster configuration method
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Deploy to Kubernetes
-      run: |
-        # Update image tags in Kubernetes manifests
-        sed -i "s|image: atonixcorp/backend:.*|image: ${{ env.REGISTRY }}/${{ github.repository }}/backend:develop-${{ github.sha }}|g" k8s/overlays/development/kustomization.yaml
-        sed -i "s|image: atonixcorp/frontend:.*|image: ${{ env.REGISTRY }}/${{ github.repository }}/frontend:develop-${{ github.sha }}|g" k8s/overlays/development/kustomization.yaml
-<<<<<<< HEAD
-        
-        # Apply Kubernetes manifests
-        kubectl apply -k k8s/overlays/development/
-        
-=======
-
-        # Apply Kubernetes manifests
-        kubectl apply -k k8s/overlays/development/
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-        # Wait for rollout
-        kubectl rollout status deployment/backend -n atonixcorp-dev
-        kubectl rollout status deployment/frontend -n atonixcorp-dev
-
-  # Deploy to Production
-  deploy-prod:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build-and-push]
-    if: github.ref == 'refs/heads/main'
-    environment: production
-<<<<<<< HEAD
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-=======
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-<<<<<<< HEAD
-    
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME_PROD }}
-    
-=======
-
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME_PROD }}
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Deploy to Kubernetes
-      run: |
-        # Update image tags in Kubernetes manifests
-        sed -i "s|image: atonixcorp/backend:.*|image: ${{ env.REGISTRY }}/${{ github.repository }}/backend:main-${{ github.sha }}|g" k8s/overlays/production/kustomization.yaml
-        sed -i "s|image: atonixcorp/frontend:.*|image: ${{ env.REGISTRY }}/${{ github.repository }}/frontend:main-${{ github.sha }}|g" k8s/overlays/production/kustomization.yaml
-<<<<<<< HEAD
-        
-        # Apply Kubernetes manifests
-        kubectl apply -k k8s/overlays/production/
-        
-        # Wait for rollout
-        kubectl rollout status deployment/backend -n atonixcorp
-        kubectl rollout status deployment/frontend -n atonixcorp
-    
-=======
-
-        # Apply Kubernetes manifests
-        kubectl apply -k k8s/overlays/production/
-
-        # Wait for rollout
-        kubectl rollout status deployment/backend -n atonixcorp
-        kubectl rollout status deployment/frontend -n atonixcorp
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    - name: Run smoke tests
-      run: |
-        # Wait for services to be ready
-        sleep 30
-<<<<<<< HEAD
-        
-        # Run smoke tests
-  curl -f https://api.atonixcorp.com/api/health/ || exit 1
-  curl -f https://atonixcorp.com/ || exit 1
-        
-        echo " Deployment successful and smoke tests passed"
-=======
-
-        # Run smoke tests
-      curl -f https://api.atonixcorp.com/api/health/ || exit 1
-      curl -f https://atonixcorp.com/ || exit 1
-
-        echo " Deployment successful and smoke tests passed"
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-
-  # Notify
-  notify:
-    name: Notify Team
-    runs-on: ubuntu-latest
-    needs: [deploy-dev, deploy-prod]
-    if: always() && (needs.deploy-dev.result != 'skipped' || needs.deploy-prod.result != 'skipped')
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
-    steps:
-    - name: Notify Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-<<<<<<< HEAD
-        fields: repo,message,commit,author,action,eventName,ref,workflow
-=======
-        fields: repo,message,commit,author,action,eventName,ref,workflow
->>>>>>> 12bd998bda7cee255affa733e542706dbab8dcfb
