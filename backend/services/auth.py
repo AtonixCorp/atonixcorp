@@ -2,7 +2,7 @@
 
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User, Group
-from .base_models import APIKey, Status
+from .base_models import UserAPIKey, Status
 from django.utils import timezone
 
 
@@ -49,7 +49,7 @@ class HasAPIKeyScope(BasePermission):
     def has_permission(self, request, view):
         """Check if authenticated user/key has required scopes."""
         # If not authenticated with API key, allow
-        if not hasattr(request, 'auth') or not isinstance(request.auth, APIKey):
+        if not hasattr(request, 'auth') or not isinstance(request.auth, UserAPIKey):
             return True
 
         api_key = request.auth
@@ -62,7 +62,7 @@ class HasAPIKeyScope(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Check scope for specific object."""
-        if not hasattr(request, 'auth') or not isinstance(request.auth, APIKey):
+        if not hasattr(request, 'auth') or not isinstance(request.auth, UserAPIKey):
             return True
 
         api_key = request.auth

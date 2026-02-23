@@ -239,10 +239,10 @@ class UserProfile(models.Model):
 
 
 # ============================================================================
-# API KEY (hashed-free, returns plain key on creation)
+# USER API KEY (plain key storage)
 # ============================================================================
 
-class APIKey(models.Model):
+class UserAPIKey(models.Model):
     """
     Per-user API keys for programmatic authentication.
     The raw key is stored (use TLS in production); prefix is cosmetic.

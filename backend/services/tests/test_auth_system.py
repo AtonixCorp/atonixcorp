@@ -21,7 +21,7 @@ from ..authentication import APIKeyAuthentication, BearerTokenAuthentication
 from ..permissions import (
     IsResourceOwner, HasAPIKey, HasValidScope, IsAdmin, CanManageUsers,
 )
-from ..models import APIKey, UserProfile
+from ..models import UserAPIKey, UserProfile
 
 User = get_user_model()
 
@@ -32,7 +32,7 @@ class TestAPIKeyAuthentication:
     
     def test_create_api_key(self, db, user):
         """Test creating API key"""
-        key = APIKey.objects.create(
+        key = UserUserAPIKey.objects.create(
             user=user,
             name='test-key',
             key_prefix='atonix_',
@@ -44,7 +44,7 @@ class TestAPIKeyAuthentication:
     
     def test_authenticate_with_valid_api_key(self, db, user):
         """Test authenticating with valid API key"""
-        key = APIKey.objects.create(
+        key = UserAPIKey.objects.create(
             user=user,
             name='valid-key',
         )
@@ -63,7 +63,7 @@ class TestAPIKeyAuthentication:
     
     def test_api_key_revocation(self, db, user):
         """Test revoking API key"""
-        key = APIKey.objects.create(
+        key = UserAPIKey.objects.create(
             user=user,
             name='revoke-test',
         )
@@ -81,7 +81,7 @@ class TestAPIKeyAuthentication:
         from django.utils import timezone
         from datetime import timedelta
         
-        key = APIKey.objects.create(
+        key = UserAPIKey.objects.create(
             user=user,
             name='expires-key',
             expires_at=timezone.now() - timedelta(days=1),
@@ -162,7 +162,7 @@ class TestPermissions:
     
     def test_has_api_key_permission(self, db, user):
         """Test HasAPIKey permission"""
-        key = APIKey.objects.create(user=user)
+        key = UserAPIKey.objects.create(user=user)
         
         from unittest.mock import Mock
         permission = HasAPIKey()
@@ -297,7 +297,7 @@ class TestScopeValidation:
     
     def test_api_key_scope_validation(self, db, user):
         """Test scope validation for API keys"""
-        key = APIKey.objects.create(
+        key = UserAPIKey.objects.create(
             user=user,
             name='scoped-key',
             scopes=['compute:read', 'storage:write'],
@@ -308,7 +308,7 @@ class TestScopeValidation:
     
     def test_api_key_insufficient_scope(self, db, user):
         """Test scope validation when scope insufficient"""
-        key = APIKey.objects.create(
+        key = UserAPIKey.objects.create(
             user=user,
             name='read-only',
             scopes=['compute:read'],
@@ -367,7 +367,7 @@ class TestAuthenticationSecurity:
     
     def test_api_key_never_logged(self, db, user):
         """Test that API keys aren't logged"""
-        key = APIKey.objects.create(user=user, name='secret-key')
+        key = UserAPIKey.objects.create(user=user, name='secret-key')
         
         # Key material should be hashed/masked
         assert str(key.key) != key.key_hash

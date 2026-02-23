@@ -12,7 +12,7 @@ from .base_models import (
     ResourceQuota,
     Alert,
     UserProfile,
-    APIKey,
+    UserAPIKey,
 )
 
 from .compute_models import (
@@ -96,7 +96,7 @@ __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
     'AuditLog', 'ResourceTag', 'ResourceQuota', 'Alert',
-    'UserProfile', 'APIKey',
+    'UserProfile', 'UserAPIKey',
     # Compute
     'Flavor', 'Image', 'Instance', 'InstanceMetric',
     'KubernetesCluster', 'KubernetesNode',

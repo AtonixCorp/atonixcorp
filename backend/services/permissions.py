@@ -11,11 +11,11 @@ class HasAPIKey(BasePermission):
     message = 'A valid API key is required.'
 
     def has_permission(self, request, view):
-        from .base_models import APIKey
+        from .base_models import UserAPIKey
         auth = getattr(request, 'auth', None)
         if auth is None:
             return False
-        return isinstance(auth, APIKey) and auth.is_active
+        return isinstance(auth, UserAPIKey) and auth.is_active
 
 
 class HasValidScope(HasAPIKeyScope):

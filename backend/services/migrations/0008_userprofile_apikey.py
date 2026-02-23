@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='APIKey',
+            name='UserAPIKey',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(default='default', max_length=255)),

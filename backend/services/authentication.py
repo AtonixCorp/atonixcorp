@@ -29,10 +29,10 @@ class APIKeyAuthentication(BaseAuthentication):
 
     def authenticate_credentials(self, key_string):
         """Validate a plain API key string and return (user, api_key)."""
-        from .base_models import APIKey
+        from .base_models import UserAPIKey
         try:
-            api_key = APIKey.objects.select_related('user').get(key=key_string)
-        except APIKey.DoesNotExist:
+            api_key = UserAPIKey.objects.select_related('user').get(key=key_string)
+        except UserAPIKey.DoesNotExist:
             raise AuthenticationFailed('Invalid API key.')
 
         if not api_key.is_active:
