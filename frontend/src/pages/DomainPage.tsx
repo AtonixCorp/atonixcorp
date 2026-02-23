@@ -16,6 +16,7 @@ import LockOpenIcon      from '@mui/icons-material/LockOpen';
 import VerifiedUserIcon  from '@mui/icons-material/VerifiedUser';
 import HttpsIcon         from '@mui/icons-material/Https';
 import AutorenewIcon     from '@mui/icons-material/Autorenew';
+import RocketLaunchIcon  from '@mui/icons-material/RocketLaunch';
 import { domainApi }     from '../services/cloudApi';
 import type { Domain, DnsRecord, SslCertificate, DnsRecordType } from '../types/domain';
 import RegisterDomainModal  from '../components/Cloud/RegisterDomainModal';
@@ -80,6 +81,9 @@ const DomainPage: React.FC = () => {
   const [newDnsValue,   setNewDnsValue]   = useState('');
   const [newDnsTtl,     setNewDnsTtl]     = useState(300);
   const [addingDns,     setAddingDns]     = useState(false);
+  const [switching,     setSwitching]     = useState(false);
+  const [switchInfo,    setSwitchInfo]    = useState<any>(null);
+  const [pollingWorkflowId, setPollingWorkflowId] = useState<string | null>(null);
 
   // ── Data fetching ─────────────────────────────────────────────────────────
   const loadDomains = useCallback(async () => {
@@ -97,6 +101,15 @@ const DomainPage: React.FC = () => {
   }, []);
 
   useEffect(() => { loadDomains(); }, [loadDomains]);
+
+  const loadDomainDetail = useCallback(async (resourceId: string) => {
+    try {
+      const r = await domainApi.get(resourceId);
+      setSelected(r.data as Domain);
+    } catch {
+      // Keep current snapshot if detail fetch fails
+    }
+  }, []);
 
   const loadDns = useCallback(async (id: string) => {
     setDnsLoading(true);
@@ -121,6 +134,7 @@ const DomainPage: React.FC = () => {
     setDetailTab(0);
     setDnsRecords([]);
     setSslCerts([]);
+    loadDomainDetail(d.resource_id);
   };
 
   useEffect(() => {
@@ -128,6 +142,46 @@ const DomainPage: React.FC = () => {
     if (detailTab === 1) loadDns(selected.resource_id);
     if (detailTab === 2) loadSsl(selected.resource_id);
   }, [detailTab, selected, loadDns, loadSsl]);
+
+  useEffect(() => {
+    if (!selected?.resource_id) return;
+    domainApi.switchStatus(selected.resource_id)
+      .then((r: any) => {
+        const workflow = r.data?.workflow || null;
+        setSwitchInfo(workflow);
+      })
+      .catch(() => {});
+  }, [selected?.resource_id]);
+
+  useEffect(() => {
+    if (!selected?.resource_id || !pollingWorkflowId) return;
+    let alive = true;
+
+    const poll = async () => {
+      try {
+        const r = await domainApi.switchStatus(selected.resource_id);
+        if (!alive) return;
+        const workflow = r.data?.workflow || null;
+        setSwitchInfo(workflow);
+
+        if (workflow?.workflow_id !== pollingWorkflowId) return;
+        if (['completed', 'partial', 'failed'].includes(workflow?.status)) {
+          setPollingWorkflowId(null);
+          setSwitching(false);
+          loadDomainDetail(selected.resource_id);
+        }
+      } catch {
+        // keep polling on transient failures
+      }
+    };
+
+    poll();
+    const timer = setInterval(poll, 2000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, [pollingWorkflowId, selected?.resource_id, loadDomainDetail]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this domain?')) return;
@@ -173,6 +227,31 @@ const DomainPage: React.FC = () => {
     if (!selected) return;
     await domainApi.enableDnssec(selected.resource_id).catch(() => {});
     loadDomains();
+    loadDomainDetail(selected.resource_id);
+  };
+
+  const handleSwitchDomain = async () => {
+    if (!selected) return;
+    setSwitching(true);
+    try {
+      const targetEndpoint = window.prompt('Optional target endpoint (IP or hostname). Leave empty for auto-discovery.', '') || '';
+      const response = await domainApi.switchDomain(
+        selected.resource_id,
+        targetEndpoint ? { target_endpoint: targetEndpoint } : {}
+      );
+      setSwitchInfo(response.data);
+      if (response.data?.workflow_id) {
+        setPollingWorkflowId(response.data.workflow_id);
+      } else {
+        setSwitching(false);
+      }
+      setDetailTab(5);
+    } catch {
+      setSwitchInfo({ status: 'failed', message: 'Domain switch workflow failed.' });
+      setSwitching(false);
+    } finally {
+      // keep switching=true while queued/running and polling is active
+    }
   };
 
   // ── Render helpers ────────────────────────────────────────────────────────
@@ -285,11 +364,23 @@ const DomainPage: React.FC = () => {
                 sx={{ mt: 0.5, bgcolor: STATUS_COLOUR[selected.status] ?? '#6B7280', color: '#FFF' }}
               />
             </Box>
-            <Tooltip title="Delete domain">
-              <IconButton onClick={() => handleDelete(selected.resource_id)}>
-                <DeleteIcon sx={{ color: '#EF4444' }} />
-              </IconButton>
-            </Tooltip>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<RocketLaunchIcon />}
+                onClick={handleSwitchDomain}
+                disabled={switching && ['queued', 'running'].includes((switchInfo?.status || '').toString())}
+                sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}
+              >
+                {(switching && ['queued', 'running'].includes((switchInfo?.status || '').toString())) ? 'Switching...' : 'Switch Domain'}
+              </Button>
+              <Tooltip title="Delete domain">
+                <IconButton onClick={() => handleDelete(selected.resource_id)}>
+                  <DeleteIcon sx={{ color: '#EF4444' }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
 
           {/* Tabs */}
@@ -308,6 +399,7 @@ const DomainPage: React.FC = () => {
             <Tab label="SSL Certificates" />
             <Tab label="Transfers" />
             <Tab label="Settings" />
+            <Tab label="Automation" />
           </Tabs>
 
           {/* ── Overview ─────────────────────────────────────────────── */}
@@ -498,6 +590,43 @@ const DomainPage: React.FC = () => {
                 {(selected.nameservers ?? []).map((ns, i) => (
                   <Typography key={i} sx={{ color: t.muted, fontSize: '0.85rem', fontFamily: 'monospace' }}>{ns}</Typography>
                 ))}
+              </Box>
+            </Box>
+          )}
+
+          {detailTab === 5 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Typography sx={{ color: t.text, fontWeight: 700, mb: 1 }}>Domain Switch Workflow (TSTODNS)</Typography>
+                <Typography sx={{ color: t.muted, fontSize: '0.85rem' }}>
+                  Status: {(switchInfo?.status || (selected.metadata as any)?.domain_switch?.status || 'not started').toString()}
+                </Typography>
+                <Typography sx={{ color: t.muted, fontSize: '0.85rem' }}>
+                  Workflow ID: {(switchInfo?.workflow_id || (selected.metadata as any)?.domain_switch?.workflow_id || '—').toString()}
+                </Typography>
+                <Typography sx={{ color: t.muted, fontSize: '0.85rem' }}>
+                  Completed: {(switchInfo?.completed_at || (selected.metadata as any)?.domain_switch?.completed_at)
+                    ? new Date((switchInfo?.completed_at || (selected.metadata as any)?.domain_switch?.completed_at) as string).toLocaleString()
+                    : '—'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ bgcolor: t.cardBg, p: 2, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Typography sx={{ color: t.text, fontWeight: 600, mb: 1 }}>Workflow Steps</Typography>
+                {(((switchInfo?.steps as any[]) || ((selected.metadata as any)?.domain_switch?.steps as any[]) || [])).map((step: any, idx: number, arr: any[]) => (
+                  <Box key={`${step?.step || 'step'}-${idx}`} sx={{ py: 1, borderBottom: idx === arr.length - 1 ? 'none' : `1px solid ${t.border}` }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography sx={{ color: t.text, fontWeight: 600, fontSize: '0.88rem' }}>{step?.step || 'step'}</Typography>
+                      <Chip size="small" label={step?.status || 'unknown'} />
+                    </Box>
+                    <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>{step?.detail || '—'}</Typography>
+                  </Box>
+                ))}
+                {!(((switchInfo?.steps as any[]) || ((selected.metadata as any)?.domain_switch?.steps as any[]) || []).length) && (
+                  <Typography sx={{ color: t.muted, fontSize: '0.85rem' }}>
+                    No workflow run yet. Click Switch Domain to execute DNS/LB/CDN/Email/Orchestration cascade updates.
+                  </Typography>
+                )}
               </Box>
             </Box>
           )}

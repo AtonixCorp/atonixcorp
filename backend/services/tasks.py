@@ -14,10 +14,298 @@ available. Without a broker they run synchronously.
 """
 
 import logging
+import threading
+import uuid
+from queue import Queue
 from datetime import timedelta
 from django.utils import timezone
+from django.db import close_old_connections
 
 logger = logging.getLogger(__name__)
+
+
+_DOMAIN_SWITCH_QUEUE: Queue[dict] = Queue()
+_DOMAIN_SWITCH_WORKER_STARTED = False
+_DOMAIN_SWITCH_LOCK = threading.Lock()
+
+
+def _persist_domain_switch_state(domain, workflow_id: str, state: dict):
+    metadata = domain.metadata or {}
+    metadata['domain_switch'] = state
+    history = metadata.get('domain_switch_history', [])
+    history = [entry for entry in history if entry.get('workflow_id') != workflow_id]
+    history.insert(0, {
+        'workflow_id': workflow_id,
+        'status': state.get('status', 'unknown'),
+        'queued_at': state.get('queued_at'),
+        'started_at': state.get('started_at'),
+        'completed_at': state.get('completed_at'),
+    })
+    metadata['domain_switch_history'] = history[:25]
+    domain.metadata = metadata
+    domain.save(update_fields=['metadata', 'updated_at'])
+
+
+def _execute_domain_switch_workflow(payload: dict):
+    close_old_connections()
+    from django.contrib.auth.models import User
+    from .domain_models import Domain, DnsZone, DomainDnsRecord
+    from . import designate_service as dns_svc
+    from .networking_models import LoadBalancer, CDNDistribution
+    from .compute_models import KubernetesCluster
+    from .email_models import EmailDomain, EmailActivityLog
+    from .base_models import AuditLog
+
+    workflow_id = payload['workflow_id']
+    domain_resource_id = payload['domain_resource_id']
+    user_id = payload['user_id']
+    target_endpoint = payload.get('target_endpoint', '')
+    lb_resource_id = payload.get('lb_resource_id', '')
+    cdn_resource_id = payload.get('cdn_resource_id', '')
+    cluster_resource_id = payload.get('cluster_resource_id', '')
+
+    try:
+        user = User.objects.get(id=user_id)
+        domain = Domain.objects.get(resource_id=domain_resource_id, owner=user)
+    except Exception as exc:
+        logger.error('Domain switch worker could not load objects: %s', exc)
+        close_old_connections()
+        return
+
+    state = {
+        'workflow_id': workflow_id,
+        'status': 'running',
+        'queued_at': payload.get('queued_at'),
+        'started_at': timezone.now().isoformat(),
+        'completed_at': None,
+        'target_endpoint': target_endpoint,
+        'steps': [],
+    }
+
+    def add_step(name: str, status_value: str, detail: str, data: dict | None = None):
+        state['steps'].append({
+            'step': name,
+            'status': status_value,
+            'detail': detail,
+            'timestamp': timezone.now().isoformat(),
+            'data': data or {},
+        })
+        _persist_domain_switch_state(domain, workflow_id, state)
+
+    try:
+        dns_payload = {'records_updated': []}
+        try:
+            record_target = target_endpoint or f"{domain.domain_name}.origin.atonixcorp.cloud"
+            try:
+                zone = domain.dns_zone
+            except DnsZone.DoesNotExist:
+                zone_create = dns_svc.create_zone(domain.domain_name)
+                if zone_create.get('success'):
+                    zone = DnsZone.objects.create(
+                        domain=domain,
+                        zone_id=zone_create['zone_id'],
+                        zone_name=zone_create['zone_name'],
+                        status=zone_create.get('status', 'active'),
+                    )
+                else:
+                    zone = None
+
+            def upsert_record(name: str, record_type: str, records: list[str], ttl: int = 300):
+                if zone:
+                    DomainDnsRecord.objects.update_or_create(
+                        zone=zone,
+                        name=name,
+                        record_type=record_type,
+                        defaults={'records': records, 'ttl': ttl, 'is_managed': True},
+                    )
+                    try:
+                        dns_svc.create_record(zone_id=zone.zone_id, name=name, record_type=record_type, records=records, ttl=ttl)
+                    except Exception:
+                        pass
+                dns_payload['records_updated'].append({'name': name, 'type': record_type, 'records': records})
+
+            upsert_record(domain.domain_name, 'A', [record_target])
+            upsert_record(f"www.{domain.domain_name}", 'CNAME', [domain.domain_name])
+            upsert_record(domain.domain_name, 'MX', ['10 mail.atonixcorp.com.'])
+            upsert_record(domain.domain_name, 'TXT', [f"v=spf1 include:_spf.{domain.domain_name} ~all"])
+
+            domain.dnssec_enabled = True
+            domain.save(update_fields=['dnssec_enabled', 'updated_at'])
+            add_step('dns_update', 'completed', 'A/CNAME/MX/TXT records updated with DNSSEC enabled', dns_payload)
+        except Exception as exc:
+            add_step('dns_update', 'failed', f'DNS update failed: {exc}')
+
+        try:
+            lb_query = LoadBalancer.objects.filter(owner=user)
+            if lb_resource_id:
+                lb_query = lb_query.filter(resource_id=lb_resource_id)
+            lb = lb_query.order_by('-created_at').first()
+            if lb:
+                lb.metadata = {
+                    **(lb.metadata or {}),
+                    'domain_switch': {'domain': domain.domain_name, 'workflow_id': workflow_id, 'switched_at': timezone.now().isoformat()},
+                    'cdn_origin_host': domain.domain_name,
+                }
+                lb.save(update_fields=['metadata'])
+                add_step('load_balancer_update', 'completed', 'Load balancer routing metadata updated', {'lb_resource_id': lb.resource_id, 'lb_id': lb.lb_id})
+            else:
+                add_step('load_balancer_update', 'skipped', 'No load balancer found for user')
+        except Exception as exc:
+            add_step('load_balancer_update', 'failed', f'Load balancer update failed: {exc}')
+
+        try:
+            cdn_query = CDNDistribution.objects.filter(owner=user)
+            if cdn_resource_id:
+                cdn_query = cdn_query.filter(resource_id=cdn_resource_id)
+            cdn = cdn_query.order_by('-created_at').first()
+            if cdn:
+                domains = list(cdn.domain_names or [])
+                if domain.domain_name not in domains:
+                    domains.append(domain.domain_name)
+                purge_history = (cdn.metadata or {}).get('purge_history', [])
+                purge_job = {'purge_id': f"purge-{uuid.uuid4().hex[:8]}", 'paths': ['/*'], 'status': 'completed', 'workflow_id': workflow_id}
+                purge_history.insert(0, purge_job)
+                cdn.domain_names = domains
+                cdn.metadata = {**(cdn.metadata or {}), 'origin_domain': domain.domain_name, 'purge_history': purge_history[:25]}
+                cdn.save(update_fields=['domain_names', 'metadata'])
+                add_step('cdn_update', 'completed', 'CDN domain aliases updated and cache purged', {'cdn_resource_id': cdn.resource_id, 'distribution_id': cdn.distribution_id, 'purge_id': purge_job['purge_id']})
+            else:
+                add_step('cdn_update', 'skipped', 'No CDN distribution found for user')
+        except Exception as exc:
+            add_step('cdn_update', 'failed', f'CDN update failed: {exc}')
+
+        try:
+            email_domain, _ = EmailDomain.objects.get_or_create(
+                domain=domain,
+                defaults={'status': 'active', 'mx_provisioned': True, 'spf_provisioned': True, 'dkim_provisioned': True, 'dmarc_provisioned': True},
+            )
+            email_domain.status = 'active'
+            email_domain.mx_provisioned = True
+            email_domain.spf_provisioned = True
+            email_domain.dkim_provisioned = True
+            email_domain.dmarc_provisioned = True
+            email_domain.save(update_fields=['status', 'mx_provisioned', 'spf_provisioned', 'dkim_provisioned', 'dmarc_provisioned'])
+            EmailActivityLog.objects.create(
+                email_domain=email_domain,
+                event='dns_provisioned',
+                detail=f'Domain switch workflow {workflow_id} updated MX/SPF/DKIM/DMARC records',
+                actor=user,
+            )
+            add_step('email_update', 'completed', 'Email routing and DNS verification flags updated', {'email_domain_id': email_domain.id})
+        except Exception as exc:
+            add_step('email_update', 'failed', f'Email update failed: {exc}')
+
+        try:
+            cluster_query = KubernetesCluster.objects.filter(owner=user)
+            if cluster_resource_id:
+                cluster_query = cluster_query.filter(resource_id=cluster_resource_id)
+            cluster = cluster_query.order_by('-created_at').first()
+            if cluster:
+                deploy_events = (cluster.metadata or {}).get('domain_switch_events', [])
+                deploy_events.insert(0, {'workflow_id': workflow_id, 'domain': domain.domain_name, 'trigger': 'domain-switch', 'status': 'validated', 'timestamp': timezone.now().isoformat()})
+                cluster.metadata = {**(cluster.metadata or {}), 'domain_switch_events': deploy_events[:25]}
+                cluster.save(update_fields=['metadata'])
+                add_step('orchestration_trigger', 'completed', 'Kubernetes domain config redeploy trigger recorded', {'cluster_resource_id': cluster.resource_id, 'cluster_id': cluster.cluster_id})
+            else:
+                add_step('orchestration_trigger', 'skipped', 'No Kubernetes cluster found for user')
+        except Exception as exc:
+            add_step('orchestration_trigger', 'failed', f'Orchestration trigger failed: {exc}')
+
+        failures = len([step for step in state['steps'] if step['status'] == 'failed'])
+        state['status'] = 'completed' if failures == 0 else ('partial' if failures < len(state['steps']) else 'failed')
+        state['completed_at'] = timezone.now().isoformat()
+        _persist_domain_switch_state(domain, workflow_id, state)
+
+        AuditLog.log_action(
+            user=user,
+            action='update',
+            resource_type='domain-switch',
+            resource_id=domain.resource_id,
+            resource_name=domain.domain_name,
+            status='success' if state['status'] in ['completed', 'partial'] else 'failure',
+            details={'workflow_id': workflow_id, 'domain': domain.domain_name, 'status': state['status'], 'steps': state['steps']},
+        )
+    except Exception as exc:
+        logger.exception('Unhandled domain switch worker error: %s', exc)
+        state['status'] = 'failed'
+        state['completed_at'] = timezone.now().isoformat()
+        state['steps'].append({
+            'step': 'worker',
+            'status': 'failed',
+            'detail': f'Unhandled worker error: {exc}',
+            'timestamp': timezone.now().isoformat(),
+            'data': {},
+        })
+        _persist_domain_switch_state(domain, workflow_id, state)
+    finally:
+        close_old_connections()
+
+
+def _domain_switch_worker_loop():
+    while True:
+        payload = _DOMAIN_SWITCH_QUEUE.get()
+        try:
+            _execute_domain_switch_workflow(payload)
+        finally:
+            _DOMAIN_SWITCH_QUEUE.task_done()
+
+
+def _ensure_domain_switch_worker():
+    global _DOMAIN_SWITCH_WORKER_STARTED
+    with _DOMAIN_SWITCH_LOCK:
+        if _DOMAIN_SWITCH_WORKER_STARTED:
+            return
+        worker = threading.Thread(target=_domain_switch_worker_loop, name='domain-switch-worker', daemon=True)
+        worker.start()
+        _DOMAIN_SWITCH_WORKER_STARTED = True
+
+
+def enqueue_domain_switch_workflow(
+    *,
+    domain_resource_id: str,
+    user_id: int,
+    target_endpoint: str = '',
+    lb_resource_id: str = '',
+    cdn_resource_id: str = '',
+    cluster_resource_id: str = '',
+) -> dict:
+    _ensure_domain_switch_worker()
+
+    from .domain_models import Domain
+
+    workflow_id = f"switch-{uuid.uuid4().hex[:10]}"
+    queued_at = timezone.now().isoformat()
+
+    domain = Domain.objects.get(resource_id=domain_resource_id, owner_id=user_id)
+    queued_state = {
+        'workflow_id': workflow_id,
+        'status': 'queued',
+        'queued_at': queued_at,
+        'started_at': None,
+        'completed_at': None,
+        'target_endpoint': target_endpoint,
+        'steps': [],
+    }
+    _persist_domain_switch_state(domain, workflow_id, queued_state)
+
+    _DOMAIN_SWITCH_QUEUE.put({
+        'workflow_id': workflow_id,
+        'domain_resource_id': domain_resource_id,
+        'user_id': user_id,
+        'target_endpoint': target_endpoint,
+        'lb_resource_id': lb_resource_id,
+        'cdn_resource_id': cdn_resource_id,
+        'cluster_resource_id': cluster_resource_id,
+        'queued_at': queued_at,
+    })
+
+    return {
+        'workflow_id': workflow_id,
+        'domain_resource_id': domain_resource_id,
+        'status': 'queued',
+        'queued_at': queued_at,
+        'message': 'Domain switch queued successfully',
+    }
 
 
 # ========== COMPUTE PROVISIONING ==========

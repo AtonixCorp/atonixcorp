@@ -494,6 +494,17 @@ export const domainApi = {
   updateNameservers: (id: string, nameservers: string[])          => cloudClient.post(`/domains/${id}/update_nameservers/`, { nameservers }),
   setPrivacy:        (id: string, enable: boolean)                => cloudClient.post(`/domains/${id}/set_privacy/`, { enable }),
   enableDnssec:      (id: string)                                 => cloudClient.post(`/domains/${id}/enable_dnssec/`),
+  // One-click switch workflow
+  switchDomain:      (
+    id: string,
+    payload?: {
+      target_endpoint?: string;
+      lb_resource_id?: string;
+      cdn_resource_id?: string;
+      cluster_resource_id?: string;
+    }
+  ) => cloudClient.post(`/domains/${id}/switch_domain/`, payload || {}),
+  switchStatus:      (id: string)                                 => cloudClient.get(`/domains/${id}/switch_status/`),
 };
 
 // ---- Email Marketing ----

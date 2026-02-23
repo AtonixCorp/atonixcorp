@@ -70,6 +70,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/containers/:id"          element={<ContainerRegistryPage />} />
             <Route path="/dashboard/storage"                  element={<StoragePage />} />
             <Route path="/dashboard/storage/:id"              element={<StoragePage />} />
+            <Route path="/dashboard/domain"                   element={<Navigate to="/dashboard/domains" replace />} />
             <Route path="/dashboard/domains"                  element={<DomainPage />} />
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<EmailMarketingPage />} />
@@ -95,6 +96,7 @@ const AppShell: React.FC = () => {
           <Route path="/features"  element={<FeaturesPage />} />
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/about"     element={<AboutPage />} />
+          <Route path="/domains"   element={<Navigate to="/dashboard/domains" replace />} />
           <Route path="/resources" element={<DocsPage />} />
           <Route path="/support"   element={<DocsPage />} />
           <Route path="/contact"   element={<AboutPage />} />

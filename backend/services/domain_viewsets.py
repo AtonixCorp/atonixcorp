@@ -19,6 +19,7 @@ from .domain_serializers import (
 )
 from . import reseller_club_service as rc
 from . import designate_service as dns_svc
+from .tasks import enqueue_domain_switch_workflow
 
 logger = logging.getLogger(__name__)
 
@@ -294,6 +295,34 @@ class DomainViewSet(ModelViewSet):
         domain.dnssec_enabled = True
         domain.save(update_fields=['dnssec_enabled', 'updated_at'])
         return Response({'dnssec_enabled': True})
+
+    @action(detail=True, methods=['post'], url_path='switch_domain')
+    def switch_domain(self, request, resource_id=None):
+        domain = self.get_object()
+        target_endpoint = request.data.get('target_endpoint', '').strip()
+        lb_resource_id = request.data.get('lb_resource_id', '').strip()
+        cdn_resource_id = request.data.get('cdn_resource_id', '').strip()
+        cluster_resource_id = request.data.get('cluster_resource_id', '').strip()
+        queued = enqueue_domain_switch_workflow(
+            domain_resource_id=domain.resource_id,
+            user_id=request.user.id,
+            target_endpoint=target_endpoint,
+            lb_resource_id=lb_resource_id,
+            cdn_resource_id=cdn_resource_id,
+            cluster_resource_id=cluster_resource_id,
+        )
+        return Response(queued, status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=True, methods=['get'], url_path='switch_status')
+    def switch_status(self, request, resource_id=None):
+        """Return latest domain switch workflow status."""
+        domain = self.get_object()
+        switch_state = (domain.metadata or {}).get('domain_switch', {})
+        return Response({
+            'domain': domain.domain_name,
+            'workflow': switch_state,
+            'history': (domain.metadata or {}).get('domain_switch_history', []),
+        })
 
 
 # ── SslCertificate ViewSet ────────────────────────────────────────────────────
