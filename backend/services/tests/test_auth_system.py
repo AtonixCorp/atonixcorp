@@ -230,7 +230,7 @@ class TestQuotaEnforcement:
             )
 
         profile = user.userprofile
-        current_instances = user.instance_set.count()
+        current_instances = Instance.objects.filter(owner=user).count()
 
         assert current_instances < profile.max_instances
 
@@ -258,7 +258,7 @@ class TestQuotaEnforcement:
             )
 
         profile = user.userprofile
-        current_instances = user.instance_set.count()
+        current_instances = Instance.objects.filter(owner=user).count()
 
         assert current_instances >= profile.max_instances
 
@@ -284,7 +284,7 @@ class TestQuotaEnforcement:
             )
 
         profile = user.userprofile
-        used_storage = user.volume_set.aggregate(
+        used_storage = Volume.objects.filter(owner=user).aggregate(
             total=Sum('size_gb')
         )['total'] or 0
 

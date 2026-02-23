@@ -66,12 +66,13 @@ def flavor(db):
     """Create a test VM flavor"""
     from ..models import Flavor
     return Flavor.objects.create(
-        instance_type='m5.large',
+        flavor_id='1',
+        name='m5.large',
         vcpus=2,
         memory_mb=8192,
-        network_throughput_mbps=1000,
-        pricing_on_demand=0.096,
-        pricing_reserved=0.064,
+        disk_gb=100,
+        network_bandwidth_gbps=1.0,
+        hourly_cost_usd=0.096,
     )
 
 
@@ -80,12 +81,43 @@ def image(db):
     """Create a test OS image"""
     from ..models import Image
     return Image.objects.create(
+        image_id='1',
         name='ubuntu-22.04-lts',
         os_type='linux',
         os_name='ubuntu',
         os_version='22.04',
-        root_volume_size_gb=30,
-        public=True,
+        size_gb=30,
+        is_public=True,
+    )
+
+
+@pytest.fixture(autouse=True)
+def seed_default_compute_catalog(db):
+    """Ensure legacy tests using flavor_id=1/image_id=1 always have catalog data."""
+    from ..models import Flavor, Image
+
+    Flavor.objects.get_or_create(
+        flavor_id='1',
+        defaults={
+            'name': 'm5.large',
+            'vcpus': 2,
+            'memory_mb': 8192,
+            'disk_gb': 100,
+            'network_bandwidth_gbps': 1.0,
+            'hourly_cost_usd': 0.096,
+        },
+    )
+
+    Image.objects.get_or_create(
+        image_id='1',
+        defaults={
+            'name': 'ubuntu-22.04-lts',
+            'os_type': 'linux',
+            'os_name': 'ubuntu',
+            'os_version': '22.04',
+            'size_gb': 30,
+            'is_public': True,
+        },
     )
 
 
@@ -100,12 +132,12 @@ def instance(db, user, flavor, image):
     )
     return Instance.objects.create(
         name='test-instance',
+        instance_id='i-test-instance-001',
         owner=user,
         flavor=flavor,
         image=image,
         status='running',
-        vpc=vpc,
-        availability_zone='us-west-2a',
+        vpc_id=str(vpc.id),
         private_ip='10.0.0.10',
         public_ip='203.0.113.10',
     )
@@ -224,14 +256,28 @@ def create_test_instance(user, flavor=None, image=None, name='test-instance', **
 
     if not flavor:
         flavor, _ = Flavor.objects.get_or_create(
-            instance_type='t3.micro',
-            defaults={'vcpus': 1, 'memory_mb': 1024}
+            flavor_id='flavor-t3-micro',
+            defaults={
+                'name': 't3.micro',
+                'vcpus': 1,
+                'memory_mb': 1024,
+                'disk_gb': 20,
+                'network_bandwidth_gbps': 0.5,
+                'hourly_cost_usd': 0.0200,
+            }
         )
 
     if not image:
         image, _ = Image.objects.get_or_create(
-            name='ubuntu-22.04-lts',
-            defaults={'os_type': 'linux', 'root_volume_size_gb': 30}
+            image_id='img-ubuntu-2204-default',
+            defaults={
+                'name': 'ubuntu-22.04-lts',
+                'os_type': 'linux',
+                'os_name': 'ubuntu',
+                'os_version': '22.04',
+                'size_gb': 30,
+                'is_public': True,
+            }
         )
 
     vpc = VPC.objects.create(
@@ -240,14 +286,15 @@ def create_test_instance(user, flavor=None, image=None, name='test-instance', **
         cidr_block='10.0.0.0/16',
     )
 
+    vpc_ref = kwargs.pop('vpc', None)
     return Instance.objects.create(
         name=name,
+        instance_id=kwargs.pop('instance_id', f'i-{name}'),
         owner=user,
         flavor=flavor,
         image=image,
         status='running',
-        vpc=vpc,
-        availability_zone='us-west-2a',
+        vpc_id=str((vpc_ref.id if vpc_ref is not None else vpc.id)),
         private_ip='10.0.0.10',
         **kwargs
     )

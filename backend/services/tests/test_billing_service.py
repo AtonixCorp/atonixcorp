@@ -29,7 +29,7 @@ class TestBillingServiceInstanceCost:
         service = BillingService()
         
         # Set instance to running state with known duration
-        instance.state = 'running'
+        instance.status = 'running'
         instance.created_at = timezone.now() - timedelta(hours=24)
         instance.save()
         
@@ -43,7 +43,7 @@ class TestBillingServiceInstanceCost:
         """Test cost calculation for stopped instance (should be 0)"""
         service = BillingService()
         
-        instance.state = 'stopped'
+        instance.status = 'stopped'
         instance.save()
         
         cost = service.calculate_instance_cost(instance.id)
@@ -60,7 +60,7 @@ class TestBillingServiceInstanceCost:
             flavor_id=1,
             image_id=1,
             vpc_id=1,
-            state='pending',
+            status='pending',
             created_at=timezone.now(),
         )
         
@@ -178,7 +178,7 @@ class TestBillingServiceMonthlyAggregation:
             flavor_id=1,
             image_id=1,
             vpc_id=1,
-            state='running',
+            status='running',
             created_at=timezone.now() - timedelta(hours=24),
         )
         
@@ -207,7 +207,7 @@ class TestBillingServiceMonthlyAggregation:
             flavor_id=1,
             image_id=1,
             vpc_id=1,
-            state='running',
+            status='running',
         )
         
         costs = service.calculate_user_monthly_cost(user.id)
@@ -232,7 +232,7 @@ class TestBillingServiceForecasting:
             flavor_id=1,
             image_id=1,
             vpc_id=1,
-            state='running',
+            status='running',
         )
         
         forecast = service.calculate_cost_forecast(user.id, months=3)
@@ -320,7 +320,7 @@ class TestBillingServiceEdgeCases:
             flavor_id=1,
             image_id=1,
             vpc_id=1,
-            state='running',
+            status='running',
             created_at=timezone.now(),  # Just created
         )
         
