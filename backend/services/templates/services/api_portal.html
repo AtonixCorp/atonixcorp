@@ -21,7 +21,10 @@
             <a href="#security">Security</a>
             <a href="#dx">DX Standards</a>
         </nav>
-        <a class="btn btn-primary" href="/api/auth/signup/">Get API Key</a>
+        <div class="topbar-actions">
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark and light mode">🌙 Dark</button>
+            <a class="btn btn-primary" href="/api/auth/signup/">Get API Key</a>
+        </div>
     </div>
 </header>
 
@@ -347,6 +350,49 @@ func main() {
             </div>
         </div>
     </section>
+
+    <section id="status" class="section alt">
+        <div class="container">
+            <h2>Platform Status</h2>
+            <p class="section-text">Health, runtime checks, and API service availability for your current environment.</p>
+            <div class="grid cards-2">
+                <article class="panel">
+                    <h3>Health Endpoint</h3>
+                    <p>Use the backend health endpoint to confirm service readiness.</p>
+                    <a href="/api/health/" target="_blank" rel="noopener">Open /api/health/</a>
+                </article>
+                <article class="panel">
+                    <h3>Quick Verify</h3>
+<pre><code>curl -X GET "http://127.0.0.1:8000/api/health/"</code></pre>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="graphql" class="section">
+        <div class="container">
+            <h2>GraphQL Access</h2>
+            <p class="section-text">Access the GraphQL endpoint from a dark-themed section here, then open the endpoint when needed.</p>
+            <div class="grid cards-2">
+                <article class="panel">
+                    <h3>Endpoint</h3>
+                    <p>The GraphQL endpoint is available at:</p>
+<pre><code>/api/graphql/</code></pre>
+                    <a href="/api/graphql/" target="_blank" rel="noopener">Open GraphQL Endpoint</a>
+                </article>
+                <article class="panel">
+                    <h3>Sample Query</h3>
+<pre><code>{
+  instances {
+    resourceId
+    name
+    status
+  }
+}</code></pre>
+                </article>
+            </div>
+        </div>
+    </section>
 </main>
 
 <footer class="footer">
@@ -356,9 +402,9 @@ func main() {
             <p>Engineering excellence, sovereign cloud identity, and global ambition.</p>
         </div>
         <div class="footer-links">
-            <a href="/api/health/">Status</a>
-            <a href="/api/services/">API Reference</a>
-            <a href="/api/graphql/">GraphQL</a>
+            <a href="#status">Status</a>
+            <a href="#reference">API Reference</a>
+            <a href="#graphql">GraphQL</a>
             <a href="/admin/">Admin</a>
         </div>
     </div>
