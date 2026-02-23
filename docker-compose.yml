@@ -1,10 +1,21 @@
-version: "3.8"
 
-########################################
-# Production docker-compose
-# - All services placed on `atonixcorp-net`
-# - Nginx reverse proxy expects certs under /etc/letsencrypt (host mount)
-########################################
+# ============================================================
+#  AtonixCorp – unified docker-compose
+#
+#  Profiles
+#  --------
+#  prod        Production stack (gunicorn + built frontend + nginx)
+#  dev         Hot-reload stack (runserver + React dev server)
+#  monitoring  Prometheus, Grafana, Kafka-UI, Pushgateway
+#  logging     Elasticsearch, Logstash, Kibana, Jaeger
+#
+#  Usage
+#  -----
+#  Production:                  docker compose --profile prod up -d
+#  Development:                 docker compose --profile dev up -d
+#  Dev + monitoring:            docker compose --profile dev --profile monitoring up -d
+#  Full production:             docker compose --profile prod --profile monitoring --profile logging up -d
+# ============================================================
 
 networks:
   atonixcorp-net:
@@ -17,8 +28,6 @@ volumes:
   media_volume:
   letsencrypt:
   rabbitmq_data:
-
-  # Optional monitoring / logging / streaming volumes
   prometheus_data:
   grafana_data:
   elasticsearch_data:
@@ -26,14 +35,17 @@ volumes:
   zookeeper_data:
   zookeeper_logs:
 
+
+# ── Core infrastructure (always started regardless of profile) ─────────────────
 services:
+
   db:
     image: postgres:15-alpine
     container_name: atonixcorp_db
     environment:
       POSTGRES_DB: atonixcorp
       POSTGRES_USER: atonixcorp_user
-      POSTGRES_PASSWORD: changeme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -49,26 +61,86 @@ services:
       - atonixcorp-net
     restart: unless-stopped
 
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: atonixcorp_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-changeme}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+  zookeeper:
+    image: zookeeper:3.8
+    container_name: atonixcorp_zookeeper
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    ports:
+      - "2181:2181"
+      - "8080:8080"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: atonixcorp_kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+# ── Production services (--profile prod) ──────────────────────────────────────
+
   backend:
+    profiles: [prod]
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: atonixcorp_backend
     command: >
-      sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn atonixcorp.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn atonixcorp.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
       ENVIRONMENT: production
       DEBUG: "False"
-      DATABASE_URL: postgresql://atonixcorp_user:changeme@db:5432/atonixcorp
+      DATABASE_URL: postgresql://atonixcorp_user:${POSTGRES_PASSWORD:-changeme}@db:5432/atonixcorp
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: replace-with-production-secret
+      SECRET_KEY: ${SECRET_KEY:-replace-with-production-secret}
       ALLOWED_HOSTS: atonixcorp.com,api.atonixcorp.com,www.atonixcorp.com
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     depends_on:
       - db
       - redis
+      - rabbitmq
+      - kafka
     networks:
       - atonixcorp-net
     restart: always
@@ -79,11 +151,11 @@ services:
       retries: 3
 
   frontend:
+    profiles: [prod]
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: atonixcorp_frontend
-    # frontend Dockerfile already builds a static site served by nginx inside container
     expose:
       - "80"
     networks:
@@ -91,6 +163,7 @@ services:
     restart: always
 
   nginx:
+    profiles: [prod]
     build:
       context: ./docker/nginx
       dockerfile: Dockerfile
@@ -111,71 +184,80 @@ services:
       - atonixcorp-net
     restart: always
 
-  rabbitmq:
-    image: rabbitmq:3.12-management-alpine
-    container_name: atonixcorp_rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: changeme
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - atonixcorp-net
-    restart: unless-stopped
+# ── Development services (--profile dev) ──────────────────────────────────────
+# Same backend/Dockerfile – command + volume mount override enables hot-reload
 
-  # Zookeeper (for Kafka)
-  zookeeper:
-    image: zookeeper:3.8
-    container_name: atonixcorp_zookeeper
-    environment:
-      ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=zookeeper:2888:3888
+  backend-dev:
+    profiles: [dev]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: atonixcorp_backend
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - zookeeper_data:/var/lib/zookeeper/data
-      - zookeeper_logs:/var/lib/zookeeper/log
-    ports:
-      - "2181:2181"
-    networks:
-      - atonixcorp-net
-    restart: unless-stopped
-
-  # Kafka
-  kafka:
-    image: confluentinc/cp-kafka:7.4.0
-    container_name: atonixcorp_kafka
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    volumes:
-      - kafka_data:/var/lib/kafka/data
+      ENVIRONMENT: development
+      DEBUG: "True"
+      DATABASE_URL: postgresql://atonixcorp_user:${POSTGRES_PASSWORD:-postgres}@db:5432/atonixcorp
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-development-secret-do-not-use-in-prod}
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend,nginx,api.atonixcorp.com,atonixcorp.com,www.atonixcorp.com
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_ENABLED: "true"
+      PROMETHEUS_PUSHGATEWAY_URL: http://pushgateway:9091
     ports:
-      - "9092:9092"
-      - "29092:29092"
+      - "8000:8000"
     depends_on:
-      - zookeeper
-    networks:
-      - atonixcorp-net
-    restart: unless-stopped
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: atonixcorp_kafka_ui
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-    ports:
-      - "8090:8080"
-    depends_on:
+      - db
+      - redis
+      - rabbitmq
       - kafka
     networks:
       - atonixcorp-net
     restart: unless-stopped
 
-  # Prometheus
+  frontend-dev:
+    profiles: [dev]
+    image: node:18-alpine
+    container_name: atonixcorp_frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      REACT_APP_API_URL: http://localhost:8000/api
+      HOST: 0.0.0.0
+      DANGEROUSLY_DISABLE_HOST_CHECK: "true"
+    command: sh -c "npm ci --legacy-peer-deps && npm start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-dev
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+# ── Monitoring (--profile monitoring) ─────────────────────────────────────────
+
+  pushgateway:
+    profiles: [dev, monitoring]
+    image: prom/pushgateway:latest
+    container_name: atonixcorp_pushgateway
+    ports:
+      - "9091:9091"
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
   prometheus:
+    profiles: [monitoring]
     image: prom/prometheus:latest
     container_name: atonixcorp_prometheus
     ports:
@@ -191,6 +273,7 @@ services:
     restart: unless-stopped
 
   grafana:
+    profiles: [monitoring]
     image: grafana/grafana:latest
     container_name: atonixcorp_grafana
     ports:
@@ -200,7 +283,7 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
       GF_USERS_ALLOW_SIGN_UP: "false"
     depends_on:
       - prometheus
@@ -208,8 +291,26 @@ services:
       - atonixcorp-net
     restart: unless-stopped
 
-  # Elasticsearch stack (optional)
+  kafka-ui:
+    profiles: [monitoring]
+    image: provectuslabs/kafka-ui:latest
+    container_name: atonixcorp_kafka_ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+    networks:
+      - atonixcorp-net
+    restart: unless-stopped
+
+# ── Logging / ELK (--profile logging) ─────────────────────────────────────────
+
   elasticsearch:
+    profiles: [logging]
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
     container_name: atonixcorp_elasticsearch
     environment:
@@ -225,6 +326,7 @@ services:
     restart: unless-stopped
 
   logstash:
+    profiles: [logging]
     image: docker.elastic.co/logstash/logstash:8.8.0
     container_name: atonixcorp_logstash
     volumes:
@@ -237,6 +339,7 @@ services:
     restart: unless-stopped
 
   kibana:
+    profiles: [logging]
     image: docker.elastic.co/kibana/kibana:8.8.0
     container_name: atonixcorp_kibana
     ports:
@@ -249,8 +352,8 @@ services:
       - atonixcorp-net
     restart: unless-stopped
 
-  # Jaeger (APM)
   jaeger:
+    profiles: [logging]
     image: jaegertracing/all-in-one:latest
     container_name: atonixcorp_jaeger
     ports:
@@ -259,5 +362,3 @@ services:
     networks:
       - atonixcorp-net
     restart: unless-stopped
-
-# volumes and networks declared above
