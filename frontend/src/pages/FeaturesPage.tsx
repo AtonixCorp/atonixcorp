@@ -48,7 +48,7 @@ const FeaturesPage: React.FC = () => {
         {
           icon: <CheckCircleIcon sx={{ fontSize: 48, color: accentCyan }} />,
           name: 'Compliance Ready',
-          description: 'Built with GDPR, HIPAA, SOC 2, and ISO 27001 compliance in mind.',
+          description: 'Built with SOC 2, ISO 27001, and GDPR control mapping plus evidence collection APIs.',
         },
         {
           icon: <BoltIcon sx={{ fontSize: 48, color: accentCyan }} />,
@@ -63,12 +63,12 @@ const FeaturesPage: React.FC = () => {
         {
           icon: <CodeIcon sx={{ fontSize: 48, color: accentCyan }} />,
           name: 'REST & GraphQL APIs',
-          description: 'Simple and powerful APIs using REST and GraphQL for maximum flexibility.',
+          description: 'Simple and powerful APIs using REST and GraphQL for maximum flexibility and query efficiency.',
         },
         {
           icon: <BoltIcon sx={{ fontSize: 48, color: accentCyan }} />,
           name: 'SDKs & Libraries',
-          description: 'Official SDKs for Node.js, Python, Go, Ruby, Java, and more.',
+          description: 'Official SDKs for Python, Node.js, Go, and Java, plus CLI automation workflows.',
         },
         {
           icon: <CheckCircleIcon sx={{ fontSize: 48, color: accentCyan }} />,

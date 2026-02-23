@@ -9,6 +9,12 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.conf import settings
+
+try:
+    from graphene_django.views import GraphQLView
+except Exception:
+    GraphQLView = None
 
 
 @api_view(['GET'])
@@ -100,6 +106,18 @@ def current_user_view(request):
     })
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def graphql_unavailable(request):
+    return Response(
+        {
+            'detail': 'GraphQL endpoint is unavailable because graphene_django is not installed in the active environment.',
+            'hint': 'Install dependencies from backend/requirements.txt in this environment.',
+        },
+        status=503,
+    )
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', health_check),
@@ -108,5 +126,9 @@ urlpatterns = [
     path('api/auth/register/', signup_view),  # alias
     path('api/auth/me/', current_user_view),
     path('api/auth/user/', current_user_view),  # alias
+    path(
+        'api/graphql/',
+        GraphQLView.as_view(graphiql=settings.DEBUG) if GraphQLView else graphql_unavailable,
+    ),
     path('api/services/', include('services.urls')),
 ]

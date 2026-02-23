@@ -63,6 +63,11 @@ import type {
   ComplianceScanResult,
   ObservabilityResult,
 } from '../types/orchestration';
+import type {
+  ComplianceControlStatus,
+  EvidencePackResult,
+  ComplianceAttestation,
+} from '../types/compliance';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -192,6 +197,45 @@ export const orchestrationApi = {
   }) => cloudClient.post('/orchestration/disaster_recovery_plan/', payload),
   complianceScan:         () => cloudClient.get<ComplianceScanResult>('/orchestration/compliance_scan/'),
   observability:          () => cloudClient.get<ObservabilityResult>('/orchestration/observability/'),
+};
+
+// ---- GraphQL ----
+export const graphqlApi = {
+  query: <T = any>(query: string, variables?: Record<string, unknown>) => {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Token ${token}`;
+    }
+
+    return axios.post<T>(
+      `${config.API_BASE_URL}/graphql/`,
+      {
+        query,
+        variables: variables || {},
+      },
+      {
+        timeout: config.API_TIMEOUT,
+        headers,
+      }
+    );
+  },
+};
+
+// ---- Compliance ----
+export const complianceApi = {
+  listFrameworks:         () => cloudClient.get('/compliance/'),
+  controlStatus:          (framework: 'soc2' | 'iso27001' | 'gdpr' = 'soc2') =>
+    cloudClient.get<ComplianceControlStatus>(`/compliance/control_status/?framework=${framework}`),
+  collectEvidence:        (framework: 'soc2' | 'iso27001' | 'gdpr' = 'soc2') =>
+    cloudClient.post<EvidencePackResult>('/compliance/collect_evidence/', { framework }),
+  createAttestation:      (payload: {
+    framework: 'soc2' | 'iso27001' | 'gdpr';
+    period_start: string;
+    period_end: string;
+  }) => cloudClient.post<ComplianceAttestation>('/compliance/attestation/', payload),
 };
 
 // ---- Block Volumes ----

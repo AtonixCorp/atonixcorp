@@ -4,3 +4,4 @@ django-cors-headers>=4.3.0
 django-filter>=23.0
 gunicorn>=21.2.0
 openstacksdk>=4.0.0
+graphene-django>=3.2.2

@@ -2,6 +2,7 @@
 AtonixCorp Django Settings
 """
 import os
+import importlib.util
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +23,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'services',
 ]
+
+HAS_GRAPHENE_DJANGO = importlib.util.find_spec('graphene_django') is not None
+if HAS_GRAPHENE_DJANGO:
+    INSTALLED_APPS.append('graphene_django')
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -143,3 +148,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # In dev allow all origins for convenience
+
+if HAS_GRAPHENE_DJANGO:
+    GRAPHENE = {
+        'SCHEMA': 'services.graphql_schema.schema',
+    }

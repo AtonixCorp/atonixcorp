@@ -14,7 +14,7 @@ const DocsPage: React.FC = () => {
       subsections: [
         {
           title: 'Installation',
-          content: 'Learn how to install the atonixcorp SDK and get up and running in minutes.',
+          content: 'Install the official SDKs (Python, Node.js, Go, Java) and start building in minutes.',
         },
         {
           title: 'Authentication',
@@ -35,11 +35,11 @@ const DocsPage: React.FC = () => {
         },
         {
           title: 'GraphQL API',
-          content: 'Query exactly what you need with our flexible GraphQL API.',
+          content: 'Query exactly what you need with our GraphQL endpoint at /api/graphql/.',
         },
         {
-          title: 'Webhooks',
-          content: 'Set up webhooks to receive real-time events from atonixcorp.',
+          title: 'Compliance APIs',
+          content: 'Collect evidence packs, control status, and attestations for SOC 2 / ISO 27001 / GDPR programs.',
         },
       ],
     },
