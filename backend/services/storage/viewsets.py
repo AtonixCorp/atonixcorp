@@ -40,11 +40,11 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
     search_fields = ['bucket_id', 'bucket_name']
     ordering_fields = ['created_at', 'bucket_name', 'total_size_gb']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter buckets by owner."""
         return StorageBucket.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -54,11 +54,11 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
         elif self.action == 'update' or self.action == 'partial_update':
             return StorageBucketUpdateSerializer
         return StorageBucketListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user)
-    
+
     @action(detail=True, methods=['get'])
     def objects(self, request, pk=None):
         """List objects in bucket."""
@@ -66,7 +66,7 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
         objects = bucket.objects.all()[:1000]  # Limit to 1000
         serializer = S3ObjectListSerializer(objects, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def statistics(self, request, pk=None):
         """Get bucket statistics."""
@@ -78,7 +78,7 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
             'encryption_enabled': bucket.encryption_enabled,
             'average_object_size_mb': (bucket.total_size_bytes / max(bucket.total_objects, 1)) / (1024**2)
         })
-    
+
     @action(detail=True, methods=['post'])
     def enable_versioning(self, request, pk=None):
         """Enable bucket versioning."""
@@ -86,7 +86,7 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
         bucket.versioning_enabled = True
         bucket.save()
         return Response({'status': 'Versioning enabled'})
-    
+
     @action(detail=True, methods=['post'])
     def enable_logging(self, request, pk=None):
         """Enable bucket access logging."""
@@ -328,11 +328,11 @@ class S3ObjectViewSet(viewsets.ModelViewSet):
     search_fields = ['object_key', 'bucket__bucket_name']
     ordering_fields = ['created_at', 'size_bytes', 'object_key']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter objects by bucket owner."""
         return S3Object.objects.filter(bucket__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -342,7 +342,7 @@ class S3ObjectViewSet(viewsets.ModelViewSet):
         elif self.action == 'update' or self.action == 'partial_update':
             return S3ObjectUpdateSerializer
         return S3ObjectListSerializer
-    
+
     @action(detail=True, methods=['post'])
     def make_public(self, request, pk=None):
         """Make object publicly accessible."""
@@ -351,7 +351,7 @@ class S3ObjectViewSet(viewsets.ModelViewSet):
         obj.acl = 'public-read'
         obj.save()
         return Response({'status': 'Object is now public'})
-    
+
     @action(detail=True, methods=['post'])
     def make_private(self, request, pk=None):
         """Make object private."""
@@ -360,7 +360,7 @@ class S3ObjectViewSet(viewsets.ModelViewSet):
         obj.acl = 'private'
         obj.save()
         return Response({'status': 'Object is now private'})
-    
+
     @action(detail=True, methods=['post'])
     def change_storage_class(self, request, pk=None):
         """Change object storage class."""
@@ -387,11 +387,11 @@ class StorageVolumeViewSet(viewsets.ModelViewSet):
     search_fields = ['volume_id', 'name']
     ordering_fields = ['created_at', 'size_gb', 'volume_type']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter volumes by owner."""
         return StorageVolume.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -401,11 +401,11 @@ class StorageVolumeViewSet(viewsets.ModelViewSet):
         elif self.action == 'update' or self.action == 'partial_update':
             return StorageVolumeUpdateSerializer
         return StorageVolumeListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user)
-    
+
     @action(detail=True, methods=['post'])
     def attach(self, request, pk=None):
         """Attach volume to instance."""
@@ -419,7 +419,7 @@ class StorageVolumeViewSet(viewsets.ModelViewSet):
         volume.attachment_device = device
         volume.save()
         return Response({'status': f'Volume attached to {instance_id}'})
-    
+
     @action(detail=True, methods=['post'])
     def detach(self, request, pk=None):
         """Detach volume from instance."""
@@ -431,7 +431,7 @@ class StorageVolumeViewSet(viewsets.ModelViewSet):
         volume.attachment_device = ''
         volume.save()
         return Response({'status': 'Volume detached'})
-    
+
     @action(detail=True, methods=['post'])
     def create_snapshot(self, request, pk=None):
         """Create snapshot of volume."""
@@ -462,17 +462,17 @@ class StorageSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['snapshot_id']
     ordering_fields = ['created_at', 'size_gb', 'status']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter snapshots by owner."""
         return StorageSnapshot.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
             return StorageSnapshotDetailSerializer
         return StorageSnapshotListSerializer
-    
+
     @action(detail=True, methods=['post'])
     def make_public(self, request, pk=None):
         """Share snapshot publicly."""
@@ -480,7 +480,7 @@ class StorageSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
         snapshot.is_public = True
         snapshot.save()
         return Response({'status': 'Snapshot is now public'})
-    
+
     @action(detail=True, methods=['post'])
     def restore(self, request, pk=None):
         """Create volume from snapshot."""
@@ -512,11 +512,11 @@ class FileShareViewSet(viewsets.ModelViewSet):
     search_fields = ['file_share_id', 'name']
     ordering_fields = ['created_at', 'size_gb', 'used_gb']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter file shares by owner."""
         return FileShare.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -524,11 +524,11 @@ class FileShareViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return FileShareCreateSerializer
         return FileShareListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user)
-    
+
     @action(detail=True, methods=['get'])
     def mounts(self, request, pk=None):
         """Get all mounts for file share."""
@@ -536,7 +536,7 @@ class FileShareViewSet(viewsets.ModelViewSet):
         mounts = file_share.mounts.all()
         serializer = FileShareMountSerializer(mounts, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def mount(self, request, pk=None):
         """Mount file share to instance."""
@@ -553,7 +553,7 @@ class FileShareViewSet(viewsets.ModelViewSet):
         )
         serializer = FileShareMountSerializer(mount)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
     @action(detail=True, methods=['post'])
     def unmount(self, request, pk=None):
         """Unmount file share from instance."""
@@ -580,11 +580,11 @@ class EncryptionKeyViewSet(viewsets.ModelViewSet):
     search_fields = ['key_id', 'name']
     ordering_fields = ['created_at', 'key_type']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter keys by owner."""
         return EncryptionKey.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -592,11 +592,11 @@ class EncryptionKeyViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return EncryptionKeyCreateSerializer
         return EncryptionKeyListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user)
-    
+
     @action(detail=True, methods=['post'])
     def rotate(self, request, pk=None):
         """Manually rotate encryption key."""
@@ -606,7 +606,7 @@ class EncryptionKeyViewSet(viewsets.ModelViewSet):
         key.next_rotation_at = timezone.now() + timezone.timedelta(days=key.rotation_period_days)
         key.save()
         return Response({'status': 'Key rotated successfully'})
-    
+
     @action(detail=True, methods=['post'])
     def disable(self, request, pk=None):
         """Disable encryption key."""
@@ -614,7 +614,7 @@ class EncryptionKeyViewSet(viewsets.ModelViewSet):
         key.key_state = 'disabled'
         key.save()
         return Response({'status': 'Key disabled'})
-    
+
     @action(detail=True, methods=['post'])
     def enable(self, request, pk=None):
         """Re-enable encryption key."""
@@ -638,11 +638,11 @@ class BackupPolicyViewSet(viewsets.ModelViewSet):
     search_fields = ['policy_id', 'name']
     ordering_fields = ['created_at', 'name', 'last_backup_time']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter policies by owner."""
         return BackupPolicy.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -652,11 +652,11 @@ class BackupPolicyViewSet(viewsets.ModelViewSet):
         elif self.action == 'update' or self.action == 'partial_update':
             return BackupPolicyUpdateSerializer
         return BackupPolicyListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user)
-    
+
     @action(detail=True, methods=['get'])
     def backups(self, request, pk=None):
         """Get backups for policy."""
@@ -664,7 +664,7 @@ class BackupPolicyViewSet(viewsets.ModelViewSet):
         backups = policy.backups.all()
         serializer = BackupListSerializer(backups, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def trigger_backup(self, request, pk=None):
         """Trigger backup immediately."""
@@ -696,17 +696,17 @@ class BackupViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['backup_id', 'resource_id']
     ordering_fields = ['created_at', 'status', 'size_bytes']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter backups by policy owner."""
         return Backup.objects.filter(policy__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
             return BackupDetailSerializer
         return BackupListSerializer
-    
+
     @action(detail=True, methods=['post'])
     def restore(self, request, pk=None):
         """Restore from backup."""

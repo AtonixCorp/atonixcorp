@@ -18,7 +18,7 @@ class VPCListSerializer(serializers.ModelSerializer):
     """Lightweight VPC serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     subnet_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = VPC
         fields = [
@@ -26,7 +26,7 @@ class VPCListSerializer(serializers.ModelSerializer):
             'status', 'owner_username', 'subnet_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'vpc_id', 'created_at']
-    
+
     def get_subnet_count(self, obj):
         return obj.subnets.count()
 
@@ -35,7 +35,7 @@ class VPCDetailSerializer(serializers.ModelSerializer):
     """Full VPC details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     subnet_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = VPC
         fields = [
@@ -47,7 +47,7 @@ class VPCDetailSerializer(serializers.ModelSerializer):
             'subnet_count'
         ]
         read_only_fields = ['resource_id', 'vpc_id', 'status', 'created_at', 'updated_at']
-    
+
     def get_subnet_count(self, obj):
         return obj.subnets.count()
 
@@ -72,7 +72,7 @@ class VPCCreateSerializer(serializers.ModelSerializer):
 class SubnetListSerializer(serializers.ModelSerializer):
     """Lightweight subnet serializer."""
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
-    
+
     class Meta:
         model = Subnet
         fields = [
@@ -86,7 +86,7 @@ class SubnetListSerializer(serializers.ModelSerializer):
 class SubnetDetailSerializer(serializers.ModelSerializer):
     """Full subnet details."""
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
-    
+
     class Meta:
         model = Subnet
         fields = [
@@ -153,7 +153,7 @@ class SecurityGroupListSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     vpc_id = serializers.CharField(source='vpc.vpc_id', read_only=True)
     rule_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = SecurityGroup
         fields = [
@@ -161,7 +161,7 @@ class SecurityGroupListSerializer(serializers.ModelSerializer):
             'owner_username', 'rule_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'sg_id', 'created_at']
-    
+
     def get_rule_count(self, obj):
         return obj.rules.count()
 
@@ -171,7 +171,7 @@ class SecurityGroupDetailSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
     rules = SecurityGroupRuleListSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = SecurityGroup
         fields = [
@@ -199,7 +199,7 @@ class TargetGroupListSerializer(serializers.ModelSerializer):
     """Lightweight target group serializer."""
     lb_name = serializers.CharField(source='load_balancer.name', read_only=True)
     target_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = TargetGroup
         fields = [
@@ -207,7 +207,7 @@ class TargetGroupListSerializer(serializers.ModelSerializer):
             'target_type', 'target_count', 'created_at'
         ]
         read_only_fields = ['tg_id', 'created_at']
-    
+
     def get_target_count(self, obj):
         return len(obj.registered_targets)
 
@@ -216,7 +216,7 @@ class TargetGroupDetailSerializer(serializers.ModelSerializer):
     """Full target group details."""
     lb_name = serializers.CharField(source='load_balancer.name', read_only=True)
     target_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = TargetGroup
         fields = [
@@ -230,7 +230,7 @@ class TargetGroupDetailSerializer(serializers.ModelSerializer):
             'target_count', 'created_at', 'updated_at'
         ]
         read_only_fields = ['tg_id', 'created_at', 'updated_at']
-    
+
     def get_target_count(self, obj):
         return len(obj.registered_targets)
 
@@ -238,7 +238,7 @@ class TargetGroupDetailSerializer(serializers.ModelSerializer):
 class ListenerListSerializer(serializers.ModelSerializer):
     """Lightweight listener serializer."""
     lb_name = serializers.CharField(source='load_balancer.name', read_only=True)
-    
+
     class Meta:
         model = Listener
         fields = [
@@ -251,14 +251,14 @@ class ListenerListSerializer(serializers.ModelSerializer):
 class TargetGroupListForLBSerializer(serializers.ModelSerializer):
     """Target group serializer for load balancer details."""
     target_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = TargetGroup
         fields = [
             'tg_id', 'name', 'protocol', 'port', 'target_type',
             'registered_targets', 'health_status', 'target_count'
         ]
-    
+
     def get_target_count(self, obj):
         return len(obj.registered_targets)
 
@@ -267,7 +267,7 @@ class LoadBalancerListSerializer(serializers.ModelSerializer):
     """Lightweight load balancer serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     listener_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = LoadBalancer
         fields = [
@@ -275,7 +275,7 @@ class LoadBalancerListSerializer(serializers.ModelSerializer):
             'dns_name', 'owner_username', 'listener_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'lb_id', 'created_at']
-    
+
     def get_listener_count(self, obj):
         return obj.listeners.count()
 
@@ -285,7 +285,7 @@ class LoadBalancerDetailSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     target_groups = TargetGroupListForLBSerializer(many=True, read_only=True)
     listeners = ListenerListSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = LoadBalancer
         fields = [
@@ -301,7 +301,7 @@ class LoadBalancerDetailSerializer(serializers.ModelSerializer):
             'resource_id', 'lb_id', 'dns_name', 'status',
             'created_at', 'updated_at'
         ]
-    
+
     def get_listener_count(self, obj):
         return obj.listeners.count()
 
@@ -326,7 +326,7 @@ class LoadBalancerCreateSerializer(serializers.ModelSerializer):
 class RouteListSerializer(serializers.ModelSerializer):
     """Lightweight route serializer."""
     route_table_name = serializers.CharField(source='route_table.name', read_only=True)
-    
+
     class Meta:
         model = Route
         fields = [
@@ -339,7 +339,7 @@ class RouteListSerializer(serializers.ModelSerializer):
 class RouteDetailSerializer(serializers.ModelSerializer):
     """Full route details."""
     route_table_name = serializers.CharField(source='route_table.name', read_only=True)
-    
+
     class Meta:
         model = Route
         fields = [
@@ -365,7 +365,7 @@ class RouteTableListSerializer(serializers.ModelSerializer):
     """Lightweight route table serializer."""
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
     route_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = RouteTable
         fields = [
@@ -373,7 +373,7 @@ class RouteTableListSerializer(serializers.ModelSerializer):
             'route_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'route_table_id', 'created_at']
-    
+
     def get_route_count(self, obj):
         return obj.routes.count()
 
@@ -382,7 +382,7 @@ class RouteTableDetailSerializer(serializers.ModelSerializer):
     """Full route table details."""
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
     routes = RouteListSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = RouteTable
         fields = [
@@ -449,7 +449,7 @@ class DNSRecordCreateSerializer(serializers.ModelSerializer):
 class CDNDistributionListSerializer(serializers.ModelSerializer):
     """Lightweight CDN distribution serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = CDNDistribution
         fields = [
@@ -462,7 +462,7 @@ class CDNDistributionListSerializer(serializers.ModelSerializer):
 class CDNDistributionDetailSerializer(serializers.ModelSerializer):
     """Full CDN distribution details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = CDNDistribution
         fields = [
@@ -506,7 +506,7 @@ class VPNConnectionListSerializer(serializers.ModelSerializer):
     """Lightweight VPN connection serializer."""
     vpn_gw_name = serializers.CharField(source='vpn_gateway.name', read_only=True)
     cgw_name = serializers.CharField(source='customer_gateway.name', read_only=True)
-    
+
     class Meta:
         model = VPNConnection
         fields = [
@@ -520,7 +520,7 @@ class VPNConnectionDetailSerializer(serializers.ModelSerializer):
     """Full VPN connection details."""
     vpn_gw_name = serializers.CharField(source='vpn_gateway.name', read_only=True)
     cgw_name = serializers.CharField(source='customer_gateway.name', read_only=True)
-    
+
     class Meta:
         model = VPNConnection
         fields = [
@@ -546,7 +546,7 @@ class VPNGatewayListSerializer(serializers.ModelSerializer):
     """Lightweight VPN gateway serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
-    
+
     class Meta:
         model = VPNGateway
         fields = [
@@ -559,7 +559,7 @@ class VPNGatewayListSerializer(serializers.ModelSerializer):
 class CustomerGatewayListSerializer(serializers.ModelSerializer):
     """Lightweight customer gateway serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = CustomerGateway
         fields = [
@@ -577,7 +577,7 @@ class InternetGatewayListSerializer(serializers.ModelSerializer):
     """Lightweight internet gateway serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     vpc_name = serializers.CharField(source='vpc.name', read_only=True)
-    
+
     class Meta:
         model = InternetGateway
         fields = [
@@ -600,7 +600,7 @@ class NATGatewayListSerializer(serializers.ModelSerializer):
     """Lightweight NAT gateway serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     subnet_name = serializers.CharField(source='subnet.name', read_only=True)
-    
+
     class Meta:
         model = NATGateway
         fields = [
@@ -614,7 +614,7 @@ class NATGatewayDetailSerializer(serializers.ModelSerializer):
     """Full NAT gateway details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     subnet_name = serializers.CharField(source='subnet.name', read_only=True)
-    
+
     class Meta:
         model = NATGateway
         fields = [

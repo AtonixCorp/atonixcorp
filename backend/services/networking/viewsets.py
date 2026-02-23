@@ -52,11 +52,11 @@ class VPCViewSet(viewsets.ModelViewSet):
     search_fields = ['vpc_id', 'name', 'cidr_block']
     ordering_fields = ['created_at', 'name', 'region']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter VPCs by owner."""
         return VPC.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -64,7 +64,7 @@ class VPCViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return VPCCreateSerializer
         return VPCListSerializer
-    
+
     def perform_create(self, serializer):
         """Create VPC with generated ID and default networking controls."""
         vpc = serializer.save(
@@ -147,7 +147,7 @@ class VPCViewSet(viewsets.ModelViewSet):
             'internet_gateways': [ig.ig_id for ig in InternetGateway.objects.filter(vpc=vpc, owner=request.user)],
             'nat_gateways': [nat.nat_gw_id for nat in NATGateway.objects.filter(subnet__vpc=vpc, owner=request.user)],
         })
-    
+
     @action(detail=True, methods=['get'])
     def subnets(self, request, pk=None):
         """Get all subnets in VPC."""
@@ -155,7 +155,7 @@ class VPCViewSet(viewsets.ModelViewSet):
         subnets = vpc.subnets.all()
         serializer = SubnetListSerializer(subnets, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def security_groups(self, request, pk=None):
         """Get all security groups in VPC."""
@@ -163,7 +163,7 @@ class VPCViewSet(viewsets.ModelViewSet):
         sgs = vpc.security_groups.all()
         serializer = SecurityGroupListSerializer(sgs, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def route_tables(self, request, pk=None):
         """Get all route tables in VPC."""
@@ -187,11 +187,11 @@ class SubnetViewSet(viewsets.ModelViewSet):
     search_fields = ['subnet_id', 'name', 'cidr_block']
     ordering_fields = ['created_at', 'availability_zone']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter subnets by VPC owner."""
         return Subnet.objects.filter(vpc__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -214,7 +214,7 @@ class SubnetViewSet(viewsets.ModelViewSet):
             subnet_id=f"subnet-{uuid.uuid4().hex[:12]}",
             available_ip_count=available_ips,
         )
-    
+
     @action(detail=True, methods=['post'])
     def enable_public_ips(self, request, pk=None):
         """Enable automatic public IP assignment."""
@@ -254,11 +254,11 @@ class SecurityGroupViewSet(viewsets.ModelViewSet):
     search_fields = ['sg_id', 'name']
     ordering_fields = ['created_at', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter security groups by owner."""
         return SecurityGroup.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -266,11 +266,11 @@ class SecurityGroupViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return SecurityGroupCreateSerializer
         return SecurityGroupListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user, sg_id=f"sg-{uuid.uuid4().hex[:12]}")
-    
+
     @action(detail=True, methods=['post'])
     def add_rule(self, request, pk=None):
         """Add ingress/egress rule."""
@@ -280,7 +280,7 @@ class SecurityGroupViewSet(viewsets.ModelViewSet):
             serializer.save(security_group=sg)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     @action(detail=True, methods=['get'])
     def rules(self, request, pk=None):
         """Get all rules in security group."""
@@ -288,7 +288,7 @@ class SecurityGroupViewSet(viewsets.ModelViewSet):
         rules = sg.rules.all()
         serializer = SecurityGroupRuleListSerializer(rules, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def authorize_ingress(self, request, pk=None):
         """Add ingress rule (HTTP/HTTPS shortcut)."""
@@ -297,7 +297,7 @@ class SecurityGroupViewSet(viewsets.ModelViewSet):
         from_port = request.data.get('from_port')
         to_port = request.data.get('to_port', from_port)
         cidr = request.data.get('cidr', '0.0.0.0/0')
-        
+
         rule = SecurityGroupRule.objects.create(
             security_group=sg,
             direction='ingress',
@@ -360,11 +360,11 @@ class LoadBalancerViewSet(viewsets.ModelViewSet):
     search_fields = ['lb_id', 'name', 'dns_name']
     ordering_fields = ['created_at', 'name', 'status']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter load balancers by owner."""
         return LoadBalancer.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -372,7 +372,7 @@ class LoadBalancerViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return LoadBalancerCreateSerializer
         return LoadBalancerListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner and provision LB endpoint via OpenStack adapter."""
         lb = serializer.save(
@@ -400,7 +400,7 @@ class LoadBalancerViewSet(viewsets.ModelViewSet):
         openstack_id = (instance.metadata or {}).get('openstack_id')
         delete_load_balancer(openstack_id=openstack_id)
         super().perform_destroy(instance)
-    
+
     @action(detail=True, methods=['get'])
     def listeners(self, request, pk=None):
         """Get all listeners."""
@@ -408,7 +408,7 @@ class LoadBalancerViewSet(viewsets.ModelViewSet):
         listeners = lb.listeners.all()
         serializer = ListenerListSerializer(listeners, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['get'])
     def target_groups(self, request, pk=None):
         """Get all target groups."""
@@ -416,7 +416,7 @@ class LoadBalancerViewSet(viewsets.ModelViewSet):
         tgs = lb.target_groups.all()
         serializer = TargetGroupListSerializer(tgs, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def add_target_group(self, request, pk=None):
         """Create target group."""
@@ -521,17 +521,17 @@ class TargetGroupViewSet(viewsets.ModelViewSet):
     filterset_fields = ['load_balancer', 'protocol', 'target_type']
     search_fields = ['tg_id', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter target groups by LB owner."""
         return TargetGroup.objects.filter(load_balancer__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
             return TargetGroupDetailSerializer
         return TargetGroupListSerializer
-    
+
     @action(detail=True, methods=['post'])
     def register_target(self, request, pk=None):
         """Register target with group."""
@@ -540,7 +540,7 @@ class TargetGroupViewSet(viewsets.ModelViewSet):
         port = request.data.get('port', tg.port)
         if not target_id:
             return Response({'error': 'target_id required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         weight = int(request.data.get('weight', 100))
         targets = tg.registered_targets
         targets.append({'id': target_id, 'port': port})
@@ -579,7 +579,7 @@ class TargetGroupViewSet(viewsets.ModelViewSet):
         """Get current health status for registered targets."""
         tg = self.get_object()
         return Response({'target_group': tg.tg_id, 'health_status': tg.health_status})
-    
+
     @action(detail=True, methods=['post'])
     def deregister_target(self, request, pk=None):
         """Deregister target from group."""
@@ -587,7 +587,7 @@ class TargetGroupViewSet(viewsets.ModelViewSet):
         target_id = request.data.get('target_id')
         if not target_id:
             return Response({'error': 'target_id required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         tg.registered_targets = [t for t in tg.registered_targets if t['id'] != target_id]
         if target_id in tg.health_status:
             del tg.health_status[target_id]
@@ -610,11 +610,11 @@ class RouteTableViewSet(viewsets.ModelViewSet):
     filterset_fields = ['vpc', 'is_main']
     search_fields = ['route_table_id', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter route tables by VPC owner."""
         return RouteTable.objects.filter(vpc__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -629,7 +629,7 @@ class RouteTableViewSet(viewsets.ModelViewSet):
             owner=self.request.user,
             route_table_id=f"rtb-{uuid.uuid4().hex[:12]}",
         )
-    
+
     @action(detail=True, methods=['get'])
     def routes(self, request, pk=None):
         """Get all routes in table."""
@@ -637,7 +637,7 @@ class RouteTableViewSet(viewsets.ModelViewSet):
         routes = rt.routes.all()
         serializer = RouteListSerializer(routes, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'])
     def add_route(self, request, pk=None):
         """Add route to table."""
@@ -699,11 +699,11 @@ class DNSRecordViewSet(viewsets.ModelViewSet):
     filterset_fields = ['zone_id', 'record_type', 'owner']
     search_fields = ['name', 'record_id']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter DNS records by owner."""
         return DNSRecord.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -711,7 +711,7 @@ class DNSRecordViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return DNSRecordCreateSerializer
         return DNSRecordListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user, record_id=f"dns-{uuid.uuid4().hex[:12]}")
@@ -745,11 +745,11 @@ class CDNDistributionViewSet(viewsets.ModelViewSet):
     search_fields = ['distribution_id', 'name', 'origin_domain']
     ordering_fields = ['created_at', 'name', 'status']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter CDN distributions by owner."""
         return CDNDistribution.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -757,7 +757,7 @@ class CDNDistributionViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return CDNDistributionCreateSerializer
         return CDNDistributionListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner and provision CDN distribution metadata."""
         dist = serializer.save(
@@ -810,7 +810,7 @@ class CDNDistributionViewSet(viewsets.ModelViewSet):
         provider = (instance.metadata or {}).get('provider')
         delete_cdn_distribution(distribution_id=instance.distribution_id, provider=provider)
         super().perform_destroy(instance)
-    
+
     @action(detail=True, methods=['post'])
     def invalidate_cache(self, request, pk=None):
         """Invalidate CDN cache for paths."""
@@ -943,11 +943,11 @@ class VPNConnectionViewSet(viewsets.ModelViewSet):
     filterset_fields = ['vpn_gateway', 'customer_gateway', 'status']
     search_fields = ['connection_id']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter VPN connections by gateway owner."""
         return VPNConnection.objects.filter(vpn_gateway__owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -970,11 +970,11 @@ class VPNGatewayViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['owner', 'vpc', 'status']
     search_fields = ['vpn_gw_id', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter VPN gateways by owner."""
         return VPNGateway.objects.filter(owner=self.request.user)
-    
+
     serializer_class = VPNGatewayListSerializer
 
 
@@ -993,7 +993,7 @@ class InternetGatewayViewSet(viewsets.ModelViewSet):
     filterset_fields = ['owner', 'vpc', 'status']
     search_fields = ['ig_id', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter internet gateways by owner."""
         return InternetGateway.objects.filter(owner=self.request.user)
@@ -1002,7 +1002,7 @@ class InternetGatewayViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return InternetGatewayCreateSerializer
         return InternetGatewayListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         serializer.save(owner=self.request.user, ig_id=f"igw-{uuid.uuid4().hex[:12]}", status='available')
@@ -1039,11 +1039,11 @@ class NATGatewayViewSet(viewsets.ModelViewSet):
     filterset_fields = ['owner', 'subnet', 'status']
     search_fields = ['nat_gw_id', 'name']
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         """Filter NAT gateways by owner."""
         return NATGateway.objects.filter(owner=self.request.user)
-    
+
     def get_serializer_class(self):
         """Use different serializers for different actions."""
         if self.action == 'retrieve':
@@ -1051,7 +1051,7 @@ class NATGatewayViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return NATGatewayCreateSerializer
         return NATGatewayListSerializer
-    
+
     def perform_create(self, serializer):
         """Set owner to current user."""
         generated_public_ip = serializer.validated_data.get('public_ip') or f"198.51.100.{(uuid.uuid4().int % 200) + 10}"

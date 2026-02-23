@@ -17,7 +17,7 @@ class StorageBucketListSerializer(serializers.ModelSerializer):
     """Lightweight storage bucket serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     total_size_gb = serializers.FloatField(read_only=True)
-    
+
     class Meta:
         model = StorageBucket
         fields = [
@@ -33,7 +33,7 @@ class StorageBucketDetailSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     total_size_gb = serializers.FloatField(read_only=True)
     object_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = StorageBucket
         fields = [
@@ -49,7 +49,7 @@ class StorageBucketDetailSerializer(serializers.ModelSerializer):
             'resource_id', 'bucket_id', 'status', 'total_objects',
             'total_size_gb', 'created_at'
         ]
-    
+
     def get_object_count(self, obj):
         return obj.objects.count()
 
@@ -85,14 +85,14 @@ class S3ObjectListSerializer(serializers.ModelSerializer):
     """Lightweight S3 object serializer."""
     bucket_name = serializers.CharField(source='bucket.bucket_name', read_only=True)
     size_mb = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = S3Object
         fields = [
             'object_key', 'bucket_name', 'size_mb', 'storage_class',
             'is_public', 'last_modified', 'created_at'
         ]
-    
+
     def get_size_mb(self, obj):
         return round(obj.size_bytes / (1024 ** 2), 2)
 
@@ -101,7 +101,7 @@ class S3ObjectDetailSerializer(serializers.ModelSerializer):
     """Full S3 object details."""
     bucket_name = serializers.CharField(source='bucket.bucket_name', read_only=True)
     size_mb = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = S3Object
         fields = [
@@ -113,7 +113,7 @@ class S3ObjectDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'object_key', 'size_bytes', 'etag', 'created_at', 'last_modified'
         ]
-    
+
     def get_size_mb(self, obj):
         return round(obj.size_bytes / (1024 ** 2), 2)
 
@@ -144,7 +144,7 @@ class S3ObjectUpdateSerializer(serializers.ModelSerializer):
 class StorageVolumeListSerializer(serializers.ModelSerializer):
     """Lightweight storage volume serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = StorageVolume
         fields = [
@@ -159,7 +159,7 @@ class StorageVolumeDetailSerializer(serializers.ModelSerializer):
     """Full storage volume details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     snapshot_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = StorageVolume
         fields = [
@@ -174,7 +174,7 @@ class StorageVolumeDetailSerializer(serializers.ModelSerializer):
             'resource_id', 'volume_id', 'status', 'attached_at',
             'created_at', 'updated_at'
         ]
-    
+
     def get_snapshot_count(self, obj):
         return obj.snapshots.count()
 
@@ -209,7 +209,7 @@ class StorageSnapshotListSerializer(serializers.ModelSerializer):
     """Lightweight storage snapshot serializer."""
     volume_name = serializers.CharField(source='volume.name', read_only=True)
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = StorageSnapshot
         fields = [
@@ -223,7 +223,7 @@ class StorageSnapshotDetailSerializer(serializers.ModelSerializer):
     """Full storage snapshot details."""
     volume_name = serializers.CharField(source='volume.name', read_only=True)
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = StorageSnapshot
         fields = [
@@ -257,7 +257,7 @@ class FileShareListSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     available_gb = serializers.FloatField(read_only=True)
     mount_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = FileShare
         fields = [
@@ -266,7 +266,7 @@ class FileShareListSerializer(serializers.ModelSerializer):
             'mount_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'file_share_id', 'created_at']
-    
+
     def get_mount_count(self, obj):
         return obj.mounts.count()
 
@@ -276,7 +276,7 @@ class FileShareDetailSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     available_gb = serializers.FloatField(read_only=True)
     mounts = FileShareMountSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = FileShare
         fields = [
@@ -290,7 +290,7 @@ class FileShareDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'resource_id', 'file_share_id', 'status', 'created_at', 'updated_at'
         ]
-    
+
     def get_mount_count(self, obj):
         return obj.mounts.count()
 
@@ -314,7 +314,7 @@ class FileShareCreateSerializer(serializers.ModelSerializer):
 class EncryptionKeyListSerializer(serializers.ModelSerializer):
     """Lightweight encryption key serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = EncryptionKey
         fields = [
@@ -328,7 +328,7 @@ class EncryptionKeyListSerializer(serializers.ModelSerializer):
 class EncryptionKeyDetailSerializer(serializers.ModelSerializer):
     """Full encryption key details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    
+
     class Meta:
         model = EncryptionKey
         fields = [
@@ -362,7 +362,7 @@ class BackupListSerializer(serializers.ModelSerializer):
     """Lightweight backup serializer."""
     policy_name = serializers.CharField(source='policy.name', read_only=True)
     size_gb = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Backup
         fields = [
@@ -370,7 +370,7 @@ class BackupListSerializer(serializers.ModelSerializer):
             'size_gb', 'status', 'completed_at', 'created_at'
         ]
         read_only_fields = ['backup_id', 'created_at']
-    
+
     def get_size_gb(self, obj):
         return round(obj.size_bytes / (1024 ** 3), 2)
 
@@ -379,7 +379,7 @@ class BackupDetailSerializer(serializers.ModelSerializer):
     """Full backup details."""
     policy_name = serializers.CharField(source='policy.name', read_only=True)
     size_gb = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Backup
         fields = [
@@ -391,7 +391,7 @@ class BackupDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'backup_id', 'status', 'completed_at', 'created_at'
         ]
-    
+
     def get_size_gb(self, obj):
         return round(obj.size_bytes / (1024 ** 3), 2)
 
@@ -400,7 +400,7 @@ class BackupPolicyListSerializer(serializers.ModelSerializer):
     """Lightweight backup policy serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     backup_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = BackupPolicy
         fields = [
@@ -409,7 +409,7 @@ class BackupPolicyListSerializer(serializers.ModelSerializer):
             'owner_username', 'backup_count', 'created_at'
         ]
         read_only_fields = ['policy_id', 'created_at']
-    
+
     def get_backup_count(self, obj):
         return obj.backups.count()
 
@@ -418,7 +418,7 @@ class BackupPolicyDetailSerializer(serializers.ModelSerializer):
     """Full backup policy details."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     backups = BackupListSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = BackupPolicy
         fields = [
@@ -463,7 +463,7 @@ class StorageMetricSerializer(serializers.ModelSerializer):
     """Serializer for storage metrics."""
     used_gb = serializers.SerializerMethodField()
     allocated_gb = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = StorageMetric
         fields = [
@@ -473,9 +473,9 @@ class StorageMetricSerializer(serializers.ModelSerializer):
             'latency_ms', 'created_at'
         ]
         read_only_fields = ['created_at']
-    
+
     def get_used_gb(self, obj):
         return round(obj.used_bytes / (1024 ** 3), 2) if obj.used_bytes else None
-    
+
     def get_allocated_gb(self, obj):
         return round(obj.allocated_bytes / (1024 ** 3), 2) if obj.allocated_bytes else None
