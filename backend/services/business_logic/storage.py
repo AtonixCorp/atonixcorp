@@ -309,7 +309,7 @@ class StorageService:
             InvalidConfigurationError: Invalid configuration
         """
         # Check quota
-        volume_count = StorageVolume.objects.filter(owner=user, status!='deleted').count()
+        volume_count = StorageVolume.objects.filter(owner=user).exclude(status='deleted').count()
         volume_storage = StorageVolume.objects.filter(owner=user).aggregate(Sum('size_gb'))['size_gb__sum'] or 0
         
         if volume_count >= 100:

@@ -319,7 +319,7 @@ class ComputeService:
             QuotaExceededError: Cluster quota exceeded
         """
         # Check quota
-        cluster_count = KubernetesCluster.objects.filter(owner=user, status!='deleted').count()
+        cluster_count = KubernetesCluster.objects.filter(owner=user).exclude(status='deleted').count()
         if cluster_count >= 10:  # Default quota
             raise QuotaExceededError("Kubernetes cluster quota exceeded")
 
