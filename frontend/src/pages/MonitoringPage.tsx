@@ -248,7 +248,7 @@ function IncidentsTab() {
   const load = useCallback(() => {
     setLoading(true);
     monitoringApi.listIncidents(statusFilter ? { status: statusFilter } : undefined)
-      .then(r => setIncidents(r.data as any))
+      .then(r => setIncidents((r.data as any).results ?? r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [statusFilter]);
@@ -486,14 +486,14 @@ function AlertsTab() {
   const loadAlerts = useCallback(() => {
     setLoadingAlerts(true);
     monitoringApi.listAlerts(stateFilter || undefined)
-      .then(r => setAlerts(r.data as any))
+      .then(r => setAlerts((r.data as any).results ?? r.data))
       .catch(() => {})
       .finally(() => setLoadingAlerts(false));
   }, [stateFilter]);
 
   const loadRules = useCallback(() => {
     monitoringApi.listAlertRules()
-      .then(r => setRules(r.data as any))
+      .then(r => setRules((r.data as any).results ?? r.data))
       .catch(() => {});
   }, []);
 

@@ -214,7 +214,7 @@ function InvoicesTab() {
   const load = useCallback(() => {
     setLoading(true);
     billingApi.listInvoices()
-      .then(r => setInvoices(r.data as any))
+      .then(r => setInvoices((r.data as any).results ?? r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -519,7 +519,7 @@ function PaymentMethodsTab() {
   const load = useCallback(() => {
     setLoading(true);
     billingApi.listPaymentMethods()
-      .then(r => setMethods(r.data as any))
+      .then(r => setMethods((r.data as any).results ?? r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

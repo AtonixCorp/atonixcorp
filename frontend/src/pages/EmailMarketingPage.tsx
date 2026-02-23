@@ -188,7 +188,7 @@ function CampaignsTab() {
     setLoading(true);
     try {
       const res = await marketingApi.listCampaigns();
-      setCampaigns((res as any).data || []);
+      setCampaigns((res as any).data?.results ?? (res as any).data ?? []);
     } catch { /* no-op */ }
     setLoading(false);
   }, []);
@@ -405,7 +405,7 @@ function CreateCampaignDialog({ open, onClose, onCreated }:
 
   useEffect(() => {
     if (open) {
-      marketingApi.listContactLists().then((r: any) => setLists(r.data || [])).catch(() => {});
+      marketingApi.listContactLists().then((r: any) => setLists(r.data?.results ?? r.data ?? [])).catch(() => {});
     }
   }, [open]);
 
@@ -490,12 +490,12 @@ function ContactsTab() {
   const [listDialogOpen, setListDialogOpen] = useState(false);
 
   useEffect(() => {
-    marketingApi.listContactLists().then((r: any) => setLists(r.data || [])).catch(() => {});
+    marketingApi.listContactLists().then((r: any) => setLists(r.data?.results ?? r.data ?? [])).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (selected) {
-      marketingApi.listContacts(selected.resource_id).then((r: any) => setContacts(r.data || [])).catch(() => {});
+      marketingApi.listContacts(selected.resource_id).then((r: any) => setContacts(r.data?.results ?? r.data ?? [])).catch(() => {});
     }
   }, [selected]);
 
@@ -508,14 +508,14 @@ function ContactsTab() {
     await marketingApi.importContacts(selected.resource_id, csv);
     setImportOpen(false); setCsv('');
     const r: any = await marketingApi.listContacts(selected.resource_id);
-    setContacts(r.data || []);
+    setContacts(r.data?.results ?? r.data ?? []);
   };
 
   const handleAddContact = async () => {
     if (!selected || !newContact.email) return;
     await marketingApi.createContact({ ...newContact, contact_list_id: selected.resource_id });
     const r: any = await marketingApi.listContacts(selected.resource_id);
-    setContacts(r.data || []);
+    setContacts(r.data?.results ?? r.data ?? []);
     setAddOpen(false); setNewContact({ email: '', first_name: '', last_name: '' });
   };
 
@@ -653,7 +653,7 @@ function ContactsTab() {
             onClick={async () => {
               await marketingApi.createContactList({ name: newList });
               const r: any = await marketingApi.listContactLists();
-              setLists(r.data || []);
+              setLists(r.data?.results ?? r.data ?? []);
               setListDialogOpen(false); setNewList('');
             }}
             sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>Create</Button>
@@ -681,10 +681,10 @@ function TemplatesTab() {
   const [search, setSearch]       = useState('');
 
   useEffect(() => {
-    marketingApi.listTemplates().then((r: any) => setTemplates(r.data || [])).catch(() => {});
+    marketingApi.listTemplates().then((r: any) => setTemplates(r.data?.results ?? r.data ?? [])).catch(() => {});
   }, []);
 
-  const load = () => marketingApi.listTemplates().then((r: any) => setTemplates(r.data || [])).catch(() => {});
+  const load = () => marketingApi.listTemplates().then((r: any) => setTemplates(r.data?.results ?? r.data ?? [])).catch(() => {});
 
   const filtered = templates.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()));
@@ -800,10 +800,10 @@ function AutomationsTab() {
   const [automations, setAutomations] = useState<Automation[]>([]);
 
   useEffect(() => {
-    marketingApi.listAutomations().then((r: any) => setAutomations(r.data || [])).catch(() => {});
+    marketingApi.listAutomations().then((r: any) => setAutomations(r.data?.results ?? r.data ?? [])).catch(() => {});
   }, []);
 
-  const load = () => marketingApi.listAutomations().then((r: any) => setAutomations(r.data || [])).catch(() => {});
+  const load = () => marketingApi.listAutomations().then((r: any) => setAutomations(r.data?.results ?? r.data ?? [])).catch(() => {});
 
   const TRIGGER_COLOR: Record<string, string> = {
     subscribe: '#10B981', unsubscribe: '#EF4444', date_field: '#F59E0B',
