@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeOpenTelemetry } from './observability/telemetry';
-import * as serviceWorkerRegistration from './serviceWorker';
 
 // Initialize OpenTelemetry before anything else
 initializeOpenTelemetry();

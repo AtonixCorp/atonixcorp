@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Box, Typography, Button, TextField, Stack,
-  Chip, CircularProgress, Alert, Divider, Switch, FormControlLabel,
-  RadioGroup, Radio,
+  Chip, CircularProgress, Alert, Divider,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import LockIcon        from '@mui/icons-material/Lock';
@@ -41,7 +40,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState('');
 
-  const nameError = name.length > 0 && !/^[a-z0-9][a-z0-9\-]{1,126}$/.test(name);
+  const nameError = name.length > 0 && !/^[a-z0-9][a-z0-9-]{1,126}$/.test(name);
   const canSubmit = name.length >= 2 && !nameError && !loading;
 
   const handleClose = () => {

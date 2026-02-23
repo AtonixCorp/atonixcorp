@@ -6,7 +6,7 @@ import {
   Stepper, Step, StepLabel, Box, Typography,
   Button, TextField, Stack, Chip, CircularProgress, Alert,
   IconButton, Switch, FormControlLabel, ToggleButton, ToggleButtonGroup,
-  Divider, Tooltip,
+  Divider,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';

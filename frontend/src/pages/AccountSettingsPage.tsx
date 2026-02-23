@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Stack, Divider, Avatar, TextField, Button,
-  Switch, FormControlLabel, Chip, IconButton, Tooltip,
+  Switch, Chip, IconButton, Tooltip,
   List, ListItemButton, ListItemIcon, ListItemText, Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';

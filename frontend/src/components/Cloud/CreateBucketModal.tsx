@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Stepper, Step, StepLabel,
-  TextField, Box, Typography, Stack, Chip,
+  TextField, Box, Typography, Stack,
   FormControlLabel, Switch, ToggleButtonGroup, ToggleButton,
   Alert, CircularProgress, Divider,
 } from '@mui/material';
@@ -92,7 +92,7 @@ const CreateBucketModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
   const set = (k: keyof CreateBucketPayload) => (v: unknown) =>
     setForm(f => ({ ...f, [k]: v }));
 
-  const nameOk = /^[a-z0-9]([a-z0-9\-]{1,61}[a-z0-9])?$/.test(form.bucket_name);
+  const nameOk = /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/.test(form.bucket_name);
 
   const handleNext = () => {
     setError('');

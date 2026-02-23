@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Typography, Stack, Button, Chip, Avatar, Divider,
+  Box, Typography, Stack, Button, Chip, Divider,
   IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
   DialogActions, Skeleton, Alert, Snackbar, Tabs, Tab,
   Table, TableBody, TableCell, TableHead, TableRow,

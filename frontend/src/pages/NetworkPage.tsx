@@ -157,7 +157,7 @@ const NetworkPage: React.FC = () => {
     if (selectedVpc?.resource_id) {
       loadNetworkingResources(selectedVpc);
     }
-  }, [selectedVpc?.resource_id, loadNetworkingResources]);
+  }, [selectedVpc, loadNetworkingResources]);
 
   const stats = useMemo(() => {
     const total = vpcs.length;

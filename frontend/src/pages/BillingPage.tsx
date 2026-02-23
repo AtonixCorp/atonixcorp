@@ -6,22 +6,18 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, MenuItem, Select, FormControl, InputLabel,
   IconButton, Tooltip, LinearProgress, Paper, Divider,
-  List, ListItem, ListItemText, ListItemSecondaryAction,
   Switch, FormControlLabel,
 } from '@mui/material';
 import RefreshIcon      from '@mui/icons-material/Refresh';
 import AddIcon          from '@mui/icons-material/Add';
 import CreditCardIcon   from '@mui/icons-material/CreditCard';
-import ReceiptIcon      from '@mui/icons-material/Receipt';
-import CheckCircleIcon  from '@mui/icons-material/CheckCircle';
-import StarIcon         from '@mui/icons-material/Star';
 import DeleteIcon       from '@mui/icons-material/Delete';
 import DownloadIcon     from '@mui/icons-material/Download';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
 import { billingApi }   from '../services/cloudApi';
 import type {
-  BillingOverview, BillingAccount, Invoice, PaymentMethod,
-  CurrentUsage, CreditNote, PlanTier, UsageLineItem, ServiceCost,
+  BillingOverview, Invoice, PaymentMethod,
+  CurrentUsage, PlanTier, ServiceCost,
 } from '../types/billing';
 
 // ── Theme tokens ──────────────────────────────────────────────────────────────

@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import {
-  Box, Typography, Stack, Button, Chip, IconButton,
-  TextField, Radio, RadioGroup, FormControlLabel,
+  Box, Typography, Stack, Button, Chip,
+  TextField,
   Stepper, Step, StepLabel, StepConnector,
-  stepConnectorClasses, Tooltip, Alert, CircularProgress,
+  stepConnectorClasses, CircularProgress,
   Divider, Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -16,8 +16,6 @@ import StorageIcon        from '@mui/icons-material/Storage';
 import MemoryIcon         from '@mui/icons-material/Memory';
 import SpeedIcon          from '@mui/icons-material/Speed';
 import NetworkCheckIcon   from '@mui/icons-material/NetworkCheck';
-import AddIcon            from '@mui/icons-material/Add';
-import RemoveIcon         from '@mui/icons-material/Remove';
 import PublicIcon         from '@mui/icons-material/Public';
 import LockIcon           from '@mui/icons-material/Lock';
 import InfoOutlinedIcon   from '@mui/icons-material/InfoOutlined';
@@ -41,9 +39,6 @@ interface OSGroup {
   badgeColor?: string;
   versions: OSVersion[];
 }
-
-// Keep legacy type alias for review step lookup
-type OS = OSGroup & { id: string; version: string; };
 
 interface Flavor {
   id: string;
@@ -198,7 +193,6 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
   const isGroupActive = !!activeVer;
   // Local state: which version tab is highlighted (defaults to first version)
   const [hoveredVer, setHoveredVer] = useState<string>(group.versions[0].id);
-  const displayVer = activeVer ?? group.versions.find(v => v.id === hoveredVer) ?? group.versions[0];
 
   return (
     <Box sx={{

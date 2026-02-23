@@ -3,7 +3,7 @@ import {
   Box, Typography, Button, Chip, IconButton, Tooltip,
   Table, TableHead, TableRow, TableCell, TableBody,
   Tabs, Tab, CircularProgress, Alert, Switch,
-  FormControlLabel, Divider, TextField,
+  TextField,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import AddIcon           from '@mui/icons-material/Add';
@@ -11,8 +11,6 @@ import SwapHorizIcon     from '@mui/icons-material/SwapHoriz';
 import RefreshIcon       from '@mui/icons-material/Refresh';
 import DomainIcon        from '@mui/icons-material/Language';
 import DeleteIcon        from '@mui/icons-material/DeleteOutline';
-import LockIcon          from '@mui/icons-material/Lock';
-import LockOpenIcon      from '@mui/icons-material/LockOpen';
 import VerifiedUserIcon  from '@mui/icons-material/VerifiedUser';
 import HttpsIcon         from '@mui/icons-material/Https';
 import AutorenewIcon     from '@mui/icons-material/Autorenew';

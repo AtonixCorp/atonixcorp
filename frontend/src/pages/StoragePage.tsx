@@ -7,7 +7,7 @@ import {
   Table, TableHead, TableRow, TableCell, TableBody,
   TextField, MenuItem, InputAdornment,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Switch, FormControlLabel, Snackbar,
+  Switch, Snackbar,
   LinearProgress, Divider,
 } from '@mui/material';
 import StorageIcon          from '@mui/icons-material/Storage';
