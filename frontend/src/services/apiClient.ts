@@ -17,7 +17,7 @@ export function setAuthToken(token: string | null) {
   ____currentToken = token
   if (token) {
     client.defaults.headers = client.defaults.headers || {}
-    client.defaults.headers.Authorization = `Bearer ${token}`
+    client.defaults.headers.Authorization = `Token ${token}`
   } else if (client.defaults.headers) {
     delete (client.defaults.headers as any).Authorization
   }
@@ -31,7 +31,7 @@ client.interceptors.request.use(
   (config) => {
     if (____currentToken) {
       config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${____currentToken}`
+      config.headers.Authorization = `Token ${____currentToken}`
     }
     return config
   },

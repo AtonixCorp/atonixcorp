@@ -33,7 +33,8 @@ import BillingPage               from './pages/BillingPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth() as any;
+  const { user, isInitializing } = useAuth() as any;
+  if (isInitializing) return null; // wait for token verification before deciding
   if (!user) return <Navigate to="/" replace />;
   return <>{children}</>;
 };

@@ -14,6 +14,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Helper functions for dashboard access logic
   const isIndividualUser = (user: User | null): boolean => {
@@ -35,11 +36,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check if user is already logged in
     const initializeAuth = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) return;
+      if (!token) {
+        setIsInitializing(false);
+        return;
+      }
       try {
-        // Apply token to shared api client
         setAuthToken(token);
-        // Verify the token with the backend (short timeout so offline backend doesn't block the UI)
         const userData = await Promise.race([
           authService.getCurrentUser(),
           new Promise<never>((_, reject) =>
@@ -55,6 +57,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.warn('Auth init skipped (backend offline or token invalid):', error);
         localStorage.removeItem('authToken');
         clearAuthToken();
+      } finally {
+        setIsInitializing(false);
       }
     };
 
@@ -288,6 +292,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     isOrganizationRegistered: !!organization?.is_registered,
     isLoading,
+    isInitializing,
     isIndividualUser: isIndividualUser(user),
     isOrganizationUser: isOrganizationUser(user),
     userDashboardType: getUserDashboardType(user),

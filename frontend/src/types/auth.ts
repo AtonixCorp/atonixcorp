@@ -100,6 +100,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isOrganizationRegistered: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   isIndividualUser: boolean;
   isOrganizationUser: boolean;
   userDashboardType: 'individual' | 'organization' | null;

@@ -276,15 +276,23 @@ export const authService = {
   getCurrentUser: async (): Promise<User> => {
     const token = localStorage.getItem('authToken');
 
-    // --- Try real backend first if token is not a local mock token ---
-    if (token && !token.startsWith('mock-jwt-token')) {
-      const response = await ____authApi.get<any>('/me/');
-      const data = response.data;
-      return normalizeUser(data.user || data);
+    // --- Always try real backend first if a token exists ---
+    if (token) {
+      try {
+        const response = await ____authApi.get<any>('/me/');
+        const data = response.data;
+        return normalizeUser(data.user || data);
+      } catch (err: any) {
+        // 401/403 = token is genuinely invalid → propagate so AuthContext clears it
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          throw err;
+        }
+        // Network error / backend offline → fall through to mock fallback
+        console.warn('Backend offline, using local user fallback.');
+      }
     }
 
-    // --- Local fallback for mock tokens ---
-    // Handle mock authentication
+    // --- Local fallback for mock tokens (backend offline only) ---
     if (token === 'mock-jwt-token') {
       return {
         id: 1,
@@ -306,41 +314,16 @@ export const authService = {
         user_type: 'individual',
       };
     }
-    
-    // Check for registered users
+
+    // Check for locally registered users stored from offline signup
     if (token && token.startsWith('mock-jwt-token-')) {
       const userId = parseInt(token.replace('mock-jwt-token-', ''));
       const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
       const user = registeredUsers.find((u: any) => u.id === userId);
-      if (user) {
-        return user;
-      }
+      if (user) return user;
     }
-    
-    // Try real API
-    const response = await ____authApi.get<any>('/me/');
-    const backendUser = response.data.user;
-    return {
-      id: backendUser.id,
-      uuid: backendUser.uuid,
-      username: backendUser.username,
-      email: backendUser.email,
-      first_name: backendUser.first_name,
-      last_name: backendUser.last_name,
-      avatar: backendUser.avatar,
-      bio: backendUser.bio,
-      github_url: backendUser.github_url,
-      linkedin_url: backendUser.linkedin_url,
-      website_url: backendUser.website_url,
-      location: backendUser.location,
-      skills: backendUser.skills || [],
-      is_active: backendUser.is_active,
-      is_admin: !!backendUser.is_staff || !!backendUser.is_superuser,
-      role: backendUser.is_superuser ? 'admin' : (backendUser.is_staff ? 'staff' : undefined),
-      date_joined: backendUser.date_joined,
-      last_login: backendUser.last_login,
-      user_type: backendUser.user_type || 'individual',
-    } as User;
+
+    throw new Error('No valid session found.');
   },
 };
 
