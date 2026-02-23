@@ -30,7 +30,9 @@
     "codemod:rename-unused": "node ./tools/codemods/rename-unused.js",
     "start": "node_modules/.bin/react-scripts start",
     "build": "node_modules/.bin/react-scripts build",
-    "test": "node_modules/.bin/react-scripts test",
+    "test": "node_modules/.bin/react-scripts test --passWithNoTests",
+    "test:coverage": "node_modules/.bin/react-scripts test --coverage --watchAll=false --passWithNoTests",
+    "test:ci": "node_modules/.bin/react-scripts test --watchAll=false --passWithNoTests",
     "eject": "node_modules/.bin/react-scripts eject"
   },
   "eslintConfig": {
