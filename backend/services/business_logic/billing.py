@@ -274,19 +274,19 @@ class BillingService:
         }
         
         # Calculate instance costs
-        instances = Instance.objects.filter(owner=user, status!='terminated')
+        instances = Instance.objects.filter(owner=user).exclude(status='terminated')
         for instance in instances:
             cost = self.calculate_instance_cost(instance, days_in_month * 24)
             costs['compute']['instances'] += cost
         
         # Calculate storage bucket costs
-        buckets = StorageBucket.objects.filter(owner=user, status!='deleted')
+        buckets = StorageBucket.objects.filter(owner=user).exclude(status='deleted')
         for bucket in buckets:
             cost = self.calculate_storage_bucket_cost(bucket, days_in_month)
             costs['storage']['buckets'] += cost
         
         # Calculate volume costs
-        volumes = StorageVolume.objects.filter(owner=user, status!='deleted')
+        volumes = StorageVolume.objects.filter(owner=user).exclude(status='deleted')
         for volume in volumes:
             cost = self.calculate_volume_cost(volume, days_in_month)
             costs['storage']['volumes'] += cost
@@ -298,7 +298,7 @@ class BillingService:
             costs['networking']['load_balancers'] += cost
         
         # Calculate Kubernetes costs
-        clusters = KubernetesCluster.objects.filter(owner=user, status!='deleted')
+        clusters = KubernetesCluster.objects.filter(owner=user).exclude(status='deleted')
         for cluster in clusters:
             cost = self.calculate_kubernetes_cluster_cost(cluster, days_in_month)
             costs['compute']['kubernetes'] += cost

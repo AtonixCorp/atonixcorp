@@ -69,7 +69,7 @@ class NetworkingService:
             VPCError: Duplicate VPC
         """
         # Check quota
-        vpc_count = VPC.objects.filter(owner=user, status!='deleted').count()
+        vpc_count = VPC.objects.filter(owner=user).exclude(status='deleted').count()
         if vpc_count >= 10:
             raise QuotaExceededError("VPC quota exceeded")
         

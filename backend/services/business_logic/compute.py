@@ -87,7 +87,7 @@ class ComputeService:
             DependencyNotFoundError: Required VPC/subnet not found
         """
         # Check quota
-        instance_count = Instance.objects.filter(owner=user, status!='terminated').count()
+        instance_count = Instance.objects.filter(owner=user).exclude(status='terminated').count()
         user_quota = getattr(user, 'profile', None)
         if instance_count >= (user_quota.max_instances if user_quota else 100):
             raise QuotaExceededError("Instance quota exceeded")
