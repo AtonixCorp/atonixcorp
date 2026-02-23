@@ -9,7 +9,6 @@ from .base_models import (
     Status,
     AuditLog,
     ResourceTag,
-    ApiKey,
     ResourceQuota,
     Alert,
     UserProfile,
@@ -96,7 +95,7 @@ from .domain_models import (
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
-    'AuditLog', 'ResourceTag', 'ApiKey', 'ResourceQuota', 'Alert',
+    'AuditLog', 'ResourceTag', 'ResourceQuota', 'Alert',
     'UserProfile', 'APIKey',
     # Compute
     'Flavor', 'Image', 'Instance', 'InstanceMetric',

@@ -4,7 +4,7 @@ from rest_framework.authentication import TokenAuthentication, BaseAuthenticatio
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.models import User, Group
-from .base_models import ApiKey, Status
+from .base_models import APIKey, Status
 from django.utils import timezone
 import hashlib
 import hmac
@@ -163,7 +163,7 @@ class HasAPIKeyScope(BasePermission):
     def has_permission(self, request, view):
         """Check if authenticated user/key has required scopes."""
         # If not authenticated with API key, allow
-        if not hasattr(request, 'auth') or not isinstance(request.auth, ApiKey):
+        if not hasattr(request, 'auth') or not isinstance(request.auth, APIKey):
             return True
         
         api_key = request.auth
@@ -176,7 +176,7 @@ class HasAPIKeyScope(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         """Check scope for specific object."""
-        if not hasattr(request, 'auth') or not isinstance(request.auth, ApiKey):
+        if not hasattr(request, 'auth') or not isinstance(request.auth, APIKey):
             return True
         
         api_key = request.auth
