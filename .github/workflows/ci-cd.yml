@@ -92,6 +92,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: atonixcorp.settings
         run: |
           cd backend
+          python manage.py migrate --noinput
           python manage.py collectstatic --noinput
           pytest --cov=. --cov-report=xml --cov-report=html
 

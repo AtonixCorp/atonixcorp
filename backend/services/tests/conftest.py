@@ -13,30 +13,10 @@ Usage:
         assert instance.owner == user
 """
 
-import os
-import django
-from django.conf import settings
-
-# Configure Django settings before any Django model imports
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'atonixcorp.settings')
-if not settings.configured:
-    django.setup()
-
 import pytest
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
-
-
-# ========== PYTEST CONFIGURATION ==========
-
-@pytest.fixture(scope='session')
-def django_db_setup():
-    """Configure Django database for testing"""
-    settings.DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',  # In-memory database for speed
-    }
 
 
 # ========== USER FIXTURES ==========
@@ -74,7 +54,7 @@ def user_with_quota(db):
         user=user,
         max_instances=100,
         max_storage_gb=10000,
-        max_vpcs=20,
+        max_networks=20,
     )
     return user
 
