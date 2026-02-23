@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AtonixCorp APIs</title>
+    <meta name="description" content="Unified APIs for Compute, Storage, Networking, Identity, Automation, and Billing." />
+    <link rel="stylesheet" href="{% static 'services/css/api_portal.css' %}">
+</head>
+<body>
+<header class="topbar">
+    <div class="container topbar-inner">
+        <a class="brand" href="/">AtonixCorp API</a>
+        <nav class="topnav" id="topnav">
+            <a href="#categories">APIs</a>
+            <a href="#quickstart">Quickstart</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#security">Security</a>
+            <a href="#dx">DX Standards</a>
+        </nav>
+        <a class="btn btn-primary" href="/api/auth/signup/">Get API Key</a>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="container hero-inner">
+            <p class="eyebrow">api.atonixcorp.com</p>
+            <h1>AtonixCorp Cloud APIs</h1>
+            <p class="subtitle">Unified APIs for Compute, Storage, Networking, Identity, Billing, Monitoring, and Automation.</p>
+            <p class="description">Designed for enterprise-grade reliability with clear onboarding, predictable resource models, strict versioning, and secure multi-tenant operations.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="/api/auth/signup/">Generate API Key</a>
+                <a class="btn btn-secondary" href="/api/services/">Browse Endpoints</a>
+            </div>
+            <div class="hero-code">
+<pre><code>curl -X GET "http://127.0.0.1:8000/api/services/instances/?limit=20&cursor=abc123&sort=created_at&order=desc" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Region: us-east"</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section id="categories" class="section">
+        <div class="container">
+            <h2>API Categories</h2>
+            <p class="section-text">Resource-oriented services with consistent request and response conventions.</p>
+            <div class="grid cards-3">
+                <article class="card"><h3>Compute</h3><p>Instances, flavors, resizing, lifecycle management.</p><a href="/api/services/instances/">Explore Compute</a></article>
+                <article class="card"><h3>Network</h3><p>VPCs, subnets, routers, floating IPs, security groups.</p><a href="/api/services/vpcs/">Explore Network</a></article>
+                <article class="card"><h3>Storage</h3><p>Block, object, snapshots, backups, encryption.</p><a href="/api/services/volumes/">Explore Storage</a></article>
+                <article class="card"><h3>IAM</h3><p>Users, roles, policies, token and API key access.</p><a href="/api/auth/me/">Explore IAM</a></article>
+                <article class="card"><h3>Billing</h3><p>Usage records, invoices, credits, cost breakdown.</p><a href="/api/services/billing/overview/">Explore Billing</a></article>
+                <article class="card"><h3>Automation</h3><p>Workflows, orchestration, webhooks, deployments.</p><a href="/api/services/orchestration/">Explore Automation</a></article>
+                <article class="card"><h3>Monitoring</h3><p>Metrics, alerts, incidents, logs, observability.</p><a href="/api/services/monitoring/overview/">Explore Monitoring</a></article>
+                <article class="card"><h3>Webhooks</h3><p>Lifecycle event delivery for automation pipelines.</p><a href="#architecture">View Webhook Model</a></article>
+                <article class="card"><h3>SDKs</h3><p>JavaScript, Python, Go, and PHP-ready integration patterns.</p><a href="#dx">View SDK Standards</a></article>
+            </div>
+        </div>
+    </section>
+
+    <section id="quickstart" class="section alt">
+        <div class="container">
+            <h2>Quickstart</h2>
+            <div class="grid cards-2">
+                <article class="panel">
+                    <h3>Developer Onboarding Flow</h3>
+                    <ol>
+                        <li>Sign up for a developer account</li>
+                        <li>Verify email</li>
+                        <li>Log in</li>
+                        <li>Generate API key</li>
+                        <li>Read quickstart for your service</li>
+                        <li>Test endpoint in API console</li>
+                        <li>Integrate SDK into your app</li>
+                    </ol>
+                </article>
+                <article class="panel">
+                    <h3>First Request</h3>
+<pre><code>curl -X GET "http://127.0.0.1:8000/api/services/flavors/" \
+  -H "Authorization: Bearer YOUR_TOKEN"</code></pre>
+                    <h4>Consistent Error Format</h4>
+<pre><code>{
+  "error": "INVALID_PARAMETER",
+  "message": "The 'flavor' field is required.",
+  "status": 400,
+  "request_id": "abc-123"
+}</code></pre>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="section">
+        <div class="container">
+            <h2>API Architecture Principles</h2>
+            <div class="grid cards-2">
+                <article class="panel">
+                    <ul class="checklist">
+                        <li>Resource-oriented endpoints</li>
+                        <li>HTTP methods: GET, POST, PUT, PATCH, DELETE</li>
+                        <li>URL versioning with /v1 and /v2</li>
+                        <li>Region-aware routing patterns</li>
+                        <li>Idempotent write operations</li>
+                    </ul>
+                </article>
+                <article class="panel">
+<pre><code>/v1/compute/instances
+/v1/network/vpcs
+/v1/storage/volumes
+/v1/regions/us-east/compute/instances
+?limit=20&cursor=abc123
+?status=active&region=us-east
+?sort=created_at&order=desc</code></pre>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="security" class="section alt">
+        <div class="container">
+            <h2>Security & Governance</h2>
+            <div class="grid cards-3">
+                <article class="card"><h3>Authentication</h3><p>API keys for developers, OAuth2/JWT for enterprise integrations.</p></article>
+                <article class="card"><h3>Authorization</h3><p>Role-based access control and strict tenant isolation for all requests.</p></article>
+                <article class="card"><h3>Transport Security</h3><p>HTTPS only, HSTS, TLS 1.2+, and secure key rotation practices.</p></article>
+                <article class="card"><h3>Audit Logging</h3><p>Every API action logged with timestamp, actor, tenant, endpoint, status.</p></article>
+                <article class="card"><h3>Rate Limits</h3><p>1000 req/min default, burst controls, transparent 429 responses.</p></article>
+                <article class="card"><h3>Observability</h3><p>Latency, throughput, error rates, and distributed tracing by region.</p></article>
+            </div>
+        </div>
+    </section>
+
+    <section id="dx" class="section">
+        <div class="container">
+            <h2>Developer Experience Standards</h2>
+            <div class="grid cards-2">
+                <article class="panel">
+                    <h3>Documentation Contract</h3>
+                    <ol>
+                        <li>Overview</li>
+                        <li>Authentication</li>
+                        <li>Base URL</li>
+                        <li>Endpoints</li>
+                        <li>Request Examples</li>
+                        <li>Response Examples</li>
+                        <li>Error Codes</li>
+                        <li>Rate Limits</li>
+                        <li>SDK Usage</li>
+                        <li>Changelog</li>
+                    </ol>
+                </article>
+                <article class="panel">
+                    <h3>SDK & Console Readiness</h3>
+                    <ul class="checklist">
+                        <li>Copy-ready examples in cURL, JavaScript, Python, Go</li>
+                        <li>Try-it-now interactive API console</li>
+                        <li>Consistent client method naming across SDKs</li>
+                        <li>Clear and machine-parseable errors</li>
+                        <li>Migration guides and deprecation notices</li>
+                    </ul>
+                </article>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container footer-inner">
+        <div>
+            <strong>AtonixCorp Cloud</strong>
+            <p>Engineering excellence, sovereign cloud identity, and global ambition.</p>
+        </div>
+        <div class="footer-links">
+            <a href="/api/health/">Status</a>
+            <a href="/api/services/">API Reference</a>
+            <a href="/api/graphql/">GraphQL</a>
+            <a href="/admin/">Admin</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

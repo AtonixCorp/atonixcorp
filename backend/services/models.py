@@ -3,7 +3,7 @@
 # Re-exports all models from domain-specific files so that
 # `from .models import X` works across business_logic, signals, and tasks.
 
-from .base_models import (
+from .core.base_models import (
     TimeStampedModel,
     ResourceModel,
     Status,

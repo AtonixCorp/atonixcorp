@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.conf import settings
+from services.api.portal_views import ApiPortalLandingView
 
 try:
     from graphene_django.views import GraphQLView
@@ -119,6 +120,7 @@ def graphql_unavailable(request):
 
 
 urlpatterns = [
+    path('', ApiPortalLandingView.as_view(), name='api-portal-home'),
     path('admin/', admin.site.urls),
     path('api/health/', health_check),
     path('api/auth/login/', login_view),
