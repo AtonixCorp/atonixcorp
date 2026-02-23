@@ -119,8 +119,8 @@ const NAV: NavItem[] = [
   { label: 'Monitoring',     icon: <MonitorIcon  {...I()} />, path: '/dashboard/monitoring' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
   { label: 'Email Marketing', icon: <CampaignIcon  {...I()} />, path: '/dashboard/email-marketing' },
-  { label: 'Developer Tools', icon: <ComputerIcon {...I()} />, path: '/dashboard/developer-tools' },
-  { label: 'Marketing Tools', icon: <CampaignIcon {...I()} />, path: '/dashboard/marketing-tools' },
+  { label: 'Developer Tools', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'Marketing Tools', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
 ];
 
 const ACCOUNT_NAV: NavItem[] = [

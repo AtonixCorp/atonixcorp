@@ -1,0 +1,162 @@
+import React from 'react';
+import {
+  Box,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Typography,
+  Divider,
+  Tooltip,
+} from '@mui/material';
+import BuildIcon from '@mui/icons-material/Build';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import HubIcon from '@mui/icons-material/Hub';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import ApiIcon from '@mui/icons-material/Api';
+import StorageIcon from '@mui/icons-material/Storage';
+import InsightsIcon from '@mui/icons-material/Insights';
+import LanguageIcon from '@mui/icons-material/Language';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PublishIcon from '@mui/icons-material/Publish';
+import ScienceIcon from '@mui/icons-material/Science';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+const GLOBAL_WIDTH = 86;
+const SECTION_WIDTH = 272;
+
+interface NavEntry {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+const developerNav: NavEntry[] = [
+  { label: 'Deployments', path: '/dev-dashboard/deployments', icon: <RocketLaunchIcon /> },
+  { label: 'CI/CD Pipelines', path: '/dev-dashboard/cicd', icon: <AutorenewIcon /> },
+  { label: 'Containers & Kubernetes', path: '/dev-dashboard/containers-k8s', icon: <HubIcon /> },
+  { label: 'Monitoring', path: '/dev-dashboard/monitoring', icon: <MonitorHeartIcon /> },
+  { label: 'API Management', path: '/dev-dashboard/api-management', icon: <ApiIcon /> },
+  { label: 'Resource Control', path: '/dev-dashboard/resource-control', icon: <StorageIcon /> },
+];
+
+const marketingNav: NavEntry[] = [
+  { label: 'Analytics', path: '/marketing-dashboard/analytics', icon: <InsightsIcon /> },
+  { label: 'Campaigns', path: '/marketing-dashboard/campaigns', icon: <CampaignIcon /> },
+  { label: 'SEO & Domains', path: '/marketing-dashboard/seo-domains', icon: <LanguageIcon /> },
+  { label: 'Audience Segmentation', path: '/marketing-dashboard/audience-segmentation', icon: <GroupsIcon /> },
+  { label: 'Content Distribution', path: '/marketing-dashboard/content-distribution', icon: <PublishIcon /> },
+  { label: 'A/B Testing', path: '/marketing-dashboard/ab-testing', icon: <ScienceIcon /> },
+];
+
+interface DualDashboardLayoutProps {
+  mode: 'developer' | 'marketing';
+  children: React.ReactNode;
+}
+
+const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const sectionNav = mode === 'developer' ? developerNav : marketingNav;
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: (theme) => theme.palette.background.default }}>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: GLOBAL_WIDTH,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: GLOBAL_WIDTH,
+            boxSizing: 'border-box',
+            borderRight: '1px solid rgba(255,255,255,0.08)',
+            bgcolor: '#12284D',
+            color: '#E5EEFF',
+          },
+        }}
+      >
+        <Toolbar sx={{ minHeight: 72 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '.95rem' }}>Ax</Typography>
+        </Toolbar>
+        <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
+        <List sx={{ mt: 1 }}>
+          <Tooltip title="Developer Tools" placement="right">
+            <ListItemButton
+              selected={mode === 'developer'}
+              onClick={() => navigate('/dev-dashboard/deployments')}
+              sx={{ mx: 1, borderRadius: 1.5, mb: 1 }}
+            >
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
+                <BuildIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </Tooltip>
+          <Tooltip title="Marketing Tools" placement="right">
+            <ListItemButton
+              selected={mode === 'marketing'}
+              onClick={() => navigate('/marketing-dashboard/analytics')}
+              sx={{ mx: 1, borderRadius: 1.5 }}
+            >
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
+                <CampaignIcon />
+              </ListItemIcon>
+            </ListItemButton>
+          </Tooltip>
+        </List>
+      </Drawer>
+
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: SECTION_WIDTH,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: SECTION_WIDTH,
+            boxSizing: 'border-box',
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          },
+        }}
+      >
+        <Toolbar sx={{ minHeight: 72, px: 2.5 }}>
+          <Box>
+            <Typography sx={{ fontSize: '.75rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+              Global
+            </Typography>
+            <Typography sx={{ fontWeight: 800, fontSize: '1rem' }}>
+              {mode === 'developer' ? 'Developer Tools' : 'Marketing Tools'}
+            </Typography>
+          </Box>
+        </Toolbar>
+        <Divider />
+        <List sx={{ p: 1.25 }}>
+          {sectionNav.map((entry) => {
+            const active = location.pathname === entry.path;
+            return (
+              <ListItemButton
+                key={entry.path}
+                selected={active}
+                onClick={() => navigate(entry.path)}
+                sx={{ borderRadius: 1.5, mb: 0.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>{entry.icon}</ListItemIcon>
+                <ListItemText primary={entry.label} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </Drawer>
+
+      <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
+        {children}
+      </Box>
+    </Box>
+  );
+};
+
+export default DualDashboardLayout;
