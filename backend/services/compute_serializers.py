@@ -207,7 +207,7 @@ class ServerlessFunctionTriggerSerializer(serializers.ModelSerializer):
             'trigger_id', 'function', 'trigger_type', 'config',
             'is_enabled', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['trigger_id', 'created_at', 'updated_at']
+        read_only_fields = ['trigger_id', 'function', 'created_at', 'updated_at']
 
 
 class ServerlessFunctionListSerializer(serializers.ModelSerializer):

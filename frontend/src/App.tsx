@@ -26,6 +26,8 @@ import DatabasePage              from './pages/DatabasePage';
 import ContainerRegistryPage     from './pages/ContainerRegistryPage';
 import ComputePage               from './pages/ComputePage';
 import StoragePage               from './pages/StoragePage';
+import KubernetesPage            from './pages/KubernetesPage';
+import ServerlessPage            from './pages/ServerlessPage';
 import DomainPage                from './pages/DomainPage';
 import EmailMarketingPage        from './pages/EmailMarketingPage';
 import MonitoringPage            from './pages/MonitoringPage';
@@ -52,6 +54,10 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard"                         element={<OnboardingDashboard />} />
             <Route path="/dashboard/compute"                 element={<ComputePage />} />
             <Route path="/dashboard/compute/create"          element={<ComputePage />} />
+            <Route path="/dashboard/kubernetes"              element={<KubernetesPage />} />
+            <Route path="/dashboard/kubernetes/:id"          element={<KubernetesPage />} />
+            <Route path="/dashboard/serverless"              element={<ServerlessPage />} />
+            <Route path="/dashboard/serverless/:id"          element={<ServerlessPage />} />
             <Route path="/dashboard/settings"                element={<AccountSettingsPage />} />
             <Route path="/dashboard/settings/:section"       element={<AccountSettingsPage />} />
             <Route path="/dashboard/databases"               element={<DatabasePage />} />

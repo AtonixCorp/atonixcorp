@@ -40,6 +40,10 @@ import type {
   PaymentMethod, AddPaymentMethodPayload,
   Invoice, CurrentUsage, CreditNote,
 } from '../types/billing';
+import type {
+  KubernetesCluster, CreateKubernetesClusterPayload, ClusterMetrics,
+  ServerlessFunction, CreateServerlessFunctionPayload,
+} from '../types/kubernetes';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -99,6 +103,32 @@ export const serversApi = {
   create: (payload: CreateServerPayload) => cloudClient.post('/instances/', payload),
   get: (id: string) => cloudClient.get(`/instances/${id}/`),
   delete: (id: string) => cloudClient.delete(`/instances/${id}/`),
+};
+
+// ---- Kubernetes ----
+export const kubernetesApi = {
+  list:         () => cloudClient.get<KubernetesCluster[]>('/kubernetes-clusters/'),
+  get:          (id: string) => cloudClient.get<KubernetesCluster>(`/kubernetes-clusters/${id}/`),
+  create:       (p: CreateKubernetesClusterPayload) => cloudClient.post<KubernetesCluster>('/kubernetes-clusters/', p),
+  delete:       (id: string) => cloudClient.delete(`/kubernetes-clusters/${id}/`),
+  nodes:        (id: string) => cloudClient.get(`/kubernetes-clusters/${id}/nodes/`),
+  scale:        (id: string, desiredCount: number) => cloudClient.post(`/kubernetes-clusters/${id}/scale/`, { desired_count: desiredCount }),
+  kubeconfig:   (id: string) => cloudClient.get(`/kubernetes-clusters/${id}/kubeconfig/`),
+  deployYaml:   (id: string, manifestYaml: string) => cloudClient.post(`/kubernetes-clusters/${id}/deploy_yaml/`, { manifest_yaml: manifestYaml }),
+  metrics:      (id: string) => cloudClient.get<ClusterMetrics>(`/kubernetes-clusters/${id}/metrics/`),
+};
+
+// ---- Serverless Functions ----
+export const serverlessApi = {
+  list:         () => cloudClient.get<ServerlessFunction[]>('/serverless-functions/'),
+  get:          (id: string) => cloudClient.get<ServerlessFunction>(`/serverless-functions/${id}/`),
+  create:       (p: CreateServerlessFunctionPayload) => cloudClient.post<ServerlessFunction>('/serverless-functions/', p),
+  delete:       (id: string) => cloudClient.delete(`/serverless-functions/${id}/`),
+  invoke:       (id: string, payload: Record<string, any>) => cloudClient.post(`/serverless-functions/${id}/invoke/`, { payload }),
+  logs:         (id: string) => cloudClient.get(`/serverless-functions/${id}/logs/`),
+  metrics:      (id: string) => cloudClient.get(`/serverless-functions/${id}/metrics/`),
+  triggers:     (id: string) => cloudClient.get(`/serverless-functions/${id}/triggers/`),
+  addTrigger:   (id: string, trigger_type: string, config: Record<string, any>) => cloudClient.post(`/serverless-functions/${id}/add_trigger/`, { trigger_type, config }),
 };
 
 // ---- Block Volumes ----
