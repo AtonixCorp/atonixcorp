@@ -82,8 +82,7 @@ class NetworkingService:
         if VPC.objects.filter(
             cidr_block=cidr_block,
             region=vpc_data.get('region', 'us-west-2'),
-            status!='deleted'
-        ).exists():
+        ).exclude(status='deleted').exists():
             raise VPCError("VPC with this CIDR already exists in region")
         
         # Create VPC
