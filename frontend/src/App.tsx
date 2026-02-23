@@ -37,6 +37,13 @@ import CDNPage                   from './pages/CDNPage';
 import NetworkPage               from './pages/NetworkPage';
 import OrchestrationPage         from './pages/OrchestrationPage';
 import ToolPlaceholderPage       from './pages/ToolPlaceholderPage';
+import DevDeploymentsPage        from './pages/DevDeploymentsPage';
+import DevPipelinesPage          from './pages/DevPipelinesPage';
+import DevContainersPage         from './pages/DevContainersPage';
+import DevMonitoringPage         from './pages/DevMonitoringPage';
+import DevApiManagementPage      from './pages/DevApiManagementPage';
+import DevResourceControlPage    from './pages/DevResourceControlPage';
+import DevWorkspacePage          from './pages/DevWorkspacePage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,15 +66,13 @@ const AppShell: React.FC = () => {
         <DashboardLayout dashboardMode="developer">
           <Routes>
             <Route path="/dev-dashboard" element={<Navigate to="/dev-dashboard/deployments" replace />} />
-            <Route path="/dev-dashboard/deployments" element={<ComputePage />} />
-            <Route path="/dev-dashboard/cicd" element={<OrchestrationPage />} />
-            <Route path="/dev-dashboard/containers-k8s" element={<KubernetesPage />} />
-            <Route path="/dev-dashboard/monitoring" element={<MonitoringPage />} />
-            <Route
-              path="/dev-dashboard/api-management"
-              element={<ToolPlaceholderPage title="API Management" description="Manage API keys, gateways, throttling, and policy controls." />}
-            />
-            <Route path="/dev-dashboard/resource-control" element={<NetworkPage />} />
+            <Route path="/dev-dashboard/deployments" element={<DevDeploymentsPage />} />
+            <Route path="/dev-dashboard/cicd" element={<DevPipelinesPage />} />
+            <Route path="/dev-dashboard/containers-k8s" element={<DevContainersPage />} />
+            <Route path="/dev-dashboard/monitoring" element={<DevMonitoringPage />} />
+            <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
+            <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />
+            <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
             <Route path="/dev-dashboard/settings/*" element={<ToolPlaceholderPage title="Developer Settings" description="Developer settings and preferences." />} />
             <Route path="/dev-dashboard/team" element={<ToolPlaceholderPage title="Developer Team" description="Manage developer team members and access." />} />
             <Route path="/dev-dashboard/help" element={<ToolPlaceholderPage title="Developer Support" description="Developer support resources and help center." />} />

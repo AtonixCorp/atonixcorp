@@ -131,6 +131,7 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
   { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
   { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/dev-dashboard/resource-control' },
+  { label: 'My Workspace', icon: <PersonIcon {...I()} />, path: '/dev-dashboard/workspace' },
 ];
 
 const MARKETING_NAV: NavItem[] = [
