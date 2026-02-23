@@ -135,7 +135,7 @@ const DEVELOPER_NAV: NavItem[] = [
 ];
 
 const MARKETING_NAV: NavItem[] = [
-  { label: 'Analytics', icon: <MonitorIcon {...I()} />, path: '/marketing-dashboard/analytics' },
+  { label: 'Marketing Overview', icon: <MonitorIcon {...I()} />, path: '/marketing-dashboard/analytics' },
   { label: 'Campaigns', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/campaigns' },
   { label: 'SEO & Domains', icon: <DomainIcon {...I()} />, path: '/marketing-dashboard/seo-domains' },
   { label: 'Audience Segmentation', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/audience-segmentation' },
@@ -149,9 +149,31 @@ const ACCOUNT_NAV: NavItem[] = [
   { label: 'Settings',  icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
 ];
 
+const DEVELOPER_ACCOUNT_NAV: NavItem[] = [
+  { label: 'Developer Billing',  icon: <BillingIcon {...I()} />, path: '/dev-dashboard/billing' },
+  { label: 'Developer Team',     icon: <TeamIcon {...I()} />, path: '/dev-dashboard/team' },
+  { label: 'Developer Settings', icon: <SettingsIcon {...I()} />, path: '/dev-dashboard/settings' },
+];
+
+const MARKETING_ACCOUNT_NAV: NavItem[] = [
+  { label: 'Marketing Billing',  icon: <BillingIcon {...I()} />, path: '/marketing-dashboard/billing' },
+  { label: 'Marketing Team',     icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/team' },
+  { label: 'Marketing Settings', icon: <SettingsIcon {...I()} />, path: '/marketing-dashboard/settings' },
+];
+
 const SUPPORT_NAV: NavItem[] = [
   { label: 'Support',          icon: <HelpIcon    {...I()} />, path: '/dashboard/help'     },
   { label: 'Referral Program', icon: <TeamIcon    {...I()} />, path: '/dashboard/referral', badge: '$25', badgeColor: 'success' },
+];
+
+const DEVELOPER_SUPPORT_NAV: NavItem[] = [
+  { label: 'Developer Support', icon: <HelpIcon {...I()} />, path: '/dev-dashboard/help' },
+  { label: 'Developer Referral', icon: <TeamIcon {...I()} />, path: '/dev-dashboard/referral', badge: '$25', badgeColor: 'success' },
+];
+
+const MARKETING_SUPPORT_NAV: NavItem[] = [
+  { label: 'Marketing Support', icon: <HelpIcon {...I()} />, path: '/marketing-dashboard/help' },
+  { label: 'Marketing Referral', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/referral', badge: '$25', badgeColor: 'success' },
 ];
 // Suppress unused-var — tokens are exported for child components to import if needed
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -326,15 +348,17 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
       ? MARKETING_NAV
       : CLOUD_NAV;
 
-  const accountNav = ACCOUNT_NAV.map((item) => ({
-    ...item,
-    path: item.path ? item.path.replace('/dashboard', routeBase) : item.path,
-  }));
+  const accountNav = dashboardMode === 'developer'
+    ? DEVELOPER_ACCOUNT_NAV
+    : dashboardMode === 'marketing'
+      ? MARKETING_ACCOUNT_NAV
+      : ACCOUNT_NAV;
 
-  const supportNav = SUPPORT_NAV.map((item) => ({
-    ...item,
-    path: item.path ? item.path.replace('/dashboard', routeBase) : item.path,
-  }));
+  const supportNav = dashboardMode === 'developer'
+    ? DEVELOPER_SUPPORT_NAV
+    : dashboardMode === 'marketing'
+      ? MARKETING_SUPPORT_NAV
+      : SUPPORT_NAV;
 
   // Sidebar surface colours switch with the theme
   const SB_BG     = isDark ? '#0D1826' : NAVY;    // main sidebar bg

@@ -44,6 +44,17 @@ import DevMonitoringPage         from './pages/DevMonitoringPage';
 import DevApiManagementPage      from './pages/DevApiManagementPage';
 import DevResourceControlPage    from './pages/DevResourceControlPage';
 import DevWorkspacePage          from './pages/DevWorkspacePage';
+import DevSettingsPage           from './pages/DevSettingsPage';
+import DevTeamPage               from './pages/DevTeamPage';
+import DevBillingPage            from './pages/DevBillingPage';
+import MarketingSettingsPage     from './pages/MarketingSettingsPage';
+import MarketingTeamPage         from './pages/MarketingTeamPage';
+import MarketingBillingPage      from './pages/MarketingBillingPage';
+import MarketingOverviewPage     from './pages/MarketingOverviewPage';
+import MarketingAudiencePage     from './pages/MarketingAudiencePage';
+import MarketingAbTestingPage    from './pages/MarketingAbTestingPage';
+import MarketingContentPage      from './pages/MarketingContentPage';
+import MarketingSeoPage          from './pages/MarketingSeoPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -73,11 +84,11 @@ const AppShell: React.FC = () => {
             <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
-            <Route path="/dev-dashboard/settings/*" element={<ToolPlaceholderPage title="Developer Settings" description="Developer settings and preferences." />} />
-            <Route path="/dev-dashboard/team" element={<ToolPlaceholderPage title="Developer Team" description="Manage developer team members and access." />} />
+            <Route path="/dev-dashboard/settings/*" element={<DevSettingsPage />} />
+            <Route path="/dev-dashboard/team" element={<DevTeamPage />} />
             <Route path="/dev-dashboard/help" element={<ToolPlaceholderPage title="Developer Support" description="Developer support resources and help center." />} />
             <Route path="/dev-dashboard/referral" element={<ToolPlaceholderPage title="Developer Referral" description="Developer referral and partner programs." />} />
-            <Route path="/dev-dashboard/billing" element={<BillingPage />} />
+            <Route path="/dev-dashboard/billing" element={<DevBillingPage />} />
             <Route path="/dev-dashboard/*" element={<Navigate to="/dev-dashboard/deployments" replace />} />
           </Routes>
         </DashboardLayout>
@@ -91,23 +102,17 @@ const AppShell: React.FC = () => {
         <DashboardLayout dashboardMode="marketing">
           <Routes>
             <Route path="/marketing-dashboard" element={<Navigate to="/marketing-dashboard/analytics" replace />} />
-            <Route path="/marketing-dashboard/analytics" element={<MonitoringPage />} />
+            <Route path="/marketing-dashboard/analytics" element={<MarketingOverviewPage />} />
             <Route path="/marketing-dashboard/campaigns" element={<EmailMarketingPage />} />
-            <Route path="/marketing-dashboard/seo-domains" element={<DomainPage />} />
-            <Route
-              path="/marketing-dashboard/audience-segmentation"
-              element={<ToolPlaceholderPage title="Audience Segmentation" description="AI-powered targeting and audience segments." />}
-            />
-            <Route path="/marketing-dashboard/content-distribution" element={<CDNPage />} />
-            <Route
-              path="/marketing-dashboard/ab-testing"
-              element={<ToolPlaceholderPage title="A/B Testing" description="Experiment management for campaigns and landing pages." />}
-            />
-            <Route path="/marketing-dashboard/settings/*" element={<ToolPlaceholderPage title="Marketing Settings" description="Marketing settings and preferences." />} />
-            <Route path="/marketing-dashboard/team" element={<ToolPlaceholderPage title="Marketing Team" description="Manage marketing users and access." />} />
+            <Route path="/marketing-dashboard/seo-domains" element={<MarketingSeoPage />} />
+            <Route path="/marketing-dashboard/audience-segmentation" element={<MarketingAudiencePage />} />
+            <Route path="/marketing-dashboard/content-distribution" element={<MarketingContentPage />} />
+            <Route path="/marketing-dashboard/ab-testing" element={<MarketingAbTestingPage />} />
+            <Route path="/marketing-dashboard/settings/*" element={<MarketingSettingsPage />} />
+            <Route path="/marketing-dashboard/team" element={<MarketingTeamPage />} />
             <Route path="/marketing-dashboard/help" element={<ToolPlaceholderPage title="Marketing Support" description="Marketing support resources and help center." />} />
             <Route path="/marketing-dashboard/referral" element={<ToolPlaceholderPage title="Marketing Referral" description="Marketing referral and partner programs." />} />
-            <Route path="/marketing-dashboard/billing" element={<BillingPage />} />
+            <Route path="/marketing-dashboard/billing" element={<MarketingBillingPage />} />
             <Route path="/marketing-dashboard/*" element={<Navigate to="/marketing-dashboard/analytics" replace />} />
           </Routes>
         </DashboardLayout>

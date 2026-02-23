@@ -27,7 +27,7 @@ import type {
 } from '../types/email';
 import type {
   Campaign, ContactList, Contact, EmailTemplate, Automation,
-  AccountStats, CreateCampaignPayload, CreateContactListPayload,
+  AccountStats, MarketingOverviewResponse, CreateCampaignPayload, CreateContactListPayload,
   CreateContactPayload, CreateTemplatePayload, CreateAutomationPayload,
 } from '../types/marketing';
 import type {
@@ -593,6 +593,10 @@ export const marketingApi = {
   deleteAutomation:   (id: string)                               => cloudClient.delete(`/automations/${id}/`),
   activateAutomation: (id: string)                               => cloudClient.post(`/automations/${id}/activate/`),
   deactivateAutomation: (id: string)                             => cloudClient.post(`/automations/${id}/deactivate/`),
+};
+
+export const marketingSuiteApi = {
+  overview: () => cloudClient.get<MarketingOverviewResponse>('/marketing/overview/'),
 };
 
 // ---- Email Service ----

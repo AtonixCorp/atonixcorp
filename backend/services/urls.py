@@ -51,6 +51,7 @@ from .billing_viewsets import (
     PaymentMethodViewSet, InvoiceViewSet,
     UsageViewSet, CreditViewSet,
 )
+from .marketing_suite_viewsets import MarketingOverviewViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -136,6 +137,7 @@ router.register(r'incidents',           IncidentViewSet,           basename='inc
 router.register(r'logs',                LogViewSet,                basename='log')
 router.register(r'orchestration',       OrchestrationViewSet,      basename='orchestration')
 router.register(r'compliance',          ComplianceViewSet,         basename='compliance')
+router.register(r'marketing/overview',  MarketingOverviewViewSet,  basename='marketing-overview')
 
 # ── Billing ─────────────────────────────────────────────────────────────────
 router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')

@@ -129,6 +129,36 @@ export interface AccountStats {
   total_unsubscribes: number;
 }
 
+export interface MarketingQuickAction {
+  label: string;
+  route: string;
+}
+
+export interface MarketingOverviewResponse {
+  top_metrics: {
+    total_campaigns: number;
+    active_campaigns: number;
+    audience_size: number;
+    monthly_spend: number;
+    overall_roi: number;
+    seo_score: number;
+    deliverability_score: number;
+    avg_engagement_rate: number;
+  };
+  live_activity: {
+    running_campaigns: Array<{ id: string; name: string; channel: string }>;
+    active_experiments: Array<{ id: string; name: string }>;
+    upcoming_content: Array<{ id: string; title: string; scheduled_at: string | null }>;
+  };
+  insights: {
+    best_channel: string;
+    best_segment: string;
+    seo_opportunities: string[];
+    ai_recommendations: string[];
+  };
+  quick_actions: MarketingQuickAction[];
+}
+
 // ── Payloads ──────────────────────────────────────────────────────────────────
 
 export interface CreateCampaignPayload {
