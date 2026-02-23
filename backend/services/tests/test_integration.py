@@ -23,7 +23,7 @@ from ..business_logic.compute import ComputeService
 from ..business_logic.storage import StorageService
 from ..business_logic.networking import NetworkingService
 from ..business_logic.billing import BillingService
-from ..models import Instance, Volume, VPC, Subnet, Bucket, AuditLog
+from ..core.models import Instance, Volume, VPC, Subnet, Bucket, AuditLog
 
 
 @pytest.mark.integration
@@ -523,7 +523,7 @@ class TestErrorHandlingInWorkflows:
         user.userprofile.save()
 
         # Create first instance (succeeds)
-        from ..models import Flavor, Image
+        from ..core.models import Flavor, Image
         flavor = Flavor.objects.first() or Flavor.objects.create(
             flavor_id='flavor-test',
             name='test',

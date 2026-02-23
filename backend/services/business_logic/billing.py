@@ -14,7 +14,7 @@ from decimal import Decimal
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 
-from ..models import (
+from ..core.models import (
     Instance, StorageBucket, StorageVolume, FileShare,
     LoadBalancer, KubernetesCluster, ServerlessFunction,
 )

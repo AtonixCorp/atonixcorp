@@ -8,4 +8,4 @@ class ServicesConfig(AppConfig):
 
     def ready(self):
         """Register signal handlers when app is ready."""
-        import services.signals  # noqa: F401
+        import services.core.signals  # noqa: F401

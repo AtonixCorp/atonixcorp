@@ -24,7 +24,7 @@ from ..business_logic.exceptions import (
     ResourceNotFoundError, BucketNotFoundError, VolumeNotFoundError, VolumeError,
     ResourceInUseError, SnapshotError,
 )
-from ..models import StorageBucket, StorageVolume, S3Object
+from ..core.models import StorageBucket, StorageVolume, S3Object
 
 
 @pytest.mark.storage
@@ -95,7 +95,7 @@ class TestStorageServiceBucket:
 
     def test_delete_bucket_with_objects_force_false(self, db, user, storage_bucket):
         """Test deleting bucket with objects (force=False)"""
-        from ..models import S3Object
+        from ..core.models import S3Object
 
         service = StorageService()
 
@@ -111,7 +111,7 @@ class TestStorageServiceBucket:
 
     def test_delete_bucket_with_objects_force_true(self, db, user, storage_bucket):
         """Test deleting bucket with force=True"""
-        from ..models import S3Object
+        from ..core.models import S3Object
 
         service = StorageService()
 

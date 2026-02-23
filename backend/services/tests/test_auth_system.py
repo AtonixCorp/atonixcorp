@@ -23,7 +23,7 @@ from ..authentication import APIKeyAuthentication, BearerTokenAuthentication
 from ..permissions import (
     IsResourceOwner, HasAPIKey, HasValidScope, IsAdmin, CanManageUsers,
 )
-from ..models import UserAPIKey, UserProfile
+from ..core.models import UserAPIKey, UserProfile
 
 User = get_user_model()
 

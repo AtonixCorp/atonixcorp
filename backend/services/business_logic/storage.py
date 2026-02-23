@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Sum, Count
 
-from ..models import (
+from ..core.models import (
     StorageBucket, S3Object,
     StorageVolume, StorageSnapshot,
     FileShare, FileShareMount,
@@ -371,7 +371,7 @@ class StorageService:
             raise InvalidStateTransitionError(f"Cannot attach volume in {volume.status} state")
 
         # Verify instance exists and belongs to user
-        from ..models import Instance
+        from ..core.models import Instance
         try:
             instance = Instance.objects.get(id=instance_id, owner=user)
         except Instance.DoesNotExist:

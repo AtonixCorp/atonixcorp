@@ -151,5 +151,5 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG  # In dev allow all origins for convenience
 
 if HAS_GRAPHENE_DJANGO:
     GRAPHENE = {
-        'SCHEMA': 'services.graphql_schema.schema',
+        'SCHEMA': 'services.core.graphql_schema.schema',
     }

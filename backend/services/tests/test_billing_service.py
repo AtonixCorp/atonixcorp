@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skip(reason='Legacy billing test suite targets pre-refa
 
 from ..business_logic.billing import BillingService
 from ..business_logic.exceptions import InvalidConfigurationError
-from ..models import Instance, Volume, KubernetesCluster, ServerlessFunction
+from ..core.models import Instance, Volume, KubernetesCluster, ServerlessFunction
 
 
 @pytest.mark.billing

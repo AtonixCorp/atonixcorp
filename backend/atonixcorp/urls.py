@@ -130,5 +130,5 @@ urlpatterns = [
         'api/graphql/',
         GraphQLView.as_view(graphiql=settings.DEBUG) if GraphQLView else graphql_unavailable,
     ),
-    path('api/services/', include('services.urls')),
+    path('api/services/', include('services.api.urls')),
 ]

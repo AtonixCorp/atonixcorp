@@ -23,7 +23,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q, Count
 
-from ..models import (
+from ..core.models import (
     VPC, Subnet, SecurityGroup, SecurityGroupRule,
     LoadBalancer, TargetGroup, Listener,
     RouteTable, Route,

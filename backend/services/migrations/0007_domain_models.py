@@ -2,7 +2,7 @@
 
 import django.core.validators
 import django.db.models.deletion
-import services.domain_models
+import services.domain.models
 import uuid
 from django.conf import settings
 from django.db import migrations, models
@@ -458,7 +458,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('cert_id', models.CharField(default=services.domain_models._default_cert_id, max_length=64, unique=True)),
+                ('cert_id', models.CharField(default=services.domain.models._default_cert_id, max_length=64, unique=True)),
                 ('common_name', models.CharField(max_length=253)),
                 ('sans', models.JSONField(default=list, help_text='Subject Alternative Names')),
                 ('issuer', models.CharField(default="Let's Encrypt", max_length=128)),

@@ -24,7 +24,7 @@ from ..business_logic.exceptions import (
     VPCNotFoundError, InvalidConfigurationError, DependencyNotFoundError,
     ResourceNotFoundError, IPAMError,
 )
-from ..models import VPC, Subnet, SecurityGroup, SecurityGroupRule
+from ..core.models import VPC, Subnet, SecurityGroup, SecurityGroupRule
 
 
 @pytest.mark.networking

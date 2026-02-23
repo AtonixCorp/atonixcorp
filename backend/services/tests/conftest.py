@@ -44,7 +44,7 @@ def admin_user(db):
 @pytest.fixture
 def user_with_quota(db):
     """Create user with custom quota profile"""
-    from ..models import UserProfile
+    from ..core.models import UserProfile
     user = User.objects.create_user(
         username='quota_user',
         email='quota@example.com',
@@ -64,7 +64,7 @@ def user_with_quota(db):
 @pytest.fixture
 def flavor(db):
     """Create a test VM flavor"""
-    from ..models import Flavor
+    from ..core.models import Flavor
     return Flavor.objects.create(
         flavor_id='1',
         name='m5.large',
@@ -79,7 +79,7 @@ def flavor(db):
 @pytest.fixture
 def image(db):
     """Create a test OS image"""
-    from ..models import Image
+    from ..core.models import Image
     return Image.objects.create(
         image_id='1',
         name='ubuntu-22.04-lts',
@@ -94,7 +94,7 @@ def image(db):
 @pytest.fixture(autouse=True)
 def seed_default_compute_catalog(db):
     """Ensure legacy tests using flavor_id=1/image_id=1 always have catalog data."""
-    from ..models import Flavor, Image
+    from ..core.models import Flavor, Image
 
     Flavor.objects.get_or_create(
         flavor_id='1',
@@ -124,7 +124,7 @@ def seed_default_compute_catalog(db):
 @pytest.fixture
 def instance(db, user, flavor, image):
     """Create a test instance"""
-    from ..models import Instance, VPC
+    from ..core.models import Instance, VPC
     vpc = VPC.objects.create(
         name='test-vpc',
         owner=user,
@@ -148,7 +148,7 @@ def instance(db, user, flavor, image):
 @pytest.fixture
 def storage_bucket(db, user):
     """Create a test storage bucket"""
-    from ..models import StorageBucket
+    from ..core.models import StorageBucket
     return StorageBucket.objects.create(
         bucket_name='test-bucket',
         owner=user,
@@ -162,7 +162,7 @@ def storage_bucket(db, user):
 @pytest.fixture
 def storage_volume(db, user):
     """Create a test storage volume"""
-    from ..models import StorageVolume
+    from ..core.models import StorageVolume
     return StorageVolume.objects.create(
         name='test-volume',
         owner=user,
@@ -179,7 +179,7 @@ def storage_volume(db, user):
 @pytest.fixture
 def backup_policy(db, user, storage_volume):
     """Create a test backup policy"""
-    from ..models import BackupPolicy
+    from ..core.models import BackupPolicy
     return BackupPolicy.objects.create(
         name='daily-backup',
         owner=user,
@@ -195,7 +195,7 @@ def backup_policy(db, user, storage_volume):
 @pytest.fixture
 def vpc(db, user):
     """Create a test VPC"""
-    from ..models import VPC
+    from ..core.models import VPC
     return VPC.objects.create(
         name='test-vpc',
         owner=user,
@@ -210,7 +210,7 @@ def vpc(db, user):
 @pytest.fixture
 def subnet(db, vpc):
     """Create a test subnet"""
-    from ..models import Subnet
+    from ..core.models import Subnet
     return Subnet.objects.create(
         vpc=vpc,
         name='test-subnet',
@@ -224,7 +224,7 @@ def subnet(db, vpc):
 @pytest.fixture
 def security_group(db, vpc, user):
     """Create a test security group"""
-    from ..models import SecurityGroup
+    from ..core.models import SecurityGroup
     return SecurityGroup.objects.create(
         name='test-sg',
         owner=user,
@@ -236,7 +236,7 @@ def security_group(db, vpc, user):
 @pytest.fixture
 def load_balancer(db, vpc, user):
     """Create a test load balancer"""
-    from ..models import LoadBalancer
+    from ..core.models import LoadBalancer
     return LoadBalancer.objects.create(
         name='test-lb',
         owner=user,
@@ -252,7 +252,7 @@ def load_balancer(db, vpc, user):
 
 def create_test_instance(user, flavor=None, image=None, name='test-instance', **kwargs):
     """Helper function to create test instance with defaults"""
-    from ..models import Instance, Flavor, Image, VPC
+    from ..core.models import Instance, Flavor, Image, VPC
 
     if not flavor:
         flavor, _ = Flavor.objects.get_or_create(
@@ -302,7 +302,7 @@ def create_test_instance(user, flavor=None, image=None, name='test-instance', **
 
 def create_test_volume(user, name='test-volume', size_gb=100, **kwargs):
     """Helper function to create test volume with defaults"""
-    from ..models import StorageVolume
+    from ..core.models import StorageVolume
 
     return StorageVolume.objects.create(
         name=name,
@@ -318,7 +318,7 @@ def create_test_volume(user, name='test-volume', size_gb=100, **kwargs):
 
 def create_test_vpc(user, name='test-vpc', cidr_block='10.0.0.0/16', **kwargs):
     """Helper function to create test VPC with defaults"""
-    from ..models import VPC
+    from ..core.models import VPC
 
     return VPC.objects.create(
         name=name,

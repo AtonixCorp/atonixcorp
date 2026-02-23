@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q, Sum, Avg
 
-from ..models import (
+from ..core.models import (
     Instance, Flavor, Image, InstanceMetric,
     KubernetesCluster, KubernetesNode,
     ServerlessFunction, ServerlessFunctionTrigger,
@@ -106,7 +106,7 @@ class ComputeService:
 
         # Validate network if specified
         if instance_data.get('vpc_id'):
-            from ..models import VPC
+            from ..core.models import VPC
             try:
                 vpc = VPC.objects.get(id=instance_data['vpc_id'], owner=user)
             except VPC.DoesNotExist:

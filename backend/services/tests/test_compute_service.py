@@ -23,7 +23,7 @@ from ..business_logic.exceptions import (
     QuotaExceededError, InvalidStateTransitionError, InvalidConfigurationError,
     ResourceNotFoundError, DependencyNotFoundError, InstanceTerminateError,
 )
-from ..models import Instance, Flavor, Image, KubernetesCluster, ServerlessFunction
+from ..core.models import Instance, Flavor, Image, KubernetesCluster, ServerlessFunction
 
 
 @pytest.mark.compute
@@ -357,7 +357,7 @@ class TestComputeServiceMetrics:
 
     def test_instance_metrics_aggregation(self, db, instance):
         """Test metric aggregation"""
-        from ..models import InstanceMetric
+        from ..core.models import InstanceMetric
 
         service = ComputeService()
 
