@@ -32,6 +32,10 @@ import DomainPage                from './pages/DomainPage';
 import EmailMarketingPage        from './pages/EmailMarketingPage';
 import MonitoringPage            from './pages/MonitoringPage';
 import BillingPage               from './pages/BillingPage';
+import LoadBalancersPage         from './pages/LoadBalancersPage';
+import CDNPage                   from './pages/CDNPage';
+import NetworkPage               from './pages/NetworkPage';
+import OrchestrationPage         from './pages/OrchestrationPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -70,6 +74,10 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<EmailMarketingPage />} />
             <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />
+            <Route path="/dashboard/load-balancers"           element={<LoadBalancersPage />} />
+            <Route path="/dashboard/cdn"                      element={<CDNPage />} />
+            <Route path="/dashboard/network"                  element={<NetworkPage />} />
+            <Route path="/dashboard/orchestration"            element={<OrchestrationPage />} />
             <Route path="/dashboard/billing"                  element={<BillingPage />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>

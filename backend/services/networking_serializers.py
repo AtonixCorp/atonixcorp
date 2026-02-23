@@ -22,7 +22,7 @@ class VPCListSerializer(serializers.ModelSerializer):
     class Meta:
         model = VPC
         fields = [
-            'resource_id', 'vpc_id', 'name', 'cidr_block', 'region',
+            'id', 'resource_id', 'vpc_id', 'name', 'cidr_block', 'region',
             'status', 'owner_username', 'subnet_count', 'created_at'
         ]
         read_only_fields = ['resource_id', 'vpc_id', 'created_at']
@@ -39,7 +39,7 @@ class VPCDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = VPC
         fields = [
-            'resource_id', 'vpc_id', 'name', 'description', 'cidr_block',
+            'id', 'resource_id', 'vpc_id', 'name', 'description', 'cidr_block',
             'ipv6_cidr_block', 'enable_dns_hostnames', 'enable_dns_support',
             'enable_network_address_translation', 'region', 'status',
             'flow_logs_enabled', 'flow_logs_destination', 'owner',
@@ -395,6 +395,16 @@ class RouteTableDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+class RouteTableCreateSerializer(serializers.ModelSerializer):
+    """Create route table."""
+    class Meta:
+        model = RouteTable
+        fields = [
+            'name', 'description', 'vpc', 'is_main',
+            'associated_subnets', 'tags', 'metadata'
+        ]
+
+
 # ============================================================================
 # DNS SERIALIZERS
 # ============================================================================
@@ -577,6 +587,15 @@ class InternetGatewayListSerializer(serializers.ModelSerializer):
         read_only_fields = ['resource_id', 'ig_id', 'created_at']
 
 
+class InternetGatewayCreateSerializer(serializers.ModelSerializer):
+    """Create internet gateway."""
+    class Meta:
+        model = InternetGateway
+        fields = [
+            'name', 'description', 'vpc', 'tags', 'metadata'
+        ]
+
+
 class NATGatewayListSerializer(serializers.ModelSerializer):
     """Lightweight NAT gateway serializer."""
     owner_username = serializers.CharField(source='owner.username', read_only=True)
@@ -607,4 +626,14 @@ class NATGatewayDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'resource_id', 'nat_gw_id', 'status', 'created_at', 'updated_at'
+        ]
+
+
+class NATGatewayCreateSerializer(serializers.ModelSerializer):
+    """Create NAT gateway."""
+    class Meta:
+        model = NATGateway
+        fields = [
+            'name', 'description', 'subnet', 'eip_allocation_id',
+            'public_ip', 'tags', 'metadata'
         ]

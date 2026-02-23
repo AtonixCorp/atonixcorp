@@ -41,9 +41,28 @@ import type {
   Invoice, CurrentUsage, CreditNote,
 } from '../types/billing';
 import type {
+  LoadBalancer, CreateLoadBalancerPayload, CreateTargetGroupPayload, LoadBalancerMetrics,
+  TargetGroup,
+} from '../types/loadbalancer';
+import type {
+  VPC, Subnet, SecurityGroup, RouteTable, DNSRecord,
+  InternetGateway, NATGateway, TopologyResponse, FlowLogsResponse,
+} from '../types/network';
+import type {
+  CDNDistribution, CreateCDNDistributionPayload, CDNMetrics, EdgeStatusItem,
+} from '../types/cdn';
+import type {
   KubernetesCluster, CreateKubernetesClusterPayload, ClusterMetrics,
   ServerlessFunction, CreateServerlessFunctionPayload,
 } from '../types/kubernetes';
+import type {
+  OrchestrationOverview,
+  TerraformPlanResult,
+  TerraformApplyResult,
+  DeploymentResult,
+  ComplianceScanResult,
+  ObservabilityResult,
+} from '../types/orchestration';
 import {
   OnboardingProgress,
   DashboardStats,
@@ -131,6 +150,50 @@ export const serverlessApi = {
   addTrigger:   (id: string, trigger_type: string, config: Record<string, any>) => cloudClient.post(`/serverless-functions/${id}/add_trigger/`, { trigger_type, config }),
 };
 
+// ---- Orchestration ----
+export const orchestrationApi = {
+  overview:               () => cloudClient.get<OrchestrationOverview>('/orchestration/'),
+  terraformPlan:          (environment: string, resources: string[]) =>
+    cloudClient.post<TerraformPlanResult>('/orchestration/terraform_plan/', { environment, resources }),
+  terraformApply:         (plan_id: string, approved = true) =>
+    cloudClient.post<TerraformApplyResult>('/orchestration/terraform_apply/', { plan_id, approved }),
+  deployWorkload:         (payload: {
+    cluster_resource_id: string;
+    release_name: string;
+    chart?: string;
+    namespace?: string;
+    strategy?: 'rolling' | 'canary' | 'blue-green';
+  }) => cloudClient.post<DeploymentResult>('/orchestration/deploy_workload/', payload),
+  configureGitOps:        (payload: {
+    cluster_resource_id: string;
+    repository: string;
+    branch?: string;
+    path?: string;
+    auto_sync?: boolean;
+  }) => cloudClient.post('/orchestration/configure_gitops/', payload),
+  configureAutoscaling:   (payload: {
+    cluster_resource_id: string;
+    min_nodes: number;
+    max_nodes: number;
+    target_cpu_percent: number;
+  }) => cloudClient.post('/orchestration/configure_autoscaling/', payload),
+  configureServiceMesh:   (payload: {
+    cluster_resource_id: string;
+    mesh: 'istio' | 'linkerd';
+    mtls_enabled?: boolean;
+    retries?: number;
+  }) => cloudClient.post('/orchestration/configure_service_mesh/', payload),
+  disasterRecoveryPlan:   (payload: {
+    cluster_resource_id: string;
+    recovery_region?: string;
+    backup_schedule?: string;
+    rpo_minutes?: number;
+    rto_minutes?: number;
+  }) => cloudClient.post('/orchestration/disaster_recovery_plan/', payload),
+  complianceScan:         () => cloudClient.get<ComplianceScanResult>('/orchestration/compliance_scan/'),
+  observability:          () => cloudClient.get<ObservabilityResult>('/orchestration/observability/'),
+};
+
 // ---- Block Volumes ----
 export const volumesApi = {
   list:   ()           => cloudClient.get<StorageVolume[]>('/volumes/'),
@@ -179,6 +242,161 @@ export const storageApi = {
 // ---- Networking ----
 export const networksApi = {
   list: () => cloudClient.get('/vpcs/'),
+};
+
+export const networkArchitectureApi = {
+  // VPC
+  listVpcs:              () => cloudClient.get<VPC[]>('/vpcs/'),
+  getVpc:               (id: string) => cloudClient.get<VPC>(`/vpcs/${id}/`),
+  createVpc:            (payload: {
+    name: string;
+    description?: string;
+    cidr_block: string;
+    region?: string;
+    enable_dns_hostnames?: boolean;
+    enable_dns_support?: boolean;
+    enable_network_address_translation?: boolean;
+  }) => cloudClient.post<VPC>('/vpcs/', payload),
+  configureFlowLogs:    (id: string, enabled: boolean, destination?: string) =>
+    cloudClient.post(`/vpcs/${id}/configure_flow_logs/`, { enabled, destination }),
+  flowLogs:             (id: string) => cloudClient.get<FlowLogsResponse>(`/vpcs/${id}/flow_logs/`),
+  topology:             (id: string) => cloudClient.get<TopologyResponse>(`/vpcs/${id}/topology/`),
+
+  // Subnets
+  listSubnets:          () => cloudClient.get<Subnet[]>('/subnets/'),
+  createSubnet:         (payload: {
+    vpc: string;
+    cidr_block: string;
+    availability_zone: string;
+    map_public_ip_on_launch?: boolean;
+    assign_ipv6_on_creation?: boolean;
+    name?: string;
+  }) => cloudClient.post<Subnet>('/subnets/', payload),
+  setSubnetTier:        (subnetId: string, tier: 'public' | 'private') =>
+    cloudClient.post(`/subnets/${subnetId}/set_tier/`, { tier }),
+
+  // Security groups
+  listSecurityGroups:   () => cloudClient.get<SecurityGroup[]>('/security-groups/'),
+  createSecurityGroup:  (payload: { name: string; description?: string; vpc: string }) =>
+    cloudClient.post<SecurityGroup>('/security-groups/', payload),
+  applySecurityTemplate:(id: string, template: 'web-public' | 'private-service') =>
+    cloudClient.post(`/security-groups/${id}/apply_template/`, { template }),
+
+  // Route tables
+  listRouteTables:      () => cloudClient.get<RouteTable[]>('/route-tables/'),
+  createRouteTable:     (payload: { name: string; description?: string; vpc: string; is_main?: boolean }) =>
+    cloudClient.post<RouteTable>('/route-tables/', payload),
+  associateSubnetRoute: (id: string, subnet_id: string) =>
+    cloudClient.post(`/route-tables/${id}/associate_subnet/`, { subnet_id }),
+  setDefaultRoute:      (id: string, target_type: 'internet-gateway' | 'nat-gateway', target_id: string) =>
+    cloudClient.post(`/route-tables/${id}/set_default_route/`, { target_type, target_id }),
+
+  // DNS
+  listDnsRecords:       () => cloudClient.get<DNSRecord[]>('/dns-records/'),
+  createDnsRecord:      (payload: {
+    zone_id: string;
+    name: string;
+    record_type: string;
+    ttl: number;
+    values: string[];
+    routing_policy?: string;
+  }) => cloudClient.post<DNSRecord>('/dns-records/', payload),
+
+  // Gateways
+  listInternetGateways: () => cloudClient.get<InternetGateway[]>('/internet-gateways/'),
+  createInternetGateway:(payload: { name: string; description?: string; vpc: string }) =>
+    cloudClient.post<InternetGateway>('/internet-gateways/', payload),
+  listNatGateways:      () => cloudClient.get<NATGateway[]>('/nat-gateways/'),
+  createNatGateway:     (payload: { name: string; description?: string; subnet: string; eip_allocation_id?: string; public_ip?: string }) =>
+    cloudClient.post<NATGateway>('/nat-gateways/', payload),
+};
+
+// ---- Load Balancers ----
+export const loadBalancerApi = {
+  // Load balancer CRUD
+  list:                  () => cloudClient.get<LoadBalancer[]>('/load-balancers/'),
+  get:                   (id: string) => cloudClient.get<LoadBalancer>(`/load-balancers/${id}/`),
+  create:                (payload: CreateLoadBalancerPayload) => cloudClient.post<LoadBalancer>('/load-balancers/', payload),
+  delete:                (id: string) => cloudClient.delete(`/load-balancers/${id}/`),
+
+  // LB features
+  setAlgorithm:          (id: string, algorithm: 'round_robin' | 'least_connections' | 'ip_hash' | 'weighted') =>
+    cloudClient.post(`/load-balancers/${id}/set_algorithm/`, { algorithm }),
+  enableTls:             (id: string, certificate_arn: string, ssl_policy = 'TLS-1-2-2021') =>
+    cloudClient.post(`/load-balancers/${id}/enable_tls/`, { certificate_arn, ssl_policy }),
+  configureHealthCheck:  (
+    id: string,
+    payload: {
+      path?: string;
+      interval_seconds?: number;
+      timeout_seconds?: number;
+      healthy_threshold?: number;
+      unhealthy_threshold?: number;
+    }
+  ) => cloudClient.post(`/load-balancers/${id}/configure_health_check/`, payload),
+  configureCdnOrigin:    (id: string, origin_host: string, cache_enabled = true) =>
+    cloudClient.post(`/load-balancers/${id}/configure_cdn_origin/`, { origin_host, cache_enabled }),
+  metrics:               (id: string) => cloudClient.get<LoadBalancerMetrics>(`/load-balancers/${id}/metrics/`),
+
+  // Target groups
+  listTargetGroups:      (id: string) => cloudClient.get<TargetGroup[]>(`/load-balancers/${id}/target_groups/`),
+  addTargetGroup:        (id: string, payload: CreateTargetGroupPayload) => cloudClient.post(`/load-balancers/${id}/add_target_group/`, payload),
+  registerTarget:        (targetGroupId: string, target_id: string, port: number, weight = 100) =>
+    cloudClient.post(`/target-groups/${targetGroupId}/register_target/`, { target_id, port, weight }),
+  deregisterTarget:      (targetGroupId: string, target_id: string) =>
+    cloudClient.post(`/target-groups/${targetGroupId}/deregister_target/`, { target_id }),
+  setTargetWeight:       (targetGroupId: string, target_id: string, weight: number) =>
+    cloudClient.post(`/target-groups/${targetGroupId}/set_target_weight/`, { target_id, weight }),
+  targetHealth:          (targetGroupId: string) => cloudClient.get(`/target-groups/${targetGroupId}/health/`),
+};
+
+// ---- CDN ----
+export const cdnApi = {
+  // CRUD
+  list:                  () => cloudClient.get<CDNDistribution[]>('/cdn-distributions/'),
+  get:                   (id: string) => cloudClient.get<CDNDistribution>(`/cdn-distributions/${id}/`),
+  create:                (payload: CreateCDNDistributionPayload) => cloudClient.post<CDNDistribution>('/cdn-distributions/', payload),
+  delete:                (id: string) => cloudClient.delete(`/cdn-distributions/${id}/`),
+
+  // Cache operations
+  invalidateCache:       (id: string, paths: string[] = ['/*']) =>
+    cloudClient.post(`/cdn-distributions/${id}/invalidate_cache/`, { paths }),
+  setCachePolicy:        (
+    id: string,
+    payload: {
+      static_ttl_seconds?: number;
+      dynamic_ttl_seconds?: number;
+      max_ttl_seconds?: number;
+      bypass_paths?: string[];
+      cache_query_strings?: boolean;
+      vary_headers?: string[];
+    }
+  ) => cloudClient.post(`/cdn-distributions/${id}/set_cache_policy/`, payload),
+
+  // Security/performance
+  setSecurity:           (
+    id: string,
+    payload: {
+      require_https?: boolean;
+      ssl_protocol_minimum?: 'TLSv1' | 'TLSv1.1' | 'TLSv1.2' | 'SSLv3' | string;
+      waf_enabled?: boolean;
+      waf_web_acl_id?: string;
+      ddos_mitigation_enabled?: boolean;
+    }
+  ) => cloudClient.post(`/cdn-distributions/${id}/set_security/`, payload),
+  setPerformance:        (
+    id: string,
+    payload: {
+      http2_enabled?: boolean;
+      http3_enabled?: boolean;
+      compression?: string;
+      image_optimization?: boolean;
+    }
+  ) => cloudClient.post(`/cdn-distributions/${id}/set_performance/`, payload),
+
+  // Observability
+  metrics:               (id: string) => cloudClient.get<CDNMetrics>(`/cdn-distributions/${id}/metrics/`),
+  edgeStatus:            (id: string) => cloudClient.get<{ distribution_id: string; edges: EdgeStatusItem[] }>(`/cdn-distributions/${id}/edge_status/`),
 };
 
 // ---- Managed Databases ----

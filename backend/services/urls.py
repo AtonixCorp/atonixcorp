@@ -44,6 +44,7 @@ from .monitoring_viewsets import (
     AlertRuleViewSet, AlertViewSet,
     IncidentViewSet, LogViewSet,
 )
+from .orchestration_viewsets import OrchestrationViewSet
 from .billing_viewsets import (
     BillingOverviewViewSet, BillingAccountViewSet,
     PaymentMethodViewSet, InvoiceViewSet,
@@ -132,6 +133,7 @@ router.register(r'alert-rules',         AlertRuleViewSet,          basename='ale
 router.register(r'alerts',              AlertViewSet,              basename='alert')
 router.register(r'incidents',           IncidentViewSet,           basename='incident')
 router.register(r'logs',                LogViewSet,                basename='log')
+router.register(r'orchestration',       OrchestrationViewSet,      basename='orchestration')
 
 # ── Billing ─────────────────────────────────────────────────────────────────
 router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')

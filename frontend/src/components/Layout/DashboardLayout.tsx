@@ -54,6 +54,8 @@ import DomainIcon            from '@mui/icons-material/Language';
 import CampaignIcon          from '@mui/icons-material/Campaign';
 import LightModeIcon         from '@mui/icons-material/LightMode';
 import DarkModeIcon          from '@mui/icons-material/DarkMode';
+import FirstPageIcon         from '@mui/icons-material/FirstPage';
+import LastPageIcon          from '@mui/icons-material/LastPage';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -61,6 +63,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const SIDEBAR_WIDTH = 260;
+const SIDEBAR_COLLAPSED_WIDTH = 76;
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // ── AtonixCorp unified design tokens ──────────────────────────────────────────
@@ -133,7 +136,8 @@ const SUPPORT_NAV: NavItem[] = [
 const _tokens = { NAVY2, SUCCESS, WARNING, DANGER, BLUE_HOVER };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-const NavSectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const NavSectionLabel: React.FC<{ children: React.ReactNode; collapsed?: boolean }> = ({ children, collapsed = false }) => (
+  collapsed ? null : (
   <Typography
     sx={{
       px: 2.5, mb: 0.5, mt: 0.25,
@@ -145,6 +149,7 @@ const NavSectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) 
   >
     {children}
   </Typography>
+  )
 );
 // ── NavRow ─────────────────────────────────────────────────────────────────────
 
@@ -152,9 +157,10 @@ interface NavRowProps {
   item: NavItem;
   depth?: number;
   defaultOpen?: boolean;
+  collapsed?: boolean;
 }
 
-const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false }) => {
+const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false, collapsed = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(defaultOpen);
@@ -168,6 +174,11 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
         );
 
   const handleClick = () => {
+    if (collapsed && hasChildren) {
+      const firstPath = item.children?.[0]?.path;
+      if (firstPath) navigate(firstPath);
+      return;
+    }
     if (hasChildren) {
       setOpen(p => !p);
     } else if (item.path) {
@@ -182,8 +193,9 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.25,
-          px: depth === 0 ? 1.5 : 2.25,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: collapsed ? 0 : 1.25,
+          px: collapsed ? 0.75 : (depth === 0 ? 1.5 : 2.25),
           py: 0.75,
           mx: 1,
           mb: 0.25,
@@ -209,21 +221,23 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
           {item.icon}
         </Box>
 
-        <Typography
-          sx={{
-            flex: 1,
-            fontSize: depth === 0 ? '.875rem' : '.82rem',
-            fontWeight: isActive ? 600 : 400,
-            color: isActive ? '#fff' : TEXT_PRIMARY,
-            letterSpacing: depth === 0 ? '-.01em' : '-.005em',
-            lineHeight: 1.2,
-            fontFamily: FONT,
-          }}
-        >
-          {item.label}
-        </Typography>
+        {!collapsed && (
+          <Typography
+            sx={{
+              flex: 1,
+              fontSize: depth === 0 ? '.875rem' : '.82rem',
+              fontWeight: isActive ? 600 : 400,
+              color: isActive ? '#fff' : TEXT_PRIMARY,
+              letterSpacing: depth === 0 ? '-.01em' : '-.005em',
+              lineHeight: 1.2,
+              fontFamily: FONT,
+            }}
+          >
+            {item.label}
+          </Typography>
+        )}
 
-        {item.badge && (
+        {!collapsed && item.badge && (
           <Chip
             label={item.badge}
             size="small"
@@ -246,7 +260,7 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
           />
         )}
 
-        {hasChildren && (
+        {!collapsed && hasChildren && (
           <Box sx={{ color: TEXT_SECONDARY, display: 'flex', alignItems: 'center' }}>
             {open
               ? <KeyboardArrowDownIcon  sx={{ fontSize: '.85rem' }} />
@@ -255,11 +269,11 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
         )}
       </Box>
 
-      {hasChildren && (
+      {hasChildren && !collapsed && (
         <Collapse in={open} timeout={0} unmountOnExit>
           <Box sx={{ ml: 1.5, borderLeft: `1px solid ${DIVIDER_COLOR}`, mb: 0.5 }}>
             {item.children!.map(child => (
-              <NavRow key={child.label} item={child} depth={depth + 1} />
+              <NavRow key={child.label} item={child} depth={depth + 1} collapsed={collapsed} />
             ))}
           </Box>
         </Collapse>
@@ -270,7 +284,7 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false })
 
 // ── Sidebar ────────────────────────────────────────────────────────────────────
 
-const SidebarContent: React.FC = () => {
+const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }) => {
   const { user } = useAuth() as any;
   const navigate  = useNavigate();
   const { mode }  = useColorMode();
@@ -295,11 +309,12 @@ const SidebarContent: React.FC = () => {
       <Box
         onClick={() => navigate('/dashboard')}
         sx={{
-          px: 2.5,
+          px: collapsed ? 1 : 2.5,
           py: 2,
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: collapsed ? 0 : 1.5,
           cursor: 'pointer',
           borderBottom: `1px solid ${SB_DIV}`,
           flexShrink: 0,
@@ -316,22 +331,25 @@ const SidebarContent: React.FC = () => {
         >
           Ax
         </Box>
-        <Box>
-          <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#fff', lineHeight: 1.15, letterSpacing: '-.02em', fontFamily: FONT }}>
-            AtonixCorp
-          </Typography>
-          <Typography sx={{ fontSize: '.67rem', color: TEXT_SECONDARY, lineHeight: 1, fontFamily: FONT, letterSpacing: '.02em' }}>
-            Cloud Platform
-          </Typography>
-        </Box>
+        {!collapsed && (
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#fff', lineHeight: 1.15, letterSpacing: '-.02em', fontFamily: FONT }}>
+              AtonixCorp
+            </Typography>
+            <Typography sx={{ fontSize: '.67rem', color: TEXT_SECONDARY, lineHeight: 1, fontFamily: FONT, letterSpacing: '.02em' }}>
+              Cloud Platform
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Org selector */}
-      <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${SB_DIV}`, flexShrink: 0 }}>
+      <Box sx={{ px: collapsed ? 1 : 2, py: 1.25, borderBottom: `1px solid ${SB_DIV}`, flexShrink: 0 }}>
         <Box
           sx={{
             display: 'flex', alignItems: 'center', gap: 1,
-            px: 1.5, py: 0.75, borderRadius: '6px',
+            px: collapsed ? 0 : 1.5, py: 0.75, borderRadius: '6px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
             border: '1px solid rgba(255,255,255,0.1)',
             cursor: 'pointer', bgcolor: SB_ORG,
             '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
@@ -349,10 +367,14 @@ const SidebarContent: React.FC = () => {
               {(user?.username || 'U')[0].toUpperCase()}
             </Typography>
           </Box>
-          <Typography sx={{ flex: 1, fontSize: '.82rem', fontWeight: 500, color: TEXT_PRIMARY, fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
-            {user?.username || 'My Organization'}
-          </Typography>
-          <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
+          {!collapsed && (
+            <>
+              <Typography sx={{ flex: 1, fontSize: '.82rem', fontWeight: 500, color: TEXT_PRIMARY, fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
+                {user?.username || 'My Organization'}
+              </Typography>
+              <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
+            </>
+          )}
         </Box>
       </Box>
 
@@ -371,25 +393,26 @@ const SidebarContent: React.FC = () => {
               key={item.label}
               item={item}
               defaultOpen={item.label === 'Products' || item.label === 'Network'}
+              collapsed={collapsed}
             />
           ))}
         </List>
 
-        <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />
+        {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
 
-        <NavSectionLabel>Account</NavSectionLabel>
+        <NavSectionLabel collapsed={collapsed}>Account</NavSectionLabel>
         <List disablePadding>
           {ACCOUNT_NAV.map(item => (
-            <NavRow key={item.label} item={item} />
+            <NavRow key={item.label} item={item} collapsed={collapsed} />
           ))}
         </List>
 
-        <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />
+        {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
 
-        <NavSectionLabel>Support</NavSectionLabel>
+        <NavSectionLabel collapsed={collapsed}>Support</NavSectionLabel>
         <List disablePadding>
           {SUPPORT_NAV.map(item => (
-            <NavRow key={item.label} item={item} />
+            <NavRow key={item.label} item={item} collapsed={collapsed} />
           ))}
         </List>
       </Box>
@@ -406,16 +429,18 @@ const SidebarContent: React.FC = () => {
           <Avatar sx={{ width: 30, height: 30, bgcolor: BLUE, fontSize: '.8rem', fontWeight: 700 }}>
             {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
           </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: '.82rem', fontWeight: 700, color: '#fff', fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
-              {user?.first_name
-                ? `${user.first_name} ${user.last_name || ''}`.trim()
-                : user?.username}
-            </Typography>
-            <Typography sx={{ fontSize: '.7rem', color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.005em' }} noWrap>
-              {user?.email || ''}
-            </Typography>
-          </Box>
+          {!collapsed && (
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: '.82rem', fontWeight: 700, color: '#fff', fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
+                {user?.first_name
+                  ? `${user.first_name} ${user.last_name || ''}`.trim()
+                  : user?.username}
+              </Typography>
+              <Typography sx={{ fontSize: '.7rem', color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.005em' }} noWrap>
+                {user?.email || ''}
+              </Typography>
+            </Box>
+          )}
         </Stack>
       </Box>
     </Box>
@@ -434,6 +459,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { mode, toggleTheme } = useColorMode();
   const isDark             = mode === 'dark';
   const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
 
@@ -446,7 +472,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <Box component="nav" sx={{ width: { lg: SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
+      <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -464,14 +490,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           sx={{
             display: { xs: 'none', lg: 'block' },
             '& .MuiDrawer-paper': {
-              width: SIDEBAR_WIDTH, border: 'none',
+              width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH, border: 'none',
               borderRight: `1px solid ${isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.08)'}`,
               bgcolor: isDark ? '#0D1826' : NAVY,
+              transition: 'width .2s ease',
             },
           }}
           open
         >
-          <SidebarContent />
+          <SidebarContent collapsed={sidebarCollapsed} />
         </Drawer>
       </Box>
 
@@ -479,10 +506,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <Box
         sx={{
           flexGrow: 1,
-          width: { lg: `calc(100% - ${SIDEBAR_WIDTH}px)` },
+          width: { lg: `calc(100% - ${sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
+          transition: 'width .2s ease',
         }}
       >
 
@@ -505,6 +533,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               >
               <MenuIcon />
             </IconButton>
+
+            <Tooltip title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+              <IconButton
+                onClick={() => setSidebarCollapsed(prev => !prev)}
+                sx={{ display: { xs: 'none', lg: 'inline-flex' }, color: isDark ? '#ffffff' : '#6B7280' }}
+              >
+                {sidebarCollapsed ? <LastPageIcon /> : <FirstPageIcon />}
+              </IconButton>
+            </Tooltip>
 
             {/* Global search */}
             <Box
