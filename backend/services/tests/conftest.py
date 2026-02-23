@@ -16,15 +16,16 @@ Usage:
 import os
 import django
 from django.conf import settings
+
+# Configure Django settings before any Django model imports
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'atonixcorp.settings')
+if not settings.configured:
+    django.setup()
+
 import pytest
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
-
-# Configure Django settings
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
-if not settings.configured:
-    django.setup()
 
 
 # ========== PYTEST CONFIGURATION ==========

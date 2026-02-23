@@ -89,6 +89,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
           DEBUG: 'True'
+          DJANGO_SETTINGS_MODULE: atonixcorp.settings
         run: |
           cd backend
           python manage.py collectstatic --noinput
