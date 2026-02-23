@@ -22,8 +22,8 @@ class TimeStampedModel(models.Model):
 class ResourceModel(TimeStampedModel):
     """Base model for cloud resources."""
     resource_id = models.CharField(
-        max_length=64, 
-        unique=True, 
+        max_length=64,
+        unique=True,
         db_index=True,
         editable=False
     )
@@ -32,16 +32,16 @@ class ResourceModel(TimeStampedModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='%(class)s_owned')
     tags = models.JSONField(default=dict, help_text="Key-value tags for resource")
     metadata = models.JSONField(default=dict, help_text="Additional metadata")
-    
+
     class Meta:
         abstract = True
-    
+
     def save(self, *args, **kwargs):
         """Generate resource_id if not set."""
         if not self.resource_id:
             self.resource_id = self.generate_resource_id()
         super().save(*args, **kwargs)
-    
+
     @staticmethod
     def generate_resource_id(prefix='res'):
         """Generate unique resource ID."""
@@ -77,7 +77,7 @@ class AuditLog(TimeStampedModel):
         ('scale', 'Scale'),
         ('error', 'Error'),
     ]
-    
+
     audit_id = models.CharField(max_length=64, unique=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
@@ -93,21 +93,21 @@ class AuditLog(TimeStampedModel):
     error_message = models.TextField(blank=True)
     source_ip = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
-    
+
     class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user', 'action']),
             models.Index(fields=['resource_type', 'resource_id']),
         ]
-    
+
     def save(self, *args, **kwargs):
         if not self.audit_id:
             self.audit_id = f"audit-{uuid.uuid4().hex[:12]}"
         super().save(*args, **kwargs)
-    
+
     @classmethod
-    def log_action(cls, user, action, resource_type, resource_id, resource_name='', 
+    def log_action(cls, user, action, resource_type, resource_id, resource_name='',
                    status='success', details=None, error_message='', source_ip=''):
         """Convenience method to create audit log."""
         return cls.objects.create(
@@ -130,7 +130,7 @@ class ResourceTag(models.Model):
     resource_type = models.CharField(max_length=100, db_index=True)
     resource_id = models.CharField(max_length=64, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         unique_together = ('resource_type', 'resource_id', 'key')
         indexes = [
@@ -149,10 +149,10 @@ class ApiKey(TimeStampedModel):
     last_used_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     scopes = models.JSONField(default=list, help_text="List of permission scopes")
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def save(self, *args, **kwargs):
         if not self.api_key_id:
             self.api_key_id = f"key-{uuid.uuid4().hex[:12]}"
@@ -174,26 +174,26 @@ class ResourceQuota(models.Model):
         ('cpus', 'CPU Cores'),
         ('memory_gb', 'Memory (GB)'),
     ]
-    
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='resource_quota')
     resource_type = models.CharField(max_length=100)
     limit = models.IntegerField()
     used = models.IntegerField(default=0, db_index=True)
     last_updated = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         unique_together = ('user', 'resource_type')
-    
+
     @property
     def available(self):
         return self.limit - self.used
-    
+
     @property
     def usage_percentage(self):
         if self.limit == 0:
             return 0
         return (self.used / self.limit) * 100
-    
+
     def is_available(self, amount=1):
         """Check if quota is available for the requested amount."""
         return self.available >= amount
@@ -210,7 +210,7 @@ class Alert(TimeStampedModel):
         ('warning', 'Warning'),
         ('critical', 'Critical'),
     ]
-    
+
     alert_id = models.CharField(max_length=64, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='alerts')
     title = models.CharField(max_length=255)
@@ -220,10 +220,10 @@ class Alert(TimeStampedModel):
     resource_id = models.CharField(max_length=64, blank=True)
     is_read = models.BooleanField(default=False, db_index=True)
     metadata = models.JSONField(default=dict)
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def save(self, *args, **kwargs):
         if not self.alert_id:
             self.alert_id = f"alert-{uuid.uuid4().hex[:12]}"
