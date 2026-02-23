@@ -25,9 +25,21 @@ def health_check(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def login_view(request):
+    if request.method == 'GET':
+        return Response(
+            {
+                'detail': 'Use POST to log in.',
+                'required_fields': ['email', 'password'],
+                'example': {
+                    'email': 'developer@atonixcorp.com',
+                    'password': 'your-password',
+                },
+            }
+        )
+
     email = request.data.get('email', '')
     password = request.data.get('password', '')
 
@@ -58,9 +70,23 @@ def login_view(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def signup_view(request):
+    if request.method == 'GET':
+        return Response(
+            {
+                'detail': 'Use POST to create an account.',
+                'required_fields': ['email', 'password'],
+                'optional_fields': ['username', 'first_name', 'last_name'],
+                'example': {
+                    'email': 'developer@atonixcorp.com',
+                    'password': 'strong-password',
+                    'username': 'developer',
+                },
+            }
+        )
+
     username = request.data.get('username', '')
     email = request.data.get('email', '')
     password = request.data.get('password', '')
