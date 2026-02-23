@@ -14,7 +14,6 @@ import { TelemetryErrorBoundary } from './observability/hooks';
 import CloudPlatformHeader from './components/Layout/CloudPlatformHeader';
 import Footer from './components/Layout/Footer';
 import DashboardLayout from './components/Layout/DashboardLayout';
-import DualDashboardLayout from './components/Layout/DualDashboardLayout';
 
 // Pages
 import EnhancedHomepage from './pages/EnhancedHomepage';
@@ -57,7 +56,7 @@ const AppShell: React.FC = () => {
   if (isDeveloperDashboard) {
     return (
       <ProtectedRoute>
-        <DualDashboardLayout mode="developer">
+        <DashboardLayout dashboardMode="developer">
           <Routes>
             <Route path="/dev-dashboard" element={<Navigate to="/dev-dashboard/deployments" replace />} />
             <Route path="/dev-dashboard/deployments" element={<ComputePage />} />
@@ -69,9 +68,14 @@ const AppShell: React.FC = () => {
               element={<ToolPlaceholderPage title="API Management" description="Manage API keys, gateways, throttling, and policy controls." />}
             />
             <Route path="/dev-dashboard/resource-control" element={<NetworkPage />} />
+            <Route path="/dev-dashboard/settings/*" element={<ToolPlaceholderPage title="Developer Settings" description="Developer settings and preferences." />} />
+            <Route path="/dev-dashboard/team" element={<ToolPlaceholderPage title="Developer Team" description="Manage developer team members and access." />} />
+            <Route path="/dev-dashboard/help" element={<ToolPlaceholderPage title="Developer Support" description="Developer support resources and help center." />} />
+            <Route path="/dev-dashboard/referral" element={<ToolPlaceholderPage title="Developer Referral" description="Developer referral and partner programs." />} />
+            <Route path="/dev-dashboard/billing" element={<BillingPage />} />
             <Route path="/dev-dashboard/*" element={<Navigate to="/dev-dashboard/deployments" replace />} />
           </Routes>
-        </DualDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     );
   }
@@ -79,7 +83,7 @@ const AppShell: React.FC = () => {
   if (isMarketingDashboard) {
     return (
       <ProtectedRoute>
-        <DualDashboardLayout mode="marketing">
+        <DashboardLayout dashboardMode="marketing">
           <Routes>
             <Route path="/marketing-dashboard" element={<Navigate to="/marketing-dashboard/analytics" replace />} />
             <Route path="/marketing-dashboard/analytics" element={<MonitoringPage />} />
@@ -94,9 +98,14 @@ const AppShell: React.FC = () => {
               path="/marketing-dashboard/ab-testing"
               element={<ToolPlaceholderPage title="A/B Testing" description="Experiment management for campaigns and landing pages." />}
             />
+            <Route path="/marketing-dashboard/settings/*" element={<ToolPlaceholderPage title="Marketing Settings" description="Marketing settings and preferences." />} />
+            <Route path="/marketing-dashboard/team" element={<ToolPlaceholderPage title="Marketing Team" description="Manage marketing users and access." />} />
+            <Route path="/marketing-dashboard/help" element={<ToolPlaceholderPage title="Marketing Support" description="Marketing support resources and help center." />} />
+            <Route path="/marketing-dashboard/referral" element={<ToolPlaceholderPage title="Marketing Referral" description="Marketing referral and partner programs." />} />
+            <Route path="/marketing-dashboard/billing" element={<BillingPage />} />
             <Route path="/marketing-dashboard/*" element={<Navigate to="/marketing-dashboard/analytics" replace />} />
           </Routes>
-        </DualDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     );
   }
@@ -124,7 +133,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domain"                   element={<Navigate to="/dashboard/domains" replace />} />
             <Route path="/dashboard/domains"                  element={<DomainPage />} />
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
-            <Route path="/dashboard/email-marketing"          element={<EmailMarketingPage />} />
+            <Route path="/dashboard/email-marketing"          element={<Navigate to="/marketing-dashboard/campaigns" replace />} />
             <Route path="/dashboard/developer-tools"          element={<Navigate to="/dev-dashboard/deployments" replace />} />
             <Route path="/dashboard/marketing-tools"          element={<Navigate to="/marketing-dashboard/analytics" replace />} />
             <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />

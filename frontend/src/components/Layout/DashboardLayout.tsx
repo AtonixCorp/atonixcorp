@@ -95,10 +95,12 @@ interface NavItem {
   children?: NavItem[];
 }
 
+type DashboardMode = 'cloud' | 'developer' | 'marketing';
+
 // ── Nav definition — exact order from spec ────────────────────────────────────
 const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
 
-const NAV: NavItem[] = [
+const CLOUD_NAV: NavItem[] = [
   { label: 'Dashboard', icon: <DashboardIcon {...I()} />, path: '/dashboard' },
   {
     label: 'Products',
@@ -118,9 +120,26 @@ const NAV: NavItem[] = [
   },
   { label: 'Monitoring',     icon: <MonitorIcon  {...I()} />, path: '/dashboard/monitoring' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
-  { label: 'Email Marketing', icon: <CampaignIcon  {...I()} />, path: '/dashboard/email-marketing' },
   { label: 'Developer Tools', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
   { label: 'Marketing Tools', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
+];
+
+const DEVELOPER_NAV: NavItem[] = [
+  { label: 'Deployments', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/dev-dashboard/cicd' },
+  { label: 'Containers & Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/containers-k8s' },
+  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
+  { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
+  { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/dev-dashboard/resource-control' },
+];
+
+const MARKETING_NAV: NavItem[] = [
+  { label: 'Analytics', icon: <MonitorIcon {...I()} />, path: '/marketing-dashboard/analytics' },
+  { label: 'Campaigns', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/campaigns' },
+  { label: 'SEO & Domains', icon: <DomainIcon {...I()} />, path: '/marketing-dashboard/seo-domains' },
+  { label: 'Audience Segmentation', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/audience-segmentation' },
+  { label: 'Content Distribution', icon: <CdnIcon {...I()} />, path: '/marketing-dashboard/content-distribution' },
+  { label: 'A/B Testing', icon: <TuneIcon {...I()} />, path: '/marketing-dashboard/ab-testing' },
 ];
 
 const ACCOUNT_NAV: NavItem[] = [
@@ -286,11 +305,35 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false, c
 
 // ── Sidebar ────────────────────────────────────────────────────────────────────
 
-const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }) => {
+const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMode }> = ({
+  collapsed = false,
+  dashboardMode,
+}) => {
   const { user } = useAuth() as any;
   const navigate  = useNavigate();
   const { mode }  = useColorMode();
   const isDark    = mode === 'dark';
+  const routeBase = dashboardMode === 'developer'
+    ? '/dev-dashboard'
+    : dashboardMode === 'marketing'
+      ? '/marketing-dashboard'
+      : '/dashboard';
+
+  const navItems = dashboardMode === 'developer'
+    ? DEVELOPER_NAV
+    : dashboardMode === 'marketing'
+      ? MARKETING_NAV
+      : CLOUD_NAV;
+
+  const accountNav = ACCOUNT_NAV.map((item) => ({
+    ...item,
+    path: item.path ? item.path.replace('/dashboard', routeBase) : item.path,
+  }));
+
+  const supportNav = SUPPORT_NAV.map((item) => ({
+    ...item,
+    path: item.path ? item.path.replace('/dashboard', routeBase) : item.path,
+  }));
 
   // Sidebar surface colours switch with the theme
   const SB_BG     = isDark ? '#0D1826' : NAVY;    // main sidebar bg
@@ -309,7 +352,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
     >
       {/* Logo */}
       <Box
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate(routeBase)}
         sx={{
           px: collapsed ? 1 : 2.5,
           py: 2,
@@ -339,7 +382,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
               AtonixCorp
             </Typography>
             <Typography sx={{ fontSize: '.67rem', color: TEXT_SECONDARY, lineHeight: 1, fontFamily: FONT, letterSpacing: '.02em' }}>
-              Cloud Platform
+              {dashboardMode === 'developer'
+                ? 'Developer Dashboard'
+                : dashboardMode === 'marketing'
+                  ? 'Marketing Dashboard'
+                  : 'Cloud Platform'}
             </Typography>
           </Box>
         )}
@@ -390,11 +437,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
         }}
       >
         <List disablePadding>
-          {NAV.map(item => (
+          {navItems.map(item => (
             <NavRow
               key={item.label}
               item={item}
-              defaultOpen={item.label === 'Products' || item.label === 'Network'}
+              defaultOpen={item.label === 'Products'}
               collapsed={collapsed}
             />
           ))}
@@ -404,7 +451,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
 
         <NavSectionLabel collapsed={collapsed}>Account</NavSectionLabel>
         <List disablePadding>
-          {ACCOUNT_NAV.map(item => (
+          {accountNav.map(item => (
             <NavRow key={item.label} item={item} collapsed={collapsed} />
           ))}
         </List>
@@ -413,7 +460,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
 
         <NavSectionLabel collapsed={collapsed}>Support</NavSectionLabel>
         <List disablePadding>
-          {SUPPORT_NAV.map(item => (
+          {supportNav.map(item => (
             <NavRow key={item.label} item={item} collapsed={collapsed} />
           ))}
         </List>
@@ -453,9 +500,10 @@ const SidebarContent: React.FC<{ collapsed?: boolean }> = ({ collapsed = false }
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  dashboardMode?: DashboardMode;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMode = 'cloud' }) => {
   const { user, logout }  = useAuth() as any;
   const navigate           = useNavigate();
   const { mode, toggleTheme } = useColorMode();
@@ -464,6 +512,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
+  const routeBase = dashboardMode === 'developer'
+    ? '/dev-dashboard'
+    : dashboardMode === 'marketing'
+      ? '/marketing-dashboard'
+      : '/dashboard';
 
   const handleLogout = () => {
     logout();
@@ -485,7 +538,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: isDark ? '#0D1826' : NAVY },
           }}
         >
-          <SidebarContent />
+          <SidebarContent dashboardMode={dashboardMode} />
         </Drawer>
         <Drawer
           variant="permanent"
@@ -500,7 +553,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           }}
           open
         >
-          <SidebarContent collapsed={sidebarCollapsed} />
+          <SidebarContent collapsed={sidebarCollapsed} dashboardMode={dashboardMode} />
         </Drawer>
       </Box>
 
@@ -697,9 +750,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Account</Typography>
               </Box>
               {[
-                { label: 'Profile',       icon: <PersonIcon />,            path: '/dashboard/settings/profile' },
-                { label: 'Preferences',   icon: <TuneIcon />,              path: '/dashboard/settings/preferences' },
-                { label: 'Notifications', icon: <NotificationsNoneIcon />, path: '/dashboard/settings/notifications' },
+                { label: 'Profile',       icon: <PersonIcon />,            path: `${routeBase}/settings/profile` },
+                { label: 'Preferences',   icon: <TuneIcon />,              path: `${routeBase}/settings/preferences` },
+                { label: 'Notifications', icon: <NotificationsNoneIcon />, path: `${routeBase}/settings/notifications` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
@@ -716,9 +769,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Security</Typography>
               </Box>
               {[
-                { label: 'Authentication', icon: <LockIcon />,    path: '/dashboard/settings/authentication' },
-                { label: 'SSH Keys',       icon: <KeyIcon />,     path: '/dashboard/settings/ssh-keys' },
-                { label: 'Compliance',     icon: <GppGoodIcon />, path: '/dashboard/settings/compliance' },
+                { label: 'Authentication', icon: <LockIcon />,    path: `${routeBase}/settings/authentication` },
+                { label: 'SSH Keys',       icon: <KeyIcon />,     path: `${routeBase}/settings/ssh-keys` },
+                { label: 'Compliance',     icon: <GppGoodIcon />, path: `${routeBase}/settings/compliance` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
@@ -735,8 +788,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Developer</Typography>
               </Box>
               {[
-                { label: 'API',   icon: <ApiIcon />,    path: '/dashboard/settings/api' },
-                { label: 'Users', icon: <TeamIcon />, path: '/dashboard/settings/users' },
+                { label: 'API',   icon: <ApiIcon />,    path: `${routeBase}/settings/api` },
+                { label: 'Users', icon: <TeamIcon />, path: `${routeBase}/settings/users` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
@@ -749,7 +802,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
 
               {/* Billing + Sign out */}
-              <MenuItem onClick={() => { setProfileAnchor(null); navigate('/dashboard/billing'); }}
+              <MenuItem onClick={() => { setProfileAnchor(null); navigate(`${routeBase}/billing`); }}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
                   '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
                 <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
