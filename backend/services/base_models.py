@@ -138,27 +138,6 @@ class ResourceTag(models.Model):
             models.Index(fields=['resource_type', 'resource_id']),
         ]
 
-
-class ApiKey(TimeStampedModel):
-    """API keys for programmatic access."""
-    api_key_id = models.CharField(max_length=64, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
-    name = models.CharField(max_length=255)
-    key_hash = models.CharField(max_length=512)  # Store hash, not plaintext
-    is_active = models.BooleanField(default=True, db_index=True)
-    last_used_at = models.DateTimeField(null=True, blank=True)
-    expires_at = models.DateTimeField(null=True, blank=True)
-    scopes = models.JSONField(default=list, help_text="List of permission scopes")
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def save(self, *args, **kwargs):
-        if not self.api_key_id:
-            self.api_key_id = f"key-{uuid.uuid4().hex[:12]}"
-        super().save(*args, **kwargs)
-
-
 # ============================================================================
 # QUOTAS & LIMITS
 # ============================================================================
