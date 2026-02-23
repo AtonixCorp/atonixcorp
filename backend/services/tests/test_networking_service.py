@@ -61,7 +61,7 @@ class TestNetworkingServiceVPC:
         
         # Public ranges should technically fail, but our validation may allow
         # For this test, we'll just verify the CIDR format check
-        with pytest.raises(invalid ConfigurationError):
+        with pytest.raises(InvalidConfigurationError):
             service.create_vpc({
                 'name': 'vpc',
                 'cidr_block': '8.8.8.0/24',  # Public Google DNS range

@@ -228,3 +228,62 @@ class Alert(TimeStampedModel):
         if not self.alert_id:
             self.alert_id = f"alert-{uuid.uuid4().hex[:12]}"
         super().save(*args, **kwargs)
+
+
+# ============================================================================
+# USER PROFILE
+# ============================================================================
+
+class UserProfile(models.Model):
+    """Extended user profile with quota limits and preferences."""
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='userprofile',
+    )
+    max_instances = models.IntegerField(default=10)
+    max_volumes = models.IntegerField(default=20)
+    max_storage_gb = models.IntegerField(default=1000)
+    max_networks = models.IntegerField(default=5)
+    max_functions = models.IntegerField(default=50)
+    company = models.CharField(max_length=255, blank=True, default='')
+    timezone = models.CharField(max_length=64, default='UTC')
+    notifications_enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
+
+    class Meta:
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
+
+
+# ============================================================================
+# API KEY (hashed-free, returns plain key on creation)
+# ============================================================================
+
+class APIKey(models.Model):
+    """
+    Per-user API keys for programmatic authentication.
+    The raw key is stored (use TLS in production); prefix is cosmetic.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_key_set')
+    name = models.CharField(max_length=255, default='default')
+    key = models.CharField(max_length=64, unique=True, editable=False)
+    key_prefix = models.CharField(max_length=32, default='atonix_')
+    is_active = models.BooleanField(default=True, db_index=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    scopes = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = f"{self.key_prefix}{uuid.uuid4().hex}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"
+
+    class Meta:
+        ordering = ['-created_at']

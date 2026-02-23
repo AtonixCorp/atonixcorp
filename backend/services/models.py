@@ -12,6 +12,8 @@ from .base_models import (
     ApiKey,
     ResourceQuota,
     Alert,
+    UserProfile,
+    APIKey,
 )
 
 from .compute_models import (
@@ -39,6 +41,10 @@ from .storage_models import (
     Backup,
     StorageMetric,
 )
+
+# Convenience aliases used in tests and business logic
+Volume = StorageVolume
+Bucket = StorageBucket
 
 from .networking_models import (
     VPC,
@@ -91,6 +97,7 @@ __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
     'AuditLog', 'ResourceTag', 'ApiKey', 'ResourceQuota', 'Alert',
+    'UserProfile', 'APIKey',
     # Compute
     'Flavor', 'Image', 'Instance', 'InstanceMetric',
     'KubernetesCluster', 'KubernetesNode',
@@ -100,6 +107,7 @@ __all__ = [
     'StorageBucket', 'S3Object', 'StorageVolume', 'StorageSnapshot',
     'FileShare', 'FileShareMount', 'EncryptionKey',
     'BackupPolicy', 'Backup', 'StorageMetric',
+    'Volume', 'Bucket',
     # Networking
     'VPC', 'Subnet', 'SecurityGroup', 'SecurityGroupRule',
     'LoadBalancer', 'TargetGroup', 'Listener',
