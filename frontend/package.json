@@ -26,6 +26,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "prestart": "mkdir -p node_modules/.cache/default-development && touch node_modules/.cache/default-development/0.pack",
     "codemod:rename-unused": "node ./tools/codemods/rename-unused.js",
     "start": "node_modules/.bin/react-scripts start",
     "build": "node_modules/.bin/react-scripts build",
