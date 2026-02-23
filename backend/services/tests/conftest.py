@@ -241,25 +241,25 @@ def load_balancer(db, vpc, user):
 def create_test_instance(user, flavor=None, image=None, name='test-instance', **kwargs):
     """Helper function to create test instance with defaults"""
     from ..models import Instance, Flavor, Image, VPC
-    
+
     if not flavor:
         flavor, _ = Flavor.objects.get_or_create(
             instance_type='t3.micro',
             defaults={'vcpus': 1, 'memory_mb': 1024}
         )
-    
+
     if not image:
         image, _ = Image.objects.get_or_create(
             name='ubuntu-22.04-lts',
             defaults={'os_type': 'linux', 'root_volume_size_gb': 30}
         )
-    
+
     vpc = VPC.objects.create(
         name=f'vpc-{name}',
         owner=user,
         cidr_block='10.0.0.0/16',
     )
-    
+
     return Instance.objects.create(
         name=name,
         owner=user,
@@ -276,7 +276,7 @@ def create_test_instance(user, flavor=None, image=None, name='test-instance', **
 def create_test_volume(user, name='test-volume', size_gb=100, **kwargs):
     """Helper function to create test volume with defaults"""
     from ..models import StorageVolume
-    
+
     return StorageVolume.objects.create(
         name=name,
         owner=user,
@@ -292,7 +292,7 @@ def create_test_volume(user, name='test-volume', size_gb=100, **kwargs):
 def create_test_vpc(user, name='test-vpc', cidr_block='10.0.0.0/16', **kwargs):
     """Helper function to create test VPC with defaults"""
     from ..models import VPC
-    
+
     return VPC.objects.create(
         name=name,
         owner=user,
