@@ -74,6 +74,8 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domains"                  element={<DomainPage />} />
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<EmailMarketingPage />} />
+            <Route path="/dashboard/developer-tools"          element={<OrchestrationPage />} />
+            <Route path="/dashboard/marketing-tools"          element={<EmailMarketingPage />} />
             <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />
             <Route path="/dashboard/load-balancers"           element={<LoadBalancersPage />} />
             <Route path="/dashboard/cdn"                      element={<CDNPage />} />
