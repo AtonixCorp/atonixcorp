@@ -24,15 +24,15 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#18366A', // AtonixCorp Electric Blue
-      dark: '#102548',
-      light: '#2B5FA0',
-      contrastText: '#ffffff',
+      main: '#00E0FF',
+      dark: '#00C8E5',
+      light: '#67EEFF',
+      contrastText: '#0A0F1F',
     },
     secondary: {
-      main: '#0A0F1F', // Deep Navy
-      dark: '#06091A',
-      light: '#1B3B8B',
+      main: '#0A0F1F',
+      dark: '#060A16',
+      light: '#1A2038',
       contrastText: '#ffffff',
     },
     background: {
@@ -166,6 +166,18 @@ const ___lightTheme = createTheme({
       },
     MuiCssBaseline: {
       styleOverrides: {
+        ':root': {
+          '--color-primary': '#0A0F1F',
+          '--color-primary-contrast': '#FFFFFF',
+          '--color-accent': '#00E0FF',
+          '--color-accent-hover': '#00C8E5',
+          '--color-text-primary': '#FFFFFF',
+          '--color-text-secondary': '#A0A8B5',
+          '--color-border': '#1F2937',
+          '--color-surface': '#111827',
+          '--radius-small': '2px',
+          '--radius-none': '0px',
+        },
         '*': {
           boxSizing: 'border-box',
         },
@@ -270,7 +282,7 @@ const ___lightTheme = createTheme({
           borderRadius: 2,
           transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            backgroundColor: 'rgba(0, 224, 255, 0.12)',
           },
         },
       },
@@ -296,20 +308,20 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#18366A',   // AtonixCorp brand blue — same in dark & light
-      dark: '#102548',
-      light: '#2B5FA0',
-      contrastText: '#ffffff',
+      main: '#00E0FF',
+      dark: '#00C8E5',
+      light: '#67EEFF',
+      contrastText: '#0A0F1F',
     },
     secondary: {
-      main: '#60a5fa',
-      dark: '#3b82f6',
-      light: '#93c5fd',
-      contrastText: '#0f172a',
+      main: '#0A0F1F',
+      dark: '#060A16',
+      light: '#1A2038',
+      contrastText: '#ffffff',
     },
     background: {
-      default: '#0D1826',   // deep dark navy — page background
-      paper:   '#132336',   // slightly lighter — cards / panels
+      default: '#0A0F1F',
+      paper:   '#111827',
     },
     text: {
       primary:   '#ffffff',
@@ -429,6 +441,18 @@ const ___darkTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        ':root': {
+          '--color-primary': '#0A0F1F',
+          '--color-primary-contrast': '#FFFFFF',
+          '--color-accent': '#00E0FF',
+          '--color-accent-hover': '#00C8E5',
+          '--color-text-primary': '#FFFFFF',
+          '--color-text-secondary': '#A0A8B5',
+          '--color-border': '#1F2937',
+          '--color-surface': '#111827',
+          '--radius-small': '2px',
+          '--radius-none': '0px',
+        },
         '*': {
           boxSizing: 'border-box',
         },
@@ -436,7 +460,7 @@ const ___darkTheme = createTheme({
           scrollBehavior: 'smooth',
         },
         body: {
-          backgroundColor: '#0D1826',
+          backgroundColor: '#0A0F1F',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
         },
@@ -536,7 +560,7 @@ const ___darkTheme = createTheme({
           borderRadius: 2,
           transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            backgroundColor: 'rgba(0, 224, 255, 0.12)',
           },
         },
       },

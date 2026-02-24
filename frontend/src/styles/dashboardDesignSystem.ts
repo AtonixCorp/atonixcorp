@@ -9,8 +9,8 @@ export const dashboardTokens = {
     textPrimary: '#111827',
     textSecondary: '#6B7280',
     textTertiary: '#9CA3AF',
-    brandPrimary: '#2563EB',
-    brandPrimaryHover: '#1D4ED8',
+    brandPrimary: '#00E0FF',
+    brandPrimaryHover: '#00C8E5',
     white: '#FFFFFF',
   },
   radius: {
@@ -23,12 +23,12 @@ export const dashboardSemanticColors = {
   success: '#22C55E',
   warning: '#F59E0B',
   danger: '#EF4444',
-  info: '#3B82F6',
-  infoAlt: '#60A5FA',
+  info: '#00E0FF',
+  infoAlt: '#00C8E5',
   purple: '#8B5CF6',
   orange: '#F97316',
-  cyan: '#06B6D4',
-  teal: '#14B8A6',
+  cyan: '#00E0FF',
+  teal: '#00C8E5',
   pink: '#EC4899',
   critical: '#DC2626',
 } as const;
@@ -141,19 +141,32 @@ export const computeCatalogPalette = {
 } as const;
 
 export const computeUiTokens = {
-  accentStrong: '#18366A',
-  accentSoftLight: 'rgba(24,54,106,.04)',
-  accentSoftDark: 'rgba(24,54,106,.18)',
-  darkPanel: '#132336',
+  accentStrong: '#00E0FF',
+  accentSoftLight: 'rgba(0,224,255,.08)',
+  accentSoftDark: 'rgba(0,224,255,.18)',
+  darkPanel: '#111827',
   successStrong: '#10B981',
   successHover: '#059669',
   successSoft: 'rgba(16,185,129,.12)',
-  violetSoft: 'rgba(99,102,241,.12)',
+  violetSoft: 'rgba(0,224,255,.12)',
   neutralStrong: '#0A0F1F',
   neutralBody: '#374151',
   neutralMuted: '#9CA3AF',
   surfaceSubtle: '#FAFAFA',
   borderHover: '#94A3B8',
+} as const;
+
+export const atonixBrandTokens = {
+  colorPrimary: '#0A0F1F',
+  colorPrimaryContrast: '#FFFFFF',
+  colorAccent: '#00E0FF',
+  colorAccentHover: '#00C8E5',
+  colorTextPrimary: '#FFFFFF',
+  colorTextSecondary: '#A0A8B5',
+  colorBorder: '#1F2937',
+  colorSurface: '#111827',
+  radiusSmall: '2px',
+  radiusNone: '0px',
 } as const;
 
 export const dashboardPageSx = {

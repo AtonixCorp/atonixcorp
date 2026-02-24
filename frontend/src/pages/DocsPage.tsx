@@ -3,8 +3,8 @@ import { Box, Container, Typography, Card, CardContent, Stack } from '@mui/mater
 import { Code as CodeIcon, AutoStories as AutoStoriesIcon } from '@mui/icons-material';
 
 const DocsPage: React.FC = () => {
-  const primaryBlue = '#1E3A8A';
-  const accentCyan = '#06B6D4';
+  const primaryBlue = '#0A0F1F';
+  const accentCyan = '#00E0FF';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
 

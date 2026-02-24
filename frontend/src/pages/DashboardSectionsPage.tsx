@@ -129,7 +129,7 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                     borderRadius: '6px',
                     '& fieldset': { borderColor: '#D1D5DB' },
                     '&:hover fieldset': { borderColor: '#9CA3AF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', boxShadow: '0 0 0 2px rgba(37,99,235,0.12)' },
+                    '&.Mui-focused fieldset': { borderColor: '#00E0FF', boxShadow: '0 0 0 2px rgba(0,224,255,0.18)' },
                   },
                 }}
                 InputProps={{
@@ -144,8 +144,8 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                 label={`${totalVisible} section${totalVisible === 1 ? '' : 's'} visible`}
                 sx={{
                   alignSelf: { xs: 'flex-start', md: 'center' },
-                  bgcolor: 'rgba(37,99,235,0.12)',
-                  color: '#1D4ED8',
+                  bgcolor: 'rgba(0,224,255,0.14)',
+                  color: '#00C8E5',
                   fontWeight: 700,
                   borderRadius: '6px',
                 }}
