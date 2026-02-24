@@ -24,18 +24,28 @@ import type {
   EmailActivityLog, MailClientSettings,
 } from '../types/email';
 import CreateMailboxModal from '../components/Cloud/CreateMailboxModal';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+} from '../styles/dashboardDesignSystem';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const STATUS_COLOUR: Record<string, string> = {
-  active:    '#22C55E',
-  pending:   '#F59E0B',
-  disabled:  '#6B7280',
-  error:     '#EF4444',
-  suspended: '#F59E0B',
-  creating:  '#3B82F6',
-  deleted:   '#6B7280',
+  active: dashboardStatusColors.domain.active,
+  pending: dashboardStatusColors.domain.pending,
+  disabled: dashboardTokens.colors.textSecondary,
+  error: dashboardStatusColors.domain.error,
+  suspended: dashboardStatusColors.domain.pending,
+  creating: dashboardSemanticColors.info,
+  deleted: dashboardTokens.colors.textSecondary,
 };
+
+const WHITE = dashboardTokens.colors.white;
+const SUCCESS = dashboardSemanticColors.success;
+const WARNING = dashboardSemanticColors.warning;
+const DANGER = dashboardSemanticColors.danger;
 
 const DnsRow: React.FC<{
   label: string; done: boolean; record?: string; t: any;
@@ -45,8 +55,8 @@ const DnsRow: React.FC<{
     p: 1.5, bgcolor: t.cardBg, borderRadius: 1, border: `1px solid ${t.border}`,
   }}>
     {done
-      ? <CheckCircleIcon sx={{ color: '#22C55E', flexShrink: 0 }} />
-      : <CancelIcon      sx={{ color: '#EF4444', flexShrink: 0 }} />}
+      ? <CheckCircleIcon sx={{ color: SUCCESS, flexShrink: 0 }} />
+      : <CancelIcon sx={{ color: DANGER, flexShrink: 0 }} />}
     <Box sx={{ flex: 1, overflow: 'hidden' }}>
       <Typography sx={{ color: t.text, fontWeight: 600, fontSize: '0.875rem' }}>{label}</Typography>
       {record && (
@@ -57,7 +67,7 @@ const DnsRow: React.FC<{
       )}
     </Box>
     {done && (
-      <Chip size="small" label="Provisioned" sx={{ bgcolor: '#22C55E22', color: '#22C55E' }} />
+      <Chip size="small" label="Provisioned" sx={{ bgcolor: `${SUCCESS}22`, color: SUCCESS }} />
     )}
   </Box>
 );
@@ -69,13 +79,14 @@ const EmailPage: React.FC = () => {
   const isDark = theme.palette.mode === 'dark';
 
   const t = {
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:  isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    brand:   '#18366A',
-    hover:   isDark ? '#102548' : '#EFF6FF',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
+    panelBg: isDark ? 'rgba(13,24,38,1)' : dashboardTokens.colors.surfaceSubtle,
+    cardBg: isDark ? 'rgba(19,35,54,1)' : dashboardTokens.colors.surface,
+    border: isDark ? 'rgba(30,58,95,1)' : dashboardTokens.colors.border,
+    brand: dashboardTokens.colors.brandPrimary,
+    brandHover: dashboardTokens.colors.brandPrimaryHover,
+    hover: isDark ? 'rgba(16,37,72,1)' : dashboardTokens.colors.surfaceHover,
+    text: isDark ? 'rgba(224,233,244,1)' : dashboardTokens.colors.textPrimary,
+    muted: isDark ? 'rgba(107,138,171,1)' : dashboardTokens.colors.textSecondary,
   };
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -264,7 +275,7 @@ const EmailPage: React.FC = () => {
                   @{ed.domain_name}
                 </Typography>
                 <Chip size="small" label={ed.status}
-                  sx={{ bgcolor: STATUS_COLOUR[ed.status] ?? '#6B7280', color: '#FFF', fontSize: '0.65rem' }} />
+                  sx={{ bgcolor: STATUS_COLOUR[ed.status] ?? dashboardTokens.colors.textSecondary, color: WHITE, fontSize: '0.65rem' }} />
               </Box>
               <Typography sx={{ color: t.muted, fontSize: '0.75rem', mt: 0.25 }}>
                 {ed.mailbox_count} mailbox{ed.mailbox_count !== 1 ? 'es' : ''}
@@ -280,7 +291,7 @@ const EmailPage: React.FC = () => {
                          ].filter(Boolean).length * 25}
                   sx={{ height: 3, borderRadius: 2,
                        bgcolor: t.border,
-                       '& .MuiLinearProgress-bar': { bgcolor: ed.dns_ready ? '#22C55E' : '#F59E0B' } }}
+                        '& .MuiLinearProgress-bar': { bgcolor: ed.dns_ready ? SUCCESS : WARNING } }}
                 />
               </Box>
             </Box>
@@ -307,10 +318,10 @@ const EmailPage: React.FC = () => {
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                 <Chip size="small" label={selected.status}
-                  sx={{ bgcolor: STATUS_COLOUR[selected.status] ?? '#6B7280', color: '#FFF' }} />
+                  sx={{ bgcolor: STATUS_COLOUR[selected.status] ?? dashboardTokens.colors.textSecondary, color: WHITE }} />
                 {selected.dns_ready
-                  ? <Chip size="small" label="DNS Ready" sx={{ bgcolor: '#22C55E22', color: '#22C55E' }} />
-                  : <Chip size="small" label="DNS Pending" sx={{ bgcolor: '#F59E0B22', color: '#F59E0B' }} />}
+                  ? <Chip size="small" label="DNS Ready" sx={{ bgcolor: `${SUCCESS}22`, color: SUCCESS }} />
+                  : <Chip size="small" label="DNS Pending" sx={{ bgcolor: `${WARNING}22`, color: WARNING }} />}
               </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -323,7 +334,7 @@ const EmailPage: React.FC = () => {
               )}
               <Button size="small" variant="contained" startIcon={<AddIcon />}
                 onClick={() => setShowMailbox(true)}
-                sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}>
+                sx={{ bgcolor: t.brand, '&:hover': { bgcolor: t.brandHover } }}>
                 Add Mailbox
               </Button>
             </Box>
@@ -367,7 +378,7 @@ const EmailPage: React.FC = () => {
                       <TableCell sx={tdSx}>{[m.first_name, m.last_name].filter(Boolean).join(' ') || '—'}</TableCell>
                       <TableCell sx={tdSx}>
                         <Chip size="small" label={m.status}
-                          sx={{ bgcolor: STATUS_COLOUR[m.status] ?? '#6B7280', color: '#FFF', fontSize: '0.65rem' }} />
+                          sx={{ bgcolor: STATUS_COLOUR[m.status] ?? dashboardTokens.colors.textSecondary, color: WHITE, fontSize: '0.65rem' }} />
                       </TableCell>
                       <TableCell sx={tdSx}>
                         <Box>
@@ -381,9 +392,9 @@ const EmailPage: React.FC = () => {
                               height: 4, borderRadius: 2, mt: 0.25,
                               bgcolor: t.border,
                               '& .MuiLinearProgress-bar': {
-                                bgcolor: m.quota_used_pct > 90 ? '#EF4444'
-                                       : m.quota_used_pct > 70 ? '#F59E0B'
-                                       : '#22C55E',
+                                bgcolor: m.quota_used_pct > 90 ? DANGER
+                                         : m.quota_used_pct > 70 ? WARNING
+                                         : SUCCESS,
                               },
                             }}
                           />
@@ -396,13 +407,13 @@ const EmailPage: React.FC = () => {
                             <IconButton size="small"
                               onClick={() => handleSuspend(m.resource_id, m.status === 'suspended')}>
                               {m.status === 'suspended'
-                                ? <PlayCircleIcon  sx={{ fontSize: 16, color: '#22C55E' }} />
-                                : <PauseCircleIcon sx={{ fontSize: 16, color: '#F59E0B' }} />}
+                                ? <PlayCircleIcon sx={{ fontSize: 16, color: SUCCESS }} />
+                                : <PauseCircleIcon sx={{ fontSize: 16, color: WARNING }} />}
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete">
                             <IconButton size="small" onClick={() => handleDeleteMailbox(m.resource_id)}>
-                              <DeleteIcon sx={{ fontSize: 16, color: '#EF4444' }} />
+                              <DeleteIcon sx={{ fontSize: 16, color: DANGER }} />
                             </IconButton>
                           </Tooltip>
                         </Box>
@@ -464,12 +475,12 @@ const EmailPage: React.FC = () => {
                         </TableCell>
                         <TableCell sx={tdSx}>
                           {a.is_active
-                            ? <CheckCircleIcon sx={{ fontSize: 16, color: '#22C55E' }} />
-                            : <CancelIcon      sx={{ fontSize: 16, color: '#EF4444' }} />}
+                            ? <CheckCircleIcon sx={{ fontSize: 16, color: SUCCESS }} />
+                            : <CancelIcon sx={{ fontSize: 16, color: DANGER }} />}
                         </TableCell>
                         <TableCell sx={tdSx}>
                           <IconButton size="small" onClick={() => handleDeleteAlias(a.id)}>
-                            <DeleteIcon sx={{ fontSize: 16, color: '#EF4444' }} />
+                            <DeleteIcon sx={{ fontSize: 16, color: DANGER }} />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -493,7 +504,7 @@ const EmailPage: React.FC = () => {
                   <Button
                     variant="contained" size="small" startIcon={<CloudSyncIcon />}
                     onClick={handleProvisionDns} disabled={dnsLoading}
-                    sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}
+                    sx={{ bgcolor: t.brand, '&:hover': { bgcolor: t.brandHover } }}
                   >
                     {dnsLoading ? <CircularProgress size={18} color="inherit" /> : 'Provision All DNS'}
                   </Button>
@@ -530,7 +541,7 @@ const EmailPage: React.FC = () => {
                             {dk.selector}._domainkey.{selected.domain_name}
                           </Typography>
                           <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-                            {dk.is_active && <Chip size="small" label="Active" sx={{ bgcolor: '#22C55E22', color: '#22C55E' }} />}
+                            {dk.is_active && <Chip size="small" label="Active" sx={{ bgcolor: `${SUCCESS}22`, color: SUCCESS }} />}
                             <Tooltip title={copied === `dkim-${dk.id}` ? 'Copied!' : 'Copy DNS record'}>
                               <IconButton size="small" onClick={() => copy(dk.dns_record, `dkim-${dk.id}`)}>
                                 <ContentCopyIcon sx={{ fontSize: 15, color: t.muted }} />

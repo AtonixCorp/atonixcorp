@@ -17,67 +17,51 @@ import InfoIcon from '@mui/icons-material/Info';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import SearchIcon from '@mui/icons-material/Search';
-import { useTheme as useMuiTheme } from '@mui/material/styles';
 import { monitoringApi } from '../services/cloudApi';
 import type {
   MonitoringOverview, ServiceHealth, Alert, AlertRule, CreateAlertRulePayload,
   Incident, CreateIncidentPayload, LogEntry, MetricPoint,
 } from '../types/monitoring';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+  dashboardPrimaryButtonSx,
+} from '../styles/dashboardDesignSystem';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function useThemeTokens() {
-  const theme  = useMuiTheme();
-  const isDark = theme.palette.mode === 'dark';
   return {
-    isDark,
-    panelBg:  '#FFFFFF',
-    cardBg:   '#FFFFFF',
-    border:   '#E5E7EB',
-    text:     '#111827',
-    subtext:  '#6B7280',
-    brand:    '#2563EB',
+    panelBg: dashboardTokens.colors.background,
+    cardBg: dashboardTokens.colors.surface,
+    border: dashboardTokens.colors.border,
+    text: dashboardTokens.colors.textPrimary,
+    subtext: dashboardTokens.colors.textSecondary,
+    brand: dashboardTokens.colors.brandPrimary,
   };
 }
 
 // ─── Severity / Status colour helpers ───────────────────────────────────────
 
 const SERVICE_STATUS_COLOR: Record<string, string> = {
-  operational:    '#22c55e',
-  degraded:       '#f59e0b',
-  partial_outage: '#f97316',
-  major_outage:   '#ef4444',
-  maintenance:    '#8b5cf6',
+  ...dashboardStatusColors.monitoringService,
 };
 
 const INCIDENT_SEV_COLOR: Record<string, string> = {
-  sev1: '#ef4444',
-  sev2: '#f97316',
-  sev3: '#f59e0b',
-  sev4: '#3b82f6',
+  ...dashboardStatusColors.incidentSeverity,
 };
 
 const INCIDENT_STATUS_COLOR: Record<string, string> = {
-  open:        '#ef4444',
-  investigating: '#f97316',
-  identified:  '#f59e0b',
-  monitoring:  '#3b82f6',
-  resolved:    '#22c55e',
-  postmortem:  '#8b5cf6',
+  ...dashboardStatusColors.incidentStatus,
 };
 
 const LOG_LEVEL_COLOR: Record<string, string> = {
-  INFO: '#3b82f6',
-  WARNING: '#f59e0b',
-  ERROR: '#ef4444',
-  DEBUG: '#8b5cf6',
-  CRITICAL: '#dc2626',
+  ...dashboardStatusColors.logLevel,
 };
 
 const ALERT_STATE_COLOR: Record<string, string> = {
-  firing:   '#ef4444',
-  resolved: '#22c55e',
-  silenced: '#8b5cf6',
+  ...dashboardStatusColors.alertState,
 };
 
 function StatusChip({ label, color }: { label: string; color: string }) {
@@ -122,10 +106,10 @@ function OverviewTab({ data, loading }: { data: MonitoringOverview | null; loadi
       {/* Stat row */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Overall Uptime', value: `${(stats.overall_uptime ?? 0).toFixed(2)}%`, color: '#22c55e' },
-          { label: 'Services', value: `${stats.services_operational}/${stats.services_total}`, sub: 'operational', color: '#3b82f6' },
-          { label: 'Open Incidents', value: stats.open_incidents, color: stats.open_incidents > 0 ? '#ef4444' : t.text },
-          { label: 'Firing Alerts', value: stats.firing_alerts, color: stats.firing_alerts > 0 ? '#f97316' : t.text },
+          { label: 'Overall Uptime', value: `${(stats.overall_uptime ?? 0).toFixed(2)}%`, color: dashboardSemanticColors.success },
+          { label: 'Services', value: `${stats.services_operational}/${stats.services_total}`, sub: 'operational', color: dashboardSemanticColors.info },
+          { label: 'Open Incidents', value: stats.open_incidents, color: stats.open_incidents > 0 ? dashboardSemanticColors.danger : t.text },
+          { label: 'Firing Alerts', value: stats.firing_alerts, color: stats.firing_alerts > 0 ? dashboardSemanticColors.orange : t.text },
           { label: 'Alert Rules', value: stats.active_alert_rules, color: t.subtext },
         ].map((s) => (
           <Grid key={s.label} size={{ xs: 12, sm: 6, md: 2 }}>
@@ -147,18 +131,18 @@ function OverviewTab({ data, loading }: { data: MonitoringOverview | null; loadi
                   </Typography>
                   <StatusChip
                     label={svc.status}
-                    color={SERVICE_STATUS_COLOR[svc.status] ?? '#8b5cf6'}
+                    color={SERVICE_STATUS_COLOR[svc.status] ?? dashboardSemanticColors.purple}
                   />
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   <Typography variant="caption" sx={{ color: t.subtext }}>
-                    Uptime <span style={{ color: '#22c55e', fontWeight: 700 }}>{(svc.uptime_pct ?? 0).toFixed(2)}%</span>
+                    Uptime <span style={{ color: dashboardSemanticColors.success, fontWeight: 700 }}>{(svc.uptime_pct ?? 0).toFixed(2)}%</span>
                   </Typography>
                   <Typography variant="caption" sx={{ color: t.subtext }}>
                     Latency <span style={{ color: t.text, fontWeight: 600 }}>{(svc.latency_ms ?? 0).toFixed(0)} ms</span>
                   </Typography>
                   <Typography variant="caption" sx={{ color: t.subtext }}>
-                    Errors <span style={{ color: svc.error_rate > 1 ? '#ef4444' : t.text, fontWeight: 600 }}>{(svc.error_rate ?? 0).toFixed(2)}%</span>
+                    Errors <span style={{ color: svc.error_rate > 1 ? dashboardSemanticColors.danger : t.text, fontWeight: 600 }}>{(svc.error_rate ?? 0).toFixed(2)}%</span>
                   </Typography>
                 </Box>
                 <LinearProgress
@@ -167,7 +151,7 @@ function OverviewTab({ data, loading }: { data: MonitoringOverview | null; loadi
                   sx={{
                     mt: 1,
                     bgcolor: `${SERVICE_STATUS_COLOR[svc.status]}33`,
-                    '& .MuiLinearProgress-bar': { bgcolor: SERVICE_STATUS_COLOR[svc.status] ?? '#22c55e' },
+                    '& .MuiLinearProgress-bar': { bgcolor: SERVICE_STATUS_COLOR[svc.status] ?? dashboardSemanticColors.success },
                   }}
                 />
               </CardContent>
@@ -179,29 +163,45 @@ function OverviewTab({ data, loading }: { data: MonitoringOverview | null; loadi
   );
 }
 
-// ─── Incidents Tab ────────────────────────────────────────────────────────────
+// Incidents Tab
 
-const INCIDENT_STATUSES = ['open','investigating','identified','monitoring','resolved','postmortem'] as const;
+const INCIDENT_STATUSES = ['open', 'investigating', 'identified', 'monitoring', 'resolved', 'postmortem'] as const;
 
 function CreateIncidentDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const t = useThemeTokens();
   const [form, setForm] = useState<CreateIncidentPayload>({
-    service: 'api', severity: 'sev2', title: '', summary: '', affected_resources: [],
+    service: 'api',
+    severity: 'sev2',
+    title: '',
+    summary: '',
+    affected_resources: [],
   });
   const [busy, setBusy] = useState(false);
 
-  const handle = (field: string) => (e: React.ChangeEvent<HTMLInputElement | { value: unknown }>) =>
-    setForm(f => ({ ...f, [field]: (e.target as any).value }));
+  const handle = (field: string) => (e: React.ChangeEvent<HTMLInputElement | { value: unknown }>) => {
+    setForm((previous) => ({ ...previous, [field]: (e.target as any).value }));
+  };
 
   const submit = () => {
     setBusy(true);
-    monitoringApi.createIncident(form)
-      .then(() => { onCreated(); onClose(); })
+    monitoringApi
+      .createIncident(form)
+      .then(() => {
+        onCreated();
+        onClose();
+      })
       .catch(() => {})
       .finally(() => setBusy(false));
   };
 
-  const inputSx = { input: { color: t.text }, '& .MuiInputLabel-root': { color: t.subtext }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: t.border }, '&:hover fieldset': { borderColor: '#2563EB' } } };
+  const inputSx = {
+    input: { color: t.text },
+    '& .MuiInputLabel-root': { color: t.subtext },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: t.border },
+      '&:hover fieldset': { borderColor: dashboardTokens.colors.brandPrimary },
+    },
+  };
 
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { bgcolor: t.cardBg, color: t.text, minWidth: 480 } }}>
@@ -212,21 +212,23 @@ function CreateIncidentDialog({ open, onClose, onCreated }: { open: boolean; onC
         <FormControl fullWidth sx={inputSx}>
           <InputLabel>Service</InputLabel>
           <Select value={form.service} label="Service" onChange={handle('service') as any} sx={{ color: t.text }}>
-            {['api','compute','database','storage','networking','containers','email','dns'].map(s => (
-              <MenuItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</MenuItem>
+            {['api', 'compute', 'database', 'storage', 'networking', 'containers', 'email', 'dns'].map((serviceName) => (
+              <MenuItem key={serviceName} value={serviceName}>{serviceName.charAt(0).toUpperCase() + serviceName.slice(1)}</MenuItem>
             ))}
           </Select>
         </FormControl>
         <FormControl fullWidth sx={inputSx}>
           <InputLabel>Severity</InputLabel>
           <Select value={form.severity} label="Severity" onChange={handle('severity') as any} sx={{ color: t.text }}>
-            {['sev1','sev2','sev3','sev4'].map(s => <MenuItem key={s} value={s}>{s.toUpperCase()}</MenuItem>)}
+            {['sev1', 'sev2', 'sev3', 'sev4'].map((severity) => (
+              <MenuItem key={severity} value={severity}>{severity.toUpperCase()}</MenuItem>
+            ))}
           </Select>
         </FormControl>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={{ color: t.subtext }}>Cancel</Button>
-        <Button variant="contained" onClick={submit} disabled={busy || !form.title} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
+        <Button variant="contained" onClick={submit} disabled={busy || !form.title} sx={dashboardPrimaryButtonSx}>
           {busy ? <CircularProgress size={16} /> : 'Create'}
         </Button>
       </DialogActions>
@@ -281,7 +283,7 @@ function IncidentsTab() {
             </FormControl>
             <IconButton onClick={load} sx={{ color: t.subtext }}><RefreshIcon /></IconButton>
           </Box>
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={dashboardPrimaryButtonSx}>
             New Incident
           </Button>
         </Box>
@@ -310,8 +312,8 @@ function IncidentsTab() {
                     <TableCell sx={{ color: t.subtext, fontSize: '0.7rem' }}>{inc.resource_id}</TableCell>
                     <TableCell sx={{ color: t.text, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inc.title}</TableCell>
                     <TableCell sx={{ color: t.subtext, textTransform: 'capitalize' }}>{inc.service}</TableCell>
-                    <TableCell><StatusChip label={inc.severity} color={INCIDENT_SEV_COLOR[inc.severity] ?? '#8b5cf6'} /></TableCell>
-                    <TableCell><StatusChip label={inc.status} color={INCIDENT_STATUS_COLOR[inc.status] ?? '#8b5cf6'} /></TableCell>
+                    <TableCell><StatusChip label={inc.severity} color={INCIDENT_SEV_COLOR[inc.severity] ?? dashboardSemanticColors.purple} /></TableCell>
+                    <TableCell><StatusChip label={inc.status} color={INCIDENT_STATUS_COLOR[inc.status] ?? dashboardSemanticColors.purple} /></TableCell>
                     <TableCell sx={{ color: t.subtext, fontSize: '0.75rem' }}>{new Date(inc.detected_at).toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
@@ -370,7 +372,7 @@ function IncidentsTab() {
               />
               <Button
                 variant="contained" size="small" fullWidth disabled={!newStatus || updating}
-                onClick={submitUpdate} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}
+                onClick={submitUpdate} sx={dashboardPrimaryButtonSx}
               >
                 {updating ? <CircularProgress size={14} /> : 'Post Update'}
               </Button>
@@ -466,7 +468,7 @@ function CreateAlertRuleDialog({ open, onClose, onCreated }: { open: boolean; on
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={{ color: t.subtext }}>Cancel</Button>
-        <Button variant="contained" onClick={submit} disabled={busy || !form.name} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
+        <Button variant="contained" onClick={submit} disabled={busy || !form.name} sx={dashboardPrimaryButtonSx}>
           {busy ? <CircularProgress size={16} /> : 'Create Rule'}
         </Button>
       </DialogActions>
@@ -534,7 +536,7 @@ function AlertsTab() {
               </Select>
             </FormControl>
           )}
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={dashboardPrimaryButtonSx}>
             New Rule
           </Button>
         </Box>
@@ -559,15 +561,15 @@ function AlertsTab() {
                     <TableCell sx={{ color: t.text }}>{a.rule_name}</TableCell>
                     <TableCell sx={{ color: t.subtext }}>{a.service}</TableCell>
                     <TableCell sx={{ color: t.subtext }}>{(a.metric ?? '').replace(/_/g,' ')}</TableCell>
-                    <TableCell><StatusChip label={a.severity ?? ''} color={INCIDENT_SEV_COLOR[a.severity ?? ''] ?? '#8b5cf6'} /></TableCell>
-                    <TableCell><StatusChip label={a.state} color={ALERT_STATE_COLOR[a.state] ?? '#8b5cf6'} /></TableCell>
+                    <TableCell><StatusChip label={a.severity ?? ''} color={INCIDENT_SEV_COLOR[a.severity ?? ''] ?? dashboardSemanticColors.purple} /></TableCell>
+                    <TableCell><StatusChip label={a.state} color={ALERT_STATE_COLOR[a.state] ?? dashboardSemanticColors.purple} /></TableCell>
                     <TableCell sx={{ color: t.text, fontWeight: 700 }}>{(a.value ?? 0).toFixed(2)}</TableCell>
                     <TableCell sx={{ color: t.subtext, fontSize: '0.75rem' }}>{new Date(a.fired_at).toLocaleString()}</TableCell>
                     <TableCell>
                       {a.state === 'firing' && (
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <Tooltip title="Resolve"><IconButton size="small" onClick={() => resolve(a.id)} sx={{ color: '#22c55e' }}><CheckCircleIcon fontSize="small" /></IconButton></Tooltip>
-                          <Tooltip title="Silence"><IconButton size="small" onClick={() => silence(a.id)} sx={{ color: '#8b5cf6' }}><StopIcon fontSize="small" /></IconButton></Tooltip>
+                          <Tooltip title="Resolve"><IconButton size="small" onClick={() => resolve(a.id)} sx={{ color: dashboardSemanticColors.success }}><CheckCircleIcon fontSize="small" /></IconButton></Tooltip>
+                          <Tooltip title="Silence"><IconButton size="small" onClick={() => silence(a.id)} sx={{ color: dashboardSemanticColors.purple }}><StopIcon fontSize="small" /></IconButton></Tooltip>
                         </Box>
                       )}
                     </TableCell>
@@ -598,20 +600,20 @@ function AlertsTab() {
                   <TableCell sx={{ color: t.subtext }}>{r.metric.replace(/_/g,' ')}</TableCell>
                   <TableCell sx={{ color: t.subtext }}>{r.condition}</TableCell>
                   <TableCell sx={{ color: t.text, fontWeight: 700 }}>{r.threshold}</TableCell>
-                  <TableCell><StatusChip label={r.severity} color={INCIDENT_SEV_COLOR[r.severity] ?? '#8b5cf6'} /></TableCell>
+                  <TableCell><StatusChip label={r.severity} color={INCIDENT_SEV_COLOR[r.severity] ?? dashboardSemanticColors.purple} /></TableCell>
                   <TableCell>
                     <Chip label={r.is_enabled ? 'Enabled' : 'Disabled'} size="small"
-                      sx={{ bgcolor: r.is_enabled ? '#22c55e22' : '#8b5cf622', color: r.is_enabled ? '#22c55e' : '#8b5cf6', fontWeight: 700 }} />
+                      sx={{ bgcolor: r.is_enabled ? `${dashboardSemanticColors.success}22` : `${dashboardSemanticColors.purple}22`, color: r.is_enabled ? dashboardSemanticColors.success : dashboardSemanticColors.purple, fontWeight: 700 }} />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <Tooltip title={r.is_enabled ? 'Disable' : 'Enable'}>
-                        <IconButton size="small" onClick={() => toggleRule(r)} sx={{ color: r.is_enabled ? '#f59e0b' : '#22c55e' }}>
+                        <IconButton size="small" onClick={() => toggleRule(r)} sx={{ color: r.is_enabled ? dashboardSemanticColors.warning : dashboardSemanticColors.success }}>
                           {r.is_enabled ? <StopIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />}
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
-                        <IconButton size="small" onClick={() => deleteRule(r.resource_id)} sx={{ color: '#ef4444' }}>
+                        <IconButton size="small" onClick={() => deleteRule(r.resource_id)} sx={{ color: dashboardSemanticColors.danger }}>
                           <ErrorIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -719,13 +721,13 @@ function MetricsTab() {
             !loading && points.length > 0 ? (
               <Box sx={{ display: 'flex', gap: 3, mt: 0.5 }}>
                 <Typography variant="caption" sx={{ color: t.subtext }}>
-                  Current: <span style={{ color: '#3b82f6', fontWeight: 700 }}>{(last?.value ?? 0).toFixed(2)} {last?.unit}</span>
+                  Current: <span style={{ color: dashboardSemanticColors.info, fontWeight: 700 }}>{(last?.value ?? 0).toFixed(2)} {last?.unit}</span>
                 </Typography>
                 <Typography variant="caption" sx={{ color: t.subtext }}>
                   Avg: <span style={{ color: t.text, fontWeight: 600 }}>{avg}</span>
                 </Typography>
                 <Typography variant="caption" sx={{ color: t.subtext }}>
-                  Max: <span style={{ color: '#f59e0b', fontWeight: 600 }}>{max}</span>
+                  Max: <span style={{ color: dashboardSemanticColors.warning, fontWeight: 600 }}>{max}</span>
                 </Typography>
                 <Typography variant="caption" sx={{ color: t.subtext }}>
                   {points.length} points
@@ -739,7 +741,7 @@ function MetricsTab() {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
           ) : points.length > 0 ? (
             <>
-              <SparkLine points={points} color="#3b82f6" height={120} />
+              <SparkLine points={points} color={dashboardSemanticColors.info} height={120} />
               {/* X-axis labels */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
                 <Typography variant="caption" sx={{ color: t.subtext }}>{new Date(points[0].timestamp).toLocaleTimeString()}</Typography>
@@ -836,7 +838,7 @@ function LogsTab() {
         </Box>
         <Box sx={{ ml: 'auto', display: 'flex', gap: 1, alignItems: 'center' }}>
           <Tooltip title={autoRefresh ? 'Stop auto-refresh' : 'Auto-refresh every 10s'}>
-            <IconButton size="small" onClick={() => setAutoRefresh(a => !a)} sx={{ color: autoRefresh ? '#22c55e' : t.subtext }}>
+            <IconButton size="small" onClick={() => setAutoRefresh(a => !a)} sx={{ color: autoRefresh ? dashboardSemanticColors.success : t.subtext }}>
               {autoRefresh ? <StopIcon /> : <PlayArrowIcon />}
             </IconButton>
           </Tooltip>
@@ -869,9 +871,9 @@ function LogsTab() {
                       icon={log.level === 'ERROR' || log.level === 'CRITICAL' ? <ErrorIcon style={{ fontSize: 12 }} /> :
                             log.level === 'WARNING' ? <WarningIcon style={{ fontSize: 12 }} /> : <InfoIcon style={{ fontSize: 12 }} />}
                       sx={{
-                        bgcolor: `${LOG_LEVEL_COLOR[log.level] ?? '#8b5cf6'}22`,
-                        color: LOG_LEVEL_COLOR[log.level] ?? '#8b5cf6',
-                        border: `1px solid ${LOG_LEVEL_COLOR[log.level] ?? '#8b5cf6'}44`,
+                        bgcolor: `${LOG_LEVEL_COLOR[log.level] ?? dashboardSemanticColors.purple}22`,
+                        color: LOG_LEVEL_COLOR[log.level] ?? dashboardSemanticColors.purple,
+                        border: `1px solid ${LOG_LEVEL_COLOR[log.level] ?? dashboardSemanticColors.purple}44`,
                         fontSize: '0.65rem', fontWeight: 700,
                       }}
                     />
@@ -943,8 +945,8 @@ export default function MonitoringPage() {
         sx={{
           mb: 3,
           '& .MuiTab-root': { color: t.subtext, textTransform: 'none', fontWeight: 600 },
-          '& .Mui-selected': { color: '#2563EB' },
-          '& .MuiTabs-indicator': { bgcolor: '#2563EB' },
+          '& .Mui-selected': { color: dashboardTokens.colors.brandPrimary },
+          '& .MuiTabs-indicator': { bgcolor: dashboardTokens.colors.brandPrimary },
           borderBottom: `1px solid ${t.border}`,
         }}
       >

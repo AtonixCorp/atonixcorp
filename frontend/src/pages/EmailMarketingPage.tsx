@@ -10,7 +10,7 @@ import {
   Switch, FormControlLabel, Tooltip, CircularProgress, Divider,
   LinearProgress, Avatar, List, ListItem, ListItemText,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, darken, useTheme } from '@mui/material/styles';
 
 import CampaignIcon        from '@mui/icons-material/Campaign';
 import AddIcon             from '@mui/icons-material/Add';
@@ -38,26 +38,116 @@ import type {
   AccountStats, CampaignStatus, CreateCampaignPayload,
 } from '../types/marketing';
 import type { PlanTier } from '../types/billing';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+  computeUiTokens,
+} from '../styles/dashboardDesignSystem';
+
+const EMAIL_MARKETING_COLORS = {
+  accent: computeUiTokens.accentStrong,
+  accentHover: darken(computeUiTokens.accentStrong, 0.2),
+  textLight: computeUiTokens.neutralStrong,
+  textDark: alpha(dashboardTokens.colors.white, 0.88),
+  mutedLight: dashboardTokens.colors.textSecondary,
+  mutedDark: alpha(dashboardTokens.colors.white, 0.55),
+  subDark: alpha(dashboardTokens.colors.white, 0.62),
+  borderLight: dashboardTokens.colors.border,
+  borderDark: alpha(dashboardTokens.colors.white, 0.08),
+  cardBgLight: dashboardTokens.colors.surface,
+  cardBgDark: computeUiTokens.darkPanel,
+  panelBgLight: dashboardTokens.colors.surfaceSubtle,
+  panelBgDark: alpha(computeUiTokens.darkPanel, 0.82),
+  hoverLight: alpha(computeUiTokens.accentStrong, 0.08),
+  hoverDark: alpha(computeUiTokens.accentStrong, 0.32),
+  headerRowDark: alpha(computeUiTokens.darkPanel, 0.82),
+};
+
+const EMAIL_CAMPAIGN_STATUS_STYLES: Record<CampaignStatus, { label: string; color: string; icon: React.ReactElement }> = {
+  draft: {
+    label: 'Draft',
+    color: dashboardTokens.colors.textSecondary,
+    icon: <DraftsIcon sx={{ fontSize: 13 }} />,
+  },
+  scheduled: {
+    label: 'Scheduled',
+    color: dashboardSemanticColors.warning,
+    icon: <ScheduleIcon sx={{ fontSize: 13 }} />,
+  },
+  sending: {
+    label: 'Sending',
+    color: dashboardSemanticColors.info,
+    icon: <AutorenewIcon sx={{ fontSize: 13 }} />,
+  },
+  sent: {
+    label: 'Sent',
+    color: computeUiTokens.successStrong,
+    icon: <CheckCircleIcon sx={{ fontSize: 13 }} />,
+  },
+  paused: {
+    label: 'Paused',
+    color: dashboardSemanticColors.orange,
+    icon: <PauseCircleIcon sx={{ fontSize: 13 }} />,
+  },
+  cancelled: {
+    label: 'Cancelled',
+    color: dashboardSemanticColors.danger,
+    icon: <ErrorOutlineIcon sx={{ fontSize: 13 }} />,
+  },
+  error: {
+    label: 'Error',
+    color: dashboardSemanticColors.danger,
+    icon: <ErrorOutlineIcon sx={{ fontSize: 13 }} />,
+  },
+};
+
+const EMAIL_TEMPLATE_CATEGORY_COLORS: Record<string, string> = {
+  newsletter: dashboardSemanticColors.info,
+  promotional: dashboardSemanticColors.warning,
+  transactional: computeUiTokens.successStrong,
+  welcome: dashboardSemanticColors.purple,
+  announcement: dashboardSemanticColors.danger,
+  custom: dashboardTokens.colors.textSecondary,
+};
+
+const EMAIL_AUTOMATION_TRIGGER_COLORS: Record<string, string> = {
+  subscribe: computeUiTokens.successStrong,
+  unsubscribe: dashboardSemanticColors.danger,
+  date_field: dashboardSemanticColors.warning,
+  campaign_open: dashboardSemanticColors.info,
+  campaign_click: dashboardSemanticColors.purple,
+  manual: dashboardTokens.colors.textSecondary,
+};
+
+const EMAIL_PLAN_COLOR: Record<PlanTier, string> = {
+  free: dashboardStatusColors.plan.free,
+  starter: dashboardStatusColors.plan.starter,
+  professional: dashboardStatusColors.plan.professional,
+  enterprise: dashboardStatusColors.plan.enterprise,
+};
+
+const getEmailUiPalette = (isDark: boolean) => ({
+  panelBg: isDark ? EMAIL_MARKETING_COLORS.panelBgDark : EMAIL_MARKETING_COLORS.panelBgLight,
+  cardBg: isDark ? EMAIL_MARKETING_COLORS.cardBgDark : EMAIL_MARKETING_COLORS.cardBgLight,
+  border: isDark ? EMAIL_MARKETING_COLORS.borderDark : EMAIL_MARKETING_COLORS.borderLight,
+  text: isDark ? EMAIL_MARKETING_COLORS.textDark : EMAIL_MARKETING_COLORS.textLight,
+  muted: isDark ? EMAIL_MARKETING_COLORS.mutedDark : EMAIL_MARKETING_COLORS.mutedLight,
+  sub: isDark ? EMAIL_MARKETING_COLORS.subDark : EMAIL_MARKETING_COLORS.mutedLight,
+  hover: isDark ? EMAIL_MARKETING_COLORS.hoverDark : EMAIL_MARKETING_COLORS.hoverLight,
+  headerRowBg: isDark ? EMAIL_MARKETING_COLORS.headerRowDark : dashboardTokens.colors.surfaceHover,
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function StatusChip({ status }: { status: CampaignStatus }) {
-  const map: Record<CampaignStatus, { label: string; color: string; icon: React.ReactElement }> = {
-    draft:     { label: 'Draft',     color: '#6B7280', icon: <DraftsIcon sx={{ fontSize: 13 }} /> },
-    scheduled: { label: 'Scheduled', color: '#F59E0B', icon: <ScheduleIcon sx={{ fontSize: 13 }} /> },
-    sending:   { label: 'Sending',   color: '#3B82F6', icon: <AutorenewIcon sx={{ fontSize: 13 }} /> },
-    sent:      { label: 'Sent',      color: '#10B981', icon: <CheckCircleIcon sx={{ fontSize: 13 }} /> },
-    paused:    { label: 'Paused',    color: '#F97316', icon: <PauseCircleIcon sx={{ fontSize: 13 }} /> },
-    cancelled: { label: 'Cancelled', color: '#EF4444', icon: <ErrorOutlineIcon sx={{ fontSize: 13 }} /> },
-    error:     { label: 'Error',     color: '#EF4444', icon: <ErrorOutlineIcon sx={{ fontSize: 13 }} /> },
-  };
-  const m = map[status] || map.draft;
+  const m = EMAIL_CAMPAIGN_STATUS_STYLES[status] || EMAIL_CAMPAIGN_STATUS_STYLES.draft;
   return (
     <Chip
       label={m.label}
       size="small"
       icon={m.icon}
-      sx={{ bgcolor: `${m.color}22`, color: m.color,
+      sx={{ bgcolor: alpha(m.color, 0.13), color: m.color,
             '& .MuiChip-icon': { color: m.color }, fontSize: 11 }}
     />
   );
@@ -67,19 +157,20 @@ function StatCard({ label, value, sub, color }:
   { label: string; value: string | number; sub?: string; color?: string }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const t = getEmailUiPalette(isDark);
   return (
-    <Card sx={{ bgcolor: isDark ? '#132336' : '#FFFFFF',
-                border: `1px solid ${isDark ? '#1E3A5F' : '#E5E7EB'}`,
+    <Card sx={{ bgcolor: t.cardBg,
+                border: `1px solid ${t.border}`,
                 borderRadius: 2, height: '100%' }}>
       <CardContent>
-        <Typography variant="caption" sx={{ color: isDark ? '#6b8aab' : '#6B7280', textTransform: 'uppercase', letterSpacing: 1 }}>
+        <Typography variant="caption" sx={{ color: t.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
           {label}
         </Typography>
-        <Typography variant="h4" fontWeight={700} sx={{ color: color || (isDark ? '#e0e9f4' : '#0A0F1F'), mt: 0.5 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ color: color || t.text, mt: 0.5 }}>
           {value}
         </Typography>
         {sub && (
-          <Typography variant="caption" sx={{ color: isDark ? '#6b8aab' : '#6B7280' }}>
+          <Typography variant="caption" sx={{ color: t.muted }}>
             {sub}
           </Typography>
         )}
@@ -100,12 +191,7 @@ const EMPTY_STATS: AccountStats = {
 function OverviewTab({ stats, loading }: { stats: AccountStats | null; loading: boolean }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    cardBg: isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
-  };
+  const t = getEmailUiPalette(isDark);
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
@@ -117,10 +203,10 @@ function OverviewTab({ stats, loading }: { stats: AccountStats | null; loading: 
     <Box>
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Total Sent',       value: st.total_sent.toLocaleString(),    color: '#3B82F6' },
-          { label: 'Avg Open Rate',    value: `${st.avg_open_rate}%`,             color: '#10B981' },
-          { label: 'Avg Click Rate',   value: `${st.avg_click_rate}%`,            color: '#F59E0B' },
-          { label: 'Subscribers',      value: st.total_contacts.toLocaleString(), color: '#8B5CF6' },
+          { label: 'Total Sent',       value: st.total_sent.toLocaleString(),    color: dashboardSemanticColors.info },
+          { label: 'Avg Open Rate',    value: `${st.avg_open_rate}%`,             color: computeUiTokens.successStrong },
+          { label: 'Avg Click Rate',   value: `${st.avg_click_rate}%`,            color: dashboardSemanticColors.warning },
+          { label: 'Subscribers',      value: st.total_contacts.toLocaleString(), color: dashboardSemanticColors.purple },
         ].map(s => (
           <Grid size={{  }} key={s.label}>
             <StatCard {...s} />
@@ -160,14 +246,7 @@ function OverviewTab({ stats, loading }: { stats: AccountStats | null; loading: 
 function CampaignsTab() {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:  isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
-    hover:   isDark ? '#102548' : '#EFF6FF',
-  };
+  const t = getEmailUiPalette(isDark);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading]     = useState(true);
@@ -236,7 +315,7 @@ function CampaignsTab() {
             sx={{ flex: 1 }}
           />
           <Button variant="contained" size="small"
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' }, whiteSpace: 'nowrap' }}
+            sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover }, whiteSpace: 'nowrap' }}
             startIcon={<AddIcon />}
             onClick={() => setCreateOpen(true)}>New</Button>
         </Box>
@@ -250,9 +329,9 @@ function CampaignsTab() {
               onClick={() => setSelected(c)}
               sx={{
                 bgcolor: selected?.resource_id === c.resource_id ? t.hover : t.cardBg,
-                border: `1px solid ${selected?.resource_id === c.resource_id ? '#18366A' : t.border}`,
+                border: `1px solid ${selected?.resource_id === c.resource_id ? EMAIL_MARKETING_COLORS.accent : t.border}`,
                 borderRadius: 2, mb: 1, cursor: 'pointer',
-                '&:hover': { borderColor: '#18366A' },
+                '&:hover': { borderColor: EMAIL_MARKETING_COLORS.accent },
               }}>
               <CardContent sx={{ py: '10px !important', px: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -263,8 +342,8 @@ function CampaignsTab() {
                 <Typography variant="caption" sx={{ color: t.muted }}>{c.subject}</Typography>
                 {c.analytics && (
                   <Box sx={{ display: 'flex', gap: 1.5, mt: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: '#10B981' }}>{c.analytics.open_rate}% opens</Typography>
-                    <Typography variant="caption" sx={{ color: '#3B82F6' }}>{c.analytics.click_rate}% clicks</Typography>
+                    <Typography variant="caption" sx={{ color: computeUiTokens.successStrong }}>{c.analytics.open_rate}% opens</Typography>
+                    <Typography variant="caption" sx={{ color: dashboardSemanticColors.info }}>{c.analytics.click_rate}% clicks</Typography>
                   </Box>
                 )}
               </CardContent>
@@ -282,7 +361,7 @@ function CampaignsTab() {
               <Typography variant="h6" fontWeight={700} sx={{ color: t.text }}>{selected.name}</Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Tooltip title="Send test email">
-                  <IconButton size="small" sx={{ color: '#F59E0B' }}
+                  <IconButton size="small" sx={{ color: dashboardSemanticColors.warning }}
                     onClick={() => { setTestTarget(selected.resource_id); setTestOpen(true); }}>
                     <AlternateEmailIcon fontSize="small" />
                   </IconButton>
@@ -294,7 +373,7 @@ function CampaignsTab() {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Delete">
-                  <IconButton size="small" sx={{ color: '#EF4444' }}
+                  <IconButton size="small" sx={{ color: dashboardSemanticColors.danger }}
                     onClick={() => handleDelete(selected.resource_id)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
@@ -304,7 +383,7 @@ function CampaignsTab() {
                     disabled={sending === selected.resource_id}
                     startIcon={sending === selected.resource_id
                       ? <CircularProgress size={14} /> : <SendIcon />}
-                    sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}
+                    sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}
                     onClick={() => handleSend(selected.resource_id)}>
                     Send Now
                   </Button>
@@ -332,10 +411,10 @@ function CampaignsTab() {
                 <Typography variant="subtitle2" sx={{ color: t.muted, mb: 1 }}>Analytics</Typography>
                 <Grid container spacing={1}>
                   {[
-                    { k: 'Sent',     v: selected.analytics.total_sent,   c: '#3B82F6' },
-                    { k: 'Opens',    v: `${selected.analytics.open_rate}%`, c: '#10B981' },
-                    { k: 'Clicks',   v: `${selected.analytics.click_rate}%`, c: '#F59E0B' },
-                    { k: 'Bounced',  v: `${selected.analytics.bounce_rate}%`, c: '#EF4444' },
+                    { k: 'Sent',     v: selected.analytics.total_sent,   c: dashboardSemanticColors.info },
+                    { k: 'Opens',    v: `${selected.analytics.open_rate}%`, c: computeUiTokens.successStrong },
+                    { k: 'Clicks',   v: `${selected.analytics.click_rate}%`, c: dashboardSemanticColors.warning },
+                    { k: 'Bounced',  v: `${selected.analytics.bounce_rate}%`, c: dashboardSemanticColors.danger },
                   ].map(s => (
                     <Grid size={{  }} key={s.k}>
                       <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: t.panelBg, borderRadius: 1 }}>
@@ -350,7 +429,7 @@ function CampaignsTab() {
 
             <Divider sx={{ my: 2, borderColor: t.border }} />
             <Typography variant="caption" sx={{ color: t.muted }}>Preview (HTML body)</Typography>
-            <Box sx={{ mt: 1, p: 2, bgcolor: '#fff', borderRadius: 1, maxHeight: 340, overflow: 'auto',
+            <Box sx={{ mt: 1, p: 2, bgcolor: dashboardTokens.colors.white, borderRadius: 1, maxHeight: 340, overflow: 'auto',
                        border: `1px solid ${t.border}` }}>
               <div dangerouslySetInnerHTML={{ __html: selected.html_body || '<em>No HTML body.</em>' }} />
             </Box>
@@ -454,7 +533,7 @@ function CreateCampaignDialog({ open, onClose, onCreated }:
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" disabled={loading} onClick={handleCreate}
-          sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>
+          sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>
           {loading ? <CircularProgress size={20} /> : 'Create'}
         </Button>
       </DialogActions>
@@ -467,13 +546,7 @@ function CreateCampaignDialog({ open, onClose, onCreated }:
 function ContactsTab() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    cardBg: isDark ? '#132336' : '#FFFFFF',
-    border: isDark ? '#1E3A5F' : '#E5E7EB',
-    text:   isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:  isDark ? '#6b8aab' : '#6B7280',
-    hover:  isDark ? '#102548' : '#EFF6FF',
-  };
+  const t = getEmailUiPalette(isDark);
 
   const [lists, setLists]       = useState<ContactList[]>([]);
   const [selected, setSelected] = useState<ContactList | null>(null);
@@ -522,15 +595,15 @@ function ContactsTab() {
       <Box sx={{ width: 260, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
           <Typography fontWeight={600} sx={{ color: t.text }}>Lists</Typography>
-          <IconButton size="small" sx={{ color: '#18366A' }} onClick={() => setListDialogOpen(true)}>
+          <IconButton size="small" sx={{ color: EMAIL_MARKETING_COLORS.accent }} onClick={() => setListDialogOpen(true)}>
             <AddIcon fontSize="small" />
           </IconButton>
         </Box>
         {lists.map(l => (
           <Card key={l.resource_id} onClick={() => { setSelected(l); setSearch(''); }}
             sx={{ bgcolor: selected?.resource_id === l.resource_id ? t.hover : t.cardBg,
-                  border: `1px solid ${selected?.resource_id === l.resource_id ? '#18366A' : t.border}`,
-                  borderRadius: 2, mb: 1, cursor: 'pointer', '&:hover': { borderColor: '#18366A' } }}>
+                  border: `1px solid ${selected?.resource_id === l.resource_id ? EMAIL_MARKETING_COLORS.accent : t.border}`,
+                  borderRadius: 2, mb: 1, cursor: 'pointer', '&:hover': { borderColor: EMAIL_MARKETING_COLORS.accent } }}>
             <CardContent sx={{ py: '10px !important', px: 2 }}>
               <Typography fontWeight={600} sx={{ color: t.text, fontSize: 14 }}>{l.name}</Typography>
               <Typography variant="caption" sx={{ color: t.muted }}>
@@ -553,14 +626,14 @@ function ContactsTab() {
               <Button variant="outlined" size="small" startIcon={<UploadFileIcon />}
                 onClick={() => setImportOpen(true)}>Import CSV</Button>
               <Button variant="contained" size="small" startIcon={<AddIcon />}
-                sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}
+                sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}
                 onClick={() => setAddOpen(true)}>Add</Button>
             </Box>
 
             <TableContainer component={Paper} sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ bgcolor: isDark ? '#0D1826' : '#F3F4F6' }}>
+                  <TableRow sx={{ bgcolor: t.headerRowBg }}>
                     {['Email', 'Name', 'Status', 'Subscribed', ''].map(h => (
                       <TableCell key={h} sx={{ color: t.muted, fontWeight: 600, fontSize: 12 }}>{h}</TableCell>
                     ))}
@@ -573,14 +646,21 @@ function ContactsTab() {
                       <TableCell sx={{ color: t.text, fontSize: 13 }}>{c.first_name} {c.last_name}</TableCell>
                       <TableCell>
                         <Chip label={c.status} size="small"
-                          sx={{ bgcolor: c.status === 'subscribed' ? '#10B98122' : '#EF444422',
-                                color: c.status === 'subscribed' ? '#10B981' : '#EF4444', fontSize: 11 }} />
+                          sx={{
+                            bgcolor: c.status === 'subscribed'
+                              ? alpha(computeUiTokens.successStrong, 0.13)
+                              : alpha(dashboardSemanticColors.danger, 0.13),
+                            color: c.status === 'subscribed'
+                              ? computeUiTokens.successStrong
+                              : dashboardSemanticColors.danger,
+                            fontSize: 11,
+                          }} />
                       </TableCell>
                       <TableCell sx={{ color: t.muted, fontSize: 12 }}>
                         {c.subscribed_at ? new Date(c.subscribed_at).toLocaleDateString() : '—'}
                       </TableCell>
                       <TableCell>
-                        <IconButton size="small" sx={{ color: '#EF4444' }}
+                        <IconButton size="small" sx={{ color: dashboardSemanticColors.danger }}
                           onClick={() => marketingApi.deleteContact(c.id).then(() =>
                             setContacts(p => p.filter(x => x.id !== c.id))).catch(() => {})}>
                           <DeleteIcon sx={{ fontSize: 16 }} />
@@ -613,7 +693,7 @@ function ContactsTab() {
         <DialogActions>
           <Button onClick={() => setImportOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleImport}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>Import</Button>
+            sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>Import</Button>
         </DialogActions>
       </Dialog>
 
@@ -633,7 +713,7 @@ function ContactsTab() {
         <DialogActions>
           <Button onClick={() => setAddOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleAddContact}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>Add</Button>
+            sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>Add</Button>
         </DialogActions>
       </Dialog>
 
@@ -653,7 +733,7 @@ function ContactsTab() {
               setLists(r.data?.results ?? r.data ?? []);
               setListDialogOpen(false); setNewList('');
             }}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>Create</Button>
+            sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>Create</Button>
         </DialogActions>
       </Dialog>
     </Box>
@@ -665,12 +745,7 @@ function ContactsTab() {
 function TemplatesTab() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    cardBg: isDark ? '#132336' : '#FFFFFF',
-    border: isDark ? '#1E3A5F' : '#E5E7EB',
-    text:   isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:  isDark ? '#6b8aab' : '#6B7280',
-  };
+  const t = getEmailUiPalette(isDark);
 
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [editOpen, setEditOpen]   = useState(false);
@@ -696,11 +771,6 @@ function TemplatesTab() {
     setEditOpen(false); setEditing(null); load();
   };
 
-  const CATEGORY_COLOR: Record<string, string> = {
-    newsletter: '#3B82F6', promotional: '#F59E0B', transactional: '#10B981',
-    welcome: '#8B5CF6', announcement: '#EF4444', custom: '#6B7280',
-  };
-
   return (
     <Box>
       <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
@@ -709,7 +779,7 @@ function TemplatesTab() {
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: t.muted, fontSize: 18 }} /></InputAdornment> }}
           sx={{ width: 280 }} />
         <Button variant="contained" size="small" startIcon={<AddIcon />}
-          sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}
+          sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}
           onClick={() => { setEditing({ category: 'newsletter' }); setEditOpen(true); }}>
           New Template
         </Button>
@@ -719,7 +789,7 @@ function TemplatesTab() {
         {filtered.map(tpl => (
           <Grid size={{  }} key={tpl.resource_id}>
             <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 2 }}>
-              <Box sx={{ height: 120, bgcolor: isDark ? '#0D1826' : '#F3F4F6',
+              <Box sx={{ height: 120, bgcolor: t.headerRowBg,
                          display: 'flex', alignItems: 'center', justifyContent: 'center',
                          borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
                 {tpl.thumbnail_url
@@ -729,19 +799,24 @@ function TemplatesTab() {
               <CardContent sx={{ pt: 1.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Typography fontWeight={600} sx={{ color: t.text, fontSize: 14 }} noWrap>{tpl.name}</Typography>
+                  {(() => {
+                    const categoryColor = EMAIL_TEMPLATE_CATEGORY_COLORS[tpl.category] || dashboardTokens.colors.textSecondary;
+                    return (
                   <Chip label={tpl.category} size="small"
-                    sx={{ bgcolor: `${CATEGORY_COLOR[tpl.category] || '#6B7280'}22`,
-                          color: CATEGORY_COLOR[tpl.category] || '#6B7280', fontSize: 10 }} />
+                    sx={{ bgcolor: alpha(categoryColor, 0.13),
+                          color: categoryColor, fontSize: 10 }} />
+                    );
+                  })()}
                 </Box>
                 <Typography variant="caption" sx={{ color: t.muted }}>{tpl.subject}</Typography>
                 <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-                  <Tooltip title="Edit"><IconButton size="small" sx={{ color: '#3B82F6' }}
+                  <Tooltip title="Edit"><IconButton size="small" sx={{ color: dashboardSemanticColors.info }}
                     onClick={() => { setEditing({ ...tpl }); setEditOpen(true); }}>
                     <EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                   <Tooltip title="Duplicate"><IconButton size="small" sx={{ color: t.muted }}
                     onClick={() => marketingApi.duplicateTemplate(tpl.resource_id).then(load).catch(() => {})}>
                     <ContentCopyIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-                  <Tooltip title="Delete"><IconButton size="small" sx={{ color: '#EF4444' }}
+                  <Tooltip title="Delete"><IconButton size="small" sx={{ color: dashboardSemanticColors.danger }}
                     onClick={() => marketingApi.deleteTemplate(tpl.resource_id).then(load).catch(() => {})}>
                     <DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                 </Box>
@@ -775,7 +850,7 @@ function TemplatesTab() {
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleSave}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>Save</Button>
+            sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>Save</Button>
         </DialogActions>
       </Dialog>
     </Box>
@@ -787,12 +862,7 @@ function TemplatesTab() {
 function AutomationsTab() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    cardBg: isDark ? '#132336' : '#FFFFFF',
-    border: isDark ? '#1E3A5F' : '#E5E7EB',
-    text:   isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:  isDark ? '#6b8aab' : '#6B7280',
-  };
+  const t = getEmailUiPalette(isDark);
 
   const [automations, setAutomations] = useState<Automation[]>([]);
 
@@ -802,16 +872,11 @@ function AutomationsTab() {
 
   const load = () => marketingApi.listAutomations().then((r: any) => setAutomations(r.data?.results ?? r.data ?? [])).catch(() => {});
 
-  const TRIGGER_COLOR: Record<string, string> = {
-    subscribe: '#10B981', unsubscribe: '#EF4444', date_field: '#F59E0B',
-    campaign_open: '#3B82F6', campaign_click: '#8B5CF6', manual: '#6B7280',
-  };
-
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button variant="contained" size="small" startIcon={<AddIcon />}
-          sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#1E4D9B' } }}>
+          sx={{ bgcolor: EMAIL_MARKETING_COLORS.accent, '&:hover': { bgcolor: EMAIL_MARKETING_COLORS.accentHover } }}>
           New Automation
         </Button>
       </Box>
@@ -830,10 +895,15 @@ function AutomationsTab() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Box>
                       <Typography fontWeight={600} sx={{ color: t.text }}>{a.name}</Typography>
+                      {(() => {
+                        const triggerColor = EMAIL_AUTOMATION_TRIGGER_COLORS[a.trigger] || dashboardTokens.colors.textSecondary;
+                        return (
                       <Chip label={a.trigger.replace('_', ' ')} size="small"
                         sx={{ mt: 0.5,
-                              bgcolor: `${TRIGGER_COLOR[a.trigger] || '#6B7280'}22`,
-                              color: TRIGGER_COLOR[a.trigger] || '#6B7280', fontSize: 11 }} />
+                              bgcolor: alpha(triggerColor, 0.13),
+                              color: triggerColor, fontSize: 11 }} />
+                        );
+                      })()}
                     </Box>
                     <FormControlLabel
                       control={
@@ -859,7 +929,7 @@ function AutomationsTab() {
                     {a.steps.map((step, i) => (
                       <Box key={i} sx={{ display: 'flex', gap: 1.5, mb: 1 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <Avatar sx={{ width: 24, height: 24, bgcolor: '#18366A', fontSize: 11 }}>{i + 1}</Avatar>
+                          <Avatar sx={{ width: 24, height: 24, bgcolor: EMAIL_MARKETING_COLORS.accent, fontSize: 11 }}>{i + 1}</Avatar>
                           {i < a.steps.length - 1 && (
                             <Box sx={{ width: 2, flex: 1, bgcolor: t.border, minHeight: 16 }} />
                           )}
@@ -875,7 +945,7 @@ function AutomationsTab() {
                   </Box>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-                    <IconButton size="small" sx={{ color: '#EF4444' }}
+                    <IconButton size="small" sx={{ color: dashboardSemanticColors.danger }}
                       onClick={() => marketingApi.deleteAutomation(a.resource_id).then(load).catch(() => {})}>
                       <DeleteIcon sx={{ fontSize: 16 }} />
                     </IconButton>
@@ -894,10 +964,6 @@ function AutomationsTab() {
 
 // ── Email Plan Tab ──────────────────────────────────────────────────────────────────
 
-const EMAIL_PLAN_COLOR: Record<PlanTier, string> = {
-  free: '#6b7280', starter: '#3b82f6', professional: '#8b5cf6', enterprise: '#f59e0b',
-};
-
 const EMAIL_PLAN_PRICES: Record<PlanTier, number> = {
   free: 0, starter: 15, professional: 49, enterprise: 99,
 };
@@ -912,12 +978,7 @@ const EMAIL_PLAN_FEATURES: Record<PlanTier, string[]> = {
 function EmailPlanTab() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    cardBg: isDark ? '#132336' : '#FFFFFF',
-    border: isDark ? '#1E3A5F' : '#E5E7EB',
-    text:   isDark ? '#e0e9f4' : '#0A0F1F',
-    sub:    isDark ? '#8BAAC8' : '#6B7280',
-  };
+  const t = getEmailUiPalette(isDark);
   const fmtPrice = (n: number) => n === 0 ? 'Free' : `$${n}`;
 
   const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
@@ -967,7 +1028,7 @@ function EmailPlanTab() {
                 {isCurrentPlan && (
                   <Box sx={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)' }}>
                     <Chip label="CURRENT PLAN" size="small"
-                      sx={{ bgcolor: color, color: '#fff', fontWeight: 700, fontSize: '0.6rem', borderRadius: '0 0 6px 6px' }} />
+                      sx={{ bgcolor: color, color: dashboardTokens.colors.white, fontWeight: 700, fontSize: '0.6rem', borderRadius: '0 0 6px 6px' }} />
                   </Box>
                 )}
                 <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -996,8 +1057,8 @@ function EmailPlanTab() {
                       mt: 2,
                       bgcolor: isCurrentPlan ? 'transparent' : color,
                       borderColor: color,
-                      color: isCurrentPlan ? color : '#fff',
-                      '&:hover': { bgcolor: isCurrentPlan ? `${color}11` : `${color}dd` },
+                      color: isCurrentPlan ? color : dashboardTokens.colors.white,
+                      '&:hover': { bgcolor: isCurrentPlan ? alpha(color, 0.07) : darken(color, 0.12) },
                     }}
                   >
                     {changing === tier ? <CircularProgress size={16} /> :
@@ -1019,12 +1080,7 @@ function EmailPlanTab() {
 export default function EmailMarketingPage() {
   const theme  = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const t = {
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-  };
+  const t = getEmailUiPalette(isDark);
 
   const [tab, setTab]          = useState(0);
   const [stats, setStats]       = useState<AccountStats | null>(null);
@@ -1041,7 +1097,7 @@ export default function EmailMarketingPage() {
     <Box sx={{ p: 3, bgcolor: t.panelBg, minHeight: '100%' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <CampaignIcon sx={{ color: '#18366A', fontSize: 32 }} />
+        <CampaignIcon sx={{ color: EMAIL_MARKETING_COLORS.accent, fontSize: 32 }} />
         <Box>
           <Typography variant="h5" fontWeight={700} sx={{ color: t.text }}>
             Email Marketing
@@ -1059,8 +1115,8 @@ export default function EmailMarketingPage() {
           mb: 3,
           borderBottom: `1px solid ${t.border}`,
           '& .MuiTab-root': { color: t.muted, textTransform: 'none', fontWeight: 500 },
-          '& .Mui-selected': { color: '#18366A !important' },
-          '& .MuiTabs-indicator': { bgcolor: '#18366A' },
+          '& .Mui-selected': { color: `${EMAIL_MARKETING_COLORS.accent} !important` },
+          '& .MuiTabs-indicator': { bgcolor: EMAIL_MARKETING_COLORS.accent },
         }}>
         <Tab label="Overview" icon={<BarChartIcon sx={{ fontSize: 18 }} />} iconPosition="start" />
         <Tab label="Campaigns" icon={<CampaignIcon sx={{ fontSize: 18 }} />} iconPosition="start" />

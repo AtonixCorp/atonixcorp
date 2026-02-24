@@ -19,6 +19,22 @@ import NetworkCheckIcon   from '@mui/icons-material/NetworkCheck';
 import PublicIcon         from '@mui/icons-material/Public';
 import LockIcon           from '@mui/icons-material/Lock';
 import InfoOutlinedIcon   from '@mui/icons-material/InfoOutlined';
+import {
+  dashboardTokens,
+  dashboardPrimaryButtonSx,
+  dashboardSemanticColors,
+  computeCatalogPalette,
+  computeUiTokens,
+} from '../styles/dashboardDesignSystem';
+
+const COMPUTE_ACCENT = dashboardTokens.colors.brandPrimary;
+const CATALOG = computeCatalogPalette;
+const ACCENT_STRONG = computeUiTokens.accentStrong;
+const WHITE = dashboardTokens.colors.white;
+const BORDER = dashboardTokens.colors.border;
+const MUTED = computeUiTokens.neutralMuted;
+const TEXT_STRONG = computeUiTokens.neutralStrong;
+const TEXT_BODY = computeUiTokens.neutralBody;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface OSVersion {
@@ -55,64 +71,64 @@ interface Flavor {
 // ── OS catalogue (grouped) ──────────────────────────────────────────────────
 const OS_GROUPS: OSGroup[] = [
   // ── Debian family ──────────────────────────────────────────────────────────
-  { groupId: 'debian',      family: 'Debian',     name: 'Debian',        logo: 'Deb',  logoColor: '#A80030', badge: 'Recommended', badgeColor: '#10B981', description: 'Rock-solid, minimal, universal OS — the mother of all Debian distros', versions: [
-    { id: 'debian-13', version: '13 Trixie',   badge: 'New',      badgeColor: '#6366F1' },
-    { id: 'debian-12', version: '12 Bookworm', badge: 'Stable',   badgeColor: '#10B981' },
+  { groupId: 'debian',      family: 'Debian',     name: 'Debian',        logo: 'Deb',  logoColor: CATALOG.logos.debian, badge: 'Recommended', badgeColor: CATALOG.badges.recommended, description: 'Rock-solid, minimal, universal OS — the mother of all Debian distros', versions: [
+    { id: 'debian-13', version: '13 Trixie',   badge: 'New',      badgeColor: CATALOG.badges.new },
+    { id: 'debian-12', version: '12 Bookworm', badge: 'Stable',   badgeColor: CATALOG.badges.stable },
     { id: 'debian-11', version: '11 Bullseye' },
-    { id: 'debian-10', version: '10 Buster',  badge: 'EOL',      badgeColor: '#EF4444' },
+    { id: 'debian-10', version: '10 Buster',  badge: 'EOL',      badgeColor: CATALOG.badges.eol },
   ]},
-  { groupId: 'ubuntu',      family: 'Ubuntu',     name: 'Ubuntu',        logo: 'Ubu',  logoColor: '#E95420', description: 'Most popular Linux distro, backed by Canonical', versions: [
-    { id: 'ubuntu-2404', version: '24.04 LTS', badge: 'Latest',   badgeColor: '#10B981' },
+  { groupId: 'ubuntu',      family: 'Ubuntu',     name: 'Ubuntu',        logo: 'Ubu',  logoColor: CATALOG.logos.ubuntu, description: 'Most popular Linux distro, backed by Canonical', versions: [
+    { id: 'ubuntu-2404', version: '24.04 LTS', badge: 'Latest',   badgeColor: CATALOG.badges.latest },
     { id: 'ubuntu-2204', version: '22.04 LTS' },
-    { id: 'ubuntu-2004', version: '20.04 LTS', badge: 'EOL Soon', badgeColor: '#F59E0B' },
+    { id: 'ubuntu-2004', version: '20.04 LTS', badge: 'EOL Soon', badgeColor: CATALOG.badges.eolSoon },
   ]},
-  { groupId: 'linuxmint',   family: 'Linux Mint', name: 'Linux Mint',    logo: 'Mint', logoColor: '#87CF3E', description: 'User-friendly desktop-oriented Ubuntu derivative', versions: [
+  { groupId: 'linuxmint',   family: 'Linux Mint', name: 'Linux Mint',    logo: 'Mint', logoColor: CATALOG.logos.linuxMint, description: 'User-friendly desktop-oriented Ubuntu derivative', versions: [
     { id: 'linuxmint-22', version: '22 Wilma' },
     { id: 'linuxmint-21', version: '21 Vera'  },
   ]},
-  { groupId: 'kali',        family: 'Kali',       name: 'Kali Linux',    logo: 'Kali', logoColor: '#268BEE', badge: 'Security', badgeColor: '#6366F1', description: 'Advanced penetration testing & security auditing distro', versions: [
+  { groupId: 'kali',        family: 'Kali',       name: 'Kali Linux',    logo: 'Kali', logoColor: CATALOG.logos.kali, badge: 'Security', badgeColor: CATALOG.badges.security, description: 'Advanced penetration testing & security auditing distro', versions: [
     { id: 'kali-2024', version: '2024.4' },
     { id: 'kali-2023', version: '2023.4' },
   ]},
-  { groupId: 'mxlinux',     family: 'MX Linux',   name: 'MX Linux',      logo: 'MX',   logoColor: '#4A90D9', description: 'Antipatterns-free, cooperative development Linux', versions: [
+  { groupId: 'mxlinux',     family: 'MX Linux',   name: 'MX Linux',      logo: 'MX',   logoColor: CATALOG.logos.mxLinux, description: 'Antipatterns-free, cooperative development Linux', versions: [
     { id: 'mxlinux-23', version: '23 Libretto' },
   ]},
-  { groupId: 'deepin',      family: 'Deepin',     name: 'Deepin',        logo: 'Dpe',  logoColor: '#0098D8', description: 'Beautiful, intuitive Chinese Linux distribution', versions: [
+  { groupId: 'deepin',      family: 'Deepin',     name: 'Deepin',        logo: 'Dpe',  logoColor: CATALOG.logos.deepin, description: 'Beautiful, intuitive Chinese Linux distribution', versions: [
     { id: 'deepin-23', version: '23' },
   ]},
-  { groupId: 'zorin',       family: 'Zorin',      name: 'Zorin OS',      logo: 'Zrn',  logoColor: '#15A6F0', description: 'Windows-familiar interface, built on Ubuntu LTS', versions: [
+  { groupId: 'zorin',       family: 'Zorin',      name: 'Zorin OS',      logo: 'Zrn',  logoColor: CATALOG.logos.zorin, description: 'Windows-familiar interface, built on Ubuntu LTS', versions: [
     { id: 'zorin-17', version: '17' },
     { id: 'zorin-16', version: '16' },
   ]},
-  { groupId: 'elementary',  family: 'Elementary', name: 'Elementary OS', logo: 'eos',  logoColor: '#64BAFF', description: 'macOS-inspired, privacy-first Ubuntu derivative', versions: [
+  { groupId: 'elementary',  family: 'Elementary', name: 'Elementary OS', logo: 'eos',  logoColor: CATALOG.logos.elementary, description: 'macOS-inspired, privacy-first Ubuntu derivative', versions: [
     { id: 'elementaryos-8', version: '8 Circe' },
   ]},
-  { groupId: 'popos',       family: 'Pop!_OS',    name: 'Pop!_OS',       logo: 'Pop',  logoColor: '#48B9C7', description: 'System76 developer-focused Ubuntu variant', versions: [
+  { groupId: 'popos',       family: 'Pop!_OS',    name: 'Pop!_OS',       logo: 'Pop',  logoColor: CATALOG.logos.popos, description: 'System76 developer-focused Ubuntu variant', versions: [
     { id: 'popos-2204', version: '22.04 LTS' },
   ]},
-  { groupId: 'antix',       family: 'antiX',      name: 'antiX',         logo: 'aX',   logoColor: '#6B7280', description: 'Fast, lightweight, systemd-free Debian derivative', versions: [
+  { groupId: 'antix',       family: 'antiX',      name: 'antiX',         logo: 'aX',   logoColor: CATALOG.logos.antix, description: 'Fast, lightweight, systemd-free Debian derivative', versions: [
     { id: 'antix-23', version: '23 Arditi del Popolo' },
   ]},
-  { groupId: 'pureos',      family: 'PureOS',     name: 'PureOS',        logo: 'Pur',  logoColor: '#5B3A8E', description: 'Privacy-respecting, FSF-endorsed Debian derivative', versions: [
+  { groupId: 'pureos',      family: 'PureOS',     name: 'PureOS',        logo: 'Pur',  logoColor: CATALOG.logos.pureos, description: 'Privacy-respecting, FSF-endorsed Debian derivative', versions: [
     { id: 'pureos-10', version: '10 Byzantium' },
   ]},
-  { groupId: 'parrot',      family: 'Parrot',     name: 'Parrot OS',     logo: 'Par',  logoColor: '#05A6E3', badge: 'Security', badgeColor: '#6366F1', description: 'Security & forensics-oriented Debian fork', versions: [
+  { groupId: 'parrot',      family: 'Parrot',     name: 'Parrot OS',     logo: 'Par',  logoColor: CATALOG.logos.parrot, badge: 'Security', badgeColor: CATALOG.badges.security, description: 'Security & forensics-oriented Debian fork', versions: [
     { id: 'parrotos-6', version: '6.2' },
     { id: 'parrotos-5', version: '5.3' },
   ]},
-  { groupId: 'bodhi',       family: 'Bodhi',      name: 'Bodhi Linux',   logo: 'Boh',  logoColor: '#4CAF50', description: 'Lightweight, elegantly minimal Ubuntu derivative', versions: [
+  { groupId: 'bodhi',       family: 'Bodhi',      name: 'Bodhi Linux',   logo: 'Boh',  logoColor: CATALOG.logos.bodhi, description: 'Lightweight, elegantly minimal Ubuntu derivative', versions: [
     { id: 'bodhi-7', version: '7.0' },
   ]},
-  { groupId: 'peppermint',  family: 'Peppermint', name: 'Peppermint OS', logo: 'Pep',  logoColor: '#e44426', description: 'Cloud-oriented Debian lightweight desktop OS', versions: [
+  { groupId: 'peppermint',  family: 'Peppermint', name: 'Peppermint OS', logo: 'Pep',  logoColor: CATALOG.logos.peppermint, description: 'Cloud-oriented Debian lightweight desktop OS', versions: [
     { id: 'peppermint-11', version: '11' },
   ]},
   // ── Other ──────────────────────────────────────────────────────────────────
-  { groupId: 'centos',      family: 'RHEL',       name: 'CentOS',        logo: 'CeS',  logoColor: '#9B0000', badge: 'Enterprise', badgeColor: '#6B7280', description: 'Enterprise-grade RHEL upstream tracking distro', versions: [
+  { groupId: 'centos',      family: 'RHEL',       name: 'CentOS',        logo: 'CeS',  logoColor: CATALOG.logos.centos, badge: 'Enterprise', badgeColor: CATALOG.badges.enterprise, description: 'Enterprise-grade RHEL upstream tracking distro', versions: [
     { id: 'centos-stream-9', version: 'Stream 9' },
     { id: 'centos-stream-8', version: 'Stream 8' },
   ]},
-  { groupId: 'windows',     family: 'Windows',    name: 'Windows Server',logo: 'Win',  logoColor: '#0078D4', description: 'Microsoft Windows Server — Datacenter & Standard editions', versions: [
-    { id: 'windows-2022', version: 'Server 2022', badge: 'Latest', badgeColor: '#10B981' },
+  { groupId: 'windows',     family: 'Windows',    name: 'Windows Server',logo: 'Win',  logoColor: CATALOG.logos.windows, description: 'Microsoft Windows Server — Datacenter & Standard editions', versions: [
+    { id: 'windows-2022', version: 'Server 2022', badge: 'Latest', badgeColor: CATALOG.badges.latest },
     { id: 'windows-2019', version: 'Server 2019' },
     { id: 'windows-2016', version: 'Server 2016' },
   ]},
@@ -145,10 +161,10 @@ const REGIONS = [
 // ── Styled stepper connector ──────────────────────────────────────────────────
 const StepConnectorStyled = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: { top: 16 },
-  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]:    { borderColor: '#2563EB' },
-  [`&.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: { borderColor: '#2563EB' },
+  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]: { borderColor: COMPUTE_ACCENT },
+  [`&.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: { borderColor: COMPUTE_ACCENT },
   [`& .${stepConnectorClasses.line}`]: {
-    borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,.1)' : '#E5E7EB',
+    borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,.1)' : dashboardTokens.colors.border,
     borderTopWidth: 2,
   },
 }));
@@ -157,13 +173,13 @@ const StepIconStyled = ({ active, completed, icon, isDark }: { active?: boolean;
   <Box sx={{
     width: 34, height: 34, borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    bgcolor: completed ? '#2563EB' : active ? '#2563EB' : (isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB'),
-    border: `2px solid ${active || completed ? '#2563EB' : 'transparent'}`,
+    bgcolor: completed ? COMPUTE_ACCENT : active ? COMPUTE_ACCENT : (isDark ? 'rgba(255,255,255,.08)' : dashboardTokens.colors.border),
+    border: `2px solid ${active || completed ? COMPUTE_ACCENT : 'transparent'}`,
     transition: 'all .2s',
   }}>
     {completed
-      ? <CheckIcon sx={{ fontSize: '.9rem', color: '#fff' }} />
-      : <Typography sx={{ fontSize: '.8rem', fontWeight: 700, color: active ? '#fff' : (isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF') }}>{icon}</Typography>
+      ? <CheckIcon sx={{ fontSize: '.9rem', color: WHITE }} />
+      : <Typography sx={{ fontSize: '.8rem', fontWeight: 700, color: active ? WHITE : (isDark ? 'rgba(255,255,255,.4)' : MUTED) }}>{icon}</Typography>
     }
   </Box>
 );
@@ -172,8 +188,8 @@ const StepIconStyled = ({ active, completed, icon, isDark }: { active?: boolean;
 function SSection({ title, subtitle, children, isDark }: { title: string; subtitle?: string; children: React.ReactNode; isDark: boolean }) {
   return (
     <Box mb={4}>
-      <Typography fontWeight={800} fontSize="1rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={.25}>{title}</Typography>
-      {subtitle && <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', mb: 2 }}>{subtitle}</Typography>}
+      <Typography fontWeight={800} fontSize="1rem" color={isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary} mb={.25}>{title}</Typography>
+      {subtitle && <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : dashboardTokens.colors.textSecondary, mb: 2 }}>{subtitle}</Typography>}
       {children}
     </Box>
   );
@@ -186,8 +202,8 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
   onSelect: (id: string) => void;
   isDark: boolean;
 }) {
-  const border    = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec   = isDark ? 'rgba(255,255,255,.45)' : '#9CA3AF';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
+  const textSec = isDark ? 'rgba(255,255,255,.45)' : MUTED;
   // The group is 'active' if any of its versions is the selected one
   const activeVer = group.versions.find(v => v.id === selectedVersionId);
   const isGroupActive = !!activeVer;
@@ -197,12 +213,12 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
   return (
     <Box sx={{
       borderRadius: '12px', overflow: 'hidden',
-      border: `2px solid ${isGroupActive ? '#18366A' : border}`,
+      border: `2px solid ${isGroupActive ? ACCENT_STRONG : border}`,
       bgcolor: isGroupActive
-        ? isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)'
-        : isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA',
+        ? isDark ? computeUiTokens.accentSoftDark : computeUiTokens.accentSoftLight
+        : isDark ? 'rgba(255,255,255,.03)' : computeUiTokens.surfaceSubtle,
       transition: 'border-color .12s',
-      '&:hover': { borderColor: isGroupActive ? '#18366A' : isDark ? 'rgba(255,255,255,.22)' : '#94A3B8' },
+      '&:hover': { borderColor: isGroupActive ? ACCENT_STRONG : isDark ? 'rgba(255,255,255,.22)' : computeUiTokens.borderHover },
     }}>
       {/* ── Header row ── */}
       <Box sx={{ p: '14px 14px 10px', display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
@@ -211,13 +227,13 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
         </Box>
         <Box flex={1} minWidth={0}>
           <Box display="flex" alignItems="center" gap={.6} flexWrap="wrap">
-            <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{group.name}</Typography>
+            <Typography fontWeight={700} fontSize=".9rem" color={isDark ? WHITE : TEXT_STRONG}>{group.name}</Typography>
             {group.badge && (
               <Chip size="small" label={group.badge} sx={{ height: 14, fontSize: '.58rem', fontWeight: 700, bgcolor: `${group.badgeColor}18`, color: group.badgeColor }} />
             )}
             {isGroupActive && (
-              <Box sx={{ ml: 'auto', width: 18, height: 18, bgcolor: '#18366A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <CheckIcon sx={{ fontSize: '.7rem', color: '#fff' }} />
+              <Box sx={{ ml: 'auto', width: 18, height: 18, bgcolor: ACCENT_STRONG, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckIcon sx={{ fontSize: '.7rem', color: WHITE }} />
               </Box>
             )}
           </Box>
@@ -242,22 +258,22 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
                 px: 1.25, py: .45, borderRadius: '20px', cursor: 'pointer',
                 border: `1.5px solid ${
                   isSelected
-                    ? '#18366A'
+                    ? ACCENT_STRONG
                     : isHovered && !activeVer
-                      ? isDark ? 'rgba(255,255,255,.25)' : '#94A3B8'
+                      ? isDark ? 'rgba(255,255,255,.25)' : computeUiTokens.borderHover
                       : border
                 }`,
                 bgcolor: isSelected
-                  ? '#18366A'
+                  ? ACCENT_STRONG
                   : isHovered && !activeVer
-                    ? isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.04)'
+                    ? isDark ? 'rgba(255,255,255,.06)' : computeUiTokens.accentSoftLight
                     : 'transparent',
                 transition: 'all .1s',
               }}
             >
               <Typography sx={{
                 fontSize: '.72rem', fontWeight: isSelected ? 700 : 500, lineHeight: 1,
-                color: isSelected ? '#fff' : isDark ? 'rgba(255,255,255,.8)' : '#374151',
+                color: isSelected ? WHITE : isDark ? 'rgba(255,255,255,.8)' : TEXT_BODY,
               }}>
                 {v.version}
               </Typography>
@@ -265,7 +281,7 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
                 <Chip size="small" label={v.badge}
                   sx={{ height: 13, fontSize: '.55rem', fontWeight: 700, pointerEvents: 'none',
                     bgcolor: isSelected ? 'rgba(255,255,255,.2)' : `${v.badgeColor}18`,
-                    color:   isSelected ? '#fff' : v.badgeColor,
+                    color: isSelected ? WHITE : v.badgeColor,
                   }} />
               )}
             </Box>
@@ -278,31 +294,31 @@ function OSCard({ group, selectedVersionId, onSelect, isDark }: {
 
 // ── Flavor card ───────────────────────────────────────────────────────────────
 function FlavorCard({ fl, selected, onClick, isDark }: { fl: Flavor; selected: boolean; onClick: () => void; isDark: boolean }) {
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
   return (
     <Box onClick={onClick} sx={{
       p: 2, cursor: 'pointer', borderRadius: '10px', position: 'relative',
-      border: `2px solid ${selected ? '#18366A' : border}`,
-      bgcolor: selected ? (isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)') : (isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA'),
+      border: `2px solid ${selected ? ACCENT_STRONG : border}`,
+      bgcolor: selected ? (isDark ? computeUiTokens.accentSoftDark : computeUiTokens.accentSoftLight) : (isDark ? 'rgba(255,255,255,.03)' : computeUiTokens.surfaceSubtle),
       transition: 'all .12s',
-      '&:hover': { border: `2px solid ${selected ? '#18366A' : (isDark ? 'rgba(255,255,255,.2)' : '#94A3B8')}` },
+      '&:hover': { border: `2px solid ${selected ? ACCENT_STRONG : (isDark ? 'rgba(255,255,255,.2)' : computeUiTokens.borderHover)}` },
     }}>
       {fl.recommended && (
-        <Chip size="small" label="Recommended" sx={{ position: 'absolute', top: 8, right: 8, height: 16, fontSize: '.6rem', fontWeight: 700, bgcolor: 'rgba(16,185,129,.12)', color: '#10B981' }} />
+        <Chip size="small" label="Recommended" sx={{ position: 'absolute', top: 8, right: 8, height: 16, fontSize: '.6rem', fontWeight: 700, bgcolor: computeUiTokens.successSoft, color: computeUiTokens.successStrong }} />
       )}
       {fl.badge && !fl.recommended && (
-        <Chip size="small" label={fl.badge} sx={{ position: 'absolute', top: 8, right: 8, height: 16, fontSize: '.6rem', fontWeight: 700, bgcolor: 'rgba(99,102,241,.12)', color: '#6366F1' }} />
+        <Chip size="small" label={fl.badge} sx={{ position: 'absolute', top: 8, right: 8, height: 16, fontSize: '.6rem', fontWeight: 700, bgcolor: computeUiTokens.violetSoft, color: CATALOG.badges.flavorBadge }} />
       )}
       {selected && (
-        <Box sx={{ position: 'absolute', top: 8, left: 8, width: 18, height: 18, bgcolor: '#18366A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <CheckIcon sx={{ fontSize: '.72rem', color: '#fff' }} />
+        <Box sx={{ position: 'absolute', top: 8, left: 8, width: 18, height: 18, bgcolor: ACCENT_STRONG, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CheckIcon sx={{ fontSize: '.72rem', color: WHITE }} />
         </Box>
       )}
       <Box textAlign="center" mb={1.25} mt={selected ? .5 : 0}>
-        <Typography fontWeight={800} fontSize="1rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{fl.name}</Typography>
-        <Typography fontWeight={800} fontSize="1.4rem" color="#18366A">${fl.price_mo}<Typography component="span" variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>/mo</Typography></Typography>
+        <Typography fontWeight={800} fontSize="1rem" color={isDark ? WHITE : TEXT_STRONG}>{fl.name}</Typography>
+        <Typography fontWeight={800} fontSize="1.4rem" color={ACCENT_STRONG}>${fl.price_mo}<Typography component="span" variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : MUTED }}>/mo</Typography></Typography>
       </Box>
-      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6', mb: 1.25 }} />
+      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,.07)' : dashboardTokens.colors.surfaceHover, mb: 1.25 }} />
       <Stack spacing={.6}>
         {[
           { icon: <SpeedIcon sx={{ fontSize: '.88rem' }} />,       label: `${fl.vcpu} vCPU${fl.vcpu > 1 ? 's' : ''}` },
@@ -311,8 +327,8 @@ function FlavorCard({ fl, selected, onClick, isDark }: { fl: Flavor; selected: b
           { icon: <NetworkCheckIcon sx={{ fontSize: '.88rem' }} />,label: `${fl.bandwidth_tb} TB transfer` },
         ].map(row => (
           <Box key={row.label} display="flex" alignItems="center" gap={.75}>
-            <Box sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>{row.icon}</Box>
-            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.7)' : '#374151', fontWeight: 500 }}>{row.label}</Typography>
+            <Box sx={{ color: isDark ? 'rgba(255,255,255,.4)' : MUTED }}>{row.icon}</Box>
+            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.7)' : TEXT_BODY, fontWeight: 500 }}>{row.label}</Typography>
           </Box>
         ))}
       </Stack>
@@ -324,7 +340,7 @@ function FlavorCard({ fl, selected, onClick, isDark }: { fl: Flavor; selected: b
 function StepImage({ selectedOS, onSelect, isDark }: { selectedOS: string; onSelect: (id: string) => void; isDark: boolean }) {
   const [tab,    setTab]    = useState<'debian' | 'other' | 'windows'>('debian');
   const [search, setSearch] = useState('');
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
 
   const DEBIAN_FAMILIES = ['Debian','Ubuntu','Linux Mint','Kali','MX Linux','Deepin','Zorin','Elementary','Pop!_OS','antiX','PureOS','Parrot','Bodhi','Peppermint'];
 
@@ -349,20 +365,20 @@ function StepImage({ selectedOS, onSelect, isDark }: { selectedOS: string; onSel
     <SSection title="Select an Operating System" subtitle="Choose the base image for your server. All images are pre-hardened and include cloud-init." isDark={isDark}>
       {/* Search */}
       <TextField size="small" placeholder="Search distros or versions…" value={search} onChange={e => setSearch(e.target.value)}
-        sx={{ mb: 2.5, width: 260, '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : '#F9FAFB', borderRadius: '8px', '& fieldset': { borderColor: border } }, '& .MuiInputBase-input': { color: isDark ? '#fff' : '#0A0F1F', fontSize: '.85rem' } }} />
+        sx={{ mb: 2.5, width: 260, '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : dashboardTokens.colors.surfaceSubtle, borderRadius: '8px', '& fieldset': { borderColor: border } }, '& .MuiInputBase-input': { color: isDark ? WHITE : TEXT_STRONG, fontSize: '.85rem' } }} />
 
       {/* Tabs */}
       <Box display="flex" gap={.75} mb={2.5} flexWrap="wrap">
         {TABS.map(t => (
           <Box key={t.key} onClick={() => setTab(t.key)} sx={{
             display: 'flex', alignItems: 'center', gap: .6, px: 1.5, py: .6, borderRadius: '8px', cursor: 'pointer',
-            bgcolor: tab === t.key ? '#18366A' : isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6',
-            border: `1.5px solid ${tab === t.key ? '#18366A' : border}`,
+            bgcolor: tab === t.key ? ACCENT_STRONG : isDark ? 'rgba(255,255,255,.07)' : dashboardTokens.colors.surfaceHover,
+            border: `1.5px solid ${tab === t.key ? ACCENT_STRONG : border}`,
             transition: 'all .12s',
           }}>
-            <Typography sx={{ fontSize: '.78rem', fontWeight: tab === t.key ? 700 : 500, color: tab === t.key ? '#fff' : isDark ? 'rgba(255,255,255,.7)' : '#374151' }}>{t.label}</Typography>
-            <Box sx={{ px: .6, py: .1, borderRadius: '10px', bgcolor: tab === t.key ? 'rgba(255,255,255,.2)' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB', minWidth: 20, textAlign: 'center' }}>
-              <Typography sx={{ fontSize: '.62rem', fontWeight: 700, color: tab === t.key ? '#fff' : isDark ? 'rgba(255,255,255,.55)' : '#6B7280' }}>{t.count}</Typography>
+            <Typography sx={{ fontSize: '.78rem', fontWeight: tab === t.key ? 700 : 500, color: tab === t.key ? WHITE : isDark ? 'rgba(255,255,255,.7)' : TEXT_BODY }}>{t.label}</Typography>
+            <Box sx={{ px: .6, py: .1, borderRadius: '10px', bgcolor: tab === t.key ? 'rgba(255,255,255,.2)' : isDark ? 'rgba(255,255,255,.1)' : dashboardTokens.colors.border, minWidth: 20, textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '.62rem', fontWeight: 700, color: tab === t.key ? WHITE : isDark ? 'rgba(255,255,255,.55)' : dashboardTokens.colors.textSecondary }}>{t.count}</Typography>
             </Box>
           </Box>
         ))}
@@ -377,7 +393,7 @@ function StepImage({ selectedOS, onSelect, isDark }: { selectedOS: string; onSel
         </Box>
       ) : (
         <Box textAlign="center" py={5}>
-          <Typography sx={{ color: isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF' }}>No distros match your search</Typography>
+          <Typography sx={{ color: isDark ? 'rgba(255,255,255,.3)' : MUTED }}>No distros match your search</Typography>
         </Box>
       )}
     </SSection>
@@ -401,13 +417,13 @@ function StepNetwork({ config, onChange, isDark }: {
   onChange: (k: string, v: string | boolean) => void;
   isDark: boolean;
 }) {
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
+  const textSec = isDark ? 'rgba(255,255,255,.5)' : MUTED;
 
   const inp = {
-    '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : '#F9FAFB', borderRadius: '8px', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: '#18366A' } },
+    '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.05)' : dashboardTokens.colors.surfaceSubtle, borderRadius: '8px', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: ACCENT_STRONG } },
     '& .MuiInputLabel-root': { color: textSec },
-    '& .MuiInputBase-input': { color: isDark ? '#fff' : '#0A0F1F', fontSize: '.88rem' },
+    '& .MuiInputBase-input': { color: isDark ? WHITE : TEXT_STRONG, fontSize: '.88rem' },
   };
 
   return (
@@ -422,16 +438,16 @@ function StepNetwork({ config, onChange, isDark }: {
           {REGIONS.map(r => (
             <Box key={r.id} onClick={() => onChange('region', r.id)} sx={{
               display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, borderRadius: '10px', cursor: 'pointer',
-              border: `2px solid ${config.region === r.id ? '#18366A' : border}`,
-              bgcolor: config.region === r.id ? (isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)') : (isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA'),
+              border: `2px solid ${config.region === r.id ? ACCENT_STRONG : border}`,
+              bgcolor: config.region === r.id ? (isDark ? computeUiTokens.accentSoftDark : computeUiTokens.accentSoftLight) : (isDark ? 'rgba(255,255,255,.03)' : computeUiTokens.surfaceSubtle),
               transition: 'all .12s',
             }}>
               <Typography sx={{ fontSize: '1.4rem' }}>{r.flag}</Typography>
               <Box>
-                <Typography fontWeight={600} fontSize=".82rem" color={isDark ? '#fff' : '#0A0F1F'}>{r.label.split('—')[0].trim()}</Typography>
+                <Typography fontWeight={600} fontSize=".82rem" color={isDark ? WHITE : TEXT_STRONG}>{r.label.split('—')[0].trim()}</Typography>
                 <Typography variant="caption" sx={{ color: textSec }}>{r.label.split('—')[1]?.trim()}</Typography>
               </Box>
-              {config.region === r.id && <CheckIcon sx={{ ml: 'auto', fontSize: '.9rem', color: '#18366A' }} />}
+              {config.region === r.id && <CheckIcon sx={{ ml: 'auto', fontSize: '.9rem', color: ACCENT_STRONG }} />}
             </Box>
           ))}
         </Box>
@@ -446,11 +462,11 @@ function StepNetwork({ config, onChange, isDark }: {
           ] as const).map(opt => (
             <Box key={opt.id} onClick={() => onChange('network', opt.id)} sx={{
               p: 1.5, borderRadius: '10px', cursor: 'pointer', textAlign: 'center',
-              border: `2px solid ${config.network === opt.id ? '#18366A' : border}`,
-              bgcolor: config.network === opt.id ? (isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)') : (isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA'),
+              border: `2px solid ${config.network === opt.id ? ACCENT_STRONG : border}`,
+              bgcolor: config.network === opt.id ? (isDark ? computeUiTokens.accentSoftDark : computeUiTokens.accentSoftLight) : (isDark ? 'rgba(255,255,255,.03)' : computeUiTokens.surfaceSubtle),
             }}>
-              <Box sx={{ color: config.network === opt.id ? '#18366A' : textSec, mb: .5 }}>{opt.icon}</Box>
-              <Typography fontWeight={700} fontSize=".82rem" color={isDark ? '#fff' : '#0A0F1F'}>{opt.label}</Typography>
+              <Box sx={{ color: config.network === opt.id ? ACCENT_STRONG : textSec, mb: .5 }}>{opt.icon}</Box>
+              <Typography fontWeight={700} fontSize=".82rem" color={isDark ? WHITE : TEXT_STRONG}>{opt.label}</Typography>
               <Typography variant="caption" sx={{ color: textSec }}>{opt.desc}</Typography>
             </Box>
           ))}
@@ -472,15 +488,15 @@ function StepNetwork({ config, onChange, isDark }: {
           ] as const).map(opt => (
             <Box key={opt.key} onClick={() => onChange(opt.key, !config[opt.key])} sx={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.75, borderRadius: '10px', cursor: 'pointer',
-              border: `2px solid ${config[opt.key] ? '#18366A' : border}`,
-              bgcolor: config[opt.key] ? (isDark ? 'rgba(24,54,106,.18)' : 'rgba(24,54,106,.04)') : 'transparent',
+              border: `2px solid ${config[opt.key] ? ACCENT_STRONG : border}`,
+              bgcolor: config[opt.key] ? (isDark ? computeUiTokens.accentSoftDark : computeUiTokens.accentSoftLight) : 'transparent',
             }}>
               <Box>
-                <Typography fontWeight={600} fontSize=".88rem" color={isDark ? '#fff' : '#0A0F1F'}>{opt.label}</Typography>
+                <Typography fontWeight={600} fontSize=".88rem" color={isDark ? WHITE : TEXT_STRONG}>{opt.label}</Typography>
                 <Typography variant="caption" sx={{ color: textSec }}>{opt.desc}</Typography>
               </Box>
-              <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: config[opt.key] ? '#18366A' : (isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {config[opt.key] && <CheckIcon sx={{ fontSize: '.75rem', color: '#fff' }} />}
+              <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: config[opt.key] ? ACCENT_STRONG : (isDark ? 'rgba(255,255,255,.1)' : BORDER), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {config[opt.key] && <CheckIcon sx={{ fontSize: '.75rem', color: WHITE }} />}
               </Box>
             </Box>
           ))}
@@ -499,8 +515,8 @@ function StepReview({ osId, flavorId, netConfig, isDark }: {
   const os     = OS_FLAT.find(o => o.id === osId);
   const fl     = FLAVORS.find(f => f.id === flavorId);
   const region = REGIONS.find(r => r.id === netConfig.region);
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
+  const textSec = isDark ? 'rgba(255,255,255,.5)' : MUTED;
 
   const rows: [string, string][] = [
     ['Hostname',     netConfig.hostname    || '(not set)'],
@@ -519,17 +535,17 @@ function StepReview({ osId, flavorId, netConfig, isDark }: {
 
   return (
     <SSection title="Review Configuration" subtitle="Confirm everything looks correct before deploying." isDark={isDark}>
-      <Paper elevation={0} sx={{ border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden', bgcolor: isDark ? '#132336' : '#ffffff', mb: 2.5 }}>
+      <Paper elevation={0} sx={{ border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden', bgcolor: isDark ? computeUiTokens.darkPanel : dashboardTokens.colors.surface, mb: 2.5 }}>
         {rows.map(([k, v], i) => (
-          <Box key={k} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2.5, py: 1.25, borderBottom: i < rows.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,.05)' : '#F9FAFB'}` : 'none' }}>
+          <Box key={k} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2.5, py: 1.25, borderBottom: i < rows.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,.05)' : dashboardTokens.colors.surfaceSubtle}` : 'none' }}>
             <Typography variant="body2" sx={{ color: textSec, fontWeight: 500 }}>{k}</Typography>
-            <Typography variant="body2" fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} textAlign="right" sx={{ maxWidth: '60%' }}>{v}</Typography>
+            <Typography variant="body2" fontWeight={700} color={isDark ? WHITE : TEXT_STRONG} textAlign="right" sx={{ maxWidth: '60%' }}>{v}</Typography>
           </Box>
         ))}
       </Paper>
       <Box sx={{ p: 2.5, bgcolor: isDark ? 'rgba(24,54,106,.15)' : 'rgba(24,54,106,.04)', borderRadius: '12px', border: `1px solid ${isDark ? 'rgba(24,54,106,.3)' : 'rgba(24,54,106,.12)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography fontWeight={700} fontSize="1.3rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
+          <Typography fontWeight={700} fontSize="1.3rem" color={isDark ? WHITE : TEXT_STRONG}>
             ${monthlyCost.toFixed(2)}<Typography component="span" variant="caption" sx={{ color: textSec }}>/month</Typography>
           </Typography>
           <Typography variant="caption" sx={{ color: textSec }}>~${hourlyCost.toFixed(4)}/hour · billed hourly</Typography>
@@ -561,7 +577,7 @@ const ComputePage: React.FC = () => {
     sshKey: '', password: '', backups: false, ipv6: true,
   });
 
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+  const border = isDark ? 'rgba(255,255,255,.08)' : BORDER;
 
   const canNext = () => {
     if (activeStep === 0) return !!selectedOS;
@@ -585,17 +601,17 @@ const ComputePage: React.FC = () => {
 
   if (deployed) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: dashboardTokens.colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Box textAlign="center" maxWidth={480} px={3}>
           <Box sx={{ width: 72, height: 72, bgcolor: 'rgba(16,185,129,.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>
-            <RocketLaunchIcon sx={{ fontSize: '2rem', color: '#10B981' }} />
+            <RocketLaunchIcon sx={{ fontSize: '2rem', color: dashboardSemanticColors.success }} />
           </Box>
-          <Typography fontWeight={800} fontSize="1.5rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={.75}>Server Deployed! 🎉</Typography>
-          <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', mb: 3 }}>
-            <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{netConfig.hostname || 'your-server'}</strong> is provisioning and will be ready in ~45 seconds.
+          <Typography fontWeight={800} fontSize="1.5rem" color={isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary} mb={.75}>Server Deployed! 🎉</Typography>
+          <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : dashboardTokens.colors.textSecondary, mb: 3 }}>
+            <strong style={{ color: isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary }}>{netConfig.hostname || 'your-server'}</strong> is provisioning and will be ready in ~45 seconds.
           </Typography>
           <Button variant="contained" onClick={() => { setDeployed(false); setActiveStep(0); setOS('ubuntu-2404'); setFlavor('medium'); setNet({ hostname: '', region: 'us-east-1', network: 'public', sshKey: '', password: '', backups: false, ipv6: true }); }}
-            sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+            sx={dashboardPrimaryButtonSx}>
             Deploy Another Server
           </Button>
         </Box>
@@ -604,24 +620,24 @@ const ComputePage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: dashboardTokens.colors.background }}>
       {/* Header */}
-      <Box sx={{ bgcolor: '#ffffff', borderBottom: `1px solid #E5E7EB`, px: { xs: 2, md: 4 }, py: 2.5 }}>
-        <Typography fontWeight={700} fontSize="1.25rem" color="#111827">Deploy Your First Server</Typography>
-        <Typography variant="body2" sx={{ color: '#6B7280', mt: .25 }}>
+      <Box sx={{ bgcolor: dashboardTokens.colors.surface, borderBottom: `1px solid ${dashboardTokens.colors.border}`, px: { xs: 2, md: 4 }, py: 2.5 }}>
+        <Typography fontWeight={700} fontSize="1.25rem" color={dashboardTokens.colors.textPrimary}>Deploy Your First Server</Typography>
+        <Typography variant="body2" sx={{ color: dashboardTokens.colors.textSecondary, mt: .25 }}>
           Cloud compute instances · 5 regions · NVMe SSD · Provisioned in {'<'}60s
         </Typography>
       </Box>
 
       {/* Stepper */}
-      <Box sx={{ bgcolor: '#ffffff', borderBottom: `1px solid #E5E7EB`, px: { xs: 2, md: 4 }, py: 2.5 }}>
+      <Box sx={{ bgcolor: dashboardTokens.colors.surface, borderBottom: `1px solid ${dashboardTokens.colors.border}`, px: { xs: 2, md: 4 }, py: 2.5 }}>
         <Stepper activeStep={activeStep} alternativeLabel connector={<StepConnectorStyled />}>
           {STEPS.map((label, i) => (
             <Step key={label} completed={i < activeStep}>
               <StepLabel StepIconComponent={({ active, completed }) =>
                 <StepIconStyled active={active} completed={completed} icon={i + 1} isDark={isDark} />
               }>
-                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? '#2563EB' : '#9CA3AF' }}>
+                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? dashboardTokens.colors.brandPrimary : dashboardTokens.colors.textTertiary }}>
                   {label}
                 </Typography>
               </StepLabel>
@@ -641,8 +657,8 @@ const ComputePage: React.FC = () => {
         </Box>
 
         {/* Sticky summary sidebar */}
-        <Box sx={{ width: 290, flexShrink: 0, borderLeft: `1px solid #E5E7EB`, p: 2.5, position: 'sticky', top: 0, alignSelf: 'flex-start', bgcolor: '#ffffff', minHeight: 'calc(100vh - 88px - 80px)' }}>
-          <Typography fontWeight={800} fontSize=".9rem" color="#111827" mb={1.75}>Summary</Typography>
+        <Box sx={{ width: 290, flexShrink: 0, borderLeft: `1px solid ${dashboardTokens.colors.border}`, p: 2.5, position: 'sticky', top: 0, alignSelf: 'flex-start', bgcolor: dashboardTokens.colors.surface, minHeight: 'calc(100vh - 88px - 80px)' }}>
+          <Typography fontWeight={800} fontSize=".9rem" color={dashboardTokens.colors.textPrimary} mb={1.75}>Summary</Typography>
           <Stack spacing={1.25}>
             {[
               { label: 'Image',  value: os ? `${os.name} ${os.version}` : '—', color: os?.logoColor },
@@ -650,39 +666,39 @@ const ComputePage: React.FC = () => {
               { label: 'Region', value: REGIONS.find(r => r.id === netConfig.region)?.label.split('—')[0].trim() ?? '—' },
               { label: 'Host',   value: netConfig.hostname || '—' },
             ].map(row => (
-              <Box key={row.label} sx={{ p: 1.25, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '8px', border: `1px solid ${border}` }}>
-                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF', fontWeight: 600, display: 'block', mb: .25 }}>{row.label}</Typography>
-                <Typography variant="body2" fontWeight={700} color={isDark ? '#fff' : '#0A0F1F'} noWrap>{row.value}</Typography>
+              <Box key={row.label} sx={{ p: 1.25, bgcolor: isDark ? 'rgba(255,255,255,.04)' : dashboardTokens.colors.surfaceSubtle, borderRadius: '8px', border: `1px solid ${border}` }}>
+                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : dashboardTokens.colors.textTertiary, fontWeight: 600, display: 'block', mb: .25 }}>{row.label}</Typography>
+                <Typography variant="body2" fontWeight={700} color={isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary} noWrap>{row.value}</Typography>
               </Box>
             ))}
           </Stack>
 
-          <Divider sx={{ my: 2, borderColor: isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6' }} />
+          <Divider sx={{ my: 2, borderColor: isDark ? 'rgba(255,255,255,.07)' : dashboardTokens.colors.surfaceHover }} />
 
           <Box sx={{ p: 1.5, bgcolor: isDark ? 'rgba(24,54,106,.15)' : 'rgba(24,54,106,.05)', borderRadius: '10px', mb: 2 }}>
-            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>Estimated cost</Typography>
-            <Typography fontWeight={800} fontSize="1.2rem" color="#18366A">${monthlyCost.toFixed(2)}<Typography component="span" variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>/mo</Typography></Typography>
-            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF' }}>${(monthlyCost / 730).toFixed(4)}/hour</Typography>
+            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : dashboardTokens.colors.textTertiary }}>Estimated cost</Typography>
+            <Typography fontWeight={800} fontSize="1.2rem" color={COMPUTE_ACCENT}>${monthlyCost.toFixed(2)}<Typography component="span" variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : dashboardTokens.colors.textTertiary }}>/mo</Typography></Typography>
+            <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.3)' : dashboardTokens.colors.textTertiary }}>${(monthlyCost / 730).toFixed(4)}/hour</Typography>
           </Box>
 
           {/* Nav buttons */}
           <Stack spacing={1}>
             {activeStep < STEPS.length - 1 ? (
               <Button fullWidth variant="contained" disabled={!canNext()} onClick={() => setActiveStep(s => s + 1)}
-                sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
+                sx={{ ...dashboardPrimaryButtonSx, py: 1.25 }}>
                 Continue →
               </Button>
             ) : (
               <Button fullWidth variant="contained" disabled={!canNext() || deploying}
                 startIcon={deploying ? <CircularProgress size={14} color="inherit" /> : <RocketLaunchIcon />}
                 onClick={handleDeploy}
-                sx={{ bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
+                sx={{ bgcolor: computeUiTokens.successStrong, '&:hover': { bgcolor: computeUiTokens.successHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
                 {deploying ? 'Deploying…' : 'Deploy Server'}
               </Button>
             )}
             {activeStep > 0 && (
               <Button fullWidth variant="outlined" onClick={() => setActiveStep(s => s - 1)}
-                sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600, borderColor: border, color: isDark ? '#fff' : '#374151' }}>
+                sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600, borderColor: border, color: isDark ? WHITE : TEXT_BODY }}>
                 ← Back
               </Button>
             )}
@@ -691,7 +707,7 @@ const ComputePage: React.FC = () => {
           {/* Step dots */}
           <Box display="flex" justifyContent="center" gap={.75} mt={2}>
             {STEPS.map((_, i) => (
-              <Box key={i} sx={{ width: i === activeStep ? 16 : 6, height: 6, borderRadius: 3, bgcolor: i <= activeStep ? '#2563EB' : '#E5E7EB', transition: 'all .2s' }} />
+              <Box key={i} sx={{ width: i === activeStep ? 16 : 6, height: 6, borderRadius: 3, bgcolor: i <= activeStep ? COMPUTE_ACCENT : dashboardTokens.colors.border, transition: 'all .2s' }} />
             ))}
           </Box>
         </Box>

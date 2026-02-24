@@ -31,6 +31,10 @@ import AccessTimeIcon       from '@mui/icons-material/AccessTime';
 import type { StorageBucket, S3Object, LifecycleRule } from '../types/storage';
 import { storageApi } from '../services/cloudApi';
 import CreateBucketModal   from '../components/Cloud/CreateBucketModal';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+} from '../styles/dashboardDesignSystem';
 
 // ── colour helpers ────────────────────────────────────────────────────────────
 
@@ -48,12 +52,20 @@ const SC_LABEL: Record<string, string> = {
   'deep-archive':        'Deep Archive',
 };
 const SC_COLOR: Record<string, string> = {
-  'standard':            '#60a5fa',
-  'standard-ia':         '#a78bfa',
-  'intelligent-tiering': '#34d399',
-  'glacier':             '#f59e0b',
-  'deep-archive':        '#ef4444',
+  'standard': dashboardSemanticColors.infoAlt,
+  'standard-ia': dashboardSemanticColors.purple,
+  'intelligent-tiering': dashboardSemanticColors.success,
+  'glacier': dashboardSemanticColors.warning,
+  'deep-archive': dashboardSemanticColors.danger,
 };
+
+const STORAGE_ACCENT = dashboardSemanticColors.infoAlt;
+const STORAGE_DANGER = dashboardSemanticColors.danger;
+const STORAGE_DANGER_SOFT_LIGHT = 'rgba(239, 68, 68, 0.12)';
+const STORAGE_DANGER_SOFT_DARK = 'rgba(239, 68, 68, 0.16)';
+const STORAGE_DANGER_HOVER_DARK = 'rgba(239, 68, 68, 0.2)';
+const STORAGE_CODE_GREEN = 'rgba(99, 245, 118, 1)';
+const STORAGE_CHIP_BG = 'rgba(37, 99, 235, 0.08)';
 
 const fmt = {
   bytes: (n: number) => {
@@ -91,17 +103,18 @@ const StoragePage: React.FC = () => {
 
   // ── colour tokens ────────────────────────────────────────────────────────
   const tokens = {
-    panelBg: '#FFFFFF',
-    cardBg:  '#FFFFFF',
-    border:  '#E5E7EB',
-    brand:   '#2563EB',
-    hover:   '#F3F4F6',
-    text:    '#111827',
-    muted:   '#6B7280',
-    subBg:   '#F9FAFB',
-    codeBg:  '#111827',
-    chipBg:  '#EFF6FF',
-    snackBg: '#FFFFFF',
+    panelBg: dashboardTokens.colors.background,
+    cardBg: dashboardTokens.colors.surface,
+    border: dashboardTokens.colors.border,
+    brand: dashboardTokens.colors.brandPrimary,
+    brandHover: dashboardTokens.colors.brandPrimaryHover,
+    hover: dashboardTokens.colors.surfaceHover,
+    text: dashboardTokens.colors.textPrimary,
+    muted: dashboardTokens.colors.textSecondary,
+    subBg: dashboardTokens.colors.surfaceSubtle,
+    codeBg: dashboardTokens.colors.textPrimary,
+    chipBg: STORAGE_CHIP_BG,
+    snackBg: dashboardTokens.colors.surface,
   };
   const [buckets,     setBuckets]     = useState<StorageBucket[]>([]);
   const [selected,    setSelected]    = useState<StorageBucket | null>(null);
@@ -256,7 +269,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
 
       {/* ── Header ── */}
       <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${tokens.border}`, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-        <StorageIcon sx={{ color: '#60a5fa', fontSize: 26 }} />
+        <StorageIcon sx={{ color: STORAGE_ACCENT, fontSize: 26 }} />
         <Box flex={1}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: tokens.text }}>Cloud Storage</Typography>
           <Typography sx={{ fontSize: 12, color: tokens.muted }}>
@@ -264,17 +277,17 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
           </Typography>
         </Box>
         <Button variant="outlined" startIcon={<RefreshIcon />} onClick={loadBuckets}
-          sx={{ border: `1px solid ${tokens.border}`, color: tokens.muted, fontSize: 12, height: 34, '&:hover': { borderColor: '#60a5fa', color: '#60a5fa' } }}>
+          sx={{ border: `1px solid ${tokens.border}`, color: tokens.muted, fontSize: 12, height: 34, '&:hover': { borderColor: STORAGE_ACCENT, color: STORAGE_ACCENT } }}>
           Refresh
         </Button>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-          sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.hover }, height: 34, fontSize: 12 }}>
+          sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, height: 34, fontSize: 12 }}>
           Create Bucket
         </Button>
       </Box>
 
       {error && <Alert severity="error" sx={{ mx: 3, mt: 1 }}>{error}</Alert>}
-      {loading && <LinearProgress sx={{ bgcolor: tokens.border, '& .MuiLinearProgress-bar': { bgcolor: '#60a5fa' } }} />}
+      {loading && <LinearProgress sx={{ bgcolor: tokens.border, '& .MuiLinearProgress-bar': { bgcolor: STORAGE_ACCENT } }} />}
 
       {/* ── Two-panel body ── */}
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -300,7 +313,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 <FolderOpenIcon sx={{ fontSize: 48, color: tokens.muted, mb: 1 }} />
                 <Typography sx={{ color: tokens.muted, fontSize: 13, mb: 2 }}>No buckets yet</Typography>
                 <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-                  sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.hover }, fontSize: 12 }}>
+                  sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, fontSize: 12 }}>
                   Create Bucket
                 </Button>
               </Box>
@@ -310,7 +323,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                   px: 2, py: 1.5, cursor: 'pointer', borderBottom: `1px solid ${tokens.border}`,
                   bgcolor: selected?.resource_id === b.resource_id ? tokens.hover : 'transparent',
                   '&:hover': { bgcolor: tokens.hover },
-                  borderLeft: selected?.resource_id === b.resource_id ? `3px solid #60a5fa` : '3px solid transparent',
+                  borderLeft: selected?.resource_id === b.resource_id ? `3px solid ${STORAGE_ACCENT}` : '3px solid transparent',
                 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                   <Typography sx={{ fontSize: 13, fontWeight: 600, color: tokens.text, wordBreak: 'break-all' }}>
@@ -330,13 +343,13 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 <Stack direction="row" spacing={.5} sx={{ mt: .75 }}>
                   {b.versioning_enabled &&
                     <Chip icon={<HistoryIcon sx={{ fontSize: 10 }} />} label="Versioning" size="small"
-                      sx={{ fontSize: 10, height: 18, bgcolor: tokens.chipBg, color: '#a78bfa' }} />}
+                      sx={{ fontSize: 10, height: 18, bgcolor: tokens.chipBg, color: dashboardSemanticColors.purple }} />}
                   {b.encryption_enabled &&
                     <Chip icon={<ShieldIcon sx={{ fontSize: 10 }} />} label="Encrypted" size="small"
-                      sx={{ fontSize: 10, height: 18, bgcolor: tokens.chipBg, color: '#34d399' }} />}
+                      sx={{ fontSize: 10, height: 18, bgcolor: tokens.chipBg, color: dashboardSemanticColors.success }} />}
                   {b.acl !== 'private' &&
                     <Chip icon={<PublicIcon sx={{ fontSize: 10 }} />} label={b.acl} size="small"
-                      sx={{ fontSize: 10, height: 18, bgcolor: isDark ? '#2d1a1a' : '#FEF2F2', color: '#f87171' }} />}
+                      sx={{ fontSize: 10, height: 18, bgcolor: isDark ? STORAGE_DANGER_SOFT_DARK : STORAGE_DANGER_SOFT_LIGHT, color: STORAGE_DANGER }} />}
                 </Stack>
               </Box>
             ))}
@@ -349,7 +362,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
 
             {/* bucket header */}
             <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${tokens.border}`, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              <StorageIcon sx={{ color: '#60a5fa' }} />
+              <StorageIcon sx={{ color: STORAGE_ACCENT }} />
               <Box flex={1}>
                 <Typography sx={{ fontSize: 16, fontWeight: 700, color: tokens.text }}>{selected.bucket_name}</Typography>
                 <Typography sx={{ fontSize: 12, color: tokens.muted }}>
@@ -358,7 +371,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               </Box>
               <Tooltip title="Delete bucket">
                 <IconButton size="small" onClick={() => setDeleteTarget(selected)}
-                  sx={{ color: '#f87171', '&:hover': { bgcolor: '#2d1515' } }}>
+                  sx={{ color: STORAGE_DANGER, '&:hover': { bgcolor: STORAGE_DANGER_HOVER_DARK } }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -370,7 +383,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 px: 2, borderBottom: `1px solid ${tokens.border}`, flexShrink: 0,
                 '& .MuiTab-root': { fontSize: 12, color: tokens.muted, minHeight: 42, textTransform: 'none' },
                 '& .Mui-selected': { color: tokens.text },
-                '& .MuiTabs-indicator': { bgcolor: '#60a5fa' },
+                '& .MuiTabs-indicator': { bgcolor: STORAGE_ACCENT },
               }}>
               <Tab label="Overview" />
               <Tab label="Objects" />
@@ -400,7 +413,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 <Box sx={{ mb: 3 }}>
                   <SectionLabel color={tokens.muted}>ENDPOINT URL</SectionLabel>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: .5 }}>
-                    <Typography sx={{ fontSize: 12, color: '#60a5fa', fontFamily: 'monospace', flex: 1, wordBreak: 'break-all' }}>
+                    <Typography sx={{ fontSize: 12, color: STORAGE_ACCENT, fontFamily: 'monospace', flex: 1, wordBreak: 'break-all' }}>
                       {endpoint(selected)}
                     </Typography>
                     <Tooltip title="Copy">
@@ -428,7 +441,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                   <SectionLabel color={tokens.muted}>QUICK START (PYTHON / BOTO3)</SectionLabel>
                   <Box component="pre" sx={{
                     mt: .5, p: 2, bgcolor: tokens.codeBg, border: `1px solid ${tokens.border}`, borderRadius: 2,
-                    fontSize: 11, color: '#63f576', fontFamily: 'monospace', overflowX: 'auto', lineHeight: 1.6,
+                    fontSize: 11, color: STORAGE_CODE_GREEN, fontFamily: 'monospace', overflowX: 'auto', lineHeight: 1.6,
                   }}>
                     {boto3Snippet(selected)}
                   </Box>
@@ -445,7 +458,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                   </Button>
                 </Stack>
                 {objLoading ? (
-                  <Box sx={{ textAlign: 'center', pt: 4 }}><CircularProgress size={24} sx={{ color: '#60a5fa' }} /></Box>
+                  <Box sx={{ textAlign: 'center', pt: 4 }}><CircularProgress size={24} sx={{ color: STORAGE_ACCENT }} /></Box>
                 ) : objects.length === 0 ? (
                   <Box sx={{ textAlign: 'center', pt: 4 }}>
                     <FolderOpenIcon sx={{ fontSize: 40, color: tokens.muted, mb: 1 }} />
@@ -475,7 +488,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                           <TableCell>
                             {o.is_public
                               ? <Chip icon={<PublicIcon sx={{ fontSize: 10 }} />} label="Public" size="small"
-                                  sx={{ fontSize: 10, height: 18, color: '#f87171', bgcolor: isDark ? '#2d1a1a' : '#FEF2F2' }} />
+                                  sx={{ fontSize: 10, height: 18, color: STORAGE_DANGER, bgcolor: isDark ? STORAGE_DANGER_SOFT_DARK : STORAGE_DANGER_SOFT_LIGHT }} />
                               : <Chip icon={<LockIcon sx={{ fontSize: 10 }} />} label="Private" size="small"
                                   sx={{ fontSize: 10, height: 18, color: tokens.muted, bgcolor: tokens.chipBg }} />}
                           </TableCell>
@@ -542,7 +555,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               {/* ── Tab 3: Lifecycle ── */}
               <TabPanel value={tabIdx} index={3}>
                 {lcLoading ? (
-                  <Box sx={{ textAlign: 'center', pt: 4 }}><CircularProgress size={24} sx={{ color: '#60a5fa' }} /></Box>
+                  <Box sx={{ textAlign: 'center', pt: 4 }}><CircularProgress size={24} sx={{ color: STORAGE_ACCENT }} /></Box>
                 ) : (
                   <Stack spacing={2}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -592,7 +605,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               <TabPanel value={tabIdx} index={4}>
                 <Box sx={{ bgcolor: tokens.cardBg, border: `1px solid ${tokens.border}`, borderRadius: 2, p: 3 }}>
                   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                    <CloudSyncIcon sx={{ color: '#60a5fa', fontSize: 28 }} />
+                    <CloudSyncIcon sx={{ color: STORAGE_ACCENT, fontSize: 28 }} />
                     <Box>
                       <Typography sx={{ fontSize: 14, fontWeight: 700, color: tokens.text }}>OpenStack Swift Sync</Typography>
                       <Typography sx={{ fontSize: 12, color: tokens.muted }}>
@@ -617,9 +630,9 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                     </Alert>
                   )}
 
-                  <Button variant="contained" startIcon={syncLoading ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : <CloudSyncIcon />}
+                  <Button variant="contained" startIcon={syncLoading ? <CircularProgress size={14} sx={{ color: dashboardTokens.colors.white }} /> : <CloudSyncIcon />}
                     disabled={syncLoading} onClick={handleSwiftSync}
-                    sx={{ mt: 2.5, bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.hover } }}>
+                    sx={{ mt: 2.5, bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover } }}>
                     {syncLoading ? 'Syncing…' : 'Sync to Swift'}
                   </Button>
                 </Box>
@@ -637,7 +650,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 Choose a bucket from the list, or create a new one to get started.
               </Typography>
               <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-                sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.hover }, mt: 1 }}>
+                sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, mt: 1 }}>
                 Create Bucket
               </Button>
             </Box>
@@ -655,7 +668,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
       {/* Delete confirmation */}
       <Dialog open={!!deleteTarget} onClose={() => { setDeleteTarget(null); setDeleteInput(''); }}
         PaperProps={{ sx: { bgcolor: tokens.cardBg, border: `1px solid ${tokens.border}` } }}>
-        <DialogTitle sx={{ color: '#f87171' }}>Delete Bucket</DialogTitle>
+        <DialogTitle sx={{ color: STORAGE_DANGER }}>Delete Bucket</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2, fontSize: 12 }}>
             This will permanently delete <strong>{deleteTarget?.bucket_name}</strong> and all its objects.
@@ -671,7 +684,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
           <Button onClick={() => { setDeleteTarget(null); setDeleteInput(''); }} sx={{ color: tokens.muted }}>Cancel</Button>
           <Button variant="contained" color="error" disabled={deleteInput !== deleteTarget?.bucket_name || deleting}
             onClick={handleDelete}>
-            {deleting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Delete'}
+            {deleting ? <CircularProgress size={16} sx={{ color: dashboardTokens.colors.white }} /> : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

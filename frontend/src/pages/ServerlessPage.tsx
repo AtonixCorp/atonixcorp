@@ -26,6 +26,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import BoltIcon from '@mui/icons-material/Bolt';
 import { serverlessApi } from '../services/cloudApi';
 import type { CreateServerlessFunctionPayload, ServerlessFunction } from '../types/kubernetes';
+import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
 
 const STATUS_COLOR: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
   running: 'success',
@@ -107,7 +108,7 @@ const ServerlessPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#FFFFFF', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: dashboardTokens.colors.background, minHeight: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="h5" fontWeight={700}>Serverless Functions</Typography>
@@ -115,12 +116,12 @@ const ServerlessPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 500, '&:hover': { bgcolor: '#1D4ED8' } }}>Create Function</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Create Function</Button>
         </Stack>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, gap: 2 }}>
-        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
+        <Card sx={dashboardCardSx}>
           <CardContent>
             <Typography fontWeight={600} mb={1}>Functions</Typography>
             <List sx={{ p: 0 }}>
@@ -139,7 +140,7 @@ const ServerlessPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
+        <Card sx={dashboardCardSx}>
           <CardContent>
             {!selected ? (
               <Typography color="text.secondary">Select a function to view details.</Typography>
@@ -167,7 +168,7 @@ const ServerlessPage: React.FC = () => {
                   <Box>
                     <TextField multiline minRows={8} fullWidth value={invokePayload} onChange={(event) => setInvokePayload(event.target.value)} />
                     <Stack direction="row" justifyContent="flex-end" mt={1} mb={1}>
-                      <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={invoke} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Invoke</Button>
+                      <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={invoke} sx={dashboardPrimaryButtonSx}>Invoke</Button>
                     </Stack>
                     <TextField multiline minRows={8} fullWidth value={invokeResult} InputProps={{ readOnly: true }} placeholder="Invocation result appears here" />
                   </Box>
@@ -220,7 +221,7 @@ const ServerlessPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreate(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createFunction} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
+          <Button variant="contained" onClick={createFunction} sx={dashboardPrimaryButtonSx}>Create</Button>
         </DialogActions>
       </Dialog>
 

@@ -12,6 +12,7 @@ import NavigateNextIcon   from '@mui/icons-material/NavigateNext';
 import { useAuth } from '../contexts/AuthContext';
 import { onboardingApi, dashboardApi } from '../services/cloudApi';
 import { OnboardingProgress, DashboardStats } from '../types/cloud';
+import { dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
 
 import WelcomeHero         from '../components/Cloud/WelcomeHero';
 import OnboardingChecklist from '../components/Cloud/OnboardingChecklist';
@@ -70,13 +71,13 @@ const OnboardingDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', pb: 6 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: dashboardTokens.colors.background, pb: 6 }}>
 
       {/* ── Page Header ────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          bgcolor: '#fff',
-          borderBottom: '1px solid #E5E7EB',
+          bgcolor: dashboardTokens.colors.surface,
+          borderBottom: `1px solid ${dashboardTokens.colors.border}`,
           px: { xs: 2, md: 4 },
           pt: 2.5,
           pb: 2,
@@ -84,18 +85,18 @@ const OnboardingDashboard: React.FC = () => {
       >
         {/* Breadcrumbs — 12px, Graphite Gray */}
         <Breadcrumbs
-          separator={<NavigateNextIcon sx={{ fontSize: '.75rem', color: '#9CA3AF' }} />}
+          separator={<NavigateNextIcon sx={{ fontSize: '.75rem', color: dashboardTokens.colors.textTertiary }} />}
           sx={{ mb: 1.5 }}
         >
           <Link
             href="/"
             underline="hover"
-            sx={{ fontSize: '12px', color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: dashboardTokens.colors.textSecondary, display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             Home
           </Link>
           <Typography
-            sx={{ fontSize: '12px', color: '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: dashboardTokens.colors.textPrimary, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             <DashboardIcon sx={{ fontSize: '.8rem' }} />
             Dashboard
@@ -108,7 +109,7 @@ const OnboardingDashboard: React.FC = () => {
             sx={{
               fontSize: '24px',
               fontWeight: 700,
-              color: '#111827',
+              color: dashboardTokens.colors.textPrimary,
               letterSpacing: '-.02em',
               lineHeight: 1.2,
             }}
@@ -124,15 +125,12 @@ const OnboardingDashboard: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setWizardOpen(true)}
               sx={{
-                bgcolor: '#2563EB',
-                color: '#fff',
-                fontWeight: 500,
+                color: dashboardTokens.colors.white,
                 fontSize: '.82rem',
-                textTransform: 'none',
                 borderRadius: '6px',
                 px: 2,
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#1D4ED8', boxShadow: 'none' },
+                ...dashboardPrimaryButtonSx,
               }}
             >
               Deploy Server
@@ -206,9 +204,9 @@ const OnboardingDashboard: React.FC = () => {
             severity={toast.type}
             onClose={() => setToast(null)}
             sx={{
-              bgcolor: toast.type === 'success' ? '#FFFFFF' : undefined,
-              border: `1px solid ${toast.type === 'success' ? '#D1D5DB' : 'rgba(239,68,68,.4)'}`,
-              color: toast.type === 'success' ? '#111827' : undefined,
+              bgcolor: toast.type === 'success' ? dashboardTokens.colors.surface : undefined,
+              border: `1px solid ${toast.type === 'success' ? dashboardTokens.colors.borderStrong : 'rgba(239,68,68,.4)'}`,
+              color: toast.type === 'success' ? dashboardTokens.colors.textPrimary : undefined,
             }}
           >
             {toast.msg}
@@ -226,7 +224,7 @@ const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) =
       fontSize="12px"
       letterSpacing=".08em"
       textTransform="uppercase"
-      sx={{ color: '#6B7280', mb: 1.5 }}
+      sx={{ color: dashboardTokens.colors.textSecondary, mb: 1.5 }}
     >
       {children}
     </Typography>

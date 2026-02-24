@@ -5,7 +5,6 @@ import {
   Tabs, Tab, CircularProgress, Alert, Switch,
   TextField,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import AddIcon           from '@mui/icons-material/Add';
 import SwapHorizIcon     from '@mui/icons-material/SwapHoriz';
 import RefreshIcon       from '@mui/icons-material/Refresh';
@@ -19,25 +18,20 @@ import { domainApi }     from '../services/cloudApi';
 import type { Domain, DnsRecord, SslCertificate, DnsRecordType } from '../types/domain';
 import RegisterDomainModal  from '../components/Cloud/RegisterDomainModal';
 import TransferDomainModal  from '../components/Cloud/TransferDomainModal';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+} from '../styles/dashboardDesignSystem';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const STATUS_COLOUR: Record<string, string> = {
-  active:       '#22C55E',
-  pending:      '#F59E0B',
-  expired:      '#EF4444',
-  suspended:    '#EF4444',
-  transferring: '#3B82F6',
-  deleting:     '#6B7280',
-  error:        '#EF4444',
+  ...dashboardStatusColors.domain,
 };
 
 const SSL_COLOUR: Record<string, string> = {
-  active:  '#22C55E',
-  pending: '#F59E0B',
-  expired: '#EF4444',
-  revoked: '#6B7280',
-  error:   '#EF4444',
+  ...dashboardStatusColors.ssl,
 };
 
 const DNS_TYPES: DnsRecordType[] = ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA','PTR'];
@@ -45,17 +39,14 @@ const DNS_TYPES: DnsRecordType[] = ['A','AAAA','CNAME','MX','TXT','NS','SRV','CA
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DomainPage: React.FC = () => {
-  const theme  = useTheme();
-  const _isDark = theme.palette.mode === 'dark';
-
   const t = {
-    panelBg: '#FFFFFF',
-    cardBg:  '#FFFFFF',
-    border:  '#E5E7EB',
-    brand:   '#2563EB',
-    hover:   '#F3F4F6',
-    text:    '#111827',
-    muted:   '#6B7280',
+    panelBg: dashboardTokens.colors.background,
+    cardBg: dashboardTokens.colors.surface,
+    border: dashboardTokens.colors.border,
+    brand: dashboardTokens.colors.brandPrimary,
+    hover: dashboardTokens.colors.surfaceHover,
+    text: dashboardTokens.colors.textPrimary,
+    muted: dashboardTokens.colors.textSecondary,
   };
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -264,8 +255,8 @@ const DomainPage: React.FC = () => {
 
   const expireLabel = (d: Domain) => {
     if (!d.days_until_expiry) return '—';
-    if (d.days_until_expiry < 0)  return <span style={{ color: '#EF4444' }}>Expired</span>;
-    if (d.days_until_expiry < 30) return <span style={{ color: '#F59E0B' }}>{d.days_until_expiry}d</span>;
+    if (d.days_until_expiry < 0) return <span style={{ color: dashboardSemanticColors.danger }}>Expired</span>;
+    if (d.days_until_expiry < 30) return <span style={{ color: dashboardSemanticColors.warning }}>{d.days_until_expiry}d</span>;
     return `${d.days_until_expiry}d`;
   };
 
@@ -291,7 +282,7 @@ const DomainPage: React.FC = () => {
           <Button
             size="small" variant="contained" startIcon={<AddIcon />}
             onClick={() => setShowRegister(true)}
-            sx={{ bgcolor: t.brand, flex: 1, '&:hover': { bgcolor: '#102548' } }}
+            sx={{ bgcolor: t.brand, flex: 1, '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover } }}
           >Register</Button>
           <Button
             size="small" variant="outlined" startIcon={<SwapHorizIcon />}
@@ -330,12 +321,12 @@ const DomainPage: React.FC = () => {
                 <Chip
                   size="small"
                   label={d.status}
-                  sx={{ bgcolor: STATUS_COLOUR[d.status] ?? '#6B7280', color: '#FFF', fontSize: '0.65rem' }}
+                  sx={{ bgcolor: STATUS_COLOUR[d.status] ?? t.muted, color: dashboardTokens.colors.white, fontSize: '0.65rem' }}
                 />
               </Box>
               <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
                 <Typography sx={{ color: t.muted, fontSize: '0.75rem' }}>Expires: {expireLabel(d)}</Typography>
-                {d.auto_renew && <AutorenewIcon sx={{ fontSize: 14, color: '#22C55E' }} />}
+                {d.auto_renew && <AutorenewIcon sx={{ fontSize: 14, color: dashboardSemanticColors.success }} />}
               </Box>
             </Box>
           ))}
@@ -359,7 +350,7 @@ const DomainPage: React.FC = () => {
               <Chip
                 size="small"
                 label={selected.status}
-                sx={{ mt: 0.5, bgcolor: STATUS_COLOUR[selected.status] ?? '#6B7280', color: '#FFF' }}
+                sx={{ mt: 0.5, bgcolor: STATUS_COLOUR[selected.status] ?? t.muted, color: dashboardTokens.colors.white }}
               />
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -369,13 +360,13 @@ const DomainPage: React.FC = () => {
                 startIcon={<RocketLaunchIcon />}
                 onClick={handleSwitchDomain}
                 disabled={switching && ['queued', 'running'].includes((switchInfo?.status || '').toString())}
-                sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}
+                sx={{ bgcolor: t.brand, '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover } }}
               >
                 {(switching && ['queued', 'running'].includes((switchInfo?.status || '').toString())) ? 'Switching...' : 'Switch Domain'}
               </Button>
               <Tooltip title="Delete domain">
                 <IconButton onClick={() => handleDelete(selected.resource_id)}>
-                  <DeleteIcon sx={{ color: '#EF4444' }} />
+                  <DeleteIcon sx={{ color: dashboardSemanticColors.danger }} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -475,7 +466,7 @@ const DomainPage: React.FC = () => {
                           <TableCell sx={tdSx}>{r.ttl}</TableCell>
                           <TableCell sx={{ ...tdSx, width: 40 }}>
                             <IconButton size="small" onClick={() => handleDeleteDns(r.recordset_id)}>
-                              <DeleteIcon sx={{ fontSize: 16, color: '#EF4444' }} />
+                              <DeleteIcon sx={{ fontSize: 16, color: dashboardSemanticColors.danger }} />
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -500,7 +491,7 @@ const DomainPage: React.FC = () => {
               <Button
                 size="small" variant="contained" startIcon={<HttpsIcon />}
                 onClick={handleRequestSsl}
-                sx={{ bgcolor: t.brand, mb: 2, '&:hover': { bgcolor: '#102548' } }}
+                sx={{ bgcolor: t.brand, mb: 2, '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover } }}
               >Request SSL Certificate</Button>
 
               {sslLoading
@@ -512,7 +503,7 @@ const DomainPage: React.FC = () => {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography sx={{ color: t.text, fontWeight: 600, fontFamily: 'monospace' }}>{cert.common_name}</Typography>
                         <Chip size="small" label={cert.status}
-                          sx={{ bgcolor: SSL_COLOUR[cert.status] ?? '#6B7280', color: '#FFF' }} />
+                          sx={{ bgcolor: SSL_COLOUR[cert.status] ?? t.muted, color: dashboardTokens.colors.white }} />
                       </Box>
                       <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>
                         Issuer: {cert.issuer} · Expires: {cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : '—'}
@@ -575,7 +566,7 @@ const DomainPage: React.FC = () => {
                     <Typography sx={{ color: t.muted, fontSize: '0.8rem' }}>Enable DNS Security Extensions</Typography>
                   </Box>
                   {selected.dnssec_enabled
-                    ? <VerifiedUserIcon sx={{ color: '#22C55E' }} />
+                    ? <VerifiedUserIcon sx={{ color: dashboardSemanticColors.success }} />
                     : <Button size="small" variant="outlined" onClick={handleEnableDnssec}
                         sx={{ color: t.text, borderColor: t.border }}>Enable</Button>
                   }

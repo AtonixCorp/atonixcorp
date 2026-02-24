@@ -60,6 +60,7 @@ import LastPageIcon          from '@mui/icons-material/LastPage';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { dashboardTokens } from '../../styles/dashboardDesignSystem';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -69,16 +70,16 @@ const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "H
 
 // ── AtonixCorp unified design tokens ──────────────────────────────────────────
 // Sidebar / shell — Neutral enterprise palette
-const NAVY          = '#FFFFFF';
-const NAVY2         = '#F9FAFB';
+const NAVY          = dashboardTokens.colors.surface;
+const NAVY2         = dashboardTokens.colors.surfaceSubtle;
 // Brand accent
-const BLUE          = '#2563EB';
+const BLUE          = dashboardTokens.colors.brandPrimary;
 const BLUE_DIM      = 'rgba(37,99,235,0.12)';
 const BLUE_HOVER    = 'rgba(37,99,235,0.08)';
 // Typography on blue sidebar
-const TEXT_PRIMARY   = '#111827';
-const TEXT_SECONDARY = '#6B7280';
-const DIVIDER_COLOR  = '#E5E7EB';
+const TEXT_PRIMARY   = dashboardTokens.colors.textPrimary;
+const TEXT_SECONDARY = dashboardTokens.colors.textSecondary;
+const DIVIDER_COLOR  = dashboardTokens.colors.border;
 // Status
 const SUCCESS = '#22C55E';
 const WARNING = '#F59E0B';

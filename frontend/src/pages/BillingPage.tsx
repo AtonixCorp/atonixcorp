@@ -13,51 +13,52 @@ import AddIcon          from '@mui/icons-material/Add';
 import CreditCardIcon   from '@mui/icons-material/CreditCard';
 import DeleteIcon       from '@mui/icons-material/Delete';
 import DownloadIcon     from '@mui/icons-material/Download';
-import { useTheme as useMuiTheme } from '@mui/material/styles';
 import { billingApi }   from '../services/cloudApi';
 import type {
   BillingOverview, Invoice, PaymentMethod,
   CurrentUsage, PlanTier, ServiceCost,
 } from '../types/billing';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+} from '../styles/dashboardDesignSystem';
 
 // ── Theme tokens ──────────────────────────────────────────────────────────────
 
 function useT() {
-  const theme  = useMuiTheme();
-  const isDark = theme.palette.mode === 'dark';
   return {
-    isDark,
-    panelBg: '#FFFFFF',
-    cardBg:  '#FFFFFF',
-    border:  '#E5E7EB',
-    text:    '#111827',
-    sub:     '#6B7280',
-    brand:   '#2563EB',
-    green:   '#22c55e',
-    yellow:  '#f59e0b',
-    red:     '#ef4444',
-    blue:    '#3b82f6',
-    purple:  '#8b5cf6',
+    panelBg: dashboardTokens.colors.background,
+    cardBg: dashboardTokens.colors.surface,
+    border: dashboardTokens.colors.border,
+    text: dashboardTokens.colors.textPrimary,
+    sub: dashboardTokens.colors.textSecondary,
+    brand: dashboardTokens.colors.brandPrimary,
+    green: dashboardSemanticColors.success,
+    yellow: dashboardSemanticColors.warning,
+    red: dashboardSemanticColors.danger,
+    blue: dashboardSemanticColors.info,
+    purple: dashboardSemanticColors.purple,
   };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const INVOICE_STATUS_COLOR: Record<string, string> = {
-  draft: '#8b5cf6', open: '#f59e0b', paid: '#22c55e',
-  void: '#6b7280', uncollectable: '#ef4444',
+  ...dashboardStatusColors.invoice,
 };
 
 const PLAN_COLOR: Record<PlanTier, string> = {
-  free: '#6b7280', starter: '#3b82f6', professional: '#8b5cf6', enterprise: '#f59e0b',
+  free: dashboardStatusColors.plan.free,
+  starter: dashboardStatusColors.plan.starter,
+  professional: dashboardStatusColors.plan.professional,
+  enterprise: dashboardStatusColors.plan.enterprise,
 };
 
 
 
 const SERVICE_COLORS: Record<string, string> = {
-  compute: '#3b82f6', storage: '#22c55e', database: '#8b5cf6',
-  networking: '#f59e0b', containers: '#f97316', email: '#06b6d4',
-  dns: '#ec4899', api: '#14b8a6',
+  ...dashboardStatusColors.service,
 };
 
 function fmt(n: number, currency = 'USD') {
@@ -438,7 +439,7 @@ function UsageTab() {
 
 const CARD_BRAND_COLORS: Record<string, string> = {
   visa: '#1A1F71', mastercard: '#EB001B', amex: '#007BC1',
-  discover: '#F76F20', default: '#6b7280',
+  discover: '#F76F20', default: dashboardTokens.colors.textSecondary,
 };
 
 function AddCardDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
@@ -569,7 +570,7 @@ function PaymentMethodsTab() {
                       bgcolor: CARD_BRAND_COLORS[pm.card_brand] ?? CARD_BRAND_COLORS.default,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <CreditCardIcon sx={{ fontSize: 16, color: '#fff' }} />
+                      <CreditCardIcon sx={{ fontSize: 16, color: dashboardTokens.colors.white }} />
                     </Box>
                     <Box>
                       <Typography sx={{ color: t.text, fontWeight: 700, textTransform: 'capitalize' }}>

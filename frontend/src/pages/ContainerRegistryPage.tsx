@@ -9,7 +9,7 @@ import {
   CircularProgress, Paper, TextField, Select,
   MenuItem, InputLabel, FormControl,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, darken, useTheme } from '@mui/material/styles';
 import AddIcon            from '@mui/icons-material/Add';
 import RefreshIcon        from '@mui/icons-material/Refresh';
 import DeleteOutlineIcon  from '@mui/icons-material/DeleteOutline';
@@ -31,14 +31,57 @@ import {
   ReplicationRule, TokenScope, ReplicationMode, RegistryRegion,
 } from '../types/registry';
 import CreateRepositoryModal from '../components/Cloud/CreateRepositoryModal';
+import {
+  dashboardTokens,
+  dashboardSemanticColors,
+  dashboardStatusColors,
+  computeUiTokens,
+} from '../styles/dashboardDesignSystem';
+
+const REGISTRY_PALETTE = {
+  white: dashboardTokens.colors.white,
+  border: dashboardTokens.colors.border,
+  borderStrong: dashboardTokens.colors.borderStrong,
+  surface: dashboardTokens.colors.surface,
+  surfaceSubtle: dashboardTokens.colors.surfaceSubtle,
+  surfaceHover: dashboardTokens.colors.surfaceHover,
+  textStrong: computeUiTokens.neutralStrong,
+  textBody: computeUiTokens.neutralBody,
+  textMuted: computeUiTokens.neutralMuted,
+  textSecondary: dashboardTokens.colors.textSecondary,
+  accent: computeUiTokens.accentStrong,
+  accentHover: darken(computeUiTokens.accentStrong, 0.2),
+  success: computeUiTokens.successStrong,
+  warning: dashboardSemanticColors.warning,
+  danger: dashboardSemanticColors.danger,
+  info: dashboardSemanticColors.info,
+  purple: dashboardStatusColors.plan.professional,
+  darkPanel: computeUiTokens.darkPanel,
+  darkPage: alpha(computeUiTokens.darkPanel, 0.82),
+  darkHeader: alpha(computeUiTokens.darkPanel, 0.9),
+  darkSidebar: alpha(computeUiTokens.darkPanel, 0.88),
+  panelStrokeDark: alpha(dashboardTokens.colors.white, 0.08),
+  panelMutedDark: alpha(dashboardTokens.colors.white, 0.5),
+  panelMutedAltDark: alpha(dashboardTokens.colors.white, 0.45),
+  panelLowDark: alpha(dashboardTokens.colors.white, 0.04),
+  panelMedDark: alpha(dashboardTokens.colors.white, 0.06),
+  panelFaintDark: alpha(dashboardTokens.colors.white, 0.03),
+  panelGhostDark: alpha(dashboardTokens.colors.white, 0.15),
+  panelGhostDarkAlt: alpha(dashboardTokens.colors.white, 0.25),
+  successSoft: alpha(computeUiTokens.successStrong, 0.1),
+  mutedSoft: alpha(dashboardTokens.colors.textSecondary, 0.1),
+  accentSoft: alpha(computeUiTokens.accentStrong, 0.12),
+  infoSoft: alpha(dashboardSemanticColors.info, 0.08),
+  codeTextSuccess: darken(computeUiTokens.successStrong, 0.08),
+};
 
 // ── Status styles ─────────────────────────────────────────────────────────────
 const SCAN_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  clean:      { bg: 'rgba(16,185,129,.1)',  text: '#10B981', label: 'Clean' },
-  pending:    { bg: 'rgba(107,114,128,.1)', text: '#6B7280', label: 'Pending' },
-  scanning:   { bg: 'rgba(99,102,241,.1)',  text: '#6366F1', label: 'Scanning' },
-  vulnerable: { bg: 'rgba(239,68,68,.1)',   text: '#EF4444', label: 'Vulnerable' },
-  error:      { bg: 'rgba(239,68,68,.1)',   text: '#EF4444', label: 'Error' },
+  clean:      { bg: REGISTRY_PALETTE.successSoft, text: REGISTRY_PALETTE.success, label: 'Clean' },
+  pending:    { bg: REGISTRY_PALETTE.mutedSoft, text: REGISTRY_PALETTE.textSecondary, label: 'Pending' },
+  scanning:   { bg: alpha(REGISTRY_PALETTE.purple, 0.1), text: REGISTRY_PALETTE.purple, label: 'Scanning' },
+  vulnerable: { bg: alpha(REGISTRY_PALETTE.danger, 0.1), text: REGISTRY_PALETTE.danger, label: 'Vulnerable' },
+  error:      { bg: alpha(REGISTRY_PALETTE.danger, 0.1), text: REGISTRY_PALETTE.danger, label: 'Error' },
 };
 
 const REGIONS: { key: RegistryRegion; label: string }[] = [
@@ -61,7 +104,7 @@ function CopyBtn({ value, isDark }: { value: string; isDark: boolean }) {
     <Tooltip title={done ? 'Copied!' : 'Copy'}>
       <IconButton size="small"
         onClick={() => { navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1500); }}
-        sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>
+        sx={{ color: isDark ? alpha(REGISTRY_PALETTE.white, 0.4) : REGISTRY_PALETTE.textMuted }}>
         <ContentCopyIcon sx={{ fontSize: '.82rem' }} />
       </IconButton>
     </Tooltip>
@@ -71,8 +114,8 @@ function CopyBtn({ value, isDark }: { value: string; isDark: boolean }) {
 function SCard({ children, isDark }: { children: React.ReactNode; isDark: boolean }) {
   return (
     <Paper elevation={0} sx={{
-      bgcolor: isDark ? '#132336' : '#ffffff',
-      border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB'}`,
+      bgcolor: isDark ? REGISTRY_PALETTE.darkPanel : REGISTRY_PALETTE.surface,
+      border: `1px solid ${isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border}`,
       borderRadius: '12px', p: 2.5, mb: 2,
     }}>
       {children}
@@ -84,29 +127,29 @@ function SCard({ children, isDark }: { children: React.ReactNode; isDark: boolea
 function RepoCard({ repo, selected, onClick, isDark }: {
   repo: ContainerRepository; selected: boolean; onClick: () => void; isDark: boolean;
 }) {
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
+  const border = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
   const isPrivate = repo.visibility === 'private';
   return (
     <Box onClick={onClick} sx={{
       px: 2, py: 1.75, cursor: 'pointer', transition: 'background .12s',
       bgcolor: selected ? (isDark ? 'rgba(24,54,106,.3)' : 'rgba(24,54,106,.05)') : 'transparent',
-      borderLeft: `3px solid ${selected ? '#18366A' : 'transparent'}`,
+      borderLeft: `3px solid ${selected ? REGISTRY_PALETTE.accent : 'transparent'}`,
       borderBottom: `1px solid ${border}`,
       '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(24,54,106,.03)' },
     }}>
       <Box display="flex" alignItems="center" gap={1.25}>
-        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: isDark ? 'rgba(255,255,255,.08)' : '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <LayersIcon sx={{ fontSize: '1.1rem', color: '#18366A' }} />
+        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.infoSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <LayersIcon sx={{ fontSize: '1.1rem', color: REGISTRY_PALETTE.accent }} />
         </Box>
         <Box flex={1} minWidth={0}>
           <Box display="flex" alignItems="center" gap={.75}>
-            <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'} noWrap>{repo.name}</Typography>
+            <Typography fontWeight={700} fontSize=".88rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} noWrap>{repo.name}</Typography>
             <Chip size="small" icon={isPrivate ? <LockIcon sx={{ fontSize: '.65rem !important' }} /> : <PublicIcon sx={{ fontSize: '.65rem !important' }} />}
               label={repo.visibility} sx={{ height: 16, fontSize: '.6rem', fontWeight: 700,
                 bgcolor: isPrivate ? 'rgba(24,54,106,.12)' : 'rgba(16,185,129,.1)',
-                color: isPrivate ? '#18366A' : '#10B981' }} />
+                color: isPrivate ? REGISTRY_PALETTE.accent : REGISTRY_PALETTE.success }} />
           </Box>
-          <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.45)' : '#9CA3AF' }}>
+          <Typography variant="caption" sx={{ color: isDark ? REGISTRY_PALETTE.panelMutedAltDark : REGISTRY_PALETTE.textMuted }}>
             {repo.image_count} image{repo.image_count !== 1 ? 's' : ''} &nbsp;·&nbsp; {fmtSize(repo.storage_mb)}
           </Typography>
         </Box>
@@ -120,8 +163,8 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
   const [images,   setImages]   = useState<ContainerImage[]>(repo.images ?? []);
   const [scanning, setScanning] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const border  = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border  = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
+  const textSec = isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted;
 
   const scan = async (tag: string) => {
     setScanning(tag);
@@ -149,7 +192,7 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
     <Box>
       {images.length === 0 ? (
         <Box textAlign="center" py={5}>
-          <LayersIcon sx={{ fontSize: '2.5rem', color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB', mb: 1 }} />
+          <LayersIcon sx={{ fontSize: '2.5rem', color: isDark ? REGISTRY_PALETTE.panelGhostDark : REGISTRY_PALETTE.border, mb: 1 }} />
           <Typography variant="body2" sx={{ color: textSec }}>No images pushed yet</Typography>
           <Typography variant="caption" sx={{ color: textSec, display: 'block', mt: .5 }}>
             Use <code>docker push {repo.full_name}:&lt;tag&gt;</code> to push your first image
@@ -159,7 +202,7 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
         <Box sx={{ border: `1px solid ${border}`, borderRadius: '10px', overflow: 'hidden' }}>
           <Table size="small">
             <TableHead>
-              <TableRow sx={{ bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB' }}>
+              <TableRow sx={{ bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle }}>
                 {['Tag', 'Digest', 'Size', 'Arch', 'Scan', 'Pushed', 'Actions'].map(h => (
                   <TableCell key={h} sx={{ fontSize: '.75rem', fontWeight: 700, color: textSec, borderColor: border, py: 1.25 }}>{h}</TableCell>
                 ))}
@@ -173,8 +216,8 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
                   <TableRow key={img.id} sx={{ '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.03)' : 'rgba(0,0,0,.015)' } }}>
                     <TableCell sx={{ borderColor: border, py: 1 }}>
                       <Box display="flex" alignItems="center" gap={.75}>
-                        <Chip size="small" label={img.tag} sx={{ height: 18, fontSize: '.72rem', fontWeight: 700, bgcolor: isDark ? 'rgba(255,255,255,.08)' : '#EFF6FF', color: isDark ? '#ffffff' : '#18366A' }} />
-                        {img.tag === 'latest' && <Chip size="small" label="latest" sx={{ height: 14, fontSize: '.6rem', bgcolor: 'rgba(24,54,106,.12)', color: '#18366A' }} />}
+                        <Chip size="small" label={img.tag} sx={{ height: 18, fontSize: '.72rem', fontWeight: 700, bgcolor: isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.infoSoft, color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.accent }} />
+                        {img.tag === 'latest' && <Chip size="small" label="latest" sx={{ height: 14, fontSize: '.6rem', bgcolor: REGISTRY_PALETTE.accentSoft, color: REGISTRY_PALETTE.accent }} />}
                       </Box>
                     </TableCell>
                     <TableCell sx={{ borderColor: border, py: 1 }}>
@@ -185,14 +228,14 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
                         <CopyBtn value={img.digest} isDark={isDark} />
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ borderColor: border, py: 1, color: isDark ? '#ffffff' : '#0A0F1F', fontSize: '.82rem' }}>{fmtSize(img.size_mb)}</TableCell>
+                    <TableCell sx={{ borderColor: border, py: 1, color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, fontSize: '.82rem' }}>{fmtSize(img.size_mb)}</TableCell>
                     <TableCell sx={{ borderColor: border, py: 1, color: textSec, fontSize: '.78rem' }}>{img.architecture}</TableCell>
                     <TableCell sx={{ borderColor: border, py: 1 }}>
                       <Box display="flex" alignItems="center" gap={.75}>
                         <Chip size="small" label={st.label} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: st.bg, color: st.text }} />
                         {img.scan_status === 'vulnerable' && tv > 0 && (
                           <Tooltip title={`Critical:${img.vulnerability_count.critical} High:${img.vulnerability_count.high} Med:${img.vulnerability_count.medium} Low:${img.vulnerability_count.low}`}>
-                            <BugReportIcon sx={{ fontSize: '.9rem', color: '#EF4444' }} />
+                            <BugReportIcon sx={{ fontSize: '.9rem', color: REGISTRY_PALETTE.danger }} />
                           </Tooltip>
                         )}
                       </Box>
@@ -205,7 +248,7 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
                         <Tooltip title="Scan for vulnerabilities">
                           <span>
                             <IconButton size="small" onClick={() => scan(img.tag)} disabled={scanning === img.tag}
-                              sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280' }}>
+                              sx={{ color: isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textSecondary }}>
                               {scanning === img.tag ? <CircularProgress size={12} /> : <SecurityIcon sx={{ fontSize: '.9rem' }} />}
                             </IconButton>
                           </span>
@@ -214,7 +257,7 @@ function ImagesTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
                         <Tooltip title="Delete tag">
                           <span>
                             <IconButton size="small" onClick={() => del(img.tag)} disabled={deleting === img.tag}
-                              sx={{ color: '#EF4444' }}>
+                              sx={{ color: REGISTRY_PALETTE.danger }}>
                               {deleting === img.tag ? <CircularProgress size={12} /> : <DeleteOutlineIcon sx={{ fontSize: '.9rem' }} />}
                             </IconButton>
                           </span>
@@ -242,8 +285,8 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
   const [days,     setDays]     = useState<number | ''>('');
   const [newToken, setNewToken] = useState('');
   const [shown,    setShown]    = useState<Record<string, boolean>>({});
-  const border  = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border  = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
+  const textSec = isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted;
 
   const refresh = () => {
     setLoading(true);
@@ -269,7 +312,11 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
     setTokens(t => t.filter(x => x.id !== tokenId));
   };
 
-  const SCOPE_COLOR: Record<string, string> = { pull: '#10B981', push: '#6366F1', admin: '#EF4444' };
+  const SCOPE_COLOR: Record<string, string> = {
+    pull: REGISTRY_PALETTE.success,
+    push: REGISTRY_PALETTE.purple,
+    admin: REGISTRY_PALETTE.danger,
+  };
 
   return (
     <Box>
@@ -282,14 +329,14 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
 
       {/* Create form */}
       <SCard isDark={isDark}>
-        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={1.5}>Create Access Token</Typography>
+        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={1.5}>Create Access Token</Typography>
         <Box display="flex" gap={1.5} flexWrap="wrap" alignItems="flex-start">
           <TextField size="small" label="Token name" value={newName} onChange={e => setNewName(e.target.value)}
-            sx={{ flex: '1 1 180px', '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border } }, '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' } }} />
+            sx={{ flex: '1 1 180px', '& .MuiOutlinedInput-root': { bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, '& fieldset': { borderColor: border } }, '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputBase-input': { color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong } }} />
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel sx={{ color: textSec }}>Scope</InputLabel>
             <Select value={scope} label="Scope" onChange={e => setScope(e.target.value as TokenScope)}
-              sx={{ bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
+              sx={{ bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
               <MenuItem value="pull">Pull</MenuItem>
               <MenuItem value="push">Push</MenuItem>
               <MenuItem value="admin">Admin</MenuItem>
@@ -297,11 +344,11 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
           </FormControl>
           <TextField size="small" label="Expires (days)" type="number" value={days} onChange={e => setDays(e.target.value === '' ? '' : Number(e.target.value))}
             inputProps={{ min: 1, max: 365 }} placeholder="Never"
-            sx={{ width: 130, '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border } }, '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' } }} />
+            sx={{ width: 130, '& .MuiOutlinedInput-root': { bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, '& fieldset': { borderColor: border } }, '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputBase-input': { color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong } }} />
           <Button variant="contained" disabled={!newName.trim() || creating}
             startIcon={creating ? <CircularProgress size={12} color="inherit" /> : <AddIcon />}
             onClick={create}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, height: 40 }}>
+            sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, height: 40 }}>
             Create Token
           </Button>
         </Box>
@@ -310,20 +357,20 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
       {/* Token list */}
       <Box display="flex" justifyContent="flex-end" mb={1.5}>
         <Button size="small" startIcon={<RefreshIcon />} onClick={refresh} disabled={loading}
-          sx={{ textTransform: 'none', color: isDark ? '#ffffff' : '#374151' }}>Refresh</Button>
+          sx={{ textTransform: 'none', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textBody }}>Refresh</Button>
       </Box>
       {loading ? [1,2].map(k => <Skeleton key={k} height={72} sx={{ mb: 1, bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.04)', borderRadius: 2 }} />) : (
         <Stack spacing={1.25}>
           {tokens.map(t => (
-            <Box key={t.id} sx={{ p: 1.75, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '10px', border: `1px solid ${border}` }}>
+            <Box key={t.id} sx={{ p: 1.75, bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, borderRadius: '10px', border: `1px solid ${border}` }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <TokenIcon sx={{ fontSize: '1rem', color: SCOPE_COLOR[t.scope] }} />
-                  <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{t.name}</Typography>
+                  <Typography fontWeight={700} fontSize=".88rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong}>{t.name}</Typography>
                   <Chip size="small" label={t.scope} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: `${SCOPE_COLOR[t.scope]}18`, color: SCOPE_COLOR[t.scope] }} />
                 </Box>
                 <Tooltip title="Revoke token">
-                  <IconButton size="small" onClick={() => revoke(t.id)} sx={{ color: '#EF4444' }}>
+                  <IconButton size="small" onClick={() => revoke(t.id)} sx={{ color: REGISTRY_PALETTE.danger }}>
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
@@ -337,7 +384,7 @@ function TokensTab({ repo, isDark }: { repo: ContainerRepository; isDark: boolea
                 </IconButton>
                 <CopyBtn value={t.token_masked} isDark={isDark} />
               </Box>
-              <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF', mt: .5, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: isDark ? alpha(REGISTRY_PALETTE.white, 0.3) : REGISTRY_PALETTE.textMuted, mt: .5, display: 'block' }}>
                 Expires: {t.expires_at ? new Date(t.expires_at).toLocaleDateString() : 'Never'}&nbsp;·&nbsp;
                 Created: {new Date(t.created_at).toLocaleDateString()}
                 {t.last_used_at && <>&nbsp;·&nbsp; Last used: {new Date(t.last_used_at).toLocaleDateString()}</>}
@@ -357,8 +404,8 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
   const [target,  setTarget]  = useState<RegistryRegion>('eu-west-1');
   const [mode,    setMode]    = useState<ReplicationMode>('async');
   const [result,  setResult]  = useState('');
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
+  const textSec = isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted;
 
   const trigger = async () => {
     setLoading(true);
@@ -372,21 +419,25 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
     } finally { setLoading(false); }
   };
 
-  const modeColor: Record<string, string> = { sync: '#10B981', async: '#6366F1', on_demand: '#F59E0B' };
+  const modeColor: Record<string, string> = {
+    sync: REGISTRY_PALETTE.success,
+    async: REGISTRY_PALETTE.purple,
+    on_demand: REGISTRY_PALETTE.warning,
+  };
 
   return (
     <Box>
       <SCard isDark={isDark}>
-        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={.5}>Replicate to Region</Typography>
+        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={.5}>Replicate to Region</Typography>
         <Typography variant="caption" sx={{ color: textSec, display: 'block', mb: 1.5 }}>
-          Source: <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{repo.region_display}</strong>
+          Source: <strong style={{ color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong }}>{repo.region_display}</strong>
         </Typography>
         {result && <Alert severity="success" onClose={() => setResult('')} sx={{ mb: 1.5, fontSize: '.82rem' }}>{result}</Alert>}
         <Box display="flex" gap={1.5} flexWrap="wrap" alignItems="flex-start">
           <FormControl size="small" sx={{ minWidth: 220 }}>
             <InputLabel sx={{ color: textSec }}>Target Region</InputLabel>
             <Select value={target} label="Target Region" onChange={e => setTarget(e.target.value as RegistryRegion)}
-              sx={{ bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
+              sx={{ bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
               {REGIONS.filter(r => r.key !== repo.region).map(r => (
                 <MenuItem key={r.key} value={r.key}>{r.label}</MenuItem>
               ))}
@@ -395,7 +446,7 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel sx={{ color: textSec }}>Mode</InputLabel>
             <Select value={mode} label="Mode" onChange={e => setMode(e.target.value as ReplicationMode)}
-              sx={{ bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
+              sx={{ bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle, color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}>
               <MenuItem value="async">Async</MenuItem>
               <MenuItem value="sync">Sync</MenuItem>
               <MenuItem value="on_demand">On-Demand</MenuItem>
@@ -403,7 +454,7 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
           </FormControl>
           <Button variant="contained" startIcon={loading ? <CircularProgress size={12} color="inherit" /> : <SyncIcon />}
             onClick={trigger} disabled={loading}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, height: 40 }}>
+            sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, height: 40 }}>
             {loading ? 'Replicating…' : 'Replicate'}
           </Button>
         </Box>
@@ -413,7 +464,7 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
         <Box sx={{ border: `1px solid ${border}`, borderRadius: '10px', overflow: 'hidden' }}>
           <Table size="small">
             <TableHead>
-              <TableRow sx={{ bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB' }}>
+              <TableRow sx={{ bgcolor: isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle }}>
                 {['Source', 'Target', 'Mode', 'Status', 'Last Run'].map(h => (
                   <TableCell key={h} sx={{ fontSize: '.75rem', fontWeight: 700, color: textSec, borderColor: border, py: 1.25 }}>{h}</TableCell>
                 ))}
@@ -422,13 +473,13 @@ function ReplicationTab({ repo, isDark }: { repo: ContainerRepository; isDark: b
             <TableBody>
               {rules.map(r => (
                 <TableRow key={r.id}>
-                  <TableCell sx={{ fontSize: '.82rem', color: isDark ? '#ffffff' : '#0A0F1F', borderColor: border }}>{r.source_region_display}</TableCell>
-                  <TableCell sx={{ fontSize: '.82rem', color: isDark ? '#ffffff' : '#0A0F1F', borderColor: border }}>{r.target_region_display}</TableCell>
+                  <TableCell sx={{ fontSize: '.82rem', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, borderColor: border }}>{r.source_region_display}</TableCell>
+                  <TableCell sx={{ fontSize: '.82rem', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, borderColor: border }}>{r.target_region_display}</TableCell>
                   <TableCell sx={{ borderColor: border }}>
                     <Chip size="small" label={r.mode} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: `${modeColor[r.mode]}18`, color: modeColor[r.mode] }} />
                   </TableCell>
                   <TableCell sx={{ borderColor: border }}>
-                    <Chip size="small" label={r.is_active ? 'Active' : 'Inactive'} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: r.is_active ? 'rgba(16,185,129,.1)' : 'rgba(107,114,128,.1)', color: r.is_active ? '#10B981' : '#6B7280' }} />
+                    <Chip size="small" label={r.is_active ? 'Active' : 'Inactive'} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: r.is_active ? REGISTRY_PALETTE.successSoft : REGISTRY_PALETTE.mutedSoft, color: r.is_active ? REGISTRY_PALETTE.success : REGISTRY_PALETTE.textSecondary }} />
                   </TableCell>
                   <TableCell sx={{ fontSize: '.78rem', color: textSec, borderColor: border }}>
                     {r.last_triggered ? new Date(r.last_triggered).toLocaleString() : '—'}
@@ -450,8 +501,8 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
   const [tab,        setTab]        = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting,   setDeleting]   = useState(false);
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const textSec = isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF';
+  const border = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
+  const textSec = isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted;
 
   const doDelete = async () => {
     setDeleting(true);
@@ -462,8 +513,8 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
   };
 
   const codeBlock = (text: string) => (
-    <Box sx={{ p: 1.5, bgcolor: isDark ? '#0A0F1F' : '#F3F4F6', borderRadius: '8px', mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-      <Typography component="pre" sx={{ fontFamily: 'monospace', fontSize: '.8rem', color: isDark ? '#10B981' : '#059669', whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0, lineHeight: 1.6 }}>
+    <Box sx={{ p: 1.5, bgcolor: isDark ? REGISTRY_PALETTE.textStrong : REGISTRY_PALETTE.surfaceHover, borderRadius: '8px', mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+      <Typography component="pre" sx={{ fontFamily: 'monospace', fontSize: '.8rem', color: isDark ? REGISTRY_PALETTE.success : REGISTRY_PALETTE.codeTextSuccess, whiteSpace: 'pre-wrap', wordBreak: 'break-all', m: 0, lineHeight: 1.6 }}>
         {text}
       </Typography>
       <CopyBtn value={text} isDark={isDark} />
@@ -476,11 +527,11 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
       <Box sx={{ p: 2.5, borderBottom: `1px solid ${border}` }}>
         <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap={2} flexWrap="wrap">
           <Box display="flex" alignItems="center" gap={1.5}>
-            <Box sx={{ width: 42, height: 42, borderRadius: '10px', bgcolor: isDark ? 'rgba(255,255,255,.08)' : '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LayersIcon sx={{ fontSize: '1.4rem', color: '#18366A' }} />
+            <Box sx={{ width: 42, height: 42, borderRadius: '10px', bgcolor: isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.infoSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LayersIcon sx={{ fontSize: '1.4rem', color: REGISTRY_PALETTE.accent }} />
             </Box>
             <Box>
-              <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{repo.name}</Typography>
+              <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong}>{repo.name}</Typography>
               <Typography variant="caption" sx={{ color: textSec }}>
                 {repo.full_name}
               </Typography>
@@ -488,12 +539,12 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
           </Box>
           <Box display="flex" gap={.75} flexWrap="wrap">
             <Chip size="small" icon={repo.visibility === 'private' ? <LockIcon sx={{ fontSize: '.65rem !important' }} /> : <PublicIcon sx={{ fontSize: '.65rem !important' }} />}
-              label={repo.visibility} sx={{ fontWeight: 700, fontSize: '.72rem', bgcolor: repo.visibility === 'private' ? 'rgba(24,54,106,.12)' : 'rgba(16,185,129,.1)', color: repo.visibility === 'private' ? '#18366A' : '#10B981' }} />
+              label={repo.visibility} sx={{ fontWeight: 700, fontSize: '.72rem', bgcolor: repo.visibility === 'private' ? REGISTRY_PALETTE.accentSoft : REGISTRY_PALETTE.successSoft, color: repo.visibility === 'private' ? REGISTRY_PALETTE.accent : REGISTRY_PALETTE.success }} />
             <Tooltip title="Refresh">
-              <IconButton size="small" onClick={onRefresh} sx={{ color: isDark ? '#ffffff' : '#374151' }}><RefreshIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={onRefresh} sx={{ color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textBody }}><RefreshIcon fontSize="small" /></IconButton>
             </Tooltip>
             <Tooltip title="Delete repository">
-              <IconButton size="small" onClick={() => setDeleteOpen(true)} sx={{ color: '#EF4444' }}><DeleteOutlineIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={() => setDeleteOpen(true)} sx={{ color: REGISTRY_PALETTE.danger }}><DeleteOutlineIcon fontSize="small" /></IconButton>
             </Tooltip>
           </Box>
         </Box>
@@ -506,7 +557,7 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
             `${repo.push_count} pushes`,
             repo.region_display,
           ].map(s => (
-            <Typography key={s} variant="caption" sx={{ color: textSec, bgcolor: isDark ? 'rgba(255,255,255,.06)' : '#F3F4F6', px: 1, py: .25, borderRadius: '6px' }}>
+            <Typography key={s} variant="caption" sx={{ color: textSec, bgcolor: isDark ? REGISTRY_PALETTE.panelMedDark : REGISTRY_PALETTE.surfaceHover, px: 1, py: .25, borderRadius: '6px' }}>
               {s}
             </Typography>
           ))}
@@ -518,8 +569,8 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{
           px: 1.5, minHeight: 40,
           '& .MuiTab-root': { textTransform: 'none', fontSize: '.82rem', minHeight: 40, color: textSec },
-          '& .Mui-selected': { color: isDark ? '#ffffff' : '#18366A', fontWeight: 700 },
-          '& .MuiTabs-indicator': { bgcolor: '#18366A' },
+          '& .Mui-selected': { color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.accent, fontWeight: 700 },
+          '& .MuiTabs-indicator': { bgcolor: REGISTRY_PALETTE.accent },
         }}>
           <Tab label="Overview" />
           <Tab label={`Images (${repo.image_count})`} />
@@ -533,8 +584,8 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
         {tab === 0 && (
           <>
             <SCard isDark={isDark}>
-              <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={1.5}>
-                <TerminalIcon sx={{ fontSize: '1rem', mr: .75, verticalAlign: 'middle', color: '#18366A' }} />
+              <Typography fontWeight={700} fontSize=".9rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={1.5}>
+                <TerminalIcon sx={{ fontSize: '1rem', mr: .75, verticalAlign: 'middle', color: REGISTRY_PALETTE.accent }} />
                 Quick Start
               </Typography>
               <Typography variant="caption" fontWeight={600} sx={{ color: textSec, textTransform: 'uppercase', letterSpacing: '.07em', display: 'block', mb: .5 }}>1. Authenticate</Typography>
@@ -546,7 +597,7 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
             </SCard>
 
             <SCard isDark={isDark}>
-              <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={1.25}>Repository Details</Typography>
+              <Typography fontWeight={700} fontSize=".9rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={1.25}>Repository Details</Typography>
               {[
                 ['Full address',      repo.full_name],
                 ['Visibility',        repo.visibility],
@@ -559,16 +610,16 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
                 ['Created',           new Date(repo.created_at).toLocaleString()],
                 ['Description',       repo.description || '—'],
               ].map(([k, v]) => (
-                <Box key={k} display="flex" justifyContent="space-between" py={.4} sx={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB'}` }}>
+                <Box key={k} display="flex" justifyContent="space-between" py={.4} sx={{ borderBottom: `1px solid ${isDark ? REGISTRY_PALETTE.panelLowDark : REGISTRY_PALETTE.surfaceSubtle}` }}>
                   <Typography variant="caption" sx={{ color: textSec, minWidth: 130 }}>{k}</Typography>
-                  <Typography variant="caption" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'} textAlign="right" sx={{ wordBreak: 'break-all', maxWidth: 260 }}>{v}</Typography>
+                  <Typography variant="caption" fontWeight={600} color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} textAlign="right" sx={{ wordBreak: 'break-all', maxWidth: 260 }}>{v}</Typography>
                 </Box>
               ))}
             </SCard>
 
             {repo.latest_usage && (
               <SCard isDark={isDark}>
-                <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={1.25}>Usage &amp; Billing</Typography>
+                <Typography fontWeight={700} fontSize=".9rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={1.25}>Usage &amp; Billing</Typography>
                 {[
                   ['Storage',         `${repo.latest_usage.storage_gb.toFixed(3)} GB`],
                   ['Data transfer',   `${repo.latest_usage.transfer_gb.toFixed(3)} GB`],
@@ -578,7 +629,7 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
                 ].map(([k, v]) => (
                   <Box key={k} display="flex" justifyContent="space-between" py={.4}>
                     <Typography variant="caption" sx={{ color: textSec }}>{k}</Typography>
-                    <Typography variant="caption" fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'}>{v}</Typography>
+                    <Typography variant="caption" fontWeight={700} color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong}>{v}</Typography>
                   </Box>
                 ))}
               </SCard>
@@ -592,15 +643,15 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
 
       {/* Delete dialog */}
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} maxWidth="xs" fullWidth
-        PaperProps={{ sx: { bgcolor: isDark ? '#132336' : '#ffffff', borderRadius: '12px', border: `1px solid ${border}` } }}>
-        <DialogTitle sx={{ color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 }}>Delete repository?</DialogTitle>
+        PaperProps={{ sx: { bgcolor: isDark ? REGISTRY_PALETTE.darkPanel : REGISTRY_PALETTE.surface, borderRadius: '12px', border: `1px solid ${border}` } }}>
+        <DialogTitle sx={{ color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong, fontWeight: 700 }}>Delete repository?</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.65)' : '#6B7280' }}>
-            <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{repo.name}</strong> and all {repo.image_count} image{repo.image_count !== 1 ? 's' : ''} will be permanently deleted.
+          <Typography variant="body2" sx={{ color: isDark ? alpha(REGISTRY_PALETTE.white, 0.65) : REGISTRY_PALETTE.textSecondary }}>
+            <strong style={{ color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong }}>{repo.name}</strong> and all {repo.image_count} image{repo.image_count !== 1 ? 's' : ''} will be permanently deleted.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ pb: 2, px: 2.5, gap: 1 }}>
-          <Button onClick={() => setDeleteOpen(false)} sx={{ textTransform: 'none', color: isDark ? 'rgba(255,255,255,.6)' : '#6B7280' }}>Cancel</Button>
+          <Button onClick={() => setDeleteOpen(false)} sx={{ textTransform: 'none', color: isDark ? alpha(REGISTRY_PALETTE.white, 0.6) : REGISTRY_PALETTE.textSecondary }}>Cancel</Button>
           <Button variant="contained" color="error" onClick={doDelete} disabled={deleting}
             startIcon={deleting ? <CircularProgress size={14} color="inherit" /> : undefined}
             sx={{ textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
@@ -616,15 +667,15 @@ function RepositoryDetail({ repo, onDelete, onRefresh, isDark }: {
 function EmptyState({ onCreate, isDark }: { onCreate: () => void; isDark: boolean }) {
   return (
     <Box sx={{ textAlign: 'center', py: 10, px: 3 }}>
-      <Box sx={{ width: 64, height: 64, bgcolor: isDark ? 'rgba(255,255,255,.06)' : '#F3F4F6', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-        <LayersIcon sx={{ fontSize: '2.2rem', color: isDark ? 'rgba(255,255,255,.25)' : '#D1D5DB' }} />
+      <Box sx={{ width: 64, height: 64, bgcolor: isDark ? REGISTRY_PALETTE.panelMedDark : REGISTRY_PALETTE.surfaceHover, borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+        <LayersIcon sx={{ fontSize: '2.2rem', color: isDark ? REGISTRY_PALETTE.panelGhostDarkAlt : REGISTRY_PALETTE.borderStrong }} />
       </Box>
-      <Typography fontWeight={700} fontSize="1.05rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={.75}>No repositories yet</Typography>
-      <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', mb: 3, maxWidth: 360, mx: 'auto' }}>
+      <Typography fontWeight={700} fontSize="1.05rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong} mb={.75}>No repositories yet</Typography>
+      <Typography variant="body2" sx={{ color: isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted, mb: 3, maxWidth: 360, mx: 'auto' }}>
         Push Docker, OCI and Helm images to a private, multi-region container registry. Fully managed and secured.
       </Typography>
       <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}
-        sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+        sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
         Create First Repository
       </Button>
     </Box>
@@ -642,8 +693,8 @@ const ContainerRegistryPage: React.FC = () => {
   const [createOpen, setCreate] = useState(false);
   const [toast,    setToast]    = useState('');
 
-  const border = isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB';
-  const sideBg = isDark ? '#0F1E30' : '#F9FAFB';
+  const border = isDark ? REGISTRY_PALETTE.panelStrokeDark : REGISTRY_PALETTE.border;
+  const sideBg = isDark ? REGISTRY_PALETTE.darkSidebar : REGISTRY_PALETTE.surfaceSubtle;
 
   const load = useCallback(() => {
     setLoading(true);
@@ -671,22 +722,22 @@ const ContainerRegistryPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: isDark ? REGISTRY_PALETTE.darkPage : REGISTRY_PALETTE.surface }}>
       {/* Header */}
-      <Box sx={{ bgcolor: isDark ? '#0F1E30' : '#ffffff', borderBottom: `1px solid ${border}`, px: 4, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ bgcolor: isDark ? REGISTRY_PALETTE.darkHeader : REGISTRY_PALETTE.surface, borderBottom: `1px solid ${border}`, px: 4, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography fontWeight={800} fontSize="1.25rem" color={isDark ? '#ffffff' : '#0A0F1F'}>Container Registry</Typography>
-          <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', mt: .25 }}>
+          <Typography fontWeight={800} fontSize="1.25rem" color={isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong}>Container Registry</Typography>
+          <Typography variant="body2" sx={{ color: isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textSecondary, mt: .25 }}>
             Private OCI-compliant registry · Multi-region · Docker &amp; Helm compatible
           </Typography>
         </Box>
         <Box display="flex" gap={1}>
           <Button startIcon={<RefreshIcon />} onClick={load} disabled={loading} variant="outlined" size="small"
-            sx={{ textTransform: 'none', color: isDark ? '#ffffff' : '#374151', borderColor: border, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.04)' } }}>
+            sx={{ textTransform: 'none', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textBody, borderColor: border, '&:hover': { bgcolor: isDark ? REGISTRY_PALETTE.panelMedDark : 'rgba(0,0,0,.04)' } }}>
             Refresh
           </Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreate(true)}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+            sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
             New Repository
           </Button>
         </Box>
@@ -700,12 +751,12 @@ const ContainerRegistryPage: React.FC = () => {
           <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${border}`, display: 'flex', gap: 3 }}>
             {[
               { label: 'Repos',   value: repos.length },
-              { label: 'Public',  value: repos.filter(r => r.visibility === 'public').length,  color: '#10B981' },
-              { label: 'Private', value: repos.filter(r => r.visibility === 'private').length, color: '#18366A' },
+              { label: 'Public',  value: repos.filter(r => r.visibility === 'public').length,  color: REGISTRY_PALETTE.success },
+              { label: 'Private', value: repos.filter(r => r.visibility === 'private').length, color: REGISTRY_PALETTE.accent },
             ].map(s => (
               <Box key={s.label} textAlign="center">
-                <Typography fontWeight={800} fontSize="1.1rem" color={s.color ?? (isDark ? '#ffffff' : '#0A0F1F')}>{s.value}</Typography>
-                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>{s.label}</Typography>
+                <Typography fontWeight={800} fontSize="1.1rem" color={s.color ?? (isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textStrong)}>{s.value}</Typography>
+                <Typography variant="caption" sx={{ color: isDark ? alpha(REGISTRY_PALETTE.white, 0.4) : REGISTRY_PALETTE.textMuted }}>{s.label}</Typography>
               </Box>
             ))}
           </Box>
@@ -721,7 +772,7 @@ const ContainerRegistryPage: React.FC = () => {
         </Box>
 
         {/* Right: detail */}
-        <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
+        <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', bgcolor: isDark ? REGISTRY_PALETTE.darkPage : REGISTRY_PALETTE.surface }}>
           {selected ? (
             <RepositoryDetail
               repo={selected}
@@ -732,8 +783,8 @@ const ContainerRegistryPage: React.FC = () => {
           ) : (
             <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Box textAlign="center">
-                <LayersIcon sx={{ fontSize: '3rem', color: isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB', mb: 1.5 }} />
-                <Typography fontWeight={600} color={isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF'} fontSize=".9rem">
+                <LayersIcon sx={{ fontSize: '3rem', color: isDark ? alpha(REGISTRY_PALETTE.white, 0.1) : REGISTRY_PALETTE.border, mb: 1.5 }} />
+                <Typography fontWeight={600} color={isDark ? alpha(REGISTRY_PALETTE.white, 0.3) : REGISTRY_PALETTE.textMuted} fontSize=".9rem">
                   {repos.length > 0 ? 'Select a repository to view details' : 'Create your first repository'}
                 </Typography>
               </Box>

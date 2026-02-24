@@ -27,6 +27,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DownloadIcon from '@mui/icons-material/Download';
 import { kubernetesApi } from '../services/cloudApi';
 import type { CreateKubernetesClusterPayload, KubernetesCluster } from '../types/kubernetes';
+import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
 
 const DEFAULT_YAML = `apiVersion: apps/v1
 kind: Deployment
@@ -132,7 +133,7 @@ const KubernetesPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#FFFFFF', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: dashboardTokens.colors.background, minHeight: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="h5" fontWeight={700}>Kubernetes</Typography>
@@ -140,18 +141,18 @@ const KubernetesPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 500, '&:hover': { bgcolor: '#1D4ED8' } }}>Create Cluster</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Create Cluster</Button>
         </Stack>
       </Stack>
 
       <Stack direction="row" spacing={2} mb={2}>
-        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">Clusters</Typography><Typography variant="h4">{overviewStats.total}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">Running</Typography><Typography variant="h4">{overviewStats.running}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">Provisioning</Typography><Typography variant="h4">{overviewStats.provisioning}</Typography></CardContent></Card>
+        <Card sx={{ ...dashboardCardSx, flex: 1 }}><CardContent><Typography color="text.secondary">Clusters</Typography><Typography variant="h4">{overviewStats.total}</Typography></CardContent></Card>
+        <Card sx={{ ...dashboardCardSx, flex: 1 }}><CardContent><Typography color="text.secondary">Running</Typography><Typography variant="h4">{overviewStats.running}</Typography></CardContent></Card>
+        <Card sx={{ ...dashboardCardSx, flex: 1 }}><CardContent><Typography color="text.secondary">Provisioning</Typography><Typography variant="h4">{overviewStats.provisioning}</Typography></CardContent></Card>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px 1fr' }, gap: 2 }}>
-        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
+        <Card sx={dashboardCardSx}>
           <CardContent>
             <Typography fontWeight={600} mb={1}>Clusters</Typography>
             <List sx={{ p: 0 }}>
@@ -173,7 +174,7 @@ const KubernetesPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
+        <Card sx={dashboardCardSx}>
           <CardContent>
             {!selected ? (
               <Typography color="text.secondary">Select a cluster to view details.</Typography>
@@ -220,7 +221,7 @@ const KubernetesPage: React.FC = () => {
                       onChange={(event) => setYaml(event.target.value)}
                     />
                     <Stack direction="row" justifyContent="flex-end" mt={1}>
-                      <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={deployYaml} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Deploy Manifest</Button>
+                      <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={deployYaml} sx={dashboardPrimaryButtonSx}>Deploy Manifest</Button>
                     </Stack>
                   </Box>
                 )}
@@ -262,7 +263,7 @@ const KubernetesPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreate(false)}>Cancel</Button>
-          <Button variant="contained" startIcon={<SaveIcon />} onClick={createCluster} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
+          <Button variant="contained" startIcon={<SaveIcon />} onClick={createCluster} sx={dashboardPrimaryButtonSx}>Create</Button>
         </DialogActions>
       </Dialog>
 

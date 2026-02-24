@@ -29,6 +29,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useAuth } from '../../contexts/AuthContext';
 import LoginDialog from '../Auth/LoginDialog';
 import SignupDialog from '../Auth/SignupDialog';
+import { dashboardTokens, computeUiTokens } from '../../styles/dashboardDesignSystem';
 
 const CloudPlatformHeader: React.FC = () => {
   const theme = useTheme();
@@ -40,8 +41,10 @@ const CloudPlatformHeader: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const primaryBlue = '#0b1220';
-  const accentCyan = '#14b8a6';
+  const primaryBlue = computeUiTokens.neutralStrong;
+  const accentBlue = dashboardTokens.colors.brandPrimary;
+  const accentBlueHover = dashboardTokens.colors.brandPrimaryHover;
+  const headerText = dashboardTokens.colors.white;
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -63,8 +66,8 @@ const CloudPlatformHeader: React.FC = () => {
       position="static"
       elevation={0}
       sx={{
-        background: `linear-gradient(135deg, ${primaryBlue} 0%, #07121a 100%)`,
-        borderBottom: `1px solid ${accentCyan}33`,
+        background: primaryBlue,
+        borderBottom: `1px solid rgba(255,255,255,.16)`,
       }}
     >
       <Container maxWidth="lg">
@@ -86,18 +89,16 @@ const CloudPlatformHeader: React.FC = () => {
               alignItems: 'center',
               gap: 1,
               cursor: 'pointer',
-              transition: 'transform 0.3s ease',
-              '&:hover': {
-                transform: 'scale(1.05)',
-              },
+              transition: 'opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': { opacity: 0.92 },
             }}
           >
             <Box
               sx={{
                 width: 40,
                 height: 40,
-                background: `linear-gradient(135deg, ${accentCyan} 0%, #0ea5a4 100%)`,
-                borderRadius: '8px',
+                background: accentBlue,
+                borderRadius: '2px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -112,7 +113,7 @@ const CloudPlatformHeader: React.FC = () => {
               sx={{
                 fontWeight: 800,
                 fontSize: '1.3rem',
-                color: 'white',
+                color: headerText,
                 display: { xs: 'none', sm: 'block' },
               }}
             >
@@ -128,15 +129,15 @@ const CloudPlatformHeader: React.FC = () => {
                   key={item.path}
                   onClick={() => handleNavigate(item.path)}
                   sx={{
-                      color: '#e6eef7',
+                      color: headerText,
                       fontWeight: 600,
                       px: 2,
                       py: 1,
-                      borderRadius: 1,
-                      transition: 'all 0.3s ease',
+                      borderRadius: '2px',
+                      transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        bgcolor: `${accentCyan}22`,
-                        color: accentCyan,
+                        bgcolor: 'rgba(37,99,235,.16)',
+                        color: headerText,
                       },
                     }}
                 >
@@ -145,7 +146,7 @@ const CloudPlatformHeader: React.FC = () => {
               ))}
 
               {/* Divider */}
-              <Box sx={{ width: '1px', height: 24, bgcolor: `${accentCyan}44`, mx: 1 }} />
+              <Box sx={{ width: '1px', height: 24, bgcolor: 'rgba(255,255,255,.22)', mx: 1 }} />
 
               {/* Utilities */}
               {utilitiesItems.map((item) => (
@@ -154,14 +155,14 @@ const CloudPlatformHeader: React.FC = () => {
                   onClick={() => handleNavigate(item.path)}
                   size="small"
                   sx={{
-                      color: '#e6eef7',
+                      color: headerText,
                       fontWeight: 500,
                       px: 1.5,
                       py: 0.5,
                       fontSize: '0.85rem',
-                      transition: 'all 0.3s ease',
+                      transition: 'color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        color: accentCyan,
+                        color: dashboardTokens.colors.infoAlt,
                       },
                     }}
                 >
@@ -176,7 +177,7 @@ const CloudPlatformHeader: React.FC = () => {
                     onClick={(e) => setUserMenuAnchor(e.currentTarget)}
                     sx={{ ml: 1 }}
                   >
-                    <Avatar sx={{ width: 34, height: 34, bgcolor: accentCyan, color: primaryBlue, fontWeight: 700, fontSize: '0.9rem' }}>
+                    <Avatar sx={{ width: 34, height: 34, bgcolor: accentBlue, color: headerText, fontWeight: 700, fontSize: '0.9rem' }}>
                       {user.first_name?.[0] || user.username?.[0] || 'U'}
                     </Avatar>
                   </IconButton>
@@ -206,7 +207,7 @@ const CloudPlatformHeader: React.FC = () => {
                 <>
                   <Button
                     size="small"
-                    sx={{ color: '#e6eef7', fontWeight: 500, fontSize: '0.85rem', ml: 1 }}
+                    sx={{ color: headerText, fontWeight: 500, fontSize: '0.85rem', ml: 1 }}
                     onClick={() => setLoginOpen(true)}
                   >
                     Sign In
@@ -215,13 +216,13 @@ const CloudPlatformHeader: React.FC = () => {
                     variant="contained"
                     size="small"
                     sx={{
-                      bgcolor: accentCyan,
-                      color: primaryBlue,
+                      bgcolor: accentBlue,
+                      color: headerText,
                       fontWeight: 700,
                       textTransform: 'none',
                       fontSize: '0.9rem',
                       ml: 1,
-                      '&:hover': { bgcolor: '#0ea5a4' },
+                      '&:hover': { bgcolor: accentBlueHover },
                     }}
                     onClick={() => setSignupOpen(true)}
                   >
@@ -236,7 +237,7 @@ const CloudPlatformHeader: React.FC = () => {
           {isMobile && (
             <IconButton
               onClick={() => setMobileOpen(!mobileOpen)}
-              sx={{ color: '#e6eef7' }}
+              sx={{ color: headerText }}
             >
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}
             </IconButton>
@@ -251,7 +252,7 @@ const CloudPlatformHeader: React.FC = () => {
           sx={{
             '& .MuiDrawer-paper': {
               bgcolor: primaryBlue,
-              borderBottom: `1px solid ${accentCyan}33`,
+              borderBottom: '1px solid rgba(255,255,255,.16)',
               maxHeight: '85vh',
               overflowY: 'auto',
             },
@@ -262,18 +263,18 @@ const CloudPlatformHeader: React.FC = () => {
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
-                  sx={{ color: '#e6eef7', fontWeight: 600, '&:hover': { bgcolor: `${accentCyan}22` } }}
+                  sx={{ color: headerText, fontWeight: 600, '&:hover': { bgcolor: 'rgba(37,99,235,.16)' } }}
                 >
                   <ListItemText primary={item.label} />
                 </ListItemButton>
               </ListItem>
             ))}
-            <Box sx={{ borderTop: `1px solid ${accentCyan}33`, my: 1 }} />
+            <Box sx={{ borderTop: '1px solid rgba(255,255,255,.16)', my: 1 }} />
             {utilitiesItems.map((item) => (
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
-                  sx={{ color: '#e6eef7', fontSize: '0.9rem', '&:hover': { bgcolor: `${accentCyan}22` } }}
+                  sx={{ color: headerText, fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(37,99,235,.16)' } }}
                 >
                   <ListItemText primary={item.label} />
                 </ListItemButton>
@@ -281,15 +282,15 @@ const CloudPlatformHeader: React.FC = () => {
             ))}
             <Box sx={{ p: 1, display: 'flex', gap: 1 }}>
               {user ? (
-                <Button fullWidth variant="outlined" sx={{ borderColor: accentCyan, color: accentCyan }} onClick={() => { logout(); setMobileOpen(false); }}>
+                <Button fullWidth variant="outlined" sx={{ borderColor: accentBlue, color: accentBlue }} onClick={() => { logout(); setMobileOpen(false); }}>
                   Sign Out
                 </Button>
               ) : (
                 <>
-                  <Button fullWidth variant="outlined" sx={{ borderColor: accentCyan, color: accentCyan }} onClick={() => { setMobileOpen(false); setLoginOpen(true); }}>
+                  <Button fullWidth variant="outlined" sx={{ borderColor: accentBlue, color: accentBlue }} onClick={() => { setMobileOpen(false); setLoginOpen(true); }}>
                     Sign In
                   </Button>
-                  <Button fullWidth variant="contained" sx={{ bgcolor: accentCyan, color: primaryBlue, fontWeight: 700 }} onClick={() => { setMobileOpen(false); setSignupOpen(true); }}>
+                  <Button fullWidth variant="contained" sx={{ bgcolor: accentBlue, color: headerText, fontWeight: 700, '&:hover': { bgcolor: accentBlueHover } }} onClick={() => { setMobileOpen(false); setSignupOpen(true); }}>
                     Get Started
                   </Button>
                 </>

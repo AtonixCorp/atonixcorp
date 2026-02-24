@@ -17,6 +17,7 @@ import {
   Instagram,
   Facebook,
 } from '@mui/icons-material';
+import { dashboardTokens, computeUiTokens } from '../../styles/dashboardDesignSystem';
 
 // Custom Discord Icon
 const DiscordIcon = (props: any) => (
@@ -41,9 +42,8 @@ const GitLabIcon = (props: any) => (
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-  const primaryNavy = '#0b1220';
-  const secondaryNavy = '#07121a';
-  const accentCyan = '#14b8a6';
+  const primaryNavy = computeUiTokens.neutralStrong;
+  const accentBlue = dashboardTokens.colors.brandPrimary;
 
   const socialLinks = [
     { name: 'Twitter', icon: <Twitter />, url: 'https://twitter.com/AtonixCorp' },
@@ -70,11 +70,11 @@ const Footer: React.FC = () => {
     <Box
       component="footer"
       sx={{
-        background: `linear-gradient(135deg, ${primaryNavy} 0%, ${secondaryNavy} 100%)`,
+        background: primaryNavy,
         color: 'white',
         py: 3,
         mt: 'auto',
-        borderTop: `1px solid ${accentCyan}33`,
+        borderTop: '1px solid rgba(255,255,255,.16)',
       }}
     >
       <Container maxWidth="lg">
@@ -101,7 +101,7 @@ const Footer: React.FC = () => {
                 sx={{
                   fontSize: '0.875rem',
                   opacity: 0.8,
-                  '&:hover': { opacity: 1, color: accentCyan },
+                  '&:hover': { opacity: 1, color: accentBlue },
                 }}
               >
                 support@atonixcorp.com
@@ -131,8 +131,8 @@ const Footer: React.FC = () => {
                   sx={{
                     fontSize: '0.875rem',
                     opacity: 0.8,
-                    '&:hover': { opacity: 1, color: accentCyan },
-                    transition: 'opacity 0.2s ease-in-out',
+                    '&:hover': { opacity: 1, color: accentBlue },
+                    transition: 'opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   {link.name}
@@ -168,10 +168,10 @@ const Footer: React.FC = () => {
                     opacity: 0.7,
                     '&:hover': {
                       opacity: 1,
-                      color: accentCyan,
-                      backgroundColor: `${accentCyan}22`,
+                      color: accentBlue,
+                      backgroundColor: 'rgba(37,99,235,.18)',
                     },
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                   size="small"
                   title={`Follow us on ${social.name}`}
@@ -188,7 +188,7 @@ const Footer: React.FC = () => {
           sx={{
             mt: 4,
             pt: 2,
-            borderTop: `1px solid ${accentCyan}33`,
+            borderTop: '1px solid rgba(255,255,255,.16)',
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
@@ -205,7 +205,7 @@ const Footer: React.FC = () => {
               to="/privacy"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentCyan, opacity: 1 } }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentBlue, opacity: 1 } }}
             >
               Privacy
             </Link>
@@ -214,7 +214,7 @@ const Footer: React.FC = () => {
               to="/terms"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentCyan, opacity: 1 } }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentBlue, opacity: 1 } }}
             >
               Terms
             </Link>
