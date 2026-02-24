@@ -392,3 +392,111 @@ p  { color: var(--text-muted); }
   .form-row { grid-template-columns: 1fr; }
   .about-hero-stats { grid-template-columns: 1fr 1fr; }
 }
+
+/* =============================================================================
+   SITE HEADER — matches React CloudPlatformHeader exactly
+   IMPERIAL_MIDNIGHT #0A0F1F | QUANTUM_CYAN #00E0FF | CLOUD_SILVER #E5E7EB
+   ============================================================================= */
+
+/* ── Utility bar (top 38 px dark strip) ── */
+.site-header { position: sticky; top: 0; z-index: 200; font-family: var(--font); }
+
+.su-bar { background: #0A0F1F; height: 38px; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; }
+.su-inner { width: 100%; padding: 0 1.5rem; display: flex; align-items: center; height: 100%; }
+.su-left  { display: flex; align-items: center; flex: 1; min-width: 0; gap: 0; }
+.su-right { display: flex; align-items: center; flex-shrink: 0; gap: 0; }
+
+.su-brand { color: #E5E7EB; font-size: 14px; font-weight: 600; text-decoration: none; letter-spacing: .04em; white-space: nowrap; transition: color .15s; }
+.su-brand:hover { color: #00E0FF; }
+
+.su-sep { display: inline-block; width: 1px; height: 16px; background: rgba(229,231,235,.32); margin: 0 10px; flex-shrink: 0; }
+
+.su-pick { display: inline-flex; align-items: center; gap: 4px; color: #E5E7EB; font-size: 14px; font-weight: 500; padding: 0 8px; cursor: default; transition: color .15s; white-space: nowrap; }
+.su-pick:hover { color: #00E0FF; }
+.su-pick svg { flex-shrink: 0; }
+
+.su-link { color: #E5E7EB; font-size: 14px; font-weight: 500; text-decoration: none; padding: 0 10px; white-space: nowrap; height: 38px; display: inline-flex; align-items: center; transition: color .15s; }
+.su-link:hover { color: #00E0FF; }
+
+.su-cta { display: inline-flex; align-items: center; background: #00E0FF; color: #0A0F1F; font-size: 14px; font-weight: 600; text-decoration: none; padding: 0 12px; height: 28px; border-radius: 0; white-space: nowrap; margin-left: 10px; transition: background .15s; }
+.su-cta:hover { background: #00c8e6; color: #0A0F1F; }
+
+/* ── Main nav bar (white 64 px bar) ── */
+.sm-bar { background: #fff; border-bottom: 1px solid #E5E7EB; position: relative; }
+.sm-toggle-input { display: none; }
+
+.sm-inner { padding: 0 1.5rem; height: 64px; display: flex; align-items: center; }
+.sm-nav   { display: flex; align-items: center; flex: 1; gap: 0; }
+
+.sm-item  { color: #0A0F1F; font-size: 15px; font-weight: 600; text-decoration: none; padding: 0 16px; height: 64px; display: inline-flex; align-items: center; border-bottom: 2px solid transparent; border-top: 2px solid transparent; white-space: nowrap; transition: color .15s, border-color .15s; }
+.sm-item:hover, .sm-item.active { color: #00E0FF; border-bottom-color: #00E0FF; }
+
+.sm-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.sm-search  { background: none; border: none; cursor: pointer; color: #0A0F1F; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; transition: color .15s; }
+.sm-search:hover { color: #00E0FF; }
+
+/* Burger icon */
+.sm-burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; }
+.sm-burger span { display: block; width: 22px; height: 2px; background: #0A0F1F; border-radius: 2px; transition: .2s; }
+
+/* Mobile dropdown menu */
+.sm-mobile { display: none; flex-direction: column; background: #fff; border-top: 1px solid #E5E7EB; padding: 0.75rem 1.5rem 1.5rem; }
+.sm-mobile .sm-item { height: auto; padding: 0.55rem 0; border-bottom: 1px solid #E5E7EB; border-top: none; font-size: 15px; width: 100%; }
+.sm-mobile .su-link { height: auto; padding: 0.45rem 0; display: block; border-bottom: 1px solid #E5E7EB; color: #0A0F1F; }
+.sm-mobile .su-link:hover { color: #00E0FF; }
+.sm-mobile .su-cta { margin: 1rem 0 0; width: 100%; justify-content: center; height: 40px; }
+.sm-mobile-sep { border: none; border-top: 1px solid #E5E7EB; margin: 0.75rem 0; }
+
+/* CSS-only toggle: checkbox → sibling .sm-mobile */
+.sm-toggle-input:checked ~ .sm-bar .sm-mobile { display: flex; }
+/* Alternate: nest input inside nav */
+.sm-bar .sm-toggle-input:checked ~ .sm-mobile { display: flex; }
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1024px) {
+  .sm-nav    { display: none; }
+  .sm-burger { display: flex; }
+  .su-right  { display: none; }
+  .su-cta-mob { display: inline-flex !important; margin-left: 0; }
+}
+@media (max-width: 600px) {
+  .su-pick { display: none; }
+  .su-sep  { display: none; }
+}
+
+/* =============================================================================
+   SITE FOOTER — matches React Footer exactly
+   5-column grid + dark navy + social icons + bottom bar
+   ============================================================================= */
+
+.site-footer { background: #0A0F1F; border-top: 1px solid rgba(229,231,235,.12); color: #fff; padding-bottom: 0; }
+
+.sf-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2.5rem;
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid rgba(229,231,235,.12);
+}
+
+.sf-col h5 { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #fff; margin-bottom: 1rem; }
+.sf-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .65rem; }
+.sf-col ul a { color: rgba(255,255,255,.82); font-size: .88rem; text-decoration: none; line-height: 1.45; transition: color .12s; }
+.sf-col ul a:hover { color: #00E0FF; }
+
+.sf-bottom { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0 2rem; flex-wrap: wrap; gap: 1rem; }
+.sf-copy { color: rgba(255,255,255,.74); font-size: .86rem; }
+.sf-right { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
+.sf-social { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; color: rgba(255,255,255,.75); text-decoration: none; border-radius: 50%; transition: color .15s, background .15s; }
+.sf-social:hover { color: #00E0FF; background: rgba(0,224,255,.14); }
+.sf-social svg { width: 18px; height: 18px; }
+.sf-tagline { color: rgba(255,255,255,.65); font-size: .8rem; margin-left: 6px; white-space: nowrap; }
+
+@media (max-width: 1100px) { .sf-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px)  {
+  .sf-grid   { grid-template-columns: repeat(2, 1fr); }
+  .sf-bottom { flex-direction: column; align-items: flex-start; }
+  .sf-tagline { display: none; }
+}
+@media (max-width: 420px)  { .sf-grid { grid-template-columns: 1fr; } }
