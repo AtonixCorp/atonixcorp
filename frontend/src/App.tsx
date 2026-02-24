@@ -19,6 +19,9 @@ import DashboardLayout from './components/Layout/DashboardLayout';
 import Homepage from './pages/Homepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
+import DeveloperPage from './pages/DeveloperPage';
+import ResourcesPage from './pages/ResourcesPage';
+import BareMetalVpsPage from './pages/BareMetalVpsPage';
 import AboutPage from './pages/AboutPage';
 import ContactSalesPage from './pages/ContactSalesPage';
 import SupportPage from './pages/SupportPage';
@@ -159,11 +162,12 @@ const AppShell: React.FC = () => {
         <Routes>
           <Route path="/"          element={<Homepage />} />
           <Route path="/features"  element={<FeaturesPage />} />
-          <Route path="/developer" element={<DocsPage />} />
+          <Route path="/bare-metal-vps/:slug" element={<BareMetalVpsPage />} />
+          <Route path="/developer" element={<DeveloperPage />} />
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<Navigate to="/dashboard/domains" replace />} />
-          <Route path="/resources" element={<DocsPage />} />
+          <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/support"   element={<SupportPage />} />
           <Route path="/contact"   element={<ContactSalesPage />} />
           <Route path="/account"   element={<AboutPage />} />
