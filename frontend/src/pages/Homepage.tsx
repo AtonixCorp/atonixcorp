@@ -10,7 +10,7 @@ import {
 import LoginDialog from '../components/Auth/LoginDialog';
 import SignupDialog from '../components/Auth/SignupDialog';
 
-const EnhancedHomepage: React.FC = () => {
+const Homepage: React.FC = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
 
@@ -551,4 +551,4 @@ const EnhancedHomepage: React.FC = () => {
   );
 };
 
-export default EnhancedHomepage;
+export default Homepage;

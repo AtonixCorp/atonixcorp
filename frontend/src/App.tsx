@@ -16,7 +16,7 @@ import Footer from './components/Layout/Footer';
 import DashboardLayout from './components/Layout/DashboardLayout';
 
 // Pages
-import EnhancedHomepage from './pages/EnhancedHomepage';
+import Homepage from './pages/Homepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
 import AboutPage from './pages/AboutPage';
@@ -164,7 +164,7 @@ const AppShell: React.FC = () => {
       <CloudPlatformHeader />
       <Box component="main" sx={{ flex: 1 }}>
         <Routes>
-          <Route path="/"          element={<EnhancedHomepage />} />
+          <Route path="/"          element={<Homepage />} />
           <Route path="/features"  element={<FeaturesPage />} />
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/about"     element={<AboutPage />} />
@@ -173,7 +173,7 @@ const AppShell: React.FC = () => {
           <Route path="/support"   element={<DocsPage />} />
           <Route path="/contact"   element={<AboutPage />} />
           <Route path="/account"   element={<AboutPage />} />
-          <Route path="*"          element={<EnhancedHomepage />} />
+          <Route path="*"          element={<Homepage />} />
         </Routes>
       </Box>
       <Footer />

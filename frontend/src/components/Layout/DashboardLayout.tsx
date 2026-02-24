@@ -67,18 +67,18 @@ const SIDEBAR_COLLAPSED_WIDTH = 76;
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // ── AtonixCorp unified design tokens ──────────────────────────────────────────
-// Sidebar — Electric Blue family
-const NAVY          = '#18366A';   // deep royal blue sidebar background
-const NAVY2         = '#1C3E78';   // slightly lighter section areas
-const NAVY3         = '#204585';   // org‑selector / hover depth
+// Sidebar — Homepage brand family
+const NAVY          = '#0b1220';
+const NAVY2         = '#07121a';
+const NAVY3         = '#132336';
 // Brand accent
-const BLUE          = '#18366A';
-const BLUE_DIM      = 'rgba(255,255,255,0.12)';  // active highlight on blue bg
-const BLUE_HOVER    = 'rgba(255,255,255,0.07)';  // hover shimmer on blue bg
+const BLUE          = '#14b8a6';
+const BLUE_DIM      = 'rgba(20,184,166,0.20)';
+const BLUE_HOVER    = 'rgba(20,184,166,0.12)';
 // Typography on blue sidebar
 const TEXT_PRIMARY   = '#F0F4FF';
-const TEXT_SECONDARY = '#93A8CC';
-const DIVIDER_COLOR  = 'rgba(255,255,255,0.12)';
+const TEXT_SECONDARY = '#9FB3C8';
+const DIVIDER_COLOR  = 'rgba(20,184,166,0.22)';
 // Status
 const SUCCESS = '#22C55E';
 const WARNING = '#F59E0B';
@@ -361,8 +361,8 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
       : SUPPORT_NAV;
 
   // Sidebar surface colours switch with the theme
-  const SB_BG     = isDark ? '#0D1826' : NAVY;    // main sidebar bg
-  const SB_ORG    = isDark ? '#132336' : NAVY3;    // org selector bg
+  const SB_BG     = isDark ? NAVY2 : NAVY;
+  const SB_ORG    = isDark ? NAVY3 : NAVY3;
   const SB_DIV    = isDark ? 'rgba(255,255,255,0.08)' : DIVIDER_COLOR;
 
   return (
@@ -393,13 +393,13 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         <Box
           sx={{
             width: 32, height: 32, borderRadius: '8px',
-            background: 'linear-gradient(135deg, #18366A 0%, #2B5FA0 100%)',
+            background: 'linear-gradient(135deg, #14b8a6 0%, #0ea5a4 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, color: '#fff', fontSize: '.85rem',
             letterSpacing: '-.02em', flexShrink: 0,
           }}
         >
-          Ax
+          A
         </Box>
         {!collapsed && (
           <Box>
@@ -549,7 +549,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: isDark ? NAVY2 : '#ffffff' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
       <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
@@ -560,7 +560,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', lg: 'none' },
-            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: isDark ? '#0D1826' : NAVY },
+            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: isDark ? NAVY2 : NAVY },
           }}
         >
           <SidebarContent dashboardMode={dashboardMode} />
@@ -572,7 +572,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             '& .MuiDrawer-paper': {
               width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH, border: 'none',
               borderRight: `1px solid ${isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.08)'}`,
-              bgcolor: isDark ? '#0D1826' : NAVY,
+              bgcolor: isDark ? NAVY2 : NAVY,
               transition: 'width .2s ease',
             },
           }}
@@ -599,9 +599,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           position="sticky"
           elevation={0}
           sx={{
-            bgcolor: isDark ? '#0F1E30' : '#fff',
-            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
-            color: isDark ? '#ffffff' : '#111827',
+            background: 'linear-gradient(135deg, #0b1220 0%, #07121a 100%)',
+            borderBottom: `1px solid ${BLUE}33`,
+            color: '#ffffff',
             zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
@@ -609,7 +609,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
 
             <IconButton
                 onClick={() => setMobileOpen(true)}
-                sx={{ display: { lg: 'none' }, color: isDark ? '#ffffff' : '#6B7280' }}
+                sx={{ display: { lg: 'none' }, color: '#e6eef7' }}
               >
               <MenuIcon />
             </IconButton>
@@ -617,7 +617,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             <Tooltip title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
               <IconButton
                 onClick={() => setSidebarCollapsed(prev => !prev)}
-                sx={{ display: { xs: 'none', lg: 'inline-flex' }, color: isDark ? '#ffffff' : '#6B7280' }}
+                sx={{ display: { xs: 'none', lg: 'inline-flex' }, color: '#e6eef7' }}
               >
                 {sidebarCollapsed ? <LastPageIcon /> : <FirstPageIcon />}
               </IconButton>
@@ -628,26 +628,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               sx={{
                 display: 'flex', alignItems: 'center',
                 flex: 1, maxWidth: 420,
-                bgcolor: isDark ? 'rgba(255,255,255,.07)' : '#F3F4F6',
+                bgcolor: 'rgba(255,255,255,.08)',
                 borderRadius: '6px',
                 px: 1.5, py: 0.5, gap: 1,
-                border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'transparent'}`,
+                border: '1px solid rgba(255,255,255,.14)',
                 transition: 'border .15s',
-                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#fff' },
+                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: 'rgba(255,255,255,.12)' },
               }}
             >
               <SearchIcon sx={{ color: '#9CA3AF', fontSize: '1rem', flexShrink: 0 }} />
               <InputBase
                 placeholder="Search resources…"
                 sx={{
-                  flex: 1, fontSize: '.875rem', color: isDark ? '#ffffff' : '#111827',
-                  '& input::placeholder': { color: isDark ? '#ffffff' : '#9CA3AF' },
+                  flex: 1, fontSize: '.875rem', color: '#ffffff',
+                  '& input::placeholder': { color: '#c5d4e6' },
                 }}
               />
               <Typography
                 sx={{
-                  fontSize: '.7rem', color: isDark ? '#ffffff' : '#9CA3AF',
-                  bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB', px: 0.75, py: 0.25,
+                  fontSize: '.7rem', color: '#d7e4f2',
+                  bgcolor: 'rgba(255,255,255,.12)', px: 0.75, py: 0.25,
                   borderRadius: '4px', flexShrink: 0,
                   display: { xs: 'none', md: 'block' },
                 }}
@@ -663,12 +663,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               <IconButton
                 onClick={toggleTheme}
                 sx={{
-                  color: isDark ? '#ffffff' : '#6B7280',
-                  bgcolor: isDark ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  color: '#e6eef7',
+                  bgcolor: 'rgba(255,255,255,0.08)',
                   borderRadius: '8px',
                   '&:hover': {
-                    bgcolor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(24,54,106,0.08)',
-                    color: isDark ? '#fff' : '#18366A',
+                    bgcolor: 'rgba(20,184,166,0.18)',
+                    color: '#14b8a6',
                   },
                   transition: 'all .15s',
                 }}
@@ -683,7 +683,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             <Tooltip title="Notifications">
               <IconButton
                 onClick={(e) => setNotifAnchor(e.currentTarget)}
-                sx={{ color: isDark ? '#ffffff' : '#6B7280', '&:hover': { color: isDark ? '#ffffff' : '#111827' } }}
+                sx={{ color: '#e6eef7', '&:hover': { color: '#14b8a6' } }}
               >
                 <Badge
                   badgeContent={3}
@@ -709,7 +709,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               </Box>
               {[
                 { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#18366A' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#14b8a6' },
                 { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
               ].map((n, i) => (
                 <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>
@@ -781,7 +781,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(20,184,166,.10)' } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>
@@ -800,7 +800,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(20,184,166,.10)' } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>
@@ -818,7 +818,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(20,184,166,.10)' } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>
@@ -829,7 +829,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               {/* Billing + Sign out */}
               <MenuItem onClick={() => { setProfileAnchor(null); navigate(`${routeBase}/billing`); }}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '6px',
-                  '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(24,54,106,.05)' } }}>
+                  '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(20,184,166,.10)' } }}>
                 <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
                 <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>Billing</Typography>
               </MenuItem>
@@ -845,7 +845,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
         </AppBar>
 
         {/* ── Page content ──────────────────────────────────────────────────── */}
-        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: isDark ? '#0D1826' : '#ffffff' }}>
+        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: isDark ? NAVY2 : '#ffffff' }}>
           {children}
         </Box>
       </Box>

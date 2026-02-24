@@ -212,9 +212,9 @@ func main() {
             <div class="reference-layout">
                 <aside class="reference-sidebar">
                     <h3>Sections</h3>
-                    <ul>
+                    <ul class="reference-sections" data-reference-sections>
                         {% for group in api_reference_groups %}
-                        <li><a href="#ref-{{ group.slug }}">{{ group.name }}</a></li>
+                        <li><a href="#ref-{{ group.slug }}" data-reference-section-link="ref-{{ group.slug }}">{{ group.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </aside>
