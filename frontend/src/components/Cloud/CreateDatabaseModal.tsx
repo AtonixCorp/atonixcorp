@@ -104,15 +104,15 @@ function PlanCard({ plan, selected, onSelect, isDark }: {
       onClick={() => onSelect(plan)}
       sx={{
         p: 2, borderRadius: 2, cursor: 'pointer', border: '2px solid', position: 'relative',
-        borderColor: selected ? '#18366A' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
-        bgcolor: selected ? 'rgba(24,54,106,.08)' : isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA',
-        transition: 'all .15s', '&:hover': { borderColor: '#18366A' },
+        borderColor: selected ? '#0A0F1F' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
+        bgcolor: selected ? 'rgba(0,224,255,.08)' : isDark ? 'rgba(255,255,255,.03)' : '#FAFAFA',
+        transition: 'all .15s', '&:hover': { borderColor: '#0A0F1F' },
       }}
     >
       {plan.recommended && (
-        <Chip label="Recommended" size="small" sx={{ position: 'absolute', top: 8, right: 8, height: 18, fontSize: '.6rem', fontWeight: 700, bgcolor: '#18366A', color: '#fff' }} />
+        <Chip label="Recommended" size="small" sx={{ position: 'absolute', top: 8, right: 8, height: 18, fontSize: '.6rem', fontWeight: 700, bgcolor: '#0A0F1F', color: '#fff' }} />
       )}
-      {selected && <CheckCircleIcon sx={{ position: 'absolute', top: 10, right: plan.recommended ? 100 : 10, color: '#18366A', fontSize: '1rem' }} />}
+      {selected && <CheckCircleIcon sx={{ position: 'absolute', top: 10, right: plan.recommended ? 100 : 10, color: '#0A0F1F', fontSize: '1rem' }} />}
       <Typography fontWeight={800} fontSize=".95rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={.5}>{plan.label}</Typography>
       <Stack spacing={.25} mb={1}>
         {[
@@ -123,7 +123,7 @@ function PlanCard({ plan, selected, onSelect, isDark }: {
           <Typography key={s} variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.65)' : '#6B7280' }}>{s}</Typography>
         ))}
       </Stack>
-      <Typography fontWeight={700} color="#18366A" fontSize=".9rem">
+      <Typography fontWeight={700} color="#0A0F1F" fontSize=".9rem">
         ${plan.hourly_usd.toFixed(3)}<Typography component="span" variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.45)' : '#9CA3AF' }}>/hr</Typography>
       </Typography>
     </Box>
@@ -223,10 +223,10 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
             <Step key={s}>
               <StepLabel sx={{
                 '& .MuiStepLabel-label': { color: textSec, fontSize: '.8rem' },
-                '& .MuiStepLabel-label.Mui-active': { color: isDark ? '#ffffff' : '#18366A', fontWeight: 700 },
+                '& .MuiStepLabel-label.Mui-active': { color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 },
                 '& .MuiStepLabel-label.Mui-completed': { color: '#10B981', fontWeight: 600 },
                 '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB' },
-                '& .MuiStepIcon-root.Mui-active': { color: '#18366A' },
+                '& .MuiStepIcon-root.Mui-active': { color: '#00E0FF' },
                 '& .MuiStepIcon-root.Mui-completed': { color: '#10B981' },
               }}>{s}</StepLabel>
             </Step>
@@ -281,8 +281,8 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
             <Stack direction="row" spacing={1} flexWrap="wrap">
               {TENANCY.map(t => (
                 <Box key={t.key} onClick={() => setSelTenancy(t.key)}
-                  sx={{ p: 1.5, borderRadius: '10px', border: '2px solid', borderColor: selTenancy === t.key ? '#18366A' : border, cursor: 'pointer', minWidth: 150, flex: '1 1 150px',
-                    bgcolor: selTenancy === t.key ? 'rgba(24,54,106,.08)' : 'transparent', transition: 'all .15s', '&:hover': { borderColor: '#18366A' } }}>
+                  sx={{ p: 1.5, borderRadius: '10px', border: '2px solid', borderColor: selTenancy === t.key ? '#0A0F1F' : border, cursor: 'pointer', minWidth: 150, flex: '1 1 150px',
+                    bgcolor: selTenancy === t.key ? 'rgba(0,224,255,.08)' : 'transparent', transition: 'all .15s', '&:hover': { borderColor: '#0A0F1F' } }}>
                   <Typography fontWeight={700} fontSize=".85rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{t.label}</Typography>
                   <Typography variant="caption" sx={{ color: textSec }}>{t.desc}</Typography>
                 </Box>
@@ -303,20 +303,20 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
                     helperText="3–63 chars, lowercase letters, numbers and hyphens"
                     error={name.length > 0 && name.length < 3}
                     sx={{ '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& fieldset': { borderColor: border } },
-                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#18366A' } }} />
+                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#00E0FF' } }} />
                   <TextField label="Initial database" value={dbName} onChange={e => setDbName(e.target.value)}
                     size="small" fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& fieldset': { borderColor: border } },
-                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#18366A' } }} />
+                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#00E0FF' } }} />
                   <Box>
                     <Typography variant="caption" fontWeight={600} sx={{ color: textSec, textTransform: 'uppercase', letterSpacing: '.07em', mb: .5, display: 'block' }}>Region</Typography>
                     <Stack spacing={.75}>
                       {REGIONS.map(r => (
                         <Box key={r.key} onClick={() => setSelRegion(r.key)} display="flex" alignItems="center" justifyContent="space-between"
-                          sx={{ px: 1.5, py: .75, borderRadius: '8px', border: '1px solid', borderColor: selRegion === r.key ? '#18366A' : border, cursor: 'pointer',
-                            bgcolor: selRegion === r.key ? 'rgba(24,54,106,.08)' : 'transparent', transition: 'all .12s' }}>
+                          sx={{ px: 1.5, py: .75, borderRadius: '8px', border: '1px solid', borderColor: selRegion === r.key ? '#0A0F1F' : border, cursor: 'pointer',
+                            bgcolor: selRegion === r.key ? 'rgba(0,224,255,.08)' : 'transparent', transition: 'all .12s' }}>
                           <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{r.label}</Typography>
-                          {selRegion === r.key && <CheckCircleIcon sx={{ fontSize: '1rem', color: '#18366A' }} />}
+                          {selRegion === r.key && <CheckCircleIcon sx={{ fontSize: '1rem', color: '#0A0F1F' }} />}
                         </Box>
                       ))}
                     </Stack>
@@ -378,13 +378,13 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
         )}
         {step < 2 ? (
           <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()} variant="contained"
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
+            sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
             Continue
           </Button>
         ) : (
           <Button onClick={handleSubmit} disabled={!canNext() || submitting} variant="contained"
             startIcon={submitting ? <CircularProgress size={14} color="inherit" /> : <LockIcon sx={{ fontSize: '1rem' }} />}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
+            sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
             {submitting ? 'Deploying…' : 'Create Database'}
           </Button>
         )}

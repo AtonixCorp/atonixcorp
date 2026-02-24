@@ -49,9 +49,9 @@ function buildCards(stats: DashboardStats | null): CardDef[] {
       title: 'Compute',
       subtitle: 'Virtual Machines',
       icon: <ComputerIcon />,
-      iconColor: '#18366A',
-      iconBg: 'rgba(24,54,106,.1)',
-      borderColor: 'rgba(24,54,106,.2)',
+      iconColor: '#0A0F1F',
+      iconBg: 'rgba(0,224,255,.1)',
+      borderColor: 'rgba(0,224,255,.2)',
       rows: [
         { label: 'Total VMs',    value: c?.total_vms ?? 0 },
         { label: 'Running',      value: c?.running ?? 0, highlight: true },

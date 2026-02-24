@@ -169,7 +169,7 @@ const Footer: React.FC = () => {
                     '&:hover': {
                       opacity: 1,
                       color: accentBlue,
-                      backgroundColor: 'rgba(37,99,235,.18)',
+                      backgroundColor: 'rgba(0,224,255,.18)',
                     },
                     transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}

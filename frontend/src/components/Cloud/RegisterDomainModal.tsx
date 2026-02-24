@@ -30,7 +30,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
     border:    isDark ? '#1E3A5F' : '#E5E7EB',
     text:      isDark ? '#e0e9f4' : '#0A0F1F',
     muted:     isDark ? '#6b8aab' : '#6B7280',
-    brand:     '#18366A',
+    brand:     '#0A0F1F',
     available: isDark ? '#1a3d2e' : '#DCFCE7',
     taken:     isDark ? '#3d1a1a' : '#FEE2E2',
   };
@@ -261,7 +261,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={() => step === 0 ? (selected ? setStep(1) : handleSearch()) : setStep(2)}
             disabled={step === 0 ? (!name || !selected) : false}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#00C8E5' } }}
           >
             {step === 0 ? (selected ? 'Configure' : 'Search') : 'Review'}
           </Button>
@@ -271,7 +271,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={handleRegister}
             disabled={submitting}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#102548' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#00C8E5' } }}
           >
             {submitting ? <CircularProgress size={20} color="inherit" /> : 'Register Domain'}
           </Button>

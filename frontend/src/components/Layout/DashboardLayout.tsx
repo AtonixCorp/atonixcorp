@@ -74,8 +74,8 @@ const NAVY          = dashboardTokens.colors.surface;
 const NAVY2         = dashboardTokens.colors.surfaceSubtle;
 // Brand accent
 const BLUE          = dashboardTokens.colors.brandPrimary;
-const BLUE_DIM      = 'rgba(37,99,235,0.12)';
-const BLUE_HOVER    = 'rgba(37,99,235,0.08)';
+const BLUE_DIM      = 'rgba(0,224,255,0.12)';
+const BLUE_HOVER    = 'rgba(0,224,255,0.08)';
 // Typography on blue sidebar
 const TEXT_PRIMARY   = dashboardTokens.colors.textPrimary;
 const TEXT_SECONDARY = dashboardTokens.colors.textSecondary;
@@ -714,7 +714,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               </Box>
               {[
                 { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#14b8a6' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#00E0FF' },
                 { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
               ].map((n, i) => (
                 <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>

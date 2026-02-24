@@ -136,7 +136,7 @@ const CloudPlatformHeader: React.FC = () => {
                       borderRadius: '2px',
                       transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        bgcolor: 'rgba(37,99,235,.16)',
+                        bgcolor: 'rgba(0,224,255,.16)',
                         color: headerText,
                       },
                     }}
@@ -263,7 +263,7 @@ const CloudPlatformHeader: React.FC = () => {
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
-                  sx={{ color: headerText, fontWeight: 600, '&:hover': { bgcolor: 'rgba(37,99,235,.16)' } }}
+                  sx={{ color: headerText, fontWeight: 600, '&:hover': { bgcolor: 'rgba(0,224,255,.16)' } }}
                 >
                   <ListItemText primary={item.label} />
                 </ListItemButton>
@@ -274,7 +274,7 @@ const CloudPlatformHeader: React.FC = () => {
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   onClick={() => handleNavigate(item.path)}
-                  sx={{ color: headerText, fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(37,99,235,.16)' } }}
+                  sx={{ color: headerText, fontSize: '0.9rem', '&:hover': { bgcolor: 'rgba(0,224,255,.16)' } }}
                 >
                   <ListItemText primary={item.label} />
                 </ListItemButton>
