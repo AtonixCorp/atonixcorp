@@ -52,6 +52,7 @@ import TeamIcon              from '@mui/icons-material/Group';
 import MonitorIcon           from '@mui/icons-material/QueryStats';
 import DomainIcon            from '@mui/icons-material/Language';
 import CampaignIcon          from '@mui/icons-material/Campaign';
+import ViewListIcon          from '@mui/icons-material/ViewList';
 import LightModeIcon         from '@mui/icons-material/LightMode';
 import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import FirstPageIcon         from '@mui/icons-material/FirstPage';
@@ -119,6 +120,7 @@ const CLOUD_NAV: NavItem[] = [
     ],
   },
   { label: 'Monitoring',     icon: <MonitorIcon  {...I()} />, path: '/dashboard/monitoring' },
+  { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/dashboard/sections' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
   { label: 'Developer Tools', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
   { label: 'Marketing Tools', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
@@ -130,6 +132,7 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'Containers & Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/containers-k8s' },
   { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
   { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
+  { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/dev-dashboard/sections' },
   { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/dev-dashboard/resource-control' },
   { label: 'My Workspace', icon: <PersonIcon {...I()} />, path: '/dev-dashboard/workspace' },
 ];
@@ -137,6 +140,7 @@ const DEVELOPER_NAV: NavItem[] = [
 const MARKETING_NAV: NavItem[] = [
   { label: 'Marketing Overview', icon: <MonitorIcon {...I()} />, path: '/marketing-dashboard/analytics' },
   { label: 'Campaigns', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/campaigns' },
+  { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/marketing-dashboard/sections' },
   { label: 'SEO & Domains', icon: <DomainIcon {...I()} />, path: '/marketing-dashboard/seo-domains' },
   { label: 'Audience Segmentation', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/audience-segmentation' },
   { label: 'Content Distribution', icon: <CdnIcon {...I()} />, path: '/marketing-dashboard/content-distribution' },

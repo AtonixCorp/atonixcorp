@@ -55,6 +55,7 @@ import MarketingAudiencePage     from './pages/MarketingAudiencePage';
 import MarketingAbTestingPage    from './pages/MarketingAbTestingPage';
 import MarketingContentPage      from './pages/MarketingContentPage';
 import MarketingSeoPage          from './pages/MarketingSeoPage';
+import DashboardSectionsPage     from './pages/DashboardSectionsPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -84,6 +85,7 @@ const AppShell: React.FC = () => {
             <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
+            <Route path="/dev-dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
             <Route path="/dev-dashboard/settings/*" element={<DevSettingsPage />} />
             <Route path="/dev-dashboard/team" element={<DevTeamPage />} />
             <Route path="/dev-dashboard/help" element={<ToolPlaceholderPage title="Developer Support" description="Developer support resources and help center." />} />
@@ -108,6 +110,7 @@ const AppShell: React.FC = () => {
             <Route path="/marketing-dashboard/audience-segmentation" element={<MarketingAudiencePage />} />
             <Route path="/marketing-dashboard/content-distribution" element={<MarketingContentPage />} />
             <Route path="/marketing-dashboard/ab-testing" element={<MarketingAbTestingPage />} />
+            <Route path="/marketing-dashboard/sections" element={<DashboardSectionsPage dashboardMode="marketing" />} />
             <Route path="/marketing-dashboard/settings/*" element={<MarketingSettingsPage />} />
             <Route path="/marketing-dashboard/team" element={<MarketingTeamPage />} />
             <Route path="/marketing-dashboard/help" element={<ToolPlaceholderPage title="Marketing Support" description="Marketing support resources and help center." />} />
@@ -152,6 +155,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/network"                  element={<NetworkPage />} />
             <Route path="/dashboard/orchestration"            element={<OrchestrationPage />} />
             <Route path="/dashboard/billing"                  element={<BillingPage />} />
+            <Route path="/dashboard/sections"                 element={<DashboardSectionsPage dashboardMode="cloud" />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
           </Routes>
         </DashboardLayout>
