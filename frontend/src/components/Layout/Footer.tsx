@@ -41,6 +41,9 @@ const GitLabIcon = (props: any) => (
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const primaryNavy = '#0b1220';
+  const secondaryNavy = '#07121a';
+  const accentCyan = '#14b8a6';
 
   const socialLinks = [
     { name: 'Twitter', icon: <Twitter />, url: 'https://twitter.com/AtonixCorp' },
@@ -67,17 +70,17 @@ const Footer: React.FC = () => {
     <Box
       component="footer"
       sx={{
-        backgroundColor: '#0f172a',
+        background: `linear-gradient(135deg, ${primaryNavy} 0%, ${secondaryNavy} 100%)`,
         color: 'white',
         py: 3,
         mt: 'auto',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        borderTop: `1px solid ${accentCyan}33`,
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', md: 'row' }, 
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
           gap: 3,
           flexWrap: 'wrap'
         }}>
@@ -98,7 +101,7 @@ const Footer: React.FC = () => {
                 sx={{
                   fontSize: '0.875rem',
                   opacity: 0.8,
-                  '&:hover': { opacity: 1 },
+                  '&:hover': { opacity: 1, color: accentCyan },
                 }}
               >
                 support@atonixcorp.com
@@ -128,7 +131,7 @@ const Footer: React.FC = () => {
                   sx={{
                     fontSize: '0.875rem',
                     opacity: 0.8,
-                    '&:hover': { opacity: 1 },
+                    '&:hover': { opacity: 1, color: accentCyan },
                     transition: 'opacity 0.2s ease-in-out',
                   }}
                 >
@@ -148,7 +151,7 @@ const Footer: React.FC = () => {
               <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>Projects: 15+</Typography>
               <Typography variant="body2" sx={{ opacity: 0.8, color: 'white' }}>Team: 25+</Typography>
             </Box>
-            
+
             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
               Connect With Us
             </Typography>
@@ -165,7 +168,8 @@ const Footer: React.FC = () => {
                     opacity: 0.7,
                     '&:hover': {
                       opacity: 1,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      color: accentCyan,
+                      backgroundColor: `${accentCyan}22`,
                     },
                     transition: 'all 0.2s ease-in-out',
                   }}
@@ -184,7 +188,7 @@ const Footer: React.FC = () => {
           sx={{
             mt: 4,
             pt: 2,
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            borderTop: `1px solid ${accentCyan}33`,
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
@@ -201,7 +205,7 @@ const Footer: React.FC = () => {
               to="/privacy"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.7 }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentCyan, opacity: 1 } }}
             >
               Privacy
             </Link>
@@ -210,7 +214,7 @@ const Footer: React.FC = () => {
               to="/terms"
               color="inherit"
               underline="hover"
-              sx={{ fontSize: '0.875rem', opacity: 0.7 }}
+              sx={{ fontSize: '0.875rem', opacity: 0.7, '&:hover': { color: accentCyan, opacity: 1 } }}
             >
               Terms
             </Link>

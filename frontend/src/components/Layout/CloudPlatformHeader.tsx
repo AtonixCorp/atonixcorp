@@ -49,7 +49,6 @@ const CloudPlatformHeader: React.FC = () => {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', submenu: [] },
     { label: 'Products', path: '/', submenu: ['Dedicated Servers', 'VPS', 'Public Cloud'] },
     { label: 'Resources', path: '/resources', submenu: ['Blog', 'Docs', 'Use Cases'] },
   ];
@@ -57,7 +56,6 @@ const CloudPlatformHeader: React.FC = () => {
   const utilitiesItems = [
     { label: 'Support', path: '/support' },
     { label: 'Contact Sales', path: '/contact' },
-    { label: 'Account', path: '/account' },
   ];
 
   return (
@@ -107,7 +105,7 @@ const CloudPlatformHeader: React.FC = () => {
                 fontSize: '1.2rem',
               }}
             >
-              
+
             </Box>
             <Box
               sx={{
@@ -144,10 +142,10 @@ const CloudPlatformHeader: React.FC = () => {
                   {item.label}
                 </Button>
               ))}
-              
+
               {/* Divider */}
               <Box sx={{ width: '1px', height: 24, bgcolor: `${accentCyan}44`, mx: 1 }} />
-              
+
               {/* Utilities */}
               {utilitiesItems.map((item) => (
                 <Button
@@ -169,7 +167,7 @@ const CloudPlatformHeader: React.FC = () => {
                   {item.label}
                 </Button>
               ))}
-              
+
               {/* Auth buttons / user avatar */}
               {user ? (
                 <>
