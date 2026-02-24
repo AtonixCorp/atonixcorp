@@ -145,12 +145,12 @@ const Homepage: React.FC = () => {
       <Box
         id="hero"
         sx={{
-          bgcolor: COLORS.navy,
+          bgcolor: '#0A0F1F',
           color: COLORS.white,
           borderBottom: `1px solid ${COLORS.silver}`,
         }}
       >
-        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
           <Box
             sx={{
               display: 'grid',
@@ -168,6 +168,7 @@ const Homepage: React.FC = () => {
                   letterSpacing: { xs: '-0.5px', md: '-1px' },
                   fontSize: { xs: '2.35rem', sm: '2.9rem', md: '3.85rem' },
                   maxWidth: 620,
+                  color: COLORS.white,
                 }}
               >
                 Sovereign Cloud Infrastructure for Enterprise-Grade Scale
@@ -180,7 +181,7 @@ const Homepage: React.FC = () => {
                   lineHeight: { xs: 1.42, md: 1.4 },
                   letterSpacing: '-0.1px',
                   maxWidth: 540,
-                  color: 'rgba(255,255,255,.84)',
+                  color: COLORS.white,
                 }}
               >
                 AtonixCorp unifies compute, storage, networking, and AI automation into a
@@ -227,7 +228,7 @@ const Homepage: React.FC = () => {
             </Box>
 
             <Box sx={{ border: '1px solid rgba(255,255,255,.16)', borderRadius: RADIUS, p: 3 }}>
-              <Typography sx={{ fontSize: '.75rem', fontWeight: 500, letterSpacing: '.08em', color: 'rgba(255,255,255,.72)' }}>
+              <Typography sx={{ fontSize: '.75rem', fontWeight: 500, letterSpacing: '.08em', color: COLORS.white }}>
                 GLOBAL CONTROL PLANE
               </Typography>
               <Divider sx={{ borderColor: 'rgba(255,255,255,.16)', my: 2 }} />
@@ -240,7 +241,7 @@ const Homepage: React.FC = () => {
                 ].map((row) => (
                   <Stack key={row.text} direction="row" spacing={1.5} alignItems="center">
                     {row.icon}
-                    <Typography sx={{ fontSize: '.94rem', lineHeight: 1.4, letterSpacing: '-0.05px' }}>{row.text}</Typography>
+                    <Typography sx={{ fontSize: '.94rem', lineHeight: 1.4, letterSpacing: '-0.05px', color: COLORS.white }}>{row.text}</Typography>
                   </Stack>
                 ))}
               </Stack>
