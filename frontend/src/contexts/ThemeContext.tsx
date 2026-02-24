@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { useLocation } from 'react-router-dom';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -175,6 +176,15 @@ const ___lightTheme = createTheme({
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
           '--color-surface': '#111827',
+          '--dashboard-background': '#FFFFFF',
+          '--dashboard-surface': '#FFFFFF',
+          '--dashboard-surface-subtle': '#F9FAFB',
+          '--dashboard-surface-hover': '#F3F4F6',
+          '--dashboard-border': '#E5E7EB',
+          '--dashboard-border-strong': '#D1D5DB',
+          '--dashboard-text-primary': '#111827',
+          '--dashboard-text-secondary': '#6B7280',
+          '--dashboard-text-tertiary': '#9CA3AF',
           '--radius-small': '2px',
           '--radius-none': '0px',
         },
@@ -450,6 +460,15 @@ const ___darkTheme = createTheme({
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
           '--color-surface': '#111827',
+          '--dashboard-background': '#0A0F1F',
+          '--dashboard-surface': '#111827',
+          '--dashboard-surface-subtle': '#1E293B',
+          '--dashboard-surface-hover': '#334155',
+          '--dashboard-border': '#334155',
+          '--dashboard-border-strong': '#475569',
+          '--dashboard-text-primary': '#FFFFFF',
+          '--dashboard-text-secondary': '#FFFFFF',
+          '--dashboard-text-tertiary': '#FFFFFF',
           '--radius-small': '2px',
           '--radius-none': '0px',
         },
@@ -586,6 +605,7 @@ interface CustomThemeProviderProps {
 }
 
 export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ children }) => {
+  const location = useLocation();
   const [mode, setMode] = useState<ThemeMode>(() => {
     // Check localStorage for saved theme preference
     const savedMode = localStorage.getItem('themeMode') as ThemeMode;
@@ -618,7 +638,14 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  const theme = mode === 'dark' ? ___darkTheme : ___lightTheme;
+  const isDashboardRoute =
+    location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/dev-dashboard') ||
+    location.pathname.startsWith('/marketing-dashboard');
+
+  const effectiveMode: ThemeMode = isDashboardRoute ? mode : 'light';
+
+  const theme = effectiveMode === 'dark' ? ___darkTheme : ___lightTheme;
 
   return (
     <___ThemeContext.Provider value={{ mode, toggleTheme }}>

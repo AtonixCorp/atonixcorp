@@ -87,22 +87,22 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="sm"
+      maxWidth="xs"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2 }
+        sx: { borderRadius: 2, maxWidth: 380, width: '100%' }
       }}
     >
       <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-        <Typography variant="h4" component="h2" fontWeight="bold">
+        <Typography variant="h6" component="h2" fontWeight="bold">
           Welcome Back
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: '.83rem' }}>
           Sign in to your AtonixCorp account
         </Typography>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 4 }}>
+      <DialogContent sx={{ px: 2.5, pb: 2.5 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -112,6 +112,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <TextField
             fullWidth
+            size="small"
             name="email"
             label="Email Address"
             type="email"
@@ -119,7 +120,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
             value={formData.email}
             onChange={handleInputChange}
             disabled={loading}
-            sx={{ mb: 3 }}
+            sx={{ mb: 1.5 }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -131,6 +132,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
 
           <TextField
             fullWidth
+            size="small"
             name="password"
             label="Password"
             type={showPassword ? 'text' : 'password'}
@@ -138,7 +140,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
             value={formData.password}
             onChange={handleInputChange}
             disabled={loading}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1.5 }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -158,7 +160,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
             }}
           />
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Link
               component="button"
               type="button"
@@ -174,14 +176,13 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
             type="submit"
             fullWidth
             variant="contained"
-            size="large"
             disabled={loading}
-            sx={{ mb: 3, py: 1.5 }}
+            sx={{ mb: 1.5, py: 0.95 }}
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </Button>
 
-          <Divider sx={{ my: 3 }}>
+          <Divider sx={{ my: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
               or continue with
             </Typography>
@@ -189,7 +190,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, onSwitchToSign
 
           <SocialLoginButtons loading={loading} />
 
-          <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Box sx={{ textAlign: 'center', mt: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
               Don't have an account?{' '}
               <Link

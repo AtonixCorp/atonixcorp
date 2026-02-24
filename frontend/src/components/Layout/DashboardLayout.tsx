@@ -546,7 +546,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: dashboardTokens.colors.background }}>
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        bgcolor: dashboardTokens.colors.background,
+        ...(isDark
+          ? {
+              color: '#FFFFFF',
+              '& .MuiTypography-root, & .MuiTableCell-root, & .MuiInputBase-input, & .MuiFormLabel-root, & .MuiInputLabel-root, & .MuiListItemText-primary, & .MuiListItemText-secondary': {
+                color: '#FFFFFF',
+              },
+            }
+          : {}),
+      }}
+    >
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
       <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>

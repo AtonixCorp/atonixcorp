@@ -185,15 +185,15 @@ function App() {
   }, []);
 
   return (
-    <CustomThemeProvider>
-      <TelemetryErrorBoundary componentName="App">
-        <AuthProvider>
-          <Router>
+    <TelemetryErrorBoundary componentName="App">
+      <Router>
+        <CustomThemeProvider>
+          <AuthProvider>
             <AppShell />
-          </Router>
-        </AuthProvider>
-      </TelemetryErrorBoundary>
-    </CustomThemeProvider>
+          </AuthProvider>
+        </CustomThemeProvider>
+      </Router>
+    </TelemetryErrorBoundary>
   );
 }
 

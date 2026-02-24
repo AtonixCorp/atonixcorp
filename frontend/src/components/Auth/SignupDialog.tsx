@@ -102,27 +102,28 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="sm"
+      maxWidth="xs"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 2 } }}
+      PaperProps={{ sx: { borderRadius: 2, maxWidth: 420, width: '100%' } }}
     >
       <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-        <Typography variant="h4" component="h2" fontWeight="bold">
+        <Typography variant="h6" component="h2" fontWeight="bold">
           Create Account
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: '.83rem' }}>
           Join AtonixCorp and start building your infrastructure
         </Typography>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 4, pb: 4 }}>
+      <DialogContent sx={{ px: 2.5, pb: 2.5 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>Account created! Signing you in...</Alert>}
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <Stack direction="row" gap={2} sx={{ mb: 2 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.25} sx={{ mb: 1.25 }}>
             <TextField
               fullWidth
+              size="small"
               name="first_name"
               label="First Name *"
               value={formData.first_name}
@@ -134,6 +135,7 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
             />
             <TextField
               fullWidth
+              size="small"
               name="last_name"
               label="Last Name"
               value={formData.last_name}
@@ -144,13 +146,14 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
 
           <TextField
             fullWidth
+            size="small"
             name="email"
             label="Email Address *"
             type="email"
             value={formData.email}
             onChange={handleChange}
             disabled={loading}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1.5 }}
             InputProps={{
               startAdornment: <InputAdornment position="start"><Email color="action" /></InputAdornment>,
             }}
@@ -158,13 +161,14 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
 
           <TextField
             fullWidth
+            size="small"
             name="password"
             label="Password *"
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
             onChange={handleChange}
             disabled={loading}
-            sx={{ mb: 2 }}
+            sx={{ mb: 1.5 }}
             helperText="Minimum 8 characters"
             InputProps={{
               startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment>,
@@ -180,13 +184,14 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
 
           <TextField
             fullWidth
+            size="small"
             name="confirm_password"
             label="Confirm Password *"
             type={showConfirm ? 'text' : 'password'}
             value={formData.confirm_password}
             onChange={handleChange}
             disabled={loading}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             error={!!formData.confirm_password && formData.password !== formData.confirm_password}
             helperText={
               formData.confirm_password && formData.password !== formData.confirm_password
@@ -209,20 +214,19 @@ const SignupDialog: React.FC<SignupDialogProps> = ({ open, onClose, onSwitchToLo
             type="submit"
             fullWidth
             variant="contained"
-            size="large"
             disabled={loading || success}
-            sx={{ mb: 3, py: 1.5 }}
+            sx={{ mb: 1.5, py: 0.95 }}
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </Button>
 
-          <Divider sx={{ my: 2 }}>
+          <Divider sx={{ my: 1.5 }}>
             <Typography variant="body2" color="text.secondary">or sign up with</Typography>
           </Divider>
 
           <SocialLoginButtons loading={loading} />
 
-          <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Box sx={{ textAlign: 'center', mt: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
               Already have an account?{' '}
               <Link
