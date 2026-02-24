@@ -25,9 +25,11 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import PublishIcon from '@mui/icons-material/Publish';
 import ScienceIcon from '@mui/icons-material/Science';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { dashboardTokens, computeUiTokens } from '../../styles/dashboardDesignSystem';
 
 const GLOBAL_WIDTH = 86;
 const SECTION_WIDTH = 272;
+const RADIUS = '2px';
 
 interface NavEntry {
   label: string;
@@ -62,6 +64,9 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
   const navigate = useNavigate();
   const location = useLocation();
   const sectionNav = mode === 'developer' ? developerNav : marketingNav;
+  const shellNavy = computeUiTokens.neutralStrong;
+  const border = dashboardTokens.colors.border;
+  const accent = dashboardTokens.colors.brandPrimary;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: (theme) => theme.palette.background.default }}>
@@ -73,9 +78,9 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
           '& .MuiDrawer-paper': {
             width: GLOBAL_WIDTH,
             boxSizing: 'border-box',
-            borderRight: '1px solid rgba(255,255,255,0.08)',
-            bgcolor: '#12284D',
-            color: '#E5EEFF',
+            borderRight: '1px solid rgba(255,255,255,0.16)',
+            bgcolor: shellNavy,
+            color: dashboardTokens.colors.white,
           },
         }}
       >
@@ -88,7 +93,14 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
             <ListItemButton
               selected={mode === 'developer'}
               onClick={() => navigate('/dev-dashboard/deployments')}
-              sx={{ mx: 1, borderRadius: 1.5, mb: 1 }}
+              sx={{
+                mx: 1,
+                borderRadius: RADIUS,
+                mb: 1,
+                border: '1px solid transparent',
+                '&.Mui-selected': { bgcolor: 'rgba(37,99,235,.18)', borderColor: 'rgba(37,99,235,.45)' },
+                '&.Mui-selected:hover': { bgcolor: 'rgba(37,99,235,.24)' },
+              }}
             >
               <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
                 <BuildIcon />
@@ -99,7 +111,13 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
             <ListItemButton
               selected={mode === 'marketing'}
               onClick={() => navigate('/marketing-dashboard/analytics')}
-              sx={{ mx: 1, borderRadius: 1.5 }}
+              sx={{
+                mx: 1,
+                borderRadius: RADIUS,
+                border: '1px solid transparent',
+                '&.Mui-selected': { bgcolor: 'rgba(37,99,235,.18)', borderColor: 'rgba(37,99,235,.45)' },
+                '&.Mui-selected:hover': { bgcolor: 'rgba(37,99,235,.24)' },
+              }}
             >
               <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
                 <CampaignIcon />
@@ -118,8 +136,8 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
             width: SECTION_WIDTH,
             boxSizing: 'border-box',
             borderRight: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
+            borderColor: border,
+            bgcolor: dashboardTokens.colors.surface,
           },
         }}
       >
@@ -128,7 +146,7 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
             <Typography sx={{ fontSize: '.75rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '.08em' }}>
               Global
             </Typography>
-            <Typography sx={{ fontWeight: 800, fontSize: '1rem' }}>
+            <Typography sx={{ fontWeight: 600, fontSize: '1rem', lineHeight: 1.15, letterSpacing: '-0.2px' }}>
               {mode === 'developer' ? 'Developer Tools' : 'Marketing Tools'}
             </Typography>
           </Box>
@@ -142,7 +160,28 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
                 key={entry.path}
                 selected={active}
                 onClick={() => navigate(entry.path)}
-                sx={{ borderRadius: 1.5, mb: 0.5 }}
+                sx={{
+                  borderRadius: RADIUS,
+                  mb: 0.5,
+                  border: '1px solid transparent',
+                  '& .MuiListItemIcon-root': { color: active ? accent : dashboardTokens.colors.textSecondary },
+                  '& .MuiListItemText-primary': {
+                    fontSize: '.88rem',
+                    fontWeight: active ? 600 : 500,
+                    letterSpacing: '-0.1px',
+                    color: active ? dashboardTokens.colors.textPrimary : dashboardTokens.colors.textSecondary,
+                  },
+                  '&.Mui-selected': {
+                    bgcolor: 'rgba(37,99,235,.10)',
+                    borderColor: 'rgba(37,99,235,.45)',
+                  },
+                  '&.Mui-selected:hover': {
+                    bgcolor: 'rgba(37,99,235,.14)',
+                  },
+                  '&:hover': {
+                    bgcolor: dashboardTokens.colors.surfaceSubtle,
+                  },
+                }}
               >
                 <ListItemIcon sx={{ minWidth: 36 }}>{entry.icon}</ListItemIcon>
                 <ListItemText primary={entry.label} />

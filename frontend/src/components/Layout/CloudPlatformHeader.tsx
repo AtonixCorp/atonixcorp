@@ -162,7 +162,7 @@ const CloudPlatformHeader: React.FC = () => {
                       fontSize: '0.85rem',
                       transition: 'color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        color: dashboardTokens.colors.infoAlt,
+                        color: accentBlue,
                       },
                     }}
                 >
