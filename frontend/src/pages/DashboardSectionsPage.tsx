@@ -86,31 +86,31 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
   const totalVisible = filteredGroups.reduce((sum, group) => sum + group.items.length, 0);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#07121a', pb: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF', pb: 4 }}>
       <Box
         sx={{
-          borderBottom: '1px solid rgba(20,184,166,0.22)',
-          background: 'linear-gradient(135deg, #0b1220 0%, #07121a 100%)',
+          borderBottom: '1px solid #E5E7EB',
+          background: '#FFFFFF',
           px: { xs: 2, md: 4 },
-          py: { xs: 2.2, md: 2.8 },
+          py: { xs: 2.2, md: 2.6 },
         }}
       >
-        <Typography sx={{ color: '#e6eef7', fontWeight: 800, fontSize: { xs: '1.25rem', md: '1.55rem' } }}>
+        <Typography sx={{ color: '#111827', fontWeight: 700, fontSize: { xs: '1.25rem', md: '1.7rem' }, lineHeight: 1.2 }}>
           Sections Directory
         </Typography>
-        <Typography sx={{ color: '#9fb3c8', mt: 0.5, fontSize: { xs: '.88rem', md: '.95rem' } }}>
+        <Typography sx={{ color: '#6B7280', mt: 0.5, fontSize: { xs: '.88rem', md: '.95rem' }, lineHeight: 1.5 }}>
           {modeLabel[dashboardMode]} · Unified resource sections for navigation and implementation.
         </Typography>
       </Box>
 
-      <Container maxWidth="xl" sx={{ pt: 0 }}>
+      <Container maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 2, md: 4 } }}>
         <Card
           sx={{
-            mb: 0,
-            borderRadius: 0,
-            border: '1px solid rgba(20,184,166,0.2)',
-            borderTop: 0,
-            bgcolor: '#0b1220',
+            mb: 3,
+            borderRadius: 1,
+            border: '1px solid #E5E7EB',
+            bgcolor: '#FFFFFF',
+            boxShadow: 'none',
           }}
         >
           <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
@@ -124,18 +124,18 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                 sx={{
                   maxWidth: { md: 460 },
                   '& .MuiOutlinedInput-root': {
-                    bgcolor: 'rgba(255,255,255,0.04)',
-                    color: '#e6eef7',
-                    borderRadius: 0,
-                    '& fieldset': { borderColor: 'rgba(20,184,166,0.25)' },
-                    '&:hover fieldset': { borderColor: 'rgba(20,184,166,0.45)' },
-                    '&.Mui-focused fieldset': { borderColor: '#14b8a6' },
+                    bgcolor: '#FFFFFF',
+                    color: '#111827',
+                    borderRadius: '6px',
+                    '& fieldset': { borderColor: '#D1D5DB' },
+                    '&:hover fieldset': { borderColor: '#9CA3AF' },
+                    '&.Mui-focused fieldset': { borderColor: '#2563EB', boxShadow: '0 0 0 2px rgba(37,99,235,0.12)' },
                   },
                 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ color: '#9fb3c8', fontSize: '1rem' }} />
+                      <SearchIcon sx={{ color: '#6B7280', fontSize: '1rem' }} />
                     </InputAdornment>
                   ),
                 }}
@@ -144,10 +144,10 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                 label={`${totalVisible} section${totalVisible === 1 ? '' : 's'} visible`}
                 sx={{
                   alignSelf: { xs: 'flex-start', md: 'center' },
-                  bgcolor: 'rgba(20,184,166,0.18)',
-                  color: '#9be3d9',
+                  bgcolor: 'rgba(37,99,235,0.12)',
+                  color: '#1D4ED8',
                   fontWeight: 700,
-                  borderRadius: 0,
+                  borderRadius: '6px',
                 }}
               />
             </Stack>
@@ -159,14 +159,15 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
             <Card
               key={group.category}
               sx={{
-                borderRadius: 0,
-                border: '1px solid rgba(20,184,166,0.2)',
-                borderTop: 0,
-                bgcolor: '#0b1220',
+                borderRadius: 1,
+                border: '1px solid #E5E7EB',
+                bgcolor: '#FFFFFF',
+                boxShadow: 'none',
+                mb: 2,
               }}
             >
               <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-                <Typography sx={{ color: '#e6eef7', fontWeight: 700, mb: 1.4, fontSize: { xs: '1rem', md: '1.08rem' } }}>
+                <Typography sx={{ color: '#111827', fontWeight: 600, mb: 1.4, fontSize: { xs: '1rem', md: '1.08rem' } }}>
                   {group.category}
                 </Typography>
                 <Box
@@ -185,17 +186,21 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                     <Box
                       key={item}
                       sx={{
-                        border: '1px solid rgba(20,184,166,0.2)',
-                        borderRadius: 0,
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '8px',
                         px: 1.2,
                         py: 0.95,
-                        color: '#d9e6f5',
-                        bgcolor: 'rgba(255,255,255,0.02)',
-                        fontWeight: 600,
+                        color: '#111827',
+                        bgcolor: '#F9FAFB',
+                        fontWeight: 500,
                         fontSize: '.9rem',
                         minHeight: 44,
                         display: 'flex',
                         alignItems: 'center',
+                        '&:hover': {
+                          bgcolor: '#F3F4F6',
+                          borderColor: '#D1D5DB',
+                        },
                       }}
                     >
                       {item}
@@ -209,14 +214,13 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
           {totalVisible === 0 && (
             <Card
               sx={{
-                borderRadius: 0,
-                border: '1px dashed rgba(20,184,166,0.45)',
-                borderTop: 0,
-                bgcolor: '#0b1220',
+                borderRadius: 1,
+                border: '1px dashed #D1D5DB',
+                bgcolor: '#FFFFFF',
               }}
             >
               <CardContent>
-                <Typography sx={{ color: '#b9cbe0', fontWeight: 600 }}>No sections match your search.</Typography>
+                <Typography sx={{ color: '#4B5563', fontWeight: 500 }}>No sections match your search.</Typography>
               </CardContent>
             </Card>
           )}

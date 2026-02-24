@@ -5,7 +5,6 @@ import {
   Box, Container, Typography, Stack, Alert, Snackbar,
   Breadcrumbs, Link, Button,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import DashboardIcon      from '@mui/icons-material/Dashboard';
 import AddIcon            from '@mui/icons-material/Add';
 import NavigateNextIcon   from '@mui/icons-material/NavigateNext';
@@ -23,8 +22,6 @@ import VMListPanel         from '../components/Cloud/VMListPanel';
 
 const OnboardingDashboard: React.FC = () => {
   const { user } = useAuth() as any;
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
 
   const [progress, setProgress]   = useState<OnboardingProgress | null>(null);
   const [stats, setStats]         = useState<DashboardStats | null>(null);
@@ -73,14 +70,14 @@ const OnboardingDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#ffffff', pb: 6 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', pb: 6 }}>
 
       {/* ── Page Header ────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          bgcolor: isDark ? '#0F1E30' : '#fff',
-          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`,
-          px: { xs: 3, md: 4 },
+          bgcolor: '#fff',
+          borderBottom: '1px solid #E5E7EB',
+          px: { xs: 2, md: 4 },
           pt: 2.5,
           pb: 2,
         }}
@@ -93,12 +90,12 @@ const OnboardingDashboard: React.FC = () => {
           <Link
             href="/"
             underline="hover"
-            sx={{ fontSize: '12px', color: isDark ? '#ffffff' : '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             Home
           </Link>
           <Typography
-            sx={{ fontSize: '12px', color: isDark ? '#ffffff' : '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ fontSize: '12px', color: '#111827', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             <DashboardIcon sx={{ fontSize: '.8rem' }} />
             Dashboard
@@ -110,8 +107,8 @@ const OnboardingDashboard: React.FC = () => {
           <Typography
             sx={{
               fontSize: '24px',
-              fontWeight: 600,
-              color: isDark ? '#ffffff' : '#0A0F1F',
+              fontWeight: 700,
+              color: '#111827',
               letterSpacing: '-.02em',
               lineHeight: 1.2,
             }}
@@ -127,15 +124,15 @@ const OnboardingDashboard: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setWizardOpen(true)}
               sx={{
-                bgcolor: '#18366A',
+                bgcolor: '#2563EB',
                 color: '#fff',
-                fontWeight: 600,
+                fontWeight: 500,
                 fontSize: '.82rem',
                 textTransform: 'none',
                 borderRadius: '6px',
                 px: 2,
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#102548', boxShadow: '0 2px 8px rgba(24,54,106,.35)' },
+                '&:hover': { bgcolor: '#1D4ED8', boxShadow: 'none' },
               }}
             >
               Deploy Server
@@ -145,7 +142,7 @@ const OnboardingDashboard: React.FC = () => {
       </Box>
 
       {/* ── Content ──────────────────────────────────────────────────────────── */}
-      <Container maxWidth="xl" sx={{ pt: 3.5 }}>
+      <Container maxWidth="xl" sx={{ pt: 4 }}>
         <Stack spacing={3.5}>
 
           {/* 1 ── Welcome Hero */}
@@ -209,9 +206,9 @@ const OnboardingDashboard: React.FC = () => {
             severity={toast.type}
             onClose={() => setToast(null)}
             sx={{
-              bgcolor: toast.type === 'success' ? 'rgba(24,54,106,.08)' : undefined,
-              border: `1px solid ${toast.type === 'success' ? 'rgba(24,54,106,.4)' : 'rgba(239,68,68,.4)'}`,
-              color: toast.type === 'success' ? '#102548' : undefined,
+              bgcolor: toast.type === 'success' ? '#FFFFFF' : undefined,
+              border: `1px solid ${toast.type === 'success' ? '#D1D5DB' : 'rgba(239,68,68,.4)'}`,
+              color: toast.type === 'success' ? '#111827' : undefined,
             }}
           >
             {toast.msg}
@@ -223,15 +220,13 @@ const OnboardingDashboard: React.FC = () => {
 };
 
 const SectionHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
   return (
     <Typography
       fontWeight={700}
       fontSize="12px"
       letterSpacing=".08em"
       textTransform="uppercase"
-      sx={{ color: isDark ? '#ffffff' : '#6B7280', mb: 1.5 }}
+      sx={{ color: '#6B7280', mb: 1.5 }}
     >
       {children}
     </Typography>

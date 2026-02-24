@@ -46,16 +46,16 @@ const DNS_TYPES: DnsRecordType[] = ['A','AAAA','CNAME','MX','TXT','NS','SRV','CA
 
 const DomainPage: React.FC = () => {
   const theme  = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  const _isDark = theme.palette.mode === 'dark';
 
   const t = {
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:  isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    brand:   '#18366A',
-    hover:   isDark ? '#102548' : '#EFF6FF',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
+    panelBg: '#FFFFFF',
+    cardBg:  '#FFFFFF',
+    border:  '#E5E7EB',
+    brand:   '#2563EB',
+    hover:   '#F3F4F6',
+    text:    '#111827',
+    muted:   '#6B7280',
   };
 
   // ── State ─────────────────────────────────────────────────────────────────

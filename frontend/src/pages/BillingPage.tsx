@@ -27,12 +27,12 @@ function useT() {
   const isDark = theme.palette.mode === 'dark';
   return {
     isDark,
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:  isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    sub:     isDark ? '#8BAAC8' : '#6B7280',
-    brand:   '#18366A',
+    panelBg: '#FFFFFF',
+    cardBg:  '#FFFFFF',
+    border:  '#E5E7EB',
+    text:    '#111827',
+    sub:     '#6B7280',
+    brand:   '#2563EB',
     green:   '#22c55e',
     yellow:  '#f59e0b',
     red:     '#ef4444',

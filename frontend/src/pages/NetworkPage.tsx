@@ -239,26 +239,26 @@ const NetworkPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3, minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%', bgcolor: '#FFFFFF' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
-          <Typography variant="h5" fontWeight={700}>Network Architecture</Typography>
+          <Typography variant="h5" fontWeight={700} color="#111827">Network Architecture</Typography>
           <Typography variant="body2" color="text.secondary">Design VPCs, segmented subnets, routing, gateways, DNS, and zero-trust controls.</Typography>
         </Box>
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => { loadVpcList(); if (selectedVpc) loadNetworkingResources(selectedVpc); }}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenVpcDialog(true)}>Create VPC</Button>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => { loadVpcList(); if (selectedVpc) loadNetworkingResources(selectedVpc); }} sx={{ borderColor: '#D1D5DB', color: '#111827', textTransform: 'none' }}>Refresh</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenVpcDialog(true)} sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 500, '&:hover': { bgcolor: '#1D4ED8' } }}>Create VPC</Button>
         </Stack>
       </Stack>
 
       <Stack direction="row" spacing={2} mb={2}>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">VPCs</Typography><Typography variant="h4">{stats.total}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Subnets</Typography><Typography variant="h4">{stats.totalSubnets}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Flow Logs Enabled</Typography><Typography variant="h4">{stats.withFlowLogs}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">VPCs</Typography><Typography variant="h4">{stats.total}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">Subnets</Typography><Typography variant="h4">{stats.totalSubnets}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography color="text.secondary">Flow Logs Enabled</Typography><Typography variant="h4">{stats.withFlowLogs}</Typography></CardContent></Card>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, gap: 2 }}>
-        <Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
           <CardContent>
             <Typography fontWeight={600} mb={1}>VPCs</Typography>
             <List sx={{ p: 0 }}>
@@ -277,7 +277,7 @@ const NetworkPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
           <CardContent>
             {!selectedVpc ? (
               <Typography color="text.secondary">Select a VPC to configure network architecture.</Typography>
@@ -309,7 +309,7 @@ const NetworkPage: React.FC = () => {
                   <Stack spacing={2}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Typography variant="subtitle2">Subnet Segmentation</Typography>
-                      <Button size="small" variant="contained" onClick={() => setOpenSubnetDialog(true)}>Add Subnet</Button>
+                      <Button size="small" variant="contained" onClick={() => setOpenSubnetDialog(true)} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Add Subnet</Button>
                     </Stack>
                     {subnets.map(subnet => (
                       <Card key={subnet.subnet_id} variant="outlined">
@@ -343,7 +343,7 @@ const NetworkPage: React.FC = () => {
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField size="small" label="Name" value={securityGroupForm.name} onChange={event => setSecurityGroupForm(prev => ({ ...prev, name: event.target.value }))} />
                         <TextField size="small" label="Description" value={securityGroupForm.description} onChange={event => setSecurityGroupForm(prev => ({ ...prev, description: event.target.value }))} />
-                        <Button variant="contained" onClick={createSecurityGroup}>Create</Button>
+                        <Button variant="contained" onClick={createSecurityGroup} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
                       </Stack>
                     </CardContent></Card>
 
@@ -378,7 +378,7 @@ const NetworkPage: React.FC = () => {
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField size="small" label="Name" value={routeTableForm.name} onChange={event => setRouteTableForm(prev => ({ ...prev, name: event.target.value }))} />
                         <TextField size="small" label="Description" value={routeTableForm.description} onChange={event => setRouteTableForm(prev => ({ ...prev, description: event.target.value }))} />
-                        <Button variant="contained" onClick={createRouteTable}>Create</Button>
+                        <Button variant="contained" onClick={createRouteTable} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
                       </Stack>
                     </CardContent></Card>
 
@@ -429,7 +429,7 @@ const NetworkPage: React.FC = () => {
                           <MenuItem value="CNAME">CNAME</MenuItem>
                           <MenuItem value="TXT">TXT</MenuItem>
                         </TextField>
-                        <Button variant="contained" onClick={createDnsRecord}>Create</Button>
+                        <Button variant="contained" onClick={createDnsRecord} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
                       </Stack>
                       <Typography variant="caption" color="text.secondary" display="block" mt={1}>Records: {dnsRecords.length}</Typography>
                     </CardContent></Card>
@@ -465,7 +465,7 @@ const NetworkPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenVpcDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createVpc}>Create</Button>
+          <Button variant="contained" onClick={createVpc} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
         </DialogActions>
       </Dialog>
 
@@ -482,7 +482,7 @@ const NetworkPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenSubnetDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createSubnet}>Create</Button>
+          <Button variant="contained" onClick={createSubnet} sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Create</Button>
         </DialogActions>
       </Dialog>
     </Box>

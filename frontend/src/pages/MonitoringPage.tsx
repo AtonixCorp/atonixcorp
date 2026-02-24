@@ -31,12 +31,12 @@ function useThemeTokens() {
   const isDark = theme.palette.mode === 'dark';
   return {
     isDark,
-    panelBg:  isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:   isDark ? '#132336' : '#FFFFFF',
-    border:   isDark ? '#1E3A5F' : '#E5E7EB',
-    text:     isDark ? '#e0e9f4' : '#0A0F1F',
-    subtext:  isDark ? '#8BAAC8' : '#6B7280',
-    brand:    '#18366A',
+    panelBg:  '#FFFFFF',
+    cardBg:   '#FFFFFF',
+    border:   '#E5E7EB',
+    text:     '#111827',
+    subtext:  '#6B7280',
+    brand:    '#2563EB',
   };
 }
 
@@ -201,7 +201,7 @@ function CreateIncidentDialog({ open, onClose, onCreated }: { open: boolean; onC
       .finally(() => setBusy(false));
   };
 
-  const inputSx = { input: { color: t.text }, '& .MuiInputLabel-root': { color: t.subtext }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: t.border }, '&:hover fieldset': { borderColor: '#18366A' } } };
+  const inputSx = { input: { color: t.text }, '& .MuiInputLabel-root': { color: t.subtext }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: t.border }, '&:hover fieldset': { borderColor: '#2563EB' } } };
 
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ sx: { bgcolor: t.cardBg, color: t.text, minWidth: 480 } }}>
@@ -226,7 +226,7 @@ function CreateIncidentDialog({ open, onClose, onCreated }: { open: boolean; onC
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={{ color: t.subtext }}>Cancel</Button>
-        <Button variant="contained" onClick={submit} disabled={busy || !form.title} sx={{ bgcolor: '#18366A' }}>
+        <Button variant="contained" onClick={submit} disabled={busy || !form.title} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
           {busy ? <CircularProgress size={16} /> : 'Create'}
         </Button>
       </DialogActions>
@@ -281,7 +281,7 @@ function IncidentsTab() {
             </FormControl>
             <IconButton onClick={load} sx={{ color: t.subtext }}><RefreshIcon /></IconButton>
           </Box>
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#18366A' }}>
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
             New Incident
           </Button>
         </Box>
@@ -370,7 +370,7 @@ function IncidentsTab() {
               />
               <Button
                 variant="contained" size="small" fullWidth disabled={!newStatus || updating}
-                onClick={submitUpdate} sx={{ bgcolor: '#18366A' }}
+                onClick={submitUpdate} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}
               >
                 {updating ? <CircularProgress size={14} /> : 'Post Update'}
               </Button>
@@ -466,7 +466,7 @@ function CreateAlertRuleDialog({ open, onClose, onCreated }: { open: boolean; on
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={{ color: t.subtext }}>Cancel</Button>
-        <Button variant="contained" onClick={submit} disabled={busy || !form.name} sx={{ bgcolor: '#18366A' }}>
+        <Button variant="contained" onClick={submit} disabled={busy || !form.name} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
           {busy ? <CircularProgress size={16} /> : 'Create Rule'}
         </Button>
       </DialogActions>
@@ -534,7 +534,7 @@ function AlertsTab() {
               </Select>
             </FormControl>
           )}
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#18366A' }}>
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)} sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}>
             New Rule
           </Button>
         </Box>
@@ -943,8 +943,8 @@ export default function MonitoringPage() {
         sx={{
           mb: 3,
           '& .MuiTab-root': { color: t.subtext, textTransform: 'none', fontWeight: 600 },
-          '& .Mui-selected': { color: '#18366A' },
-          '& .MuiTabs-indicator': { bgcolor: '#18366A' },
+          '& .Mui-selected': { color: '#2563EB' },
+          '& .MuiTabs-indicator': { bgcolor: '#2563EB' },
           borderBottom: `1px solid ${t.border}`,
         }}
       >

@@ -145,8 +145,8 @@ const REGIONS = [
 // ── Styled stepper connector ──────────────────────────────────────────────────
 const StepConnectorStyled = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: { top: 16 },
-  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]:    { borderColor: '#18366A' },
-  [`&.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: { borderColor: '#18366A' },
+  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]:    { borderColor: '#2563EB' },
+  [`&.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: { borderColor: '#2563EB' },
   [`& .${stepConnectorClasses.line}`]: {
     borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,.1)' : '#E5E7EB',
     borderTopWidth: 2,
@@ -157,8 +157,8 @@ const StepIconStyled = ({ active, completed, icon, isDark }: { active?: boolean;
   <Box sx={{
     width: 34, height: 34, borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    bgcolor: completed ? '#18366A' : active ? '#18366A' : (isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB'),
-    border: `2px solid ${active || completed ? '#18366A' : 'transparent'}`,
+    bgcolor: completed ? '#2563EB' : active ? '#2563EB' : (isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB'),
+    border: `2px solid ${active || completed ? '#2563EB' : 'transparent'}`,
     transition: 'all .2s',
   }}>
     {completed
@@ -585,7 +585,7 @@ const ComputePage: React.FC = () => {
 
   if (deployed) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Box textAlign="center" maxWidth={480} px={3}>
           <Box sx={{ width: 72, height: 72, bgcolor: 'rgba(16,185,129,.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>
             <RocketLaunchIcon sx={{ fontSize: '2rem', color: '#10B981' }} />
@@ -595,7 +595,7 @@ const ComputePage: React.FC = () => {
             <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{netConfig.hostname || 'your-server'}</strong> is provisioning and will be ready in ~45 seconds.
           </Typography>
           <Button variant="contained" onClick={() => { setDeployed(false); setActiveStep(0); setOS('ubuntu-2404'); setFlavor('medium'); setNet({ hostname: '', region: 'us-east-1', network: 'public', sshKey: '', password: '', backups: false, ipv6: true }); }}
-            sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+            sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
             Deploy Another Server
           </Button>
         </Box>
@@ -604,24 +604,24 @@ const ComputePage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: isDark ? '#0D1826' : '#f8fafc' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF' }}>
       {/* Header */}
-      <Box sx={{ bgcolor: isDark ? '#0F1E30' : '#ffffff', borderBottom: `1px solid ${border}`, px: 4, py: 2.5 }}>
-        <Typography fontWeight={800} fontSize="1.25rem" color={isDark ? '#ffffff' : '#0A0F1F'}>Deploy Your First Server</Typography>
-        <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', mt: .25 }}>
+      <Box sx={{ bgcolor: '#ffffff', borderBottom: `1px solid #E5E7EB`, px: { xs: 2, md: 4 }, py: 2.5 }}>
+        <Typography fontWeight={700} fontSize="1.25rem" color="#111827">Deploy Your First Server</Typography>
+        <Typography variant="body2" sx={{ color: '#6B7280', mt: .25 }}>
           Cloud compute instances · 5 regions · NVMe SSD · Provisioned in {'<'}60s
         </Typography>
       </Box>
 
       {/* Stepper */}
-      <Box sx={{ bgcolor: isDark ? '#0F1E30' : '#ffffff', borderBottom: `1px solid ${border}`, px: 4, py: 2.5 }}>
+      <Box sx={{ bgcolor: '#ffffff', borderBottom: `1px solid #E5E7EB`, px: { xs: 2, md: 4 }, py: 2.5 }}>
         <Stepper activeStep={activeStep} alternativeLabel connector={<StepConnectorStyled />}>
           {STEPS.map((label, i) => (
             <Step key={label} completed={i < activeStep}>
               <StepLabel StepIconComponent={({ active, completed }) =>
                 <StepIconStyled active={active} completed={completed} icon={i + 1} isDark={isDark} />
               }>
-                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? (isDark ? '#fff' : '#18366A') : (isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF') }}>
+                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? '#2563EB' : '#9CA3AF' }}>
                   {label}
                 </Typography>
               </StepLabel>
@@ -641,8 +641,8 @@ const ComputePage: React.FC = () => {
         </Box>
 
         {/* Sticky summary sidebar */}
-        <Box sx={{ width: 290, flexShrink: 0, borderLeft: `1px solid ${border}`, p: 2.5, position: 'sticky', top: 0, alignSelf: 'flex-start', bgcolor: isDark ? '#0F1E30' : '#ffffff', minHeight: 'calc(100vh - 88px - 80px)' }}>
-          <Typography fontWeight={800} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'} mb={1.75}>Summary</Typography>
+        <Box sx={{ width: 290, flexShrink: 0, borderLeft: `1px solid #E5E7EB`, p: 2.5, position: 'sticky', top: 0, alignSelf: 'flex-start', bgcolor: '#ffffff', minHeight: 'calc(100vh - 88px - 80px)' }}>
+          <Typography fontWeight={800} fontSize=".9rem" color="#111827" mb={1.75}>Summary</Typography>
           <Stack spacing={1.25}>
             {[
               { label: 'Image',  value: os ? `${os.name} ${os.version}` : '—', color: os?.logoColor },
@@ -669,7 +669,7 @@ const ComputePage: React.FC = () => {
           <Stack spacing={1}>
             {activeStep < STEPS.length - 1 ? (
               <Button fullWidth variant="contained" disabled={!canNext()} onClick={() => setActiveStep(s => s + 1)}
-                sx={{ bgcolor: '#18366A', '&:hover': { bgcolor: '#102548' }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
+                sx={{ bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
                 Continue →
               </Button>
             ) : (
@@ -691,7 +691,7 @@ const ComputePage: React.FC = () => {
           {/* Step dots */}
           <Box display="flex" justifyContent="center" gap={.75} mt={2}>
             {STEPS.map((_, i) => (
-              <Box key={i} sx={{ width: i === activeStep ? 16 : 6, height: 6, borderRadius: 3, bgcolor: i <= activeStep ? '#18366A' : (isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB'), transition: 'all .2s' }} />
+              <Box key={i} sx={{ width: i === activeStep ? 16 : 6, height: 6, borderRadius: 3, bgcolor: i <= activeStep ? '#2563EB' : '#E5E7EB', transition: 'all .2s' }} />
             ))}
           </Box>
         </Box>

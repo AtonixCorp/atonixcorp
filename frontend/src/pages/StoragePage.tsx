@@ -91,17 +91,17 @@ const StoragePage: React.FC = () => {
 
   // ── colour tokens ────────────────────────────────────────────────────────
   const tokens = {
-    panelBg: isDark ? '#0D1826' : '#F9FAFB',
-    cardBg:  isDark ? '#132336' : '#FFFFFF',
-    border:  isDark ? '#1E3A5F' : '#E5E7EB',
-    brand:   '#18366A',
-    hover:   isDark ? '#102548' : '#EFF6FF',
-    text:    isDark ? '#e0e9f4' : '#0A0F1F',
-    muted:   isDark ? '#6b8aab' : '#6B7280',
-    subBg:   isDark ? '#060d18' : '#F3F4F6',
-    codeBg:  isDark ? '#060d18' : '#1e1e2e',
-    chipBg:  isDark ? '#1a2d47' : '#EFF6FF',
-    snackBg: isDark ? '#132336' : '#FFFFFF',
+    panelBg: '#FFFFFF',
+    cardBg:  '#FFFFFF',
+    border:  '#E5E7EB',
+    brand:   '#2563EB',
+    hover:   '#F3F4F6',
+    text:    '#111827',
+    muted:   '#6B7280',
+    subBg:   '#F9FAFB',
+    codeBg:  '#111827',
+    chipBg:  '#EFF6FF',
+    snackBg: '#FFFFFF',
   };
   const [buckets,     setBuckets]     = useState<StorageBucket[]>([]);
   const [selected,    setSelected]    = useState<StorageBucket | null>(null);

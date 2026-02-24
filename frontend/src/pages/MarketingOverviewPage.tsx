@@ -32,28 +32,28 @@ const MarketingOverviewPage: React.FC = () => {
   const m = data.top_metrics;
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Marketing Overview</Typography>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#FFFFFF' }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, color: '#111827' }}>Marketing Overview</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Enterprise view across campaigns, audience, SEO, experiments, content, and spend.
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Total Campaigns</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.total_campaigns}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Active Campaigns</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.active_campaigns}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Audience Size</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.audience_size.toLocaleString()}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Monthly Spend</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>${m.monthly_spend.toLocaleString()}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Total Campaigns</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.total_campaigns}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Active Campaigns</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.active_campaigns}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Audience Size</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.audience_size.toLocaleString()}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Monthly Spend</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>${m.monthly_spend.toLocaleString()}</Typography></CardContent></Card>
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Overall ROI</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.overall_roi}x</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">SEO Score</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.seo_score}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Deliverability</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{m.deliverability_score}%</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Avg Engagement</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{(m.avg_engagement_rate * 100).toFixed(1)}%</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Overall ROI</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.overall_roi}x</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">SEO Score</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.seo_score}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Deliverability</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{m.deliverability_score}%</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Avg Engagement</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{(m.avg_engagement_rate * 100).toFixed(1)}%</Typography></CardContent></Card>
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr' }, gap: 1.5, mb: 2 }}>
-        <Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
           <CardContent>
             <Typography sx={{ fontWeight: 700, mb: 1 }}>Live Activity</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Running Campaigns</Typography>
@@ -71,7 +71,7 @@ const MarketingOverviewPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
           <CardContent>
             <Typography sx={{ fontWeight: 700, mb: 1 }}>Insights</Typography>
             <Typography variant="body2"><strong>Best channel:</strong> {data.insights.best_channel}</Typography>
@@ -88,12 +88,12 @@ const MarketingOverviewPage: React.FC = () => {
         </Card>
       </Box>
 
-      <Card>
+      <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
         <CardContent>
           <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Quick Actions</Typography>
           <Stack direction="row" gap={1} flexWrap="wrap">
             {data.quick_actions.map((action) => (
-              <Button key={action.label} variant="contained" size="small" onClick={() => navigate(action.route)}>
+              <Button key={action.label} variant="contained" size="small" onClick={() => navigate(action.route)} sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 500, '&:hover': { bgcolor: '#1D4ED8' } }}>
                 {action.label}
               </Button>
             ))}

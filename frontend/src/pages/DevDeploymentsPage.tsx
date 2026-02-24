@@ -116,23 +116,23 @@ const DevDeploymentsPage: React.FC = () => {
   }, []);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#FFFFFF' }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={2} gap={1}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>Deployments</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827' }}>Deployments</Typography>
           <Typography variant="body2" color="text.secondary">Overview-first deployment workspace for developers.</Typography>
         </Box>
-        <Button variant="contained">Deploy new app</Button>
+        <Button variant="contained" sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 500, '&:hover': { bgcolor: '#1D4ED8' } }}>Deploy new app</Button>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Total deployments</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{summary.total}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Running</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>{summary.running}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Failed</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: summary.failed ? 'error.main' : 'text.primary' }}>{summary.failed}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Last deployment</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{summary.lastDeploymentTime}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Total deployments</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{summary.total}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Running</Typography><Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>{summary.running}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Failed</Typography><Typography variant="h6" sx={{ fontWeight: 700, color: summary.failed ? 'error.main' : 'text.primary' }}>{summary.failed}</Typography></CardContent></Card>
+        <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}><CardContent><Typography variant="caption" color="text.secondary">Last deployment</Typography><Typography variant="h6" sx={{ fontWeight: 700 }}>{summary.lastDeploymentTime}</Typography></CardContent></Card>
       </Box>
 
-      <Card sx={{ mb: 2 }}>
+      <Card sx={{ mb: 2, border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
         <CardContent>
           <Typography sx={{ fontWeight: 700, color: summary.failed > 0 ? 'warning.main' : 'success.main' }}>
             {summary.failed > 0 ? `${summary.failed} deployment needs attention` : 'All systems operational'}
@@ -140,13 +140,13 @@ const DevDeploymentsPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card sx={{ border: '1px solid #E5E7EB', boxShadow: 'none', borderRadius: 1 }}>
         <CardContent>
           <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Deployments List</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ bgcolor: '#F9FAFB' }}>
                   <TableCell>App Name</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Environment</TableCell>
@@ -163,7 +163,7 @@ const DevDeploymentsPage: React.FC = () => {
                     <TableCell>{item.lastDeployed}</TableCell>
                     <TableCell align="right">
                       <Stack direction="row" justifyContent="flex-end" gap={1}>
-                        <Button size="small" onClick={() => { setSelected(item); setTab(0); }}>View</Button>
+                        <Button size="small" onClick={() => { setSelected(item); setTab(0); }} sx={{ color: '#2563EB' }}>View</Button>
                         <Button size="small" variant="outlined">Logs</Button>
                       </Stack>
                     </TableCell>
@@ -205,7 +205,7 @@ const DevDeploymentsPage: React.FC = () => {
               </Stack>
 
               <Stack direction="row" gap={1} flexWrap="wrap">
-                <Button size="small" variant="contained">Rollback</Button>
+                <Button size="small" variant="contained" sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Rollback</Button>
                 <Button size="small" variant="outlined">Open runbook</Button>
                 <Button size="small" variant="outlined">View incident timeline</Button>
               </Stack>
@@ -218,7 +218,7 @@ const DevDeploymentsPage: React.FC = () => {
               <Typography><strong>Approval gate:</strong> {selected.environment === 'prod' ? 'Required (2 approvers)' : 'Not required'}</Typography>
               <Typography><strong>Change window:</strong> {selected.environment === 'prod' ? 'Mon-Fri 09:00-18:00 UTC' : 'Open'}</Typography>
               <Stack direction="row" gap={1}>
-                <Button size="small" variant="contained">Run pipeline</Button>
+                <Button size="small" variant="contained" sx={{ bgcolor: '#2563EB', textTransform: 'none', '&:hover': { bgcolor: '#1D4ED8' } }}>Run pipeline</Button>
                 <Button size="small" variant="outlined">View logs</Button>
               </Stack>
             </Stack>
