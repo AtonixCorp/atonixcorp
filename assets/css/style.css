@@ -52,6 +52,7 @@ body {
 a { color: var(--teal); text-decoration: none; transition: color .2s; }
 a:hover { color: var(--teal-hover); }
 img { max-width: 100%; display: block; }
+svg { display: block; overflow: hidden; }
 ul { list-style: none; }
 
 /* --------- Typography --------- */
@@ -548,7 +549,9 @@ p  { color: var(--text-muted); }
   border-radius: 2px;
   text-decoration: none;
   transition: background 120ms;
+  line-height: 1;
 }
+.hp-btn-primary svg { display: block; flex-shrink: 0; width: 18px; height: 18px; }
 .hp-btn-primary:hover { background: #00C8E5; color: #0A0F1F; }
 .hp-hero-panel {
   border: 1px solid rgba(255,255,255,.16);
@@ -577,7 +580,7 @@ p  { color: var(--text-muted); }
   margin-bottom: 16px;
 }
 .hp-panel-row:last-child { margin-bottom: 0; }
-.hp-cyan-icon { color: #00E0FF; flex-shrink: 0; width: 18px; height: 18px; }
+.hp-cyan-icon { display: block; color: #00E0FF; flex-shrink: 0; width: 18px; height: 18px; }
 
 /* Sections */
 .hp-section { padding: 80px 0; background: #fff; }
@@ -655,7 +658,7 @@ p  { color: var(--text-muted); }
   transition: border-color 120ms;
 }
 .hp-check:hover { border-color: #00E0FF; }
-.hp-check-icon { color: #22C55E; flex-shrink: 0; width: 18px; height: 18px; }
+.hp-check-icon { display: block; color: #22C55E; flex-shrink: 0; width: 18px; height: 18px; }
 .hp-check-text { font-size: .94rem; line-height: 1.38; letter-spacing: -0.05px; color: #111827; }
 
 /* Industry cards (compact) */
@@ -688,7 +691,7 @@ p  { color: var(--text-muted); }
   letter-spacing: -0.15px;
   color: #fff;
 }
-.hp-navy-card-hdr svg { color: #00E0FF; flex-shrink: 0; width: 18px; height: 18px; }
+.hp-navy-card-hdr svg { display: block; color: #00E0FF; flex-shrink: 0; width: 18px; height: 18px; }
 .hp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
 .hp-chip {
   background: rgba(255,255,255,.08);
