@@ -145,7 +145,7 @@ const Homepage: React.FC = () => {
       <Box
         id="hero"
         sx={{
-          bgcolor: '#0A0F1F',
+          bgcolor: COLORS.navy,
           color: COLORS.white,
           borderBottom: `1px solid ${COLORS.silver}`,
         }}
@@ -155,7 +155,7 @@ const Homepage: React.FC = () => {
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1.1fr 0.9fr' },
-              gap: { xs: 5, md: 8 },
+              gap: { xs: 3, md: 5 },
               alignItems: 'center',
             }}
           >
@@ -206,23 +206,6 @@ const Homepage: React.FC = () => {
                   }}
                 >
                   Get Started
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => setLoginOpen(true)}
-                  aria-label="Sign in to AtonixCorp"
-                  sx={{
-                    borderColor: COLORS.white,
-                    color: COLORS.white,
-                    borderRadius: RADIUS,
-                    py: 1.5,
-                    px: 3,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': { borderColor: COLORS.white, bgcolor: 'rgba(255,255,255,.06)' },
-                  }}
-                >
-                  Sign In
                 </Button>
               </Stack>
             </Box>

@@ -69,17 +69,19 @@ const DocsPage: React.FC = () => {
         sx={{
           background: `linear-gradient(135deg, ${primaryBlue} 0%, ${darkGray} 100%)`,
           color: 'white',
-          py: { xs: 6, md: 10 },
-          textAlign: 'center',
+          py: { xs: 4, md: 6 },
+          textAlign: 'left',
         }}
       >
-        <Container maxWidth="lg">
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 2 }}>
+        <Container maxWidth="lg" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 0.9fr' }, gap: { xs: 3, md: 5 }, alignItems: 'center' }}>
+          <Box>
+          <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, color: '#FFFFFF', lineHeight: { xs: 1.12, md: 1.08 }, letterSpacing: { xs: '-0.5px', md: '-1px' }, fontSize: { xs: '2.2rem', sm: '2.7rem', md: '3.35rem' }, maxWidth: 620 }}>
             Documentation
           </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 300, opacity: 0.9 }}>
+          <Typography variant="h6" sx={{ fontWeight: 400, color: '#FFFFFF', maxWidth: 620, lineHeight: { xs: 1.42, md: 1.4 } }}>
             Everything you need to build amazing applications with atonixcorp
           </Typography>
+          </Box>
         </Container>
       </Box>
 

@@ -20,6 +20,8 @@ import Homepage from './pages/Homepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
 import AboutPage from './pages/AboutPage';
+import ContactSalesPage from './pages/ContactSalesPage';
+import SupportPage from './pages/SupportPage';
 import OnboardingDashboard  from './pages/OnboardingDashboard';
 import AccountSettingsPage       from './pages/AccountSettingsPage';
 import DatabasePage              from './pages/DatabasePage';
@@ -157,12 +159,13 @@ const AppShell: React.FC = () => {
         <Routes>
           <Route path="/"          element={<Homepage />} />
           <Route path="/features"  element={<FeaturesPage />} />
+          <Route path="/developer" element={<DocsPage />} />
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<Navigate to="/dashboard/domains" replace />} />
           <Route path="/resources" element={<DocsPage />} />
-          <Route path="/support"   element={<DocsPage />} />
-          <Route path="/contact"   element={<AboutPage />} />
+          <Route path="/support"   element={<SupportPage />} />
+          <Route path="/contact"   element={<ContactSalesPage />} />
           <Route path="/account"   element={<AboutPage />} />
           <Route path="*"          element={<Homepage />} />
         </Routes>
