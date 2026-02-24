@@ -36,7 +36,6 @@ import LoadBalancersPage         from './pages/LoadBalancersPage';
 import CDNPage                   from './pages/CDNPage';
 import NetworkPage               from './pages/NetworkPage';
 import OrchestrationPage         from './pages/OrchestrationPage';
-import ToolPlaceholderPage       from './pages/ToolPlaceholderPage';
 import DevDeploymentsPage        from './pages/DevDeploymentsPage';
 import DevPipelinesPage          from './pages/DevPipelinesPage';
 import DevContainersPage         from './pages/DevContainersPage';
@@ -45,11 +44,7 @@ import DevApiManagementPage      from './pages/DevApiManagementPage';
 import DevResourceControlPage    from './pages/DevResourceControlPage';
 import DevWorkspacePage          from './pages/DevWorkspacePage';
 import DevSettingsPage           from './pages/DevSettingsPage';
-import DevTeamPage               from './pages/DevTeamPage';
-import DevBillingPage            from './pages/DevBillingPage';
 import MarketingSettingsPage     from './pages/MarketingSettingsPage';
-import MarketingTeamPage         from './pages/MarketingTeamPage';
-import MarketingBillingPage      from './pages/MarketingBillingPage';
 import MarketingOverviewPage     from './pages/MarketingOverviewPage';
 import MarketingAudiencePage     from './pages/MarketingAudiencePage';
 import MarketingAbTestingPage    from './pages/MarketingAbTestingPage';
@@ -87,10 +82,6 @@ const AppShell: React.FC = () => {
             <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
             <Route path="/dev-dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
             <Route path="/dev-dashboard/settings/*" element={<DevSettingsPage />} />
-            <Route path="/dev-dashboard/team" element={<DevTeamPage />} />
-            <Route path="/dev-dashboard/help" element={<ToolPlaceholderPage title="Developer Support" description="Developer support resources and help center." />} />
-            <Route path="/dev-dashboard/referral" element={<ToolPlaceholderPage title="Developer Referral" description="Developer referral and partner programs." />} />
-            <Route path="/dev-dashboard/billing" element={<DevBillingPage />} />
             <Route path="/dev-dashboard/*" element={<Navigate to="/dev-dashboard/deployments" replace />} />
           </Routes>
         </DashboardLayout>
@@ -112,10 +103,6 @@ const AppShell: React.FC = () => {
             <Route path="/marketing-dashboard/ab-testing" element={<MarketingAbTestingPage />} />
             <Route path="/marketing-dashboard/sections" element={<DashboardSectionsPage dashboardMode="marketing" />} />
             <Route path="/marketing-dashboard/settings/*" element={<MarketingSettingsPage />} />
-            <Route path="/marketing-dashboard/team" element={<MarketingTeamPage />} />
-            <Route path="/marketing-dashboard/help" element={<ToolPlaceholderPage title="Marketing Support" description="Marketing support resources and help center." />} />
-            <Route path="/marketing-dashboard/referral" element={<ToolPlaceholderPage title="Marketing Referral" description="Marketing referral and partner programs." />} />
-            <Route path="/marketing-dashboard/billing" element={<MarketingBillingPage />} />
             <Route path="/marketing-dashboard/*" element={<Navigate to="/marketing-dashboard/analytics" replace />} />
           </Routes>
         </DashboardLayout>

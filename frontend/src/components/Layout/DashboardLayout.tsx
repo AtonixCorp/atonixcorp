@@ -154,14 +154,10 @@ const ACCOUNT_NAV: NavItem[] = [
 ];
 
 const DEVELOPER_ACCOUNT_NAV: NavItem[] = [
-  { label: 'Developer Billing',  icon: <BillingIcon {...I()} />, path: '/dev-dashboard/billing' },
-  { label: 'Developer Team',     icon: <TeamIcon {...I()} />, path: '/dev-dashboard/team' },
   { label: 'Developer Settings', icon: <SettingsIcon {...I()} />, path: '/dev-dashboard/settings' },
 ];
 
 const MARKETING_ACCOUNT_NAV: NavItem[] = [
-  { label: 'Marketing Billing',  icon: <BillingIcon {...I()} />, path: '/marketing-dashboard/billing' },
-  { label: 'Marketing Team',     icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/team' },
   { label: 'Marketing Settings', icon: <SettingsIcon {...I()} />, path: '/marketing-dashboard/settings' },
 ];
 
@@ -170,15 +166,9 @@ const SUPPORT_NAV: NavItem[] = [
   { label: 'Referral Program', icon: <TeamIcon    {...I()} />, path: '/dashboard/referral', badge: '$25', badgeColor: 'success' },
 ];
 
-const DEVELOPER_SUPPORT_NAV: NavItem[] = [
-  { label: 'Developer Support', icon: <HelpIcon {...I()} />, path: '/dev-dashboard/help' },
-  { label: 'Developer Referral', icon: <TeamIcon {...I()} />, path: '/dev-dashboard/referral', badge: '$25', badgeColor: 'success' },
-];
+const DEVELOPER_SUPPORT_NAV: NavItem[] = [];
 
-const MARKETING_SUPPORT_NAV: NavItem[] = [
-  { label: 'Marketing Support', icon: <HelpIcon {...I()} />, path: '/marketing-dashboard/help' },
-  { label: 'Marketing Referral', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/referral', badge: '$25', badgeColor: 'success' },
-];
+const MARKETING_SUPPORT_NAV: NavItem[] = [];
 // Suppress unused-var — tokens are exported for child components to import if needed
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _tokens = { NAVY2, SUCCESS, WARNING, DANGER, BLUE_HOVER };
@@ -484,14 +474,18 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           ))}
         </List>
 
-        {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
+        {supportNav.length > 0 && (
+          <>
+            {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
 
-        <NavSectionLabel collapsed={collapsed}>Support</NavSectionLabel>
-        <List disablePadding>
-          {supportNav.map(item => (
-            <NavRow key={item.label} item={item} collapsed={collapsed} />
-          ))}
-        </List>
+            <NavSectionLabel collapsed={collapsed}>Support</NavSectionLabel>
+            <List disablePadding>
+              {supportNav.map(item => (
+                <NavRow key={item.label} item={item} collapsed={collapsed} />
+              ))}
+            </List>
+          </>
+        )}
       </Box>
 
       {/* User strip */}
@@ -832,12 +826,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
 
               {/* Billing + Sign out */}
-              <MenuItem onClick={() => { setProfileAnchor(null); navigate(`${routeBase}/billing`); }}
-                sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                  '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
-                <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
-                <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>Billing</Typography>
-              </MenuItem>
+              {dashboardMode === 'cloud' && (
+                <MenuItem onClick={() => { setProfileAnchor(null); navigate(`${routeBase}/billing`); }}
+                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
+                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
+                  <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
+                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>Billing</Typography>
+                </MenuItem>
+              )}
               <MenuItem onClick={handleLogout}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, mb: .5, borderRadius: '2px',
                   '&:hover': { bgcolor: 'rgba(239,68,68,.08)' } }}>
