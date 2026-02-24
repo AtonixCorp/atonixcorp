@@ -74,7 +74,8 @@ const CloudPlatformHeader: React.FC = () => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            py: 1,
+            py: { xs: 0.75, md: 1 },
+            minHeight: { xs: 64, md: 72 },
           }}
         >
           {/* Logo */}
@@ -251,6 +252,8 @@ const CloudPlatformHeader: React.FC = () => {
             '& .MuiDrawer-paper': {
               bgcolor: primaryBlue,
               borderBottom: `1px solid ${accentCyan}33`,
+              maxHeight: '85vh',
+              overflowY: 'auto',
             },
           }}
         >

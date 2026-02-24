@@ -155,7 +155,7 @@ const Footer: React.FC = () => {
             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, color: 'white' }}>
               Connect With Us
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {socialLinks.map((social) => (
                 <IconButton
                   key={social.name}
@@ -199,7 +199,7 @@ const Footer: React.FC = () => {
           <Typography variant="body2" sx={{ opacity: 0.7, color: 'white' }}>
             © {currentYear} AtonixCorp. All rights reserved.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 3 }}>
+          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-end' } }}>
             <Link
               component={RouterLink}
               to="/privacy"

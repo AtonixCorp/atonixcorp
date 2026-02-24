@@ -605,7 +605,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             zIndex: (theme) => theme.zIndex.drawer - 1,
           }}
         >
-          <Toolbar sx={{ gap: 1.5, px: { xs: 2, md: 3 }, minHeight: '64px !important' }}>
+          <Toolbar sx={{ gap: { xs: 1, md: 1.5 }, px: { xs: 1.25, md: 3 }, minHeight: '64px !important' }}>
 
             <IconButton
                 onClick={() => setMobileOpen(true)}
@@ -626,8 +626,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             {/* Global search */}
             <Box
               sx={{
-                display: 'flex', alignItems: 'center',
+                display: { xs: 'none', sm: 'flex' }, alignItems: 'center',
                 flex: 1, maxWidth: 420,
+                minWidth: 0,
+                width: { xs: '100%', sm: 'auto' },
                 bgcolor: 'rgba(255,255,255,.08)',
                 borderRadius: '6px',
                 px: 1.5, py: 0.5, gap: 1,
@@ -699,7 +701,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               open={Boolean(notifAnchor)}
               onClose={() => setNotifAnchor(null)}
               PaperProps={{
-                sx: { width: 320, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
+                sx: { width: 'min(320px, calc(100vw - 24px))', mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -755,7 +757,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               open={Boolean(profileAnchor)}
               onClose={() => setProfileAnchor(null)}
               PaperProps={{
-                sx: { minWidth: 240, mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
+                sx: { minWidth: 'min(240px, calc(100vw - 24px))', mt: 1, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,.25)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB'}`, bgcolor: isDark ? '#132336' : '#ffffff' },
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
