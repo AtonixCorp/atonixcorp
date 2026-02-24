@@ -45,7 +45,7 @@ const uiPalette = {
   textStrong: computeUiTokens.neutralStrong,
   textBody: computeUiTokens.neutralBody,
   textMuted: computeUiTokens.neutralMuted,
-  textSecondary: dashboardTokens.colors.textSecondary,
+  textSecondary: computeUiTokens.neutralMuted,
   accent: computeUiTokens.accentStrong,
   accentHover: darken(computeUiTokens.accentStrong, 0.2),
   success: computeUiTokens.successStrong,
