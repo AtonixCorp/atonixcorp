@@ -549,6 +549,11 @@ export const domainApi = {
     }
   ) => cloudClient.post(`/domains/${id}/switch_domain/`, payload || {}),
   switchStatus:      (id: string)                                 => cloudClient.get(`/domains/${id}/switch_status/`),
+  // Admin
+  adminSummary:      ()                                           => cloudClient.get('/domains/admin/summary/'),
+  adminDomains:      ()                                           => cloudClient.get('/domains/admin/domains/'),
+  adminUsers:        ()                                           => cloudClient.get('/domains/admin/users/'),
+  adminForceStatus:  (id: string, status: string)                => cloudClient.post(`/domains/${id}/admin/force_status/`, { status }),
 };
 
 // ---- Email Marketing ----

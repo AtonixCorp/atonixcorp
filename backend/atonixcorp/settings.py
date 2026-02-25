@@ -130,6 +130,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_RATES': {
+        'domain_search': '30/minute',
+        'auth': '20/minute',
+    },
 }
 
 # CSRF – trust React dev server and localhost for form submissions

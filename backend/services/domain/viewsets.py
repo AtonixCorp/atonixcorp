@@ -1,7 +1,10 @@
 import logging
+from django.contrib.auth.models import User
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
@@ -22,6 +25,10 @@ from ..integrations import designate_service as dns_svc
 from ..core.tasks import enqueue_domain_switch_workflow
 
 logger = logging.getLogger(__name__)
+
+
+class DomainSearchAnonThrottle(AnonRateThrottle):
+    scope = 'domain_search'
 
 
 # ── Domain ViewSet ────────────────────────────────────────────────────────────
@@ -49,7 +56,13 @@ class DomainViewSet(ModelViewSet):
 
     # ── Static / discovery endpoints ──────────────────────────────────────────
 
-    @action(detail=False, methods=['post'], url_path='check_availability')
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='check_availability',
+        permission_classes=[AllowAny],
+        throttle_classes=[DomainSearchAnonThrottle],
+    )
     def check_availability(self, request):
         ser = CheckAvailabilitySerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -59,7 +72,13 @@ class DomainViewSet(ModelViewSet):
         )
         return Response(result)
 
-    @action(detail=False, methods=['get'], url_path='tld_catalogue')
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='tld_catalogue',
+        permission_classes=[AllowAny],
+        throttle_classes=[DomainSearchAnonThrottle],
+    )
     def tld_catalogue(self, request):
         return Response(rc.get_tld_catalogue())
 
@@ -323,6 +342,104 @@ class DomainViewSet(ModelViewSet):
             'workflow': switch_state,
             'history': (domain.metadata or {}).get('domain_switch_history', []),
         })
+
+    # ── Admin Console Endpoints ─────────────────────────────────────────────
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='admin/summary',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_summary(self, request):
+        total_domains = Domain.objects.count()
+        status_counts = {
+            item['status']: item['count']
+            for item in Domain.objects.values('status').annotate(count=Count('id'))
+        }
+        tld_counts = list(
+            Domain.objects
+            .values('tld')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:10]
+        )
+        total_users = User.objects.count()
+        return Response({
+            'total_domains': total_domains,
+            'total_users': total_users,
+            'status_counts': status_counts,
+            'top_tlds': tld_counts,
+        })
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='admin/domains',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_domains(self, request):
+        queryset = Domain.objects.select_related('owner').order_by('-created_at')[:200]
+        rows = [
+            {
+                'resource_id': domain.resource_id,
+                'domain_name': domain.domain_name,
+                'status': domain.status,
+                'tld': domain.tld,
+                'owner_id': domain.owner_id,
+                'owner_username': domain.owner.username if domain.owner else None,
+                'expires_at': domain.expires_at,
+                'auto_renew': domain.auto_renew,
+                'created_at': domain.created_at,
+            }
+            for domain in queryset
+        ]
+        return Response(rows)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='admin/users',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_users(self, request):
+        users = (
+            User.objects
+            .annotate(domains_count=Count('domain_owned'))
+            .order_by('-date_joined')[:200]
+        )
+        rows = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_staff': user.is_staff,
+                'is_active': user.is_active,
+                'domains_count': user.domains_count,
+                'date_joined': user.date_joined,
+            }
+            for user in users
+        ]
+        return Response(rows)
+
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='admin/force_status',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_force_status(self, request, resource_id=None):
+        domain = Domain.objects.get(resource_id=resource_id)
+        new_status = (request.data.get('status') or '').strip().lower()
+        allowed_statuses = {choice[0] for choice in Domain._meta.get_field('status').choices}
+        if new_status not in allowed_statuses:
+            return Response(
+                {'error': 'Invalid status.', 'allowed': sorted(allowed_statuses)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        domain.status = new_status
+        domain.save(update_fields=['status', 'updated_at'])
+        return Response({'resource_id': domain.resource_id, 'status': domain.status})
 
 
 # ── SslCertificate ViewSet ────────────────────────────────────────────────────
