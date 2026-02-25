@@ -380,7 +380,7 @@ function PermissionsTab({ team, reload }: { team: Team; reload: () => void }) {
                 {ns}
               </Typography>
               <Stack spacing={0.5}>
-                {entries.map(([key, allowed]) => (
+                {entries.map(([key]) => (
                   <Stack key={key} direction="row" alignItems="center" justifyContent="space-between">
                     <Typography sx={{ fontSize: '.82rem', fontFamily: 'monospace', color: t.textPrimary }}>{key}</Typography>
                     <Switch
@@ -695,7 +695,7 @@ function ActivityTab({ teamId }: { teamId: string }) {
         </Box>
       ) : (
         <Stack spacing={0}>
-          {logs.map((log, i) => (
+          {logs.map((log) => (
             <Stack key={log.id} direction="row" spacing={1.5} sx={{ py: 1.25, borderBottom: `1px solid ${t.border}` }} alignItems="flex-start">
               <Typography sx={{ fontSize: '1rem', mt: 0.15, flexShrink: 0 }}>{ACTION_ICONS[log.action] ?? '📌'}</Typography>
               <Box sx={{ flex: 1 }}>

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box, Typography, Button, Card, CardContent, Chip, Stack, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, MenuItem, Select, FormControl, InputLabel,
+  TextField,
   Stepper, Step, StepLabel, CircularProgress, Alert,
   Divider, Avatar, Tooltip, IconButton, ToggleButtonGroup, ToggleButton,
   FormControlLabel, Switch, LinearProgress,
@@ -18,7 +18,7 @@ import OpenInNewIcon    from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
 import { teamApi }                from '../services/cloudApi';
 import { dashboardTokens, dashboardSemanticColors, dashboardPrimaryButtonSx } from '../styles/dashboardDesignSystem';
-import type { TeamSummary, TeamType, PortfolioType } from '../types/teams';
+import type { TeamSummary, TeamType } from '../types/teams';
 import { TEAM_TYPE_LABELS, TEAM_TYPE_COLORS, ROLE_COLORS } from '../types/teams';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

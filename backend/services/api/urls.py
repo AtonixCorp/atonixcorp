@@ -53,6 +53,17 @@ from ..billing.viewsets import (
 )
 from ..marketing.suite_viewsets import MarketingOverviewViewSet
 from ..teams.viewsets import TeamViewSet
+from ..pipelines.viewsets import (
+    ProjectViewSet,
+    RepositoryViewSet,
+    PipelineFileViewSet,
+    PipelineViewSet,
+    PipelineJobViewSet,
+    PipelineApprovalViewSet,
+    PipelineRuleViewSet,
+    EnvironmentViewSet,
+    PipelineArtifactViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -152,6 +163,19 @@ router.register(r'billing/payment-methods', PaymentMethodViewSet,    basename='p
 router.register(r'billing/invoices',        InvoiceViewSet,          basename='invoice')
 router.register(r'billing/usage',           UsageViewSet,            basename='billing-usage')
 router.register(r'billing/credits',         CreditViewSet,           basename='credit')
+
+# ============================================================================
+# CI/CD PIPELINES ENDPOINTS
+# ============================================================================
+router.register(r'pipelines/projects',         ProjectViewSet,         basename='pipeline-project')
+router.register(r'pipelines/repositories',     RepositoryViewSet,      basename='pipeline-repository')
+router.register(r'pipelines/files',            PipelineFileViewSet,    basename='pipeline-file')
+router.register(r'pipelines/runs',             PipelineViewSet,        basename='pipeline-run')
+router.register(r'pipelines/jobs',             PipelineJobViewSet,     basename='pipeline-job')
+router.register(r'pipelines/approvals',        PipelineApprovalViewSet, basename='pipeline-approval')
+router.register(r'pipelines/rules',            PipelineRuleViewSet,    basename='pipeline-rule')
+router.register(r'pipelines/environments',     EnvironmentViewSet,     basename='pipeline-environment')
+router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename='pipeline-artifact')
 
 # URL Patterns
 urlpatterns = [

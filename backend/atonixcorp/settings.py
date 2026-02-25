@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'services',
+    'services.pipelines',
 ]
 
 HAS_GRAPHENE_DJANGO = importlib.util.find_spec('graphene_django') is not None

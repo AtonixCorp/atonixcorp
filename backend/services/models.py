@@ -103,6 +103,19 @@ from .teams.models import (
     TeamInvitation,
 )
 
+from .pipelines.models import (
+    Project,
+    Repository,
+    PipelineFile,
+    Pipeline,
+    PipelineJob,
+    JobLog,
+    PipelineApproval,
+    PipelineRule,
+    Environment,
+    PipelineArtifact,
+)
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',

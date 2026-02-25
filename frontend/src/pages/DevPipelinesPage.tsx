@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -7,156 +7,274 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Button,
   Chip,
   Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Divider,
+  Snackbar,
 } from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import RunPipelineModal from '../components/Pipelines/RunPipelineModal';
+import PipelineDetail from '../components/Pipelines/PipelineDetail';
 
-type RunStatus = 'Success' | 'Failed' | 'Running';
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const t = dashboardTokens.colors;
 
-interface Pipeline {
+type RunStatus = 'success' | 'failed' | 'running' | 'pending';
+
+interface PipelineRun {
   id: string;
+  pipelineId: string;
   name: string;
   repoBranch: string;
-  lastRun: string;
+  startedAt: string;
   status: RunStatus;
   trigger: 'manual' | 'auto';
-  description: string;
-  environments: string[];
-  runs: Array<{ id: string; startedAt: string; status: RunStatus }>;
+  project: string;
+  repo: string;
+  branch: string;
+  triggeredBy: string;
 }
 
-const PIPELINES: Pipeline[] = [
+const MOCK_PIPELINE_RUNS: PipelineRun[] = [
   {
-    id: 'pl-1',
+    id: 'run-41',
+    pipelineId: 'pipe_001',
     name: 'payments-release',
     repoBranch: 'payments/main',
-    lastRun: '2026-02-23 07:04',
-    status: 'Success',
+    startedAt: '2026-02-23T07:04:00Z',
+    status: 'success',
     trigger: 'auto',
-    description: 'Build, test, security scan, deploy to stage/prod',
-    environments: ['stage', 'prod'],
-    runs: [
-      { id: 'run-41', startedAt: '2026-02-23 07:04', status: 'Success' },
-      { id: 'run-40', startedAt: '2026-02-22 16:11', status: 'Success' },
-      { id: 'run-39', startedAt: '2026-02-22 10:29', status: 'Failed' },
-    ],
+    project: 'atonix-api',
+    repo: 'atonix-api',
+    branch: 'main',
+    triggeredBy: 'samuel',
   },
   {
-    id: 'pl-2',
+    id: 'run-40',
+    pipelineId: 'pipe_002',
     name: 'frontend-ci',
     repoBranch: 'web/release/stage',
-    lastRun: '2026-02-23 06:21',
-    status: 'Running',
+    startedAt: '2026-02-23T06:21:00Z',
+    status: 'running',
     trigger: 'manual',
-    description: 'Build and push web image',
-    environments: ['stage'],
-    runs: [
-      { id: 'run-88', startedAt: '2026-02-23 06:21', status: 'Running' },
-      { id: 'run-87', startedAt: '2026-02-22 19:42', status: 'Success' },
-    ],
+    project: 'atonix-web',
+    repo: 'atonix-web',
+    branch: 'main',
+    triggeredBy: 'jordan',
+  },
+  {
+    id: 'run-39',
+    pipelineId: 'pipe_003',
+    name: 'security-scan',
+    repoBranch: 'security/main',
+    startedAt: '2026-02-22T16:11:00Z',
+    status: 'failed',
+    trigger: 'auto',
+    project: 'atonix-security',
+    repo: 'atonix-security',
+    branch: 'main',
+    triggeredBy: 'system',
   },
 ];
 
-const statusColor = (status: RunStatus) => {
-  if (status === 'Success') return 'success';
-  if (status === 'Failed') return 'error';
-  return 'warning';
+const STATUS_CONFIG = {
+  success: { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)', label: 'Success' },
+  failed: { color: dashboardSemanticColors.danger, bg: 'rgba(239,68,68,.12)', label: 'Failed' },
+  running: { color: dashboardSemanticColors.info, bg: 'rgba(0,224,255,.12)', label: 'Running' },
+  pending: { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Pending' },
 };
 
 const DevPipelinesPage: React.FC = () => {
-  const [selected, setSelected] = useState<Pipeline | null>(null);
+  const [runs, setRuns] = useState<PipelineRun[]>(MOCK_PIPELINE_RUNS);
+  const [runModalOpen, setRunModalOpen] = useState(false);
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [snack, setSnack] = useState<string | null>(null);
 
   const summary = useMemo(() => {
-    return {
-      total: PIPELINES.length,
-      lastStatus: PIPELINES[0]?.status || 'N/A',
+    const total = runs.length;
+    const running = runs.filter(r => r.status === 'running').length;
+    const failed = runs.filter(r => r.status === 'failed').length;
+    const success = runs.filter(r => r.status === 'success').length;
+    return { total, running, failed, success };
+  }, [runs]);
+
+  const handlePipelineStarted = (pipelineId: string) => {
+    // Add new run to the list
+    const newRun: PipelineRun = {
+      id: `run-${Date.now()}`,
+      pipelineId,
+      name: 'New Pipeline Run',
+      repoBranch: 'unknown/main',
+      startedAt: new Date().toISOString(),
+      status: 'running',
+      trigger: 'manual',
+      project: 'unknown',
+      repo: 'unknown',
+      branch: 'main',
+      triggeredBy: 'current-user',
     };
-  }, []);
+    setRuns(prev => [newRun, ...prev]);
+    setSelectedPipelineId(pipelineId);
+    setDetailOpen(true);
+    setSnack(`Pipeline started successfully!`);
+  };
+
+  const handleViewPipeline = (run: PipelineRun) => {
+    setSelectedPipelineId(run.pipelineId);
+    setDetailOpen(true);
+  };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={2}>
+    <Box sx={{ p: { xs: 2, md: 3 }, fontFamily: FONT }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>CI/CD Pipelines</Typography>
-          <Typography variant="body2" color="text.secondary">Run pipelines and inspect status without noise.</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.2rem', md: '1.35rem' }, color: t.textPrimary, fontFamily: FONT, letterSpacing: '-.02em' }}>
+            CI/CD Pipelines
+          </Typography>
+          <Typography sx={{ color: t.textSecondary, fontSize: '.875rem', mt: 0.3, fontFamily: FONT }}>
+            Run pipelines, monitor builds, and inspect logs across all projects.
+          </Typography>
         </Box>
-        <Button variant="contained">Run pipeline</Button>
-      </Stack>
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Pipelines</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{summary.total}</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Last run status</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>{summary.lastStatus}</Typography></CardContent></Card>
+        <Button
+          variant="contained"
+          startIcon={<PlayArrowIcon />}
+          onClick={() => setRunModalOpen(true)}
+          sx={{
+            bgcolor: dashboardTokens.colors.brandPrimary,
+            color: '#0a0f1a',
+            fontWeight: 700,
+            fontSize: '.8rem',
+            borderRadius: '6px',
+            textTransform: 'none',
+            boxShadow: 'none',
+            '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
+          }}
+        >
+          Run Pipeline
+        </Button>
       </Box>
 
-      <Card>
-        <CardContent>
-          <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Pipelines</Typography>
-          <TableContainer>
+      {/* Stats bar */}
+      <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ mb: 3 }}>
+        {[
+          { label: 'Total Runs', value: summary.total, color: dashboardSemanticColors.info },
+          { label: 'Running', value: summary.running, color: dashboardSemanticColors.info },
+          { label: 'Success', value: summary.success, color: dashboardSemanticColors.success },
+          { label: 'Failed', value: summary.failed, color: dashboardSemanticColors.danger },
+        ].map((s) => (
+          <Card key={s.label} sx={{ flex: 1, border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '8px' }}>
+            <CardContent sx={{ p: '12px 16px !important' }}>
+              <Typography sx={{ fontSize: '.72rem', fontWeight: 600, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: FONT }}>
+                {s.label}
+              </Typography>
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: s.color, lineHeight: 1.2, fontFamily: FONT }}>
+                {s.value}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+
+      {/* Pipeline Runs Table */}
+      <Card sx={{ border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '10px' }}>
+        <CardContent sx={{ p: '20px !important' }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: t.textPrimary, mb: 2, fontFamily: FONT }}>
+            Recent Pipeline Runs
+          </Typography>
+          <Box sx={{ border: `1px solid ${t.border}`, borderRadius: '8px', overflow: 'hidden' }}>
             <Table size="small">
               <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Repo / Branch</TableCell>
-                  <TableCell>Last Run</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Trigger</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                <TableRow sx={{ bgcolor: t.surfaceSubtle }}>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Pipeline</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Project / Repo</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Branch</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Status</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Triggered</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Started</TableCell>
+                  <TableCell sx={{ fontFamily: FONT, fontSize: '.72rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', borderColor: t.border, py: 1.5 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {PIPELINES.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.repoBranch}</TableCell>
-                    <TableCell>{item.lastRun}</TableCell>
-                    <TableCell><Chip size="small" label={item.status} color={statusColor(item.status)} /></TableCell>
-                    <TableCell>{item.trigger}</TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" justifyContent="flex-end" gap={1}>
-                        <Button size="small" onClick={() => setSelected(item)}>View</Button>
-                        <Button size="small" variant="outlined">Run pipeline</Button>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {runs.map((run) => {
+                  const cfg = STATUS_CONFIG[run.status];
+                  return (
+                    <TableRow key={run.id} sx={{ '&:hover': { bgcolor: t.surfaceSubtle }, '& td': { borderColor: t.border } }}>
+                      <TableCell sx={{ fontFamily: FONT, fontSize: '.85rem', fontWeight: 600, color: t.textPrimary, py: 1.5 }}>
+                        {run.name}
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, py: 1.5 }}>
+                        {run.project} / {run.repo}
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, py: 1.5 }}>
+                        {run.branch}
+                      </TableCell>
+                      <TableCell sx={{ py: 1.5 }}>
+                        <Chip
+                          label={cfg.label}
+                          size="small"
+                          sx={{ bgcolor: cfg.bg, color: cfg.color, fontWeight: 600, fontSize: '.7rem', height: 20 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, py: 1.5 }}>
+                        {run.trigger} · {run.triggeredBy}
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, py: 1.5 }}>
+                        {new Date(run.startedAt).toLocaleString()}
+                      </TableCell>
+                      <TableCell sx={{ py: 1.5 }}>
+                        <Button
+                          size="small"
+                          startIcon={<VisibilityIcon />}
+                          onClick={() => handleViewPipeline(run)}
+                          sx={{
+                            fontSize: '.7rem',
+                            fontFamily: FONT,
+                            textTransform: 'none',
+                            color: dashboardTokens.colors.brandPrimary,
+                            borderRadius: '6px',
+                            py: 0.25,
+                            '&:hover': { bgcolor: 'rgba(0,224,255,.1)' },
+                          }}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
-          </TableContainer>
+          </Box>
         </CardContent>
       </Card>
 
-      <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} maxWidth="md" fullWidth>
-        <DialogTitle>{selected?.name}</DialogTitle>
-        <DialogContent>
-          {selected && (
-            <Stack gap={1.5}>
-              <Typography><strong>Overview:</strong> {selected.description}</Typography>
-              <Typography><strong>Connected repo:</strong> {selected.repoBranch}</Typography>
-              <Typography><strong>Environments:</strong> {selected.environments.join(', ')}</Typography>
-              <Divider />
-              <Typography sx={{ fontWeight: 700 }}>Runs history</Typography>
-              {selected.runs.map((run) => (
-                <Stack key={run.id} direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography>{run.id} · {run.startedAt}</Typography>
-                  <Chip size="small" label={run.status} color={statusColor(run.status)} />
-                </Stack>
-              ))}
-              <Stack direction="row" gap={1}>
-                <Button variant="contained">Run pipeline</Button>
-                <Button variant="outlined">View logs</Button>
-              </Stack>
-            </Stack>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Modals */}
+      <RunPipelineModal
+        open={runModalOpen}
+        onClose={() => setRunModalOpen(false)}
+        onPipelineStarted={handlePipelineStarted}
+      />
+
+      <PipelineDetail
+        pipelineId={selectedPipelineId || ''}
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+      />
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={5000}
+        onClose={() => setSnack(null)}
+        message={snack}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        ContentProps={{ sx: { bgcolor: dashboardSemanticColors.success, color: '#fff', fontFamily: FONT, fontSize: '.82rem', fontWeight: 600 } }}
+      />
     </Box>
   );
 };
