@@ -1,142 +1,224 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Tabs,
-  Tab,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Chip,
-  Stack,
+  Box, Typography, Card, CardContent, Stack, Chip, Button,
+  Table, TableHead, TableRow, TableCell, TableBody, CircularProgress,
+  Alert, Tooltip, IconButton, Tabs, Tab,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SyncIcon from '@mui/icons-material/Sync';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ErrorIcon from '@mui/icons-material/Error';
+import { useNavigate } from 'react-router-dom';
+import { kubernetesApi, KubeConfig, KubeSyncRun } from '../services/kubernetesApi';
+
+const SyncStatusChip: React.FC<{ status: string }> = ({ status }) => {
+  const map: Record<string, any> = {
+    success:  { color: 'success', icon: <CheckCircleIcon fontSize="small" /> },
+    failed:   { color: 'error',   icon: <ErrorIcon fontSize="small" /> },
+    syncing:  { color: 'info',    icon: <SyncIcon fontSize="small" /> },
+    scanning: { color: 'info',    icon: <SyncIcon fontSize="small" /> },
+    pending:  { color: 'warning', icon: <WarningAmberIcon fontSize="small" /> },
+    partial:  { color: 'warning', icon: <WarningAmberIcon fontSize="small" /> },
+    never:    { color: 'default', icon: null },
+  };
+  const cfg = map[status] ?? map.never;
+  return <Chip size="small" label={status} color={cfg.color} icon={cfg.icon ?? undefined} />;
+};
+
+const StatCard: React.FC<{ label: string; value: string | number; color?: string }> = ({ label, value, color }) => (
+  <Card variant="outlined">
+    <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <Typography variant="caption" color="text.secondary">{label}</Typography>
+      <Typography variant="h6" fontWeight={800} color={color}>{value}</Typography>
+    </CardContent>
+  </Card>
+);
 
 const DevKubernetesPage: React.FC = () => {
-  const [tab, setTab] = useState(0);
+  const navigate = useNavigate();
+  const [tab, setTab]         = useState(0);
+  const [configs, setConfigs]   = useState<KubeConfig[]>([]);
+  const [syncRuns, setSyncRuns] = useState<KubeSyncRun[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
+
+  const fetchAll = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [cfgRes, runRes] = await Promise.all([
+        kubernetesApi.listConfigs(),
+        kubernetesApi.allSyncRuns(),
+      ]);
+      // DRF may return a paginated envelope { results: [...] } or a plain array
+      const cfgData = cfgRes.data as any;
+      const runData = runRes.data as any;
+      setConfigs(Array.isArray(cfgData) ? cfgData : (cfgData?.results ?? []));
+      setSyncRuns(Array.isArray(runData) ? runData : (runData?.results ?? []));
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? err?.message ?? 'Failed to load Kubernetes data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const totalConfigs   = configs.length;
+  const healthyConfigs = configs.filter(c => c.last_sync_status === 'success').length;
+  const failedConfigs  = configs.filter(c => c.last_sync_status === 'failed').length;
+  const totalWarnings  = configs.reduce((s, c) => s + (c.governance_warnings?.length ?? 0), 0);
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Kubernetes</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Cluster health, node status, workloads, and namespace management.
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800 }}>Kubernetes</Typography>
+          <Typography variant="body2" color="text.secondary">
+            GitOps Kubernetes management — configure, scan, apply, and monitor per project.
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Refresh">
+            <IconButton onClick={fetchAll}><RefreshIcon /></IconButton>
+          </Tooltip>
+          <Button variant="contained" startIcon={<AddIcon />}
+            onClick={() => navigate('/dev-dashboard/kubernetes/setup/new')}>
+            Connect Project
+          </Button>
+        </Stack>
+      </Stack>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Nodes</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>9</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Pods</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>112</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Namespaces</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>14</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Cluster health</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>Healthy</Typography></CardContent></Card>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 1.5, mb: 2 }}>
+        <StatCard label="Configured Projects" value={totalConfigs} />
+        <StatCard label="Healthy"  value={healthyConfigs} color="success.main" />
+        <StatCard label="Failed"   value={failedConfigs}  color={failedConfigs > 0 ? 'error.main' : undefined} />
+        <StatCard label="Governance Warnings" value={totalWarnings} color={totalWarnings > 0 ? 'warning.main' : undefined} />
       </Box>
 
-      <Card>
-        <CardContent>
-          <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 1 }}>
-            <Tab label="Nodes" />
-            <Tab label="Workloads" />
-            <Tab label="Namespaces" />
-          </Tabs>
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
-          {tab === 0 && (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Node</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>CPU</TableCell>
-                  <TableCell>Memory</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {[
-                  ['node-1', 'Ready', 'worker', '62%', '74%'],
-                  ['node-2', 'Ready', 'worker', '45%', '58%'],
-                  ['node-3', 'Ready', 'worker', '81%', '67%'],
-                  ['node-4', 'Ready', 'worker', '38%', '42%'],
-                  ['control-plane-1', 'Ready', 'control-plane', '21%', '33%'],
-                ].map((row) => (
-                  <TableRow key={row[0]}>
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '.82rem' }}>{row[0]}</TableCell>
-                    <TableCell><Chip size="small" label={row[1]} color={row[1] === 'Ready' ? 'success' : 'error'} /></TableCell>
-                    <TableCell>{row[2]}</TableCell>
-                    <TableCell>{row[3]}</TableCell>
-                    <TableCell>{row[4]}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+      {loading ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 4 }}>
+          <CircularProgress size={24} /><Typography>Loading…</Typography>
+        </Box>
+      ) : (
+        <Card>
+          <CardContent>
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+              <Tab label="Projects" />
+              <Tab label={`Sync History (${syncRuns.length})`} />
+            </Tabs>
 
-          {tab === 1 && (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Workload</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Namespace</TableCell>
-                  <TableCell>Desired</TableCell>
-                  <TableCell>Ready</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {[
-                  ['payment-service', 'Deployment', 'payments', '4', '4'],
-                  ['events-worker', 'Deployment', 'events', '2', '1'],
-                  ['postgres-state', 'StatefulSet', 'data', '1', '1'],
-                  ['redis-cache', 'Deployment', 'cache', '2', '2'],
-                  ['ingress-nginx', 'DaemonSet', 'ingress', '5', '5'],
-                ].map((row) => (
-                  <TableRow key={row[0]}>
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '.82rem' }}>{row[0]}</TableCell>
-                    <TableCell>{row[1]}</TableCell>
-                    <TableCell>{row[2]}</TableCell>
-                    <TableCell>{row[3]}</TableCell>
-                    <TableCell>
-                      <Chip size="small" label={row[4]} color={row[3] === row[4] ? 'success' : 'warning'} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            {tab === 0 && (
+              configs.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <Typography variant="h6" mb={1}>No Kubernetes projects yet</Typography>
+                  <Typography variant="body2" color="text.secondary" mb={3}>
+                    Connect a project to a cluster and Git repository to get started.
+                  </Typography>
+                  <Button variant="contained" startIcon={<AddIcon />}
+                    onClick={() => navigate('/dev-dashboard/kubernetes/setup/new')}>
+                    Connect Your First Project
+                  </Button>
+                </Box>
+              ) : (
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Project</TableCell>
+                      <TableCell>Environment</TableCell>
+                      <TableCell>Namespace</TableCell>
+                      <TableCell>Repository</TableCell>
+                      <TableCell>Sync Status</TableCell>
+                      <TableCell>Last Synced</TableCell>
+                      <TableCell>Warnings</TableCell>
+                      <TableCell align="right">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {configs.map(cfg => (
+                      <TableRow key={cfg.id} hover>
+                        <TableCell sx={{ fontWeight: 600 }}>{cfg.project_name || cfg.project_id}</TableCell>
+                        <TableCell>
+                          <Chip size="small" label={cfg.environment}
+                            color={cfg.environment === 'production' ? 'error' : cfg.environment === 'staging' ? 'warning' : 'default'} />
+                        </TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '.8rem' }}>{cfg.derived_namespace}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '.8rem' }}>{cfg.git_repo || '—'}</TableCell>
+                        <TableCell><SyncStatusChip status={cfg.last_sync_status} /></TableCell>
+                        <TableCell sx={{ fontSize: '.8rem' }}>
+                          {cfg.last_synced_at ? new Date(cfg.last_synced_at).toLocaleDateString() : '—'}
+                        </TableCell>
+                        <TableCell>
+                          {(cfg.governance_warnings?.length ?? 0) > 0
+                            ? <Chip size="small" label={cfg.governance_warnings.length} color="warning" icon={<WarningAmberIcon fontSize="small" />} />
+                            : <CheckCircleIcon fontSize="small" color="success" />}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                            <Tooltip title="Monitor">
+                              <IconButton size="small" onClick={() => navigate(`/dev-dashboard/kubernetes/monitor/${cfg.id}`)}>
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Setup / Sync">
+                              <IconButton size="small" onClick={() => navigate(`/dev-dashboard/kubernetes/setup/${cfg.project_id}`)}>
+                                <SettingsIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )
+            )}
 
-          {tab === 2 && (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Namespace</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Pods</TableCell>
-                  <TableCell>Services</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {[
-                  ['default', 'Active', '0', '1'],
-                  ['payments', 'Active', '28', '4'],
-                  ['events', 'Active', '14', '3'],
-                  ['frontend', 'Active', '22', '2'],
-                  ['data', 'Active', '18', '5'],
-                  ['cache', 'Active', '8', '2'],
-                  ['ingress', 'Active', '10', '1'],
-                  ['monitoring', 'Active', '12', '4'],
-                ].map((row) => (
-                  <TableRow key={row[0]}>
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '.82rem' }}>{row[0]}</TableCell>
-                    <TableCell><Chip size="small" label={row[1]} color="success" /></TableCell>
-                    <TableCell>{row[2]}</TableCell>
-                    <TableCell>{row[3]}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+            {tab === 1 && (
+              syncRuns.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">No sync runs yet.</Typography>
+              ) : (
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Run ID</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Triggered By</TableCell>
+                      <TableCell>Commit</TableCell>
+                      <TableCell>Files Applied</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Duration</TableCell>
+                      <TableCell>Started</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {syncRuns.map(run => (
+                      <TableRow key={run.id} hover>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '.8rem' }}>{run.id.slice(0, 12)}</TableCell>
+                        <TableCell><Chip size="small" label={run.run_type} variant="outlined" /></TableCell>
+                        <TableCell>{run.triggered_by}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace', fontSize: '.8rem' }}>
+                          {run.commit_sha ? run.commit_sha.slice(0, 8) : '—'}
+                        </TableCell>
+                        <TableCell>{run.files_applied.length}/{run.files_selected.length}</TableCell>
+                        <TableCell><SyncStatusChip status={run.status} /></TableCell>
+                        <TableCell>{run.duration_seconds != null ? `${run.duration_seconds}s` : '—'}</TableCell>
+                        <TableCell sx={{ fontSize: '.8rem' }}>{new Date(run.started_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )
+            )}
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 };

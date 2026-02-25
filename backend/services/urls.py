@@ -63,6 +63,7 @@ from .pipelines.viewsets import (
     EnvironmentViewSet,
     PipelineArtifactViewSet,
 )
+from .kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -170,6 +171,12 @@ router.register(r'pipelines/approvals',        PipelineApprovalViewSet, basename
 router.register(r'pipelines/rules',            PipelineRuleViewSet,    basename='pipeline-rule')
 router.register(r'pipelines/environments',     EnvironmentViewSet,     basename='pipeline-environment')
 router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename='pipeline-artifact')
+
+# ============================================================================
+# KUBERNETES INTEGRATION ENDPOINTS
+# ============================================================================
+router.register(r'kubernetes/config',    KubeConfigViewSet,   basename='kube-config')
+router.register(r'kubernetes/sync-runs', KubeSyncRunViewSet,  basename='kube-sync-run')
 
 # URL Patterns
 urlpatterns = [

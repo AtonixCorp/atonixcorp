@@ -53,6 +53,7 @@ from ..billing.viewsets import (
 )
 from ..marketing.suite_viewsets import MarketingOverviewViewSet
 from ..teams.viewsets import TeamViewSet
+from ..containers.viewsets import ContainerViewSet
 from ..pipelines.viewsets import (
     ProjectViewSet,
     RepositoryViewSet,
@@ -64,6 +65,7 @@ from ..pipelines.viewsets import (
     EnvironmentViewSet,
     PipelineArtifactViewSet,
 )
+from ..kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -165,6 +167,11 @@ router.register(r'billing/usage',           UsageViewSet,            basename='b
 router.register(r'billing/credits',         CreditViewSet,           basename='credit')
 
 # ============================================================================
+# CONTAINER DEPLOYMENT ENDPOINTS
+# ============================================================================
+router.register(r'containers', ContainerViewSet, basename='container')
+
+# ============================================================================
 # CI/CD PIPELINES ENDPOINTS
 # ============================================================================
 router.register(r'pipelines/projects',         ProjectViewSet,         basename='pipeline-project')
@@ -176,6 +183,12 @@ router.register(r'pipelines/approvals',        PipelineApprovalViewSet, basename
 router.register(r'pipelines/rules',            PipelineRuleViewSet,    basename='pipeline-rule')
 router.register(r'pipelines/environments',     EnvironmentViewSet,     basename='pipeline-environment')
 router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename='pipeline-artifact')
+
+# ============================================================================
+# KUBERNETES INTEGRATION ENDPOINTS
+# ============================================================================
+router.register(r'kubernetes/config',    KubeConfigViewSet,  basename='kube-config')
+router.register(r'kubernetes/sync-runs', KubeSyncRunViewSet, basename='kube-sync-run')
 
 # URL Patterns
 urlpatterns = [
