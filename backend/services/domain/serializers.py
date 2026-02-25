@@ -21,6 +21,12 @@ class DnsRecordCreateSerializer(serializers.Serializer):
     ttl         = serializers.IntegerField(min_value=60, max_value=86400, default=300)
 
 
+class DnsRecordUpdateSerializer(serializers.Serializer):
+    recordset_id = serializers.CharField(max_length=64)
+    records      = serializers.ListField(child=serializers.CharField(), min_length=1)
+    ttl          = serializers.IntegerField(min_value=60, max_value=86400, required=False)
+
+
 class DnsZoneSerializer(serializers.ModelSerializer):
     records = DnsRecordSerializer(many=True, read_only=True)
 

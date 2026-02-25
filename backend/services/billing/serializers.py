@@ -75,12 +75,14 @@ class InvoiceLineItemSerializer(serializers.ModelSerializer):
 
 
 class InvoiceListSerializer(serializers.ModelSerializer):
+    line_items = InvoiceLineItemSerializer(many=True, read_only=True)
+
     class Meta:
         model  = Invoice
         fields = [
             'id', 'invoice_number', 'status', 'period_start', 'period_end',
             'subtotal', 'tax_amount', 'credits_applied', 'total', 'currency',
-            'due_date', 'paid_at', 'created_at',
+            'due_date', 'paid_at', 'line_items', 'created_at',
         ]
 
 

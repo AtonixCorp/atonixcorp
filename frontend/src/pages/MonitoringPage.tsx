@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
-  Box, Typography, Tabs, Tab, Grid, Card, CardContent, CardHeader,
+  Box, Typography, Grid, Card, CardContent, CardHeader,
   Chip, Button, CircularProgress, Alert as MuiAlert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
@@ -900,14 +900,19 @@ function LogsTab() {
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
-const TABS = ['Overview', 'Incidents', 'Alerts', 'Metrics', 'Logs'] as const;
+interface MonitoringPageProps {
+  defaultTab?: number;
+}
 
-export default function MonitoringPage() {
+export default function MonitoringPage({ defaultTab = 0 }: MonitoringPageProps) {
   const t = useThemeTokens();
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(defaultTab);
   const [overview, setOverview] = useState<MonitoringOverview | null>(null);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Sync active tab when the route changes (e.g. clicking Logs, Incidents etc. in sidebar)
+  useEffect(() => { setTab(defaultTab); }, [defaultTab]);
 
   const loadOverview = useCallback(() => {
     setOverviewLoading(true);
@@ -921,15 +926,9 @@ export default function MonitoringPage() {
 
   return (
     <Box sx={{ bgcolor: t.panelBg, minHeight: '100vh', p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" sx={{ color: t.text, fontWeight: 700 }}>Monitoring & Incidents</Typography>
-          <Typography variant="body2" sx={{ color: t.subtext }}>
-            Real-time service health, metrics, alerts, and incident management
-          </Typography>
-        </Box>
-        <Tooltip title="Refresh overview">
+      {/* Refresh button */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Tooltip title="Refresh">
           <IconButton onClick={loadOverview} sx={{ color: t.subtext }}>
             <RefreshIcon />
           </IconButton>
@@ -937,21 +936,6 @@ export default function MonitoringPage() {
       </Box>
 
       {error && <MuiAlert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</MuiAlert>}
-
-      {/* Tabs */}
-      <Tabs
-        value={tab}
-        onChange={(_, v) => setTab(v)}
-        sx={{
-          mb: 3,
-          '& .MuiTab-root': { color: t.subtext, textTransform: 'none', fontWeight: 600 },
-          '& .Mui-selected': { color: dashboardTokens.colors.brandPrimary },
-          '& .MuiTabs-indicator': { bgcolor: dashboardTokens.colors.brandPrimary },
-          borderBottom: `1px solid ${t.border}`,
-        }}
-      >
-        {TABS.map(l => <Tab key={l} label={l} />)}
-      </Tabs>
 
       <Box>
         {tab === 0 && <OverviewTab data={overview} loading={overviewLoading} />}

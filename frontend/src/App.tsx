@@ -36,6 +36,7 @@ import ServerlessPage from './pages/ServerlessPage';
 import DomainPage from './pages/DomainPage';
 import DomainsLandingPage from './pages/DomainsLandingPage';
 import DomainsServiceDashboardPage from './pages/DomainsServiceDashboardPage';
+import DomainDetailPage from './pages/DomainDetailPage';
 import EmailMarketingPage from './pages/EmailMarketingPage';
 import MonitoringPage from './pages/MonitoringPage';
 import BillingPage               from './pages/BillingPage';
@@ -58,6 +59,13 @@ import MarketingAbTestingPage    from './pages/MarketingAbTestingPage';
 import MarketingContentPage      from './pages/MarketingContentPage';
 import MarketingSeoPage          from './pages/MarketingSeoPage';
 import DashboardSectionsPage     from './pages/DashboardSectionsPage';
+import MonitorSettingsPage        from './pages/MonitorSettingsPage';
+import TeamsPage                  from './pages/TeamsPage';
+import DevGroupsPage              from './pages/DevGroupsPage';
+import DevProjectsPage            from './pages/DevProjectsPage';
+import DevEnvironmentPage         from './pages/DevEnvironmentPage';
+import DevOperationalPage         from './pages/DevOperationalPage';
+import TeamDetailPage             from './pages/TeamDetailPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -73,6 +81,8 @@ const AppShell: React.FC = () => {
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isDeveloperDashboard = location.pathname.startsWith('/dev-dashboard');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
+  const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
+  const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
 
   if (isDeveloperDashboard) {
     return (
@@ -81,12 +91,16 @@ const AppShell: React.FC = () => {
           <Routes>
             <Route path="/dev-dashboard" element={<Navigate to="/dev-dashboard/deployments" replace />} />
             <Route path="/dev-dashboard/deployments" element={<DevDeploymentsPage />} />
+            <Route path="/dev-dashboard/projects"     element={<DevProjectsPage />} />
             <Route path="/dev-dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/dev-dashboard/containers-k8s" element={<DevContainersPage />} />
             <Route path="/dev-dashboard/monitoring" element={<DevMonitoringPage />} />
             <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
+            <Route path="/dev-dashboard/groups" element={<DevGroupsPage />} />
+            <Route path="/dev-dashboard/environment" element={<DevEnvironmentPage />} />
+            <Route path="/dev-dashboard/operational" element={<DevOperationalPage />} />
             <Route path="/dev-dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
             <Route path="/dev-dashboard/settings/*" element={<DevSettingsPage />} />
             <Route path="/dev-dashboard/*" element={<Navigate to="/dev-dashboard/deployments" replace />} />
@@ -150,7 +164,44 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/orchestration"            element={<OrchestrationPage />} />
             <Route path="/dashboard/billing"                  element={<BillingPage />} />
             <Route path="/dashboard/sections"                 element={<DashboardSectionsPage dashboardMode="cloud" />} />
+            <Route path="/dashboard/teams"                    element={<TeamsPage />} />
+            <Route path="/dashboard/teams/:teamId"            element={<TeamDetailPage />} />
             <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isDomainsDashboard) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="domains">
+          <Routes>
+            <Route path="/domains/dashboard"          element={<DomainsServiceDashboardPage />} />
+            <Route path="/domains/dashboard/sections" element={<DashboardSectionsPage dashboardMode="domains" />} />
+            <Route path="/domains/dashboard/:id"      element={<DomainDetailPage />} />
+            <Route path="/domains/dashboard/*"        element={<DomainsServiceDashboardPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isMonitorDashboard) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="monitor">
+          <Routes>
+            <Route path="/monitor-dashboard"           element={<Navigate to="/monitor-dashboard/overview" replace />} />
+            <Route path="/monitor-dashboard/overview"  element={<MonitoringPage defaultTab={0} />} />
+            <Route path="/monitor-dashboard/incidents" element={<MonitoringPage defaultTab={1} />} />
+            <Route path="/monitor-dashboard/alerts"    element={<MonitoringPage defaultTab={2} />} />
+            <Route path="/monitor-dashboard/metrics"   element={<MonitoringPage defaultTab={3} />} />
+            <Route path="/monitor-dashboard/logs"      element={<MonitoringPage defaultTab={4} />} />
+            <Route path="/monitor-dashboard/sections"  element={<DashboardSectionsPage dashboardMode="monitor" />} />
+            <Route path="/monitor-dashboard/settings"  element={<MonitorSettingsPage />} />
+            <Route path="/monitor-dashboard/*"         element={<Navigate to="/monitor-dashboard/overview" replace />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

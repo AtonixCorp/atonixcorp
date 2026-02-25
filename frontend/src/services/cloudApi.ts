@@ -530,11 +530,15 @@ export const domainApi = {
   dnsZone:           (id: string)                                 => cloudClient.get(`/domains/${id}/dns_zone/`),
   dnsRecords:        (id: string)                                 => cloudClient.get<DnsRecord[]>(`/domains/${id}/dns_records/`),
   addDnsRecord:      (id: string, p: CreateDnsRecordPayload)      => cloudClient.post<DnsRecord>(`/domains/${id}/add_dns_record/`, p),
+  updateDnsRecord:   (id: string, recordset_id: string, records: string[], ttl?: number) => cloudClient.post<DnsRecord>(`/domains/${id}/update_dns_record/`, { recordset_id, records, ttl }),
   deleteDnsRecord:   (id: string, recordset_id: string)           => cloudClient.post(`/domains/${id}/delete_dns_record/`, { recordset_id }),
+  dnsTemplates:      (id: string)                                 => cloudClient.get<any[]>(`/domains/${id}/dns_templates/`),
+  applyDnsTemplate:  (id: string, template_name: string)         => cloudClient.post(`/domains/${id}/dns_templates/`, { template_name }),
   // SSL
   sslCerts:          (id: string)                                 => cloudClient.get<SslCertificate[]>(`/domains/${id}/ssl_certs/`),
   requestSsl:        (id: string)                                 => cloudClient.post(`/domains/${id}/request_ssl/`),
   // Settings
+  toggleAutoRenew:   (id: string)                                 => cloudClient.post<{ auto_renew: boolean }>(`/domains/${id}/toggle_auto_renew/`),
   updateNameservers: (id: string, nameservers: string[])          => cloudClient.post(`/domains/${id}/update_nameservers/`, { nameservers }),
   setPrivacy:        (id: string, enable: boolean)                => cloudClient.post(`/domains/${id}/set_privacy/`, { enable }),
   enableDnssec:      (id: string)                                 => cloudClient.post(`/domains/${id}/enable_dnssec/`),
@@ -549,11 +553,14 @@ export const domainApi = {
     }
   ) => cloudClient.post(`/domains/${id}/switch_domain/`, payload || {}),
   switchStatus:      (id: string)                                 => cloudClient.get(`/domains/${id}/switch_status/`),
+  billing:           (id: string)                                 => cloudClient.get<Invoice[]>(`/domains/${id}/billing/`),
   // Admin
   adminSummary:      ()                                           => cloudClient.get('/domains/admin/summary/'),
   adminDomains:      ()                                           => cloudClient.get('/domains/admin/domains/'),
   adminUsers:        ()                                           => cloudClient.get('/domains/admin/users/'),
   adminForceStatus:  (id: string, status: string)                => cloudClient.post(`/domains/${id}/admin/force_status/`, { status }),
+  adminTldPricing:   ()                                           => cloudClient.get('/domains/admin/tld_pricing/'),
+  adminMetrics:      ()                                           => cloudClient.get('/domains/admin/metrics/'),
 };
 
 // ---- Email Marketing ----
@@ -702,4 +709,45 @@ export const billingApi = {
 
   // Credits
   listCredits:          ()                              => cloudClient.get<CreditNote[]>('/billing/credits/'),
+};
+
+// ---- Team System ----
+export const teamApi = {
+  // Teams CRUD
+  list:                  ()                                          => cloudClient.get('/teams/'),
+  get:                   (teamId: string)                           => cloudClient.get(`/teams/${teamId}/`),
+  create:                (p: Record<string, unknown>)               => cloudClient.post('/teams/', p),
+  update:                (teamId: string, p: Record<string, unknown>) => cloudClient.patch(`/teams/${teamId}/`, p),
+  delete:                (teamId: string)                           => cloudClient.delete(`/teams/${teamId}/`),
+
+  // Members
+  members:               (teamId: string)                           => cloudClient.get(`/teams/${teamId}/members/`),
+  addMember:             (teamId: string, userId: number, role: string) => cloudClient.post(`/teams/${teamId}/members/add/`, { user_id: userId, role }),
+  removeMember:          (teamId: string, userId: number)           => cloudClient.delete(`/teams/${teamId}/members/${userId}/`),
+  changeRole:            (teamId: string, userId: number, role: string) => cloudClient.patch(`/teams/${teamId}/members/${userId}/role/`, { role }),
+
+  // Permissions
+  permissions:           (teamId: string)                           => cloudClient.get(`/teams/${teamId}/permissions/`),
+  updatePermissions:     (teamId: string, perms: Record<string, boolean>) => cloudClient.post(`/teams/${teamId}/permissions/update/`, { permissions: perms }),
+  applyTemplate:         (teamId: string, template: string)         => cloudClient.post(`/teams/${teamId}/permissions/apply-template/`, { template }),
+  permissionTemplates:   ()                                          => cloudClient.get('/teams/permission-templates/'),
+
+  // Resources
+  resources:             (teamId: string)                           => cloudClient.get(`/teams/${teamId}/resources/`),
+  attachResource:        (teamId: string, p: Record<string, unknown>) => cloudClient.post(`/teams/${teamId}/resources/attach/`, p),
+  detachResource:        (teamId: string, resourcePk: number)       => cloudClient.delete(`/teams/${teamId}/resources/${resourcePk}/`),
+
+  // Portfolios
+  portfolios:            (teamId: string)                           => cloudClient.get(`/teams/${teamId}/portfolios/`),
+  createPortfolio:       (teamId: string, p: Record<string, unknown>) => cloudClient.post(`/teams/${teamId}/portfolios/`, p),
+  deletePortfolio:       (teamId: string, portfolioId: string)      => cloudClient.delete(`/teams/${teamId}/portfolios/${portfolioId}/`),
+  addPortfolioItem:      (teamId: string, portfolioId: string, p: Record<string, unknown>) => cloudClient.post(`/teams/${teamId}/portfolios/${portfolioId}/items/`, p),
+
+  // Activity
+  activity:              (teamId: string)                           => cloudClient.get(`/teams/${teamId}/activity/`),
+
+  // Invitations
+  invitations:           (teamId: string)                           => cloudClient.get(`/teams/${teamId}/invitations/`),
+  invite:                (teamId: string, email: string, role: string) => cloudClient.post(`/teams/${teamId}/invitations/`, { email, role }),
+  revokeInvite:          (teamId: string, inviteId: string)         => cloudClient.post(`/teams/${teamId}/invitations/${inviteId}/revoke/`),
 };

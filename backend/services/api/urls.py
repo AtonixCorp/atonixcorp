@@ -52,6 +52,7 @@ from ..billing.viewsets import (
     UsageViewSet, CreditViewSet,
 )
 from ..marketing.suite_viewsets import MarketingOverviewViewSet
+from ..teams.viewsets import TeamViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -138,6 +139,11 @@ router.register(r'logs',                LogViewSet,                basename='log
 router.register(r'orchestration',       OrchestrationViewSet,      basename='orchestration')
 router.register(r'compliance',          ComplianceViewSet,         basename='compliance')
 router.register(r'marketing/overview',  MarketingOverviewViewSet,  basename='marketing-overview')
+
+# ============================================================================
+# TEAM SYSTEM ENDPOINTS
+# ============================================================================
+router.register(r'teams', TeamViewSet, basename='team')
 
 # ── Billing ─────────────────────────────────────────────────────────────────
 router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')

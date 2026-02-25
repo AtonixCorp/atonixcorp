@@ -49,6 +49,8 @@ import GppGoodIcon           from '@mui/icons-material/GppGood';
 import ApiIcon               from '@mui/icons-material/Api';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import TeamIcon              from '@mui/icons-material/Group';
+import GroupsIcon            from '@mui/icons-material/Groups';
+import FolderOpenIcon        from '@mui/icons-material/FolderOpenRounded';
 import MonitorIcon           from '@mui/icons-material/QueryStats';
 import DomainIcon            from '@mui/icons-material/Language';
 import CampaignIcon          from '@mui/icons-material/Campaign';
@@ -96,7 +98,7 @@ interface NavItem {
   children?: NavItem[];
 }
 
-type DashboardMode = 'cloud' | 'developer' | 'marketing';
+type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor';
 
 // ── Nav definition — exact order from spec ────────────────────────────────────
 const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
@@ -119,22 +121,28 @@ const CLOUD_NAV: NavItem[] = [
       { label: 'Orchestration',     icon: <OrchestrateIcon {...I('.95rem')} />, path: '/dashboard/orchestration' },
     ],
   },
-  { label: 'Monitoring',     icon: <MonitorIcon  {...I()} />, path: '/dashboard/monitoring' },
   { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/dashboard/sections' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
-  { label: 'Developer Tools', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
-  { label: 'Marketing Tools', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
+  { label: 'Teams',     icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
+  { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'Marketing', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
+  { label: 'Monitor',   icon: <MonitorIcon   {...I()} />, path: '/monitor-dashboard/overview' },
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
-  { label: 'Deployments', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/dev-dashboard/projects'   },
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/dev-dashboard/cicd' },
   { label: 'Containers & Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/containers-k8s' },
   { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
   { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
   { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/dev-dashboard/sections' },
+  { label: 'Groups',   icon: <GroupsIcon   {...I()} />, path: '/dev-dashboard/groups' },
   { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/dev-dashboard/resource-control' },
-  { label: 'My Workspace', icon: <PersonIcon {...I()} />, path: '/dev-dashboard/workspace' },
+  { label: 'Workplace',        icon: <PersonIcon  {...I()} />, path: '/dev-dashboard/workspace'    },
+  { label: 'Environment',      icon: <TuneIcon    {...I()} />, path: '/dev-dashboard/environment'  },
+  { label: 'Operational',      icon: <GppGoodIcon {...I()} />, path: '/dev-dashboard/operational'  },
+  { label: 'Teams',            icon: <TeamIcon    {...I()} />, path: '/dashboard/teams'            },
 ];
 
 const MARKETING_NAV: NavItem[] = [
@@ -145,7 +153,37 @@ const MARKETING_NAV: NavItem[] = [
   { label: 'Audience Segmentation', icon: <TeamIcon {...I()} />, path: '/marketing-dashboard/audience-segmentation' },
   { label: 'Content Distribution', icon: <CdnIcon {...I()} />, path: '/marketing-dashboard/content-distribution' },
   { label: 'A/B Testing', icon: <TuneIcon {...I()} />, path: '/marketing-dashboard/ab-testing' },
+  { label: 'Teams', icon: <TeamIcon {...I()} />, path: '/dashboard/teams' },
 ];
+
+const DOMAINS_NAV: NavItem[] = [
+  { label: 'Domain Service', icon: <DomainIcon   {...I()} />, path: '/domains/dashboard' },
+  { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/domains/dashboard/sections' },
+  { label: 'Billing',        icon: <BillingIcon  {...I()} />, path: '/domains/dashboard' },
+  { label: 'Admin Console',  icon: <SettingsIcon {...I()} />, path: '/domains/dashboard' },
+];
+
+const DOMAINS_ACCOUNT_NAV: NavItem[] = [
+  { label: 'Billing',  icon: <BillingIcon  {...I()} />, path: '/dashboard/billing' },
+  { label: 'Settings', icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
+];
+
+const MONITOR_NAV: NavItem[] = [
+  { label: 'Overview',   icon: <MonitorIcon          {...I()} />, path: '/monitor-dashboard/overview'   },
+  { label: 'Alerts',     icon: <NotificationsNoneIcon {...I()} />, path: '/monitor-dashboard/alerts'    , badge: 3, badgeColor: 'error' },
+  { label: 'Incidents',  icon: <GppGoodIcon           {...I()} />, path: '/monitor-dashboard/incidents'  },
+  { label: 'Logs',       icon: <StorageIcon           {...I()} />, path: '/monitor-dashboard/logs'       },
+  { label: 'Metrics',    icon: <TuneIcon              {...I()} />, path: '/monitor-dashboard/metrics'    },
+  { label: 'Sections',   icon: <ViewListIcon          {...I()} />, path: '/monitor-dashboard/sections'   },
+];
+
+const MONITOR_ACCOUNT_NAV: NavItem[] = [
+  { label: 'Settings', icon: <SettingsIcon {...I()} />, path: '/monitor-dashboard/settings' },
+];
+
+const MONITOR_SUPPORT_NAV: NavItem[] = [];
+
+const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 
 const ACCOUNT_NAV: NavItem[] = [
   { label: 'Billing',   icon: <BillingIcon {...I()} />, path: '/dashboard/billing'  },
@@ -333,25 +371,41 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
     ? '/dev-dashboard'
     : dashboardMode === 'marketing'
       ? '/marketing-dashboard'
-      : '/dashboard';
+      : dashboardMode === 'domains'
+        ? '/domains/dashboard'
+        : dashboardMode === 'monitor'
+          ? '/monitor-dashboard'
+          : '/dashboard';
 
   const navItems = dashboardMode === 'developer'
     ? DEVELOPER_NAV
     : dashboardMode === 'marketing'
       ? MARKETING_NAV
-      : CLOUD_NAV;
+      : dashboardMode === 'domains'
+        ? DOMAINS_NAV
+        : dashboardMode === 'monitor'
+          ? MONITOR_NAV
+          : CLOUD_NAV;
 
   const accountNav = dashboardMode === 'developer'
     ? DEVELOPER_ACCOUNT_NAV
     : dashboardMode === 'marketing'
       ? MARKETING_ACCOUNT_NAV
-      : ACCOUNT_NAV;
+      : dashboardMode === 'domains'
+        ? DOMAINS_ACCOUNT_NAV
+        : dashboardMode === 'monitor'
+          ? MONITOR_ACCOUNT_NAV
+          : ACCOUNT_NAV;
 
   const supportNav = dashboardMode === 'developer'
     ? DEVELOPER_SUPPORT_NAV
     : dashboardMode === 'marketing'
       ? MARKETING_SUPPORT_NAV
-      : SUPPORT_NAV;
+      : dashboardMode === 'domains'
+        ? DOMAINS_SUPPORT_NAV
+        : dashboardMode === 'monitor'
+          ? MONITOR_SUPPORT_NAV
+          : SUPPORT_NAV;
 
   // Sidebar surface colours switch with the theme
   const SB_BG     = NAVY;
@@ -404,7 +458,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
                 ? 'Developer Dashboard'
                 : dashboardMode === 'marketing'
                   ? 'Marketing Dashboard'
-                  : 'Cloud Platform'}
+                  : dashboardMode === 'domains'
+                    ? 'Domains Service'
+                    : dashboardMode === 'monitor'
+                      ? 'Monitor Dashboard'
+                      : 'Cloud Platform'}
             </Typography>
           </Box>
         )}
@@ -538,7 +596,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
     ? '/dev-dashboard'
     : dashboardMode === 'marketing'
       ? '/marketing-dashboard'
-      : '/dashboard';
+      : dashboardMode === 'domains'
+        ? '/domains/dashboard'
+        : dashboardMode === 'monitor'
+          ? '/monitor-dashboard'
+          : '/dashboard';
 
   const handleLogout = () => {
     logout();

@@ -92,6 +92,17 @@ from .domain.models import (
     SslCertificate,
 )
 
+from .teams.models import (
+    Team,
+    TeamMember,
+    TeamPermission,
+    TeamResource,
+    Portfolio,
+    PortfolioResource,
+    TeamActivityLog,
+    TeamInvitation,
+)
+
 __all__ = [
     # Base
     'TimeStampedModel', 'ResourceModel', 'Status',
@@ -121,4 +132,7 @@ __all__ = [
     'MonitoringAlert', 'Incident', 'IncidentUpdate',
     # Domain
     'Domain', 'DnsZone', 'DomainDnsRecord', 'DomainTransfer', 'SslCertificate',
+    # Teams
+    'Team', 'TeamMember', 'TeamPermission', 'TeamResource',
+    'Portfolio', 'PortfolioResource', 'TeamActivityLog', 'TeamInvitation',
 ]

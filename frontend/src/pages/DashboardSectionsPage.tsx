@@ -1,231 +1,551 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Card,
+  CardActionArea,
   CardContent,
   Chip,
-  Container,
   InputAdornment,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import ComputerIcon from '@mui/icons-material/Computer';
+import StorageIcon from '@mui/icons-material/Storage';
+import RouterIcon from '@mui/icons-material/RouterRounded';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { useNavigate } from 'react-router-dom';
+import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 
-type DashboardMode = 'cloud' | 'developer' | 'marketing';
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor';
+
+interface SectionItem {
+  label: string;
+  route: string;
+  description?: string;
+}
+
+interface SectionGroup {
+  id: string;
+  category: string;
+  icon: React.ReactNode;
+  color: string;
+  items: SectionItem[];
+}
 
 interface DashboardSectionsPageProps {
   dashboardMode?: DashboardMode;
 }
 
-const SECTION_GROUPS: Array<{ category: string; items: string[] }> = [
+// ── Constants ──────────────────────────────────────────────────────────────────
+
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const ACCENT = dashboardTokens.colors.brandPrimary;
+
+const ICON_SZ = { fontSize: '1rem' };
+
+const SECTION_GROUPS: SectionGroup[] = [
   {
+    id: 'observability',
     category: 'Observability & Incidents',
-    items: ['Alert Rules', 'Alerts', 'Incidents', 'Logs', 'Metrics', 'Monitoring'],
-  },
-  {
-    category: 'Compute & Runtime',
-    items: ['Auto Scaling Groups', 'Flavors', 'Images', 'Instances', 'Kubernetes Clusters', 'Serverless Functions', 'Snapshots'],
-  },
-  {
-    category: 'Storage & Data',
-    items: ['Backup Policies', 'Backups', 'Buckets', 'Databases', 'File Shares', 'S3 Objects', 'Volumes'],
-  },
-  {
-    category: 'Network & Security',
+    icon: <QueryStatsIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.info,
     items: [
-      'Cdn Distributions',
-      'Dns Records',
-      'Encryption Keys',
-      'Internet Gateways',
-      'Load Balancers',
-      'Nat Gateways',
-      'Route Tables',
-      'Security Groups',
-      'Ssl Certificates',
-      'Subnets',
-      'Target Groups',
-      'Vpcs',
-      'Vpn Connections',
-      'Vpn Gateways',
+      { label: 'Alert Rules',  route: '/monitor-dashboard/alerts',    description: 'Define thresholds and trigger conditions' },
+      { label: 'Alerts',       route: '/monitor-dashboard/alerts',    description: 'Active and historical alert events' },
+      { label: 'Incidents',    route: '/monitor-dashboard/incidents', description: 'Incident tracking and postmortems' },
+      { label: 'Logs',         route: '/monitor-dashboard/logs',      description: 'Structured log streams and search' },
+      { label: 'Metrics',      route: '/monitor-dashboard/metrics',   description: 'Time-series metrics and dashboards' },
+      { label: 'Monitoring',   route: '/monitor-dashboard/overview',  description: 'Service health and uptime overview' },
     ],
   },
   {
-    category: 'Platform & Automation',
-    items: ['Automations', 'Cloud', 'Compliance', 'Onboarding', 'Orchestration', 'Registries'],
+    id: 'compute',
+    category: 'Compute & Runtime',
+    icon: <ComputerIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.purple,
+    items: [
+      { label: 'Auto Scaling Groups',  route: '/dashboard/compute',    description: 'Horizontal scaling policies' },
+      { label: 'Flavors',              route: '/dashboard/compute',    description: 'Instance size configurations' },
+      { label: 'Images',               route: '/dashboard/compute',    description: 'OS and machine images' },
+      { label: 'Instances',            route: '/dashboard/compute',    description: 'Virtual machine management' },
+      { label: 'Kubernetes Clusters',  route: '/dashboard/kubernetes', description: 'Managed Kubernetes orchestration' },
+      { label: 'Serverless Functions', route: '/dashboard/serverless', description: 'Event-driven function runtime' },
+      { label: 'Snapshots',            route: '/dashboard/storage',    description: 'Point-in-time volume snapshots' },
+    ],
   },
   {
+    id: 'storage',
+    category: 'Storage & Data',
+    icon: <StorageIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.warning,
+    items: [
+      { label: 'Backup Policies', route: '/dashboard/storage',   description: 'Scheduled backup rules' },
+      { label: 'Backups',         route: '/dashboard/storage',   description: 'Restore points and archives' },
+      { label: 'Buckets',         route: '/dashboard/storage',   description: 'Object storage containers' },
+      { label: 'Databases',       route: '/dashboard/databases', description: 'Managed relational and NoSQL' },
+      { label: 'File Shares',     route: '/dashboard/storage',   description: 'NFS and SMB file systems' },
+      { label: 'S3 Objects',      route: '/dashboard/storage',   description: 'S3-compatible object store' },
+      { label: 'Volumes',         route: '/dashboard/storage',   description: 'Block storage volumes' },
+    ],
+  },
+  {
+    id: 'network',
+    category: 'Network & Security',
+    icon: <RouterIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.success,
+    items: [
+      { label: 'Cdn Distributions', route: '/dashboard/cdn',            description: 'Global content delivery' },
+      { label: 'Dns Records',       route: '/dashboard/domains',        description: 'DNS zone management' },
+      { label: 'Encryption Keys',   route: '/dashboard/settings',       description: 'KMS and key lifecycle' },
+      { label: 'Internet Gateways', route: '/dashboard/network',        description: 'VPC internet access' },
+      { label: 'Load Balancers',    route: '/dashboard/load-balancers', description: 'Layer 4 / 7 traffic routing' },
+      { label: 'Nat Gateways',      route: '/dashboard/network',        description: 'Outbound NAT for private subnets' },
+      { label: 'Route Tables',      route: '/dashboard/network',        description: 'VPC routing rules' },
+      { label: 'Security Groups',   route: '/dashboard/network',        description: 'Stateful firewall rules' },
+      { label: 'Ssl Certificates',  route: '/dashboard/domains',        description: 'TLS certificate management' },
+      { label: 'Subnets',           route: '/dashboard/network',        description: 'IP address segmentation' },
+      { label: 'Target Groups',     route: '/dashboard/load-balancers', description: 'Load balancer backends' },
+      { label: 'Vpcs',              route: '/dashboard/network',        description: 'Virtual private cloud networks' },
+      { label: 'Vpn Connections',   route: '/dashboard/network',        description: 'Site-to-site encrypted tunnels' },
+      { label: 'Vpn Gateways',      route: '/dashboard/network',        description: 'VPN endpoint management' },
+    ],
+  },
+  {
+    id: 'platform',
+    category: 'Platform & Automation',
+    icon: <AccountTreeIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.orange,
+    items: [
+      { label: 'Automations',  route: '/dashboard/orchestration', description: 'Workflow and event automation' },
+      { label: 'Cloud',        route: '/dashboard',               description: 'Cloud provider overview' },
+      { label: 'Compliance',   route: '/dashboard/settings',      description: 'Policy and audit controls' },
+      { label: 'Onboarding',   route: '/dashboard',               description: 'Setup guides and wizards' },
+      { label: 'Orchestration',route: '/dashboard/orchestration', description: 'Pipeline and job orchestration' },
+      { label: 'Registries',   route: '/dashboard/containers',    description: 'Container image registries' },
+    ],
+  },
+  {
+    id: 'business',
     category: 'Business & Engagement',
-    items: ['Billing', 'Campaigns', 'Contact Lists', 'Contacts', 'Domains', 'Email Aliases', 'Email Domains', 'Email Templates', 'Mailboxes', 'Marketing'],
+    icon: <CampaignIcon sx={ICON_SZ} />,
+    color: dashboardSemanticColors.pink,
+    items: [
+      { label: 'Billing',          route: '/dashboard/billing',                           description: 'Invoices and payment methods' },
+      { label: 'Campaigns',        route: '/marketing-dashboard/campaigns',               description: 'Email and ad campaign management' },
+      { label: 'Contact Lists',    route: '/marketing-dashboard/audience-segmentation',   description: 'Subscriber list management' },
+      { label: 'Contacts',         route: '/marketing-dashboard/audience-segmentation',   description: 'CRM contact records' },
+      { label: 'Domains',          route: '/dashboard/domains',                           description: 'Domain registration and DNS' },
+      { label: 'Email Aliases',    route: '/domains/dashboard',                           description: 'Custom email forwarding' },
+      { label: 'Email Domains',    route: '/domains/dashboard',                           description: 'Verified sender domains' },
+      { label: 'Email Templates',  route: '/marketing-dashboard/campaigns',               description: 'Reusable HTML email templates' },
+      { label: 'Mailboxes',        route: '/domains/dashboard',                           description: 'Hosted mailbox management' },
+      { label: 'Marketing',        route: '/marketing-dashboard/analytics',               description: 'Campaign analytics and ROI' },
+    ],
   },
 ];
 
-const modeLabel: Record<DashboardMode, string> = {
-  cloud: 'Cloud Dashboard',
-  developer: 'Developer Dashboard',
-  marketing: 'Marketing Dashboard',
+// ── Category nav sidebar ───────────────────────────────────────────────────────
+
+interface CategoryNavProps {
+  groups: SectionGroup[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}
+
+const CategoryNav: React.FC<CategoryNavProps> = ({ groups, activeId, onSelect }) => {
+  const t = dashboardTokens.colors;
+  return (
+    <Box
+      sx={{
+        width: 220,
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        alignSelf: 'flex-start',
+        height: 'fit-content',
+        pr: 1,
+        display: { xs: 'none', md: 'block' },
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: '.6rem',
+          fontWeight: 700,
+          letterSpacing: '.1em',
+          textTransform: 'uppercase',
+          color: t.textSecondary,
+          mb: 1.5,
+          px: 1,
+          fontFamily: FONT,
+        }}
+      >
+        Categories
+      </Typography>
+      <Stack spacing={0.25}>
+        {groups.map((g) => {
+          const isActive = activeId === g.id;
+          return (
+            <Box
+              key={g.id}
+              onClick={() => onSelect(g.id)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 1,
+                py: 0.75,
+                borderRadius: '6px',
+                cursor: 'pointer',
+                borderLeft: `3px solid ${isActive ? g.color : 'transparent'}`,
+                bgcolor: isActive ? `${g.color}18` : 'transparent',
+                transition: 'all .12s',
+                '&:hover': {
+                  bgcolor: isActive ? `${g.color}22` : `${g.color}0e`,
+                  borderColor: g.color,
+                },
+              }}
+            >
+              <Box sx={{ color: isActive ? g.color : t.textSecondary, display: 'flex', flexShrink: 0 }}>
+                {g.icon}
+              </Box>
+              <Typography
+                sx={{
+                  fontSize: '.82rem',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? t.textPrimary : t.textSecondary,
+                  lineHeight: 1.25,
+                  fontFamily: FONT,
+                }}
+              >
+                {g.category}
+              </Typography>
+              <Chip
+                label={g.items.length}
+                size="small"
+                sx={{
+                  ml: 'auto',
+                  height: 16,
+                  fontSize: '.6rem',
+                  fontWeight: 700,
+                  bgcolor: isActive ? `${g.color}28` : `${t.border}`,
+                  color: isActive ? g.color : t.textSecondary,
+                  '& .MuiChip-label': { px: 0.75 },
+                }}
+              />
+            </Box>
+          );
+        })}
+      </Stack>
+    </Box>
+  );
 };
+
+// ── Section item card ─────────────────────────────────────────────────────────
+
+interface SectionCardProps {
+  item: SectionItem;
+  color: string;
+}
+
+const SectionCard: React.FC<SectionCardProps> = ({ item, color }) => {
+  const navigate = useNavigate();
+  const t = dashboardTokens.colors;
+
+  return (
+    <Tooltip title={item.description ?? ''} placement="top" arrow>
+      <Card
+        sx={{
+          border: `1px solid ${t.border}`,
+          bgcolor: t.surfaceSubtle,
+          boxShadow: 'none',
+          borderRadius: '8px',
+          transition: 'all .14s',
+          '&:hover': {
+            bgcolor: t.surfaceHover,
+            borderColor: color,
+            boxShadow: `0 0 0 1px ${color}44`,
+            transform: 'translateY(-1px)',
+          },
+        }}
+      >
+        <CardActionArea
+          onClick={() => navigate(item.route)}
+          sx={{ px: 1.5, py: 1.1, display: 'flex', alignItems: 'center', gap: 1 }}
+        >
+          <CheckCircleOutlineIcon sx={{ fontSize: '.85rem', color, flexShrink: 0, opacity: 0.7 }} />
+          <Typography
+            sx={{
+              flex: 1,
+              fontSize: '.875rem',
+              fontWeight: 500,
+              color: t.textPrimary,
+              lineHeight: 1.3,
+              fontFamily: FONT,
+            }}
+          >
+            {item.label}
+          </Typography>
+          <ArrowForwardIosIcon sx={{ fontSize: '.65rem', color: t.textSecondary, flexShrink: 0, opacity: 0.5 }} />
+        </CardActionArea>
+      </Card>
+    </Tooltip>
+  );
+};
+
+// ── Group section ─────────────────────────────────────────────────────────────
+
+interface GroupSectionProps {
+  group: SectionGroup;
+  groupRef: (el: HTMLElement | null) => void;
+}
+
+const GroupSection: React.FC<GroupSectionProps> = ({ group, groupRef }) => {
+  const t = dashboardTokens.colors;
+  return (
+    <Box
+      ref={groupRef}
+      id={`section-${group.id}`}
+      sx={{ scrollMarginTop: '8px' }}
+    >
+      {/* Category header */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          mb: 1.5,
+          pb: 1,
+          borderBottom: `1px solid ${t.border}`,
+        }}
+      >
+        <Box
+          sx={{
+            width: 28,
+            height: 28,
+            borderRadius: '6px',
+            bgcolor: `${group.color}22`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: group.color,
+            flexShrink: 0,
+          }}
+        >
+          {group.icon}
+        </Box>
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: '.95rem', md: '1.05rem' },
+            color: t.textPrimary,
+            fontFamily: FONT,
+            flex: 1,
+          }}
+        >
+          {group.category}
+        </Typography>
+        <Chip
+          label={`${group.items.length} sections`}
+          size="small"
+          sx={{
+            height: 18,
+            fontSize: '.62rem',
+            fontWeight: 700,
+            bgcolor: `${group.color}18`,
+            color: group.color,
+            '& .MuiChip-label': { px: 0.75 },
+          }}
+        />
+      </Box>
+
+      {/* Items grid */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: '1fr 1fr',
+            lg: '1fr 1fr 1fr',
+          },
+          gap: 1,
+          mb: 3.5,
+        }}
+      >
+        {group.items.map((item) => (
+          <SectionCard key={item.label} item={item} color={group.color} />
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboardMode = 'cloud' }) => {
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>(SECTION_GROUPS[0].id);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const t = dashboardTokens.colors;
+
+  // Scroll-to-section when user clicks category nav
+  const handleCategorySelect = useCallback((id: string) => {
+    setActiveCategory(id);
+    const el = sectionRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  // Track active category on scroll via IntersectionObserver
+  useEffect(() => {
+    const ids = SECTION_GROUPS.map((g) => g.id);
+    const observers: IntersectionObserver[] = [];
+    ids.forEach((id) => {
+      const el = sectionRefs.current[id];
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveCategory(id);
+        },
+        { threshold: 0.25 },
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
 
   const filteredGroups = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) {
-      return SECTION_GROUPS;
-    }
-
+    if (!term) return SECTION_GROUPS;
     return SECTION_GROUPS
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) => item.toLowerCase().includes(term)),
+      .map((g) => ({
+        ...g,
+        items: g.items.filter((item) => item.label.toLowerCase().includes(term)),
       }))
-      .filter((group) => group.items.length > 0);
+      .filter((g) => g.items.length > 0);
   }, [query]);
 
-  const totalVisible = filteredGroups.reduce((sum, group) => sum + group.items.length, 0);
+  const totalVisible = filteredGroups.reduce((sum, g) => sum + g.items.length, 0);
+  const isSearching = query.trim().length > 0;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF', pb: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: t.background }}>
+      {/* ── Page header ── */}
       <Box
         sx={{
-          borderBottom: '1px solid #E5E7EB',
-          background: '#FFFFFF',
+          borderBottom: `1px solid ${t.border}`,
+          bgcolor: t.background,
           px: { xs: 2, md: 4 },
-          py: { xs: 2.2, md: 2.6 },
+          py: { xs: 2, md: 2.5 },
         }}
       >
-        <Typography sx={{ color: '#111827', fontWeight: 700, fontSize: { xs: '1.25rem', md: '1.7rem' }, lineHeight: 1.2 }}>
-          Sections Directory
-        </Typography>
-        <Typography sx={{ color: '#6B7280', mt: 0.5, fontSize: { xs: '.88rem', md: '.95rem' }, lineHeight: 1.5 }}>
-          {modeLabel[dashboardMode]} · Unified resource sections for navigation and implementation.
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+          <Chip
+            label={`${totalVisible} section${totalVisible === 1 ? '' : 's'}`}
+            sx={{
+              bgcolor: 'rgba(0,224,255,0.12)',
+              color: ACCENT,
+              fontWeight: 700,
+              fontSize: '.75rem',
+              height: 26,
+              borderRadius: '6px',
+              border: `1px solid rgba(0,224,255,0.22)`,
+              '& .MuiChip-label': { px: 1.25 },
+            }}
+          />
+        </Box>
+
+        {/* Search bar */}
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search sections (e.g. Vpcs, Billing, Alerts)"
+            size="small"
+            fullWidth
+            sx={{
+              maxWidth: 520,
+              '& .MuiOutlinedInput-root': {
+                bgcolor: t.surface,
+                color: t.textPrimary,
+                borderRadius: '8px',
+                fontSize: '.875rem',
+                '& fieldset': { borderColor: t.border },
+                '&:hover fieldset': { borderColor: t.borderStrong },
+                '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 3px rgba(0,224,255,0.14)` },
+              },
+              '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: t.textSecondary, fontSize: '1rem' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
       </Box>
 
-      <Container maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 2, md: 4 } }}>
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 1,
-            border: '1px solid #E5E7EB',
-            bgcolor: '#FFFFFF',
-            boxShadow: 'none',
-          }}
-        >
-          <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between">
-              <TextField
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search sections (e.g. Vpcs, Billing, Alerts)"
-                size="small"
-                fullWidth
-                sx={{
-                  maxWidth: { md: 460 },
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: '#FFFFFF',
-                    color: '#111827',
-                    borderRadius: '6px',
-                    '& fieldset': { borderColor: '#D1D5DB' },
-                    '&:hover fieldset': { borderColor: '#9CA3AF' },
-                    '&.Mui-focused fieldset': { borderColor: '#00E0FF', boxShadow: '0 0 0 2px rgba(0,224,255,0.18)' },
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: '#6B7280', fontSize: '1rem' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Chip
-                label={`${totalVisible} section${totalVisible === 1 ? '' : 's'} visible`}
-                sx={{
-                  alignSelf: { xs: 'flex-start', md: 'center' },
-                  bgcolor: 'rgba(0,224,255,0.14)',
-                  color: '#00C8E5',
-                  fontWeight: 700,
-                  borderRadius: '6px',
-                }}
-              />
-            </Stack>
-          </CardContent>
-        </Card>
+      {/* ── Body: sidebar + content ── */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: { md: 3 },
+          px: { xs: 2, md: 4 },
+          pt: { xs: 2, md: 2.5 },
+          pb: { xs: 3, md: 4 },
+          maxWidth: 1400,
+          mx: 'auto',
+        }}
+      >
+        {/* Category sidebar — hidden during search */}
+        {!isSearching && (
+          <CategoryNav
+            groups={SECTION_GROUPS}
+            activeId={activeCategory}
+            onSelect={handleCategorySelect}
+          />
+        )}
 
-        <Stack spacing={0}>
-          {filteredGroups.map((group) => (
-            <Card
-              key={group.category}
+        {/* Section list */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {filteredGroups.length > 0 ? (
+            filteredGroups.map((group) => (
+              <GroupSection
+                key={group.id}
+                group={group}
+                groupRef={(el) => { sectionRefs.current[group.id] = el; }}
+              />
+            ))
+          ) : (
+            <Box
               sx={{
-                borderRadius: 1,
-                border: '1px solid #E5E7EB',
-                bgcolor: '#FFFFFF',
-                boxShadow: 'none',
-                mb: 2,
+                border: `1px dashed ${t.border}`,
+                borderRadius: '10px',
+                p: 4,
+                textAlign: 'center',
               }}
             >
-              <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-                <Typography sx={{ color: '#111827', fontWeight: 600, mb: 1.4, fontSize: { xs: '1rem', md: '1.08rem' } }}>
-                  {group.category}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                      xs: '1fr',
-                      sm: '1fr 1fr',
-                      md: '1fr 1fr 1fr',
-                      lg: '1fr 1fr 1fr 1fr',
-                    },
-                    gap: 1,
-                  }}
-                >
-                  {group.items.map((item) => (
-                    <Box
-                      key={item}
-                      sx={{
-                        border: '1px solid #E5E7EB',
-                        borderRadius: '8px',
-                        px: 1.2,
-                        py: 0.95,
-                        color: '#111827',
-                        bgcolor: '#F9FAFB',
-                        fontWeight: 500,
-                        fontSize: '.9rem',
-                        minHeight: 44,
-                        display: 'flex',
-                        alignItems: 'center',
-                        '&:hover': {
-                          bgcolor: '#F3F4F6',
-                          borderColor: '#D1D5DB',
-                        },
-                      }}
-                    >
-                      {item}
-                    </Box>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
-
-          {totalVisible === 0 && (
-            <Card
-              sx={{
-                borderRadius: 1,
-                border: '1px dashed #D1D5DB',
-                bgcolor: '#FFFFFF',
-              }}
-            >
-              <CardContent>
-                <Typography sx={{ color: '#4B5563', fontWeight: 500 }}>No sections match your search.</Typography>
-              </CardContent>
-            </Card>
+              <Typography sx={{ color: t.textSecondary, fontWeight: 500, fontFamily: FONT }}>
+                No sections match your search.
+              </Typography>
+            </Box>
           )}
-        </Stack>
-      </Container>
+        </Box>
+      </Box>
     </Box>
   );
 };

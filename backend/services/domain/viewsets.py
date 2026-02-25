@@ -1,4 +1,6 @@
 import logging
+from datetime import date, timedelta
+from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db.models import Count
 from rest_framework import status
@@ -16,6 +18,7 @@ from .serializers import (
     DomainTransferCreateSerializer,
     DnsRecordSerializer,
     DnsRecordCreateSerializer,
+    DnsRecordUpdateSerializer,
     SslCertificateSerializer,
     UpdateNameserversSerializer,
     CheckAvailabilitySerializer,
@@ -29,6 +32,51 @@ logger = logging.getLogger(__name__)
 
 class DomainSearchAnonThrottle(AnonRateThrottle):
     scope = 'domain_search'
+
+
+def _resolve_domain_unit_price(tld: str, operation: str) -> Decimal:
+    try:
+        catalogue = rc.get_tld_catalogue() or []
+        match = next((item for item in catalogue if str(item.get('tld', '')).lower() == str(tld).lower()), None)
+        if match:
+            key = 'register_price' if operation == 'register' else 'renew_price'
+            return Decimal(str(match.get(key) or 0))
+    except Exception:
+        pass
+    return Decimal('12.00') if operation == 'register' else Decimal('10.00')
+
+
+def _create_domain_invoice(owner, domain: Domain, operation: str, years: int):
+    from ..billing.models import Invoice, InvoiceLineItem
+
+    unit_price = _resolve_domain_unit_price(domain.tld, operation)
+    qty = Decimal(str(max(1, years)))
+    subtotal = (unit_price * qty).quantize(Decimal('0.0001'))
+
+    invoice = Invoice.objects.create(
+        owner=owner,
+        status='open',
+        period_start=date.today(),
+        period_end=date.today(),
+        subtotal=subtotal,
+        tax_rate=Decimal('0'),
+        tax_amount=Decimal('0'),
+        total=subtotal,
+        due_date=date.today() + timedelta(days=7),
+        currency='USD',
+        notes=f'Domain {operation} charge for {domain.domain_name}',
+    )
+    InvoiceLineItem.objects.create(
+        invoice=invoice,
+        service='domains',
+        resource_id=domain.resource_id,
+        description=f'Domain {operation}: {domain.domain_name}',
+        quantity=qty,
+        unit='year',
+        unit_price=unit_price,
+        amount=subtotal,
+    )
+    return invoice
 
 
 # ── Domain ViewSet ────────────────────────────────────────────────────────────
@@ -123,6 +171,16 @@ class DomainViewSet(ModelViewSet):
                 status=zone.get('status', 'active'),
             )
 
+        try:
+            _create_domain_invoice(
+                owner=request.user,
+                domain=domain,
+                operation='register',
+                years=data['registration_years'],
+            )
+        except Exception:
+            logger.exception('Failed creating register invoice for %s', domain.domain_name)
+
         return Response(
             DomainDetailSerializer(domain).data,
             status=status.HTTP_201_CREATED,
@@ -178,7 +236,32 @@ class DomainViewSet(ModelViewSet):
         if not result.get('success'):
             return Response({'error': result.get('error', 'Renewal failed.')},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            _create_domain_invoice(
+                owner=request.user,
+                domain=domain,
+                operation='renew',
+                years=years,
+            )
+        except Exception:
+            logger.exception('Failed creating renewal invoice for %s', domain.domain_name)
+
         return Response({'renewed': True, 'years': years})
+
+    @action(detail=True, methods=['get'], url_path='billing')
+    def billing(self, request, resource_id=None):
+        from ..billing.models import Invoice
+        from ..billing.serializers import InvoiceListSerializer
+
+        domain = self.get_object()
+        invoices = (
+            Invoice.objects
+            .filter(owner=request.user, line_items__resource_id=domain.resource_id)
+            .distinct()
+            .order_by('-period_start')
+        )
+        return Response(InvoiceListSerializer(invoices, many=True).data)
 
     # ── DNS Zone ──────────────────────────────────────────────────────────────
 
@@ -314,6 +397,180 @@ class DomainViewSet(ModelViewSet):
         domain.dnssec_enabled = True
         domain.save(update_fields=['dnssec_enabled', 'updated_at'])
         return Response({'dnssec_enabled': True})
+
+    # ── Auto-renew toggle ─────────────────────────────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='toggle_auto_renew')
+    def toggle_auto_renew(self, request, resource_id=None):
+        domain = self.get_object()
+        domain.auto_renew = not domain.auto_renew
+        domain.save(update_fields=['auto_renew', 'updated_at'])
+        return Response({'auto_renew': domain.auto_renew})
+
+    # ── Update existing DNS record ─────────────────────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='update_dns_record')
+    def update_dns_record(self, request, resource_id=None):
+        domain = self.get_object()
+        ser = DnsRecordUpdateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        try:
+            zone = domain.dns_zone
+        except DnsZone.DoesNotExist:
+            return Response({'error': 'No DNS zone found.'}, status=404)
+
+        try:
+            record = zone.records.get(recordset_id=d['recordset_id'])
+        except DomainDnsRecord.DoesNotExist:
+            return Response({'error': 'Record not found.'}, status=404)
+
+        result = dns_svc.update_record(
+            zone_id=zone.zone_id,
+            recordset_id=d['recordset_id'],
+            records=d['records'],
+            ttl=d.get('ttl', record.ttl),
+        )
+        if not result.get('success'):
+            return Response({'error': result.get('error', 'Failed to update record.')},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        record.records = d['records']
+        if 'ttl' in d:
+            record.ttl = d['ttl']
+        record.save(update_fields=['records', 'ttl', 'updated_at'])
+        return Response(DnsRecordSerializer(record).data)
+
+    # ── DNS Templates ──────────────────────────────────────────────────────────
+
+    _DNS_TEMPLATES = [
+        {
+            'name': 'atonixcorp_app',
+            'label': 'Point to AtonixCorp App',
+            'description': 'Route traffic to an AtonixCorp compute instance or load balancer.',
+            'records': [
+                {'record_type': 'A',     'name': '@',   'records': ['<your-app-ip>'],         'ttl': 300},
+                {'record_type': 'CNAME', 'name': 'www', 'records': ['<your-domain.com>.'],     'ttl': 300},
+            ],
+        },
+        {
+            'name': 'atonixcorp_cdn',
+            'label': 'AtonixCorp CDN',
+            'description': 'Route traffic through AtonixCorp CDN edge.',
+            'records': [
+                {'record_type': 'CNAME', 'name': '@',   'records': ['cdn.atonixcorp.com.'],   'ttl': 300},
+                {'record_type': 'CNAME', 'name': 'www', 'records': ['cdn.atonixcorp.com.'],   'ttl': 300},
+            ],
+        },
+        {
+            'name': 'google_workspace',
+            'label': 'Google Workspace Email',
+            'description': 'MX records for Google Workspace (Gmail).',
+            'records': [
+                {'record_type': 'MX', 'name': '@', 'records': ['1 aspmx.l.google.com.'],     'ttl': 3600},
+                {'record_type': 'MX', 'name': '@', 'records': ['5 alt1.aspmx.l.google.com.'],'ttl': 3600},
+                {'record_type': 'MX', 'name': '@', 'records': ['10 alt2.aspmx.l.google.com.'],'ttl': 3600},
+                {'record_type': 'TXT', 'name': '@', 'records': ['v=spf1 include:_spf.google.com ~all'], 'ttl': 3600},
+            ],
+        },
+        {
+            'name': 'microsoft_365',
+            'label': 'Microsoft 365 Email',
+            'description': 'MX and SPF records for Microsoft 365.',
+            'records': [
+                {'record_type': 'MX',  'name': '@', 'records': ['0 <tenant>.mail.protection.outlook.com.'], 'ttl': 3600},
+                {'record_type': 'TXT', 'name': '@', 'records': ['v=spf1 include:spf.protection.outlook.com -all'], 'ttl': 3600},
+            ],
+        },
+        {
+            'name': 'domain_verification',
+            'label': 'Domain Verification (TXT)',
+            'description': 'Add a TXT record to verify domain ownership with a third-party service.',
+            'records': [
+                {'record_type': 'TXT', 'name': '@', 'records': ['<verification-code-here>'], 'ttl': 300},
+            ],
+        },
+    ]
+
+    @action(detail=True, methods=['get', 'post'], url_path='dns_templates')
+    def dns_templates(self, request, resource_id=None):
+        if request.method == 'GET':
+            return Response(self._DNS_TEMPLATES)
+
+        # POST: apply a named template
+        template_name = request.data.get('template_name')
+        template = next((t for t in self._DNS_TEMPLATES if t['name'] == template_name), None)
+        if not template:
+            return Response({'error': 'Unknown template name.'}, status=400)
+
+        domain = self.get_object()
+        try:
+            zone = domain.dns_zone
+        except DnsZone.DoesNotExist:
+            return Response({'error': 'No DNS zone found for this domain.'}, status=404)
+
+        created = []
+        for rec in template['records']:
+            result = dns_svc.create_record(
+                zone_id=zone.zone_id,
+                name=rec['name'],
+                record_type=rec['record_type'],
+                records=rec['records'],
+                ttl=rec['ttl'],
+            )
+            if result.get('success'):
+                obj = DomainDnsRecord.objects.create(
+                    zone=zone,
+                    recordset_id=result.get('recordset_id', ''),
+                    name=rec['name'],
+                    record_type=rec['record_type'],
+                    records=rec['records'],
+                    ttl=rec['ttl'],
+                )
+                created.append(DnsRecordSerializer(obj).data)
+        return Response({'applied': template_name, 'records_created': created}, status=status.HTTP_201_CREATED)
+
+    # ── Admin: TLD Pricing ────────────────────────────────────────────────────
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='admin/tld_pricing',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_tld_pricing(self, request):
+        """Return the full TLD pricing catalogue (from RC + any DB overrides)."""
+        return Response(rc.get_tld_catalogue())
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='admin/metrics',
+        permission_classes=[IsAuthenticated, IsAdminUser],
+    )
+    def admin_metrics(self, request):
+        """System-level domain metrics for admin dashboard."""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        now = timezone.now()
+        registrations_24h = Domain.objects.filter(created_at__gte=now - timedelta(hours=24)).count()
+        registrations_7d  = Domain.objects.filter(created_at__gte=now - timedelta(days=7)).count()
+        expiring_30d = Domain.objects.filter(
+            expires_at__gte=now,
+            expires_at__lte=now + timedelta(days=30),
+        ).count()
+        expired = Domain.objects.filter(status='expired').count()
+        failed  = Domain.objects.filter(status__in=['error', 'failed']).count()
+
+        return Response({
+            'registrations_24h': registrations_24h,
+            'registrations_7d': registrations_7d,
+            'expiring_30d': expiring_30d,
+            'expired': expired,
+            'failed_or_error': failed,
+        })
 
     @action(detail=True, methods=['post'], url_path='switch_domain')
     def switch_domain(self, request, resource_id=None):

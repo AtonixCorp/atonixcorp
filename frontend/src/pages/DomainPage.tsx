@@ -38,7 +38,11 @@ const DNS_TYPES: DnsRecordType[] = ['A','AAAA','CNAME','MX','TXT','NS','SRV','CA
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const DomainPage: React.FC = () => {
+interface DomainPageProps {
+  onManage?: (resourceId: string) => void;
+}
+
+const DomainPage: React.FC<DomainPageProps> = ({ onManage }) => {
   const t = {
     panelBg: dashboardTokens.colors.background,
     cardBg: dashboardTokens.colors.surface,
@@ -324,9 +328,19 @@ const DomainPage: React.FC = () => {
                   sx={{ bgcolor: STATUS_COLOUR[d.status] ?? t.muted, color: dashboardTokens.colors.white, fontSize: '0.65rem' }}
                 />
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
-                <Typography sx={{ color: t.muted, fontSize: '0.75rem' }}>Expires: {expireLabel(d)}</Typography>
-                {d.auto_renew && <AutorenewIcon sx={{ fontSize: 14, color: dashboardSemanticColors.success }} />}
+              <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography sx={{ color: t.muted, fontSize: '0.75rem' }}>Expires: {expireLabel(d)}</Typography>
+                  {d.auto_renew && <AutorenewIcon sx={{ fontSize: 14, color: dashboardSemanticColors.success }} />}
+                </Box>
+                {onManage && (
+                  <Typography
+                    onClick={e => { e.stopPropagation(); onManage(d.resource_id); }}
+                    sx={{ fontSize: '.72rem', color: t.brand, cursor: 'pointer', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}
+                  >
+                    Manage →
+                  </Typography>
+                )}
               </Box>
             </Box>
           ))}
