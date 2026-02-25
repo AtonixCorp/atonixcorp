@@ -133,7 +133,8 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/dev-dashboard/deployments' },
   { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/dev-dashboard/projects'   },
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/dev-dashboard/cicd' },
-  { label: 'Containers & Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/containers-k8s' },
+  { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/dev-dashboard/containers' },
+  { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/kubernetes' },
   { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
   { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
   { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/dev-dashboard/sections' },
@@ -191,13 +192,9 @@ const ACCOUNT_NAV: NavItem[] = [
   { label: 'Settings',  icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
 ];
 
-const DEVELOPER_ACCOUNT_NAV: NavItem[] = [
-  { label: 'Developer Settings', icon: <SettingsIcon {...I()} />, path: '/dev-dashboard/settings' },
-];
+const DEVELOPER_ACCOUNT_NAV: NavItem[] = [];
 
-const MARKETING_ACCOUNT_NAV: NavItem[] = [
-  { label: 'Marketing Settings', icon: <SettingsIcon {...I()} />, path: '/marketing-dashboard/settings' },
-];
+const MARKETING_ACCOUNT_NAV: NavItem[] = [];
 
 const SUPPORT_NAV: NavItem[] = [
   { label: 'Support',          icon: <HelpIcon    {...I()} />, path: '/dashboard/help'     },

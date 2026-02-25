@@ -46,8 +46,7 @@ import NetworkPage               from './pages/NetworkPage';
 import OrchestrationPage         from './pages/OrchestrationPage';
 import DevDeploymentsPage        from './pages/DevDeploymentsPage';
 import DevPipelinesPage          from './pages/DevPipelinesPage';
-import DevContainersPage         from './pages/DevContainersPage';
-import DevMonitoringPage         from './pages/DevMonitoringPage';
+import DevContainersPage         from './pages/DevContainersPage';import DevKubernetesPage        from './pages/DevKubernetesPage';import DevMonitoringPage         from './pages/DevMonitoringPage';
 import DevApiManagementPage      from './pages/DevApiManagementPage';
 import DevResourceControlPage    from './pages/DevResourceControlPage';
 import DevWorkspacePage          from './pages/DevWorkspacePage';
@@ -95,7 +94,8 @@ const AppShell: React.FC = () => {
             <Route path="/dev-dashboard/projects"     element={<DevProjectsPage />} />
             <Route path="/dev-dashboard/projects/:id"  element={<DevProjectDetailPage />} />
             <Route path="/dev-dashboard/cicd" element={<DevPipelinesPage />} />
-            <Route path="/dev-dashboard/containers-k8s" element={<DevContainersPage />} />
+            <Route path="/dev-dashboard/containers" element={<DevContainersPage />} />
+            <Route path="/dev-dashboard/kubernetes" element={<DevKubernetesPage />} />
             <Route path="/dev-dashboard/monitoring" element={<DevMonitoringPage />} />
             <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />

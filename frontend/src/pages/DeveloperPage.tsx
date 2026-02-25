@@ -12,7 +12,8 @@ const sections: DevSection[] = [
     items: [
       { name: 'Deployments', description: 'Release workflows, environments, and deployment orchestration.', route: '/dev-dashboard/deployments' },
       { name: 'CI/CD Pipelines', description: 'Build, test, and promote workloads across environments.', route: '/dev-dashboard/cicd' },
-      { name: 'Containers & Kubernetes', description: 'Container lifecycle and Kubernetes operational tooling.', route: '/dev-dashboard/containers-k8s' },
+      { name: 'Containers', description: 'Container lifecycle, image management, and vulnerability scanning.', route: '/dev-dashboard/containers' },
+      { name: 'Kubernetes', description: 'Cluster health, nodes, workloads, and namespace management.', route: '/dev-dashboard/kubernetes' },
     ],
   },
   {
@@ -27,7 +28,6 @@ const sections: DevSection[] = [
     title: 'Developer Workspace',
     items: [
       { name: 'Workspace', description: 'Developer profile, preferences, and productivity setup.', route: '/dev-dashboard/workspace' },
-      { name: 'Developer Settings', description: 'Security, keys, notifications, and integration controls.', route: '/dev-dashboard/settings' },
       { name: 'Service Docs', description: 'Cross-service documentation references and implementation notes.', route: '/docs' },
     ],
   },

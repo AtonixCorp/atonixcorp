@@ -38,7 +38,8 @@ const serviceGroups: ServiceGroup[] = [
     services: [
       { name: 'Deployments', route: '/dev-dashboard/deployments', summary: 'Application deployment flows, release tracking, and rollout controls.' },
       { name: 'CI/CD Pipelines', route: '/dev-dashboard/cicd', summary: 'Build pipelines, automation steps, environments, and approvals.' },
-      { name: 'Containers & Kubernetes', route: '/dev-dashboard/containers-k8s', summary: 'Container runtime workflows and K8s deployment integration.' },
+      { name: 'Containers', route: '/dev-dashboard/containers', summary: 'Container lifecycle, image management, and vulnerability scanning.' },
+      { name: 'Kubernetes', route: '/dev-dashboard/kubernetes', summary: 'Cluster health, nodes, workloads, and namespace management.' },
       { name: 'Developer Monitoring', route: '/dev-dashboard/monitoring', summary: 'Logs, metrics, traces, and alerting for workloads.' },
       { name: 'API Management', route: '/dev-dashboard/api-management', summary: 'API publication, policies, versioning, and access governance.' },
       { name: 'Resource Control', route: '/dev-dashboard/resource-control', summary: 'Quota management, capacity controls, and resource policy limits.' },

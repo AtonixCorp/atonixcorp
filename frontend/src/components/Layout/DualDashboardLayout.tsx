@@ -16,6 +16,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import HubIcon from '@mui/icons-material/Hub';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import ApiIcon from '@mui/icons-material/Api';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -40,7 +41,8 @@ interface NavEntry {
 const developerNav: NavEntry[] = [
   { label: 'Deployments', path: '/dev-dashboard/deployments', icon: <RocketLaunchIcon /> },
   { label: 'CI/CD Pipelines', path: '/dev-dashboard/cicd', icon: <AutorenewIcon /> },
-  { label: 'Containers & Kubernetes', path: '/dev-dashboard/containers-k8s', icon: <HubIcon /> },
+  { label: 'Containers', path: '/dev-dashboard/containers', icon: <ViewInArIcon /> },
+  { label: 'Kubernetes', path: '/dev-dashboard/kubernetes', icon: <HubIcon /> },
   { label: 'Monitoring', path: '/dev-dashboard/monitoring', icon: <MonitorHeartIcon /> },
   { label: 'API Management', path: '/dev-dashboard/api-management', icon: <ApiIcon /> },
   { label: 'Resource Control', path: '/dev-dashboard/resource-control', icon: <StorageIcon /> },

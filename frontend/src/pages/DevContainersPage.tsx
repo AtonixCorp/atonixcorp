@@ -20,23 +20,23 @@ const DevContainersPage: React.FC = () => {
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Containers & Kubernetes</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>Containers</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Grouped operational state for clusters and workloads.
+        Container lifecycle, pod status, and image vulnerability management.
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Nodes</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>9</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Pods</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>112</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Namespaces</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>14</Typography></CardContent></Card>
-        <Card><CardContent><Typography variant="caption" color="text.secondary">Cluster health</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: 'success.main' }}>Healthy</Typography></CardContent></Card>
+        <Card><CardContent><Typography variant="caption" color="text.secondary">Running</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>94</Typography></CardContent></Card>
+        <Card><CardContent><Typography variant="caption" color="text.secondary">Pending</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: 'warning.main' }}>6</Typography></CardContent></Card>
+        <Card><CardContent><Typography variant="caption" color="text.secondary">Failed</Typography><Typography variant="h6" sx={{ fontWeight: 800, color: 'error.main' }}>2</Typography></CardContent></Card>
+        <Card><CardContent><Typography variant="caption" color="text.secondary">Images</Typography><Typography variant="h6" sx={{ fontWeight: 800 }}>18</Typography></CardContent></Card>
       </Box>
 
       <Card>
         <CardContent>
           <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 1 }}>
             <Tab label="Pods / Containers" />
-            <Tab label="Workloads" />
+            <Tab label="Images" />
             <Tab label="Vulnerabilities" />
           </Tabs>
 
@@ -63,18 +63,19 @@ const DevContainersPage: React.FC = () => {
 
           {tab === 1 && (
             <Table size="small">
-              <TableHead><TableRow><TableCell>Workload</TableCell><TableCell>Type</TableCell><TableCell>Desired</TableCell><TableCell>Ready</TableCell></TableRow></TableHead>
+              <TableHead><TableRow><TableCell>Image</TableCell><TableCell>Tag</TableCell><TableCell>Registry</TableCell><TableCell>Size</TableCell><TableCell>Pulled</TableCell></TableRow></TableHead>
               <TableBody>
                 {[
-                  ['payment-service', 'Deployment', '4', '4'],
-                  ['events-worker', 'Deployment', '2', '1'],
-                  ['postgres-state', 'StatefulSet', '1', '1'],
+                  ['payment-service', 'v2.4.1', 'registry.atonix.io', '312 MB', '2h ago'],
+                  ['web-frontend', 'v1.9.0', 'registry.atonix.io', '148 MB', '4h ago'],
+                  ['events-worker', 'v0.9.8', 'registry.atonix.io', '89 MB', '1d ago'],
                 ].map((row) => (
                   <TableRow key={row[0]}>
-                    <TableCell>{row[0]}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '.82rem' }}>{row[0]}</TableCell>
                     <TableCell>{row[1]}</TableCell>
                     <TableCell>{row[2]}</TableCell>
                     <TableCell>{row[3]}</TableCell>
+                    <TableCell>{row[4]}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
