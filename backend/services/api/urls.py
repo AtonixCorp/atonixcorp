@@ -43,6 +43,7 @@ from ..monitoring.viewsets import (
     MonitoringOverviewViewSet, MetricViewSet,
     AlertRuleViewSet, AlertViewSet,
     IncidentViewSet, LogViewSet,
+    DevMonitoringViewSet,
 )
 from ..orchestration.viewsets import OrchestrationViewSet
 from ..compliance.viewsets import ComplianceViewSet
@@ -144,6 +145,7 @@ router.register(r'automations',     AutomationViewSet,     basename='automation'
 # MONITORING & INCIDENT MANAGEMENT ENDPOINTS
 # ============================================================================
 router.register(r'monitoring/overview', MonitoringOverviewViewSet, basename='monitoring-overview')
+router.register(r'monitoring/dev',      DevMonitoringViewSet,      basename='dev-monitoring')
 router.register(r'metrics',             MetricViewSet,             basename='metric')
 router.register(r'alert-rules',         AlertRuleViewSet,          basename='alert-rule')
 router.register(r'alerts',              AlertViewSet,              basename='alert')

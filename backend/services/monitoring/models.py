@@ -224,3 +224,58 @@ class IncidentUpdate(TimeStampedModel):
 
     class Meta:
         ordering = ['created_at']
+
+
+# ── Platform Activity / Audit ──────────────────────────────────────────────────
+
+class PlatformActivityEvent(TimeStampedModel):
+    """Audit trail event for developer-facing activity hub."""
+
+    EVENT_TYPE_CHOICES = [
+        ('pipeline_run',        'Pipeline Run'),
+        ('pipeline_failed',     'Pipeline Failed'),
+        ('deployment_started',  'Deployment Started'),
+        ('deployment_succeeded','Deployment Succeeded'),
+        ('deployment_failed',   'Deployment Failed'),
+        ('config_changed',      'Config Changed'),
+        ('alert_fired',         'Alert Fired'),
+        ('alert_resolved',      'Alert Resolved'),
+        ('incident_opened',     'Incident Opened'),
+        ('incident_resolved',   'Incident Resolved'),
+        ('kubernetes_sync',     'Kubernetes Sync'),
+        ('user_login',          'User Login'),
+        ('project_created',     'Project Created'),
+        ('security_scan',       'Security Scan'),
+    ]
+
+    SEVERITY_CHOICES = [
+        ('info',     'Info'),
+        ('warning',  'Warning'),
+        ('critical', 'Critical'),
+    ]
+
+    owner         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_events')
+    event_type    = models.CharField(max_length=32, choices=EVENT_TYPE_CHOICES)
+    actor         = models.CharField(max_length=64, blank=True)
+    project_id    = models.CharField(max_length=50, blank=True)
+    project_name  = models.CharField(max_length=100, blank=True)
+    resource_type = models.CharField(max_length=32, blank=True)   # pipeline | deployment | config | alert
+    resource_id   = models.CharField(max_length=64, blank=True)
+    resource_name = models.CharField(max_length=128, blank=True)
+    environment   = models.CharField(max_length=32, blank=True)   # production | staging | dev
+    description   = models.TextField(blank=True)
+    before_state  = models.JSONField(default=dict, blank=True)
+    after_state   = models.JSONField(default=dict, blank=True)
+    ip_address    = models.GenericIPAddressField(null=True, blank=True)
+    severity      = models.CharField(max_length=8, choices=SEVERITY_CHOICES, default='info')
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['owner', '-created_at']),
+            models.Index(fields=['owner', 'event_type']),
+            models.Index(fields=['owner', 'project_id']),
+        ]
+
+    def __str__(self):
+        return f"[{self.severity.upper()}] {self.event_type} by {self.actor or 'system'}"

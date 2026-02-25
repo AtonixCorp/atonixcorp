@@ -196,3 +196,57 @@ class LogViewSet(viewsets.ViewSet):
         limit      = min(int(request.query_params.get('limit', 100)), 500)
         logs = svc.get_log_stream(request.user, svc_filter, search, hours, limit)
         return Response({'count': len(logs), 'logs': logs})
+
+
+# ── Developer Dashboard Monitoring ────────────────────────────────────────────
+
+class DevMonitoringViewSet(viewsets.ViewSet):
+    """Unified developer-facing monitoring endpoints for the monitoring hub."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        """GET /monitoring/dev/ — combined overview stats."""
+        data = svc.get_dev_overview(request.user)
+        return Response(data)
+
+    @action(detail=False, methods=['get'], url_path='pipeline-health')
+    def pipeline_health(self, request):
+        """GET /monitoring/dev/pipeline-health/?hours=<n>&project_id=<id>"""
+        hours      = int(request.query_params.get('hours', 24))
+        project_id = request.query_params.get('project_id', None)
+        data = svc.get_pipeline_health(request.user, hours=hours, project_id=project_id)
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='deployment-health')
+    def deployment_health(self, request):
+        """GET /monitoring/dev/deployment-health/?hours=<n>&project_id=<id>"""
+        hours      = int(request.query_params.get('hours', 24))
+        project_id = request.query_params.get('project_id', None)
+        data = svc.get_deployment_health(request.user, hours=hours, project_id=project_id)
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='project-health')
+    def project_health(self, request):
+        """GET /monitoring/dev/project-health/"""
+        data = svc.get_project_health(request.user)
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='activity')
+    def activity(self, request):
+        """GET /monitoring/dev/activity/?event_type=<t>&project_id=<id>&hours=<n>&limit=<n>"""
+        event_type = request.query_params.get('event_type', None)
+        project_id = request.query_params.get('project_id', None)
+        hours      = int(request.query_params.get('hours', 24))
+        limit      = min(int(request.query_params.get('limit', 50)), 200)
+        data = svc.get_activity_feed(
+            request.user, event_type=event_type,
+            project_id=project_id, hours=hours, limit=limit,
+        )
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='service-health')
+    def service_health(self, request):
+        """GET /monitoring/dev/service-health/ — list of service health records."""
+        data = svc.get_service_health(request.user)
+        return Response({'count': len(data), 'results': data})
+

@@ -254,3 +254,284 @@ def get_log_stream(owner, service: str = '', search: str = '',
 
     logs.sort(key=lambda x: x['timestamp'], reverse=True)
     return logs[:limit]
+
+
+# ── Developer Dashboard Service Functions ─────────────────────────────────────
+
+def get_dev_overview(owner):
+    """Combined overview for the developer monitoring hub."""
+    from ..pipelines.models import Pipeline, PipelineJob
+    from ..containers.models import ContainerDeployment
+    from django.utils import timezone as tz
+    now = tz.now()
+    since_24h = now - timedelta(hours=24)
+    since_7d  = now - timedelta(days=7)
+
+    # Pipeline stats
+    pipelines_qs = Pipeline.objects.filter(project__owner=owner)
+    total_pipelines   = pipelines_qs.count()
+    running_pipelines = pipelines_qs.filter(status='running').count()
+    failed_24h        = pipelines_qs.filter(status='failed', started_at__gte=since_24h).count()
+    success_24h       = pipelines_qs.filter(status='success', started_at__gte=since_24h).count()
+    pipeline_runs_24h = pipelines_qs.filter(started_at__gte=since_24h).count()
+    pipeline_success_rate = round(
+        (success_24h / pipeline_runs_24h * 100) if pipeline_runs_24h else 0, 1
+    )
+
+    # Deployment stats
+    deployments_qs = ContainerDeployment.objects.filter(container__owner=owner)
+    deploys_24h     = deployments_qs.filter(started_at__gte=since_24h).count()
+    deploys_failed  = deployments_qs.filter(status='failed', started_at__gte=since_24h).count()
+    deploys_success = deployments_qs.filter(status='success', started_at__gte=since_24h).count()
+    deploy_success_rate = round(
+        (deploys_success / deploys_24h * 100) if deploys_24h else 0, 1
+    )
+
+    # Service health
+    overview = get_overview_stats(owner)
+    svc_health = get_service_health(owner)
+    svc_healthy  = sum(1 for s in svc_health if s.get('status') == 'operational')
+    svc_degraded = sum(1 for s in svc_health if s.get('status') in ('degraded', 'partial_outage'))
+    svc_down     = sum(1 for s in svc_health if s.get('status') == 'major_outage')
+
+    return {
+        'pipelines': {
+            'total':        total_pipelines,
+            'running':      running_pipelines,
+            'failed_24h':   failed_24h,
+            'runs_24h':     pipeline_runs_24h,
+            'success_rate': pipeline_success_rate,
+        },
+        'deployments': {
+            'total_24h':    deploys_24h,
+            'failed_24h':   deploys_failed,
+            'success_24h':  deploys_success,
+            'success_rate': deploy_success_rate,
+        },
+        'services': {
+            'total':    len(svc_health),
+            'healthy':  svc_healthy,
+            'degraded': svc_degraded,
+            'down':     svc_down,
+        },
+        'alerts': {
+            'active':   overview.get('active_alerts', 0),
+            'critical': overview.get('critical_alerts', 0),
+        },
+        'incidents': {
+            'open':        overview.get('open_incidents', 0),
+            'total_rules': overview.get('total_rules', 0),
+        },
+    }
+
+
+def get_pipeline_health(owner, hours=24, project_id=None):
+    """Pipeline health stats per project or overall."""
+    from ..pipelines.models import Pipeline, Project
+    from django.utils import timezone as tz
+    from django.db.models import Count, Q
+    now = tz.now()
+    since = now - timedelta(hours=hours)
+
+    projects_qs = Project.objects.filter(owner=owner)
+    if project_id:
+        projects_qs = projects_qs.filter(id=project_id)
+
+    result = []
+    for project in projects_qs:
+        runs = Pipeline.objects.filter(project=project, started_at__gte=since)
+        total   = runs.count()
+        success = runs.filter(status='success').count()
+        failed  = runs.filter(status='failed').count()
+        running = runs.filter(status='running').count()
+        cancelled = runs.filter(status='cancelled').count()
+        recent = runs.order_by('-started_at').values(
+            'id', 'pipeline_name', 'branch', 'status',
+            'triggered_by', 'started_at', 'finished_at'
+        )[:5]
+        result.append({
+            'project_id':    project.id,
+            'project_name':  project.name,
+            'total_runs':    total,
+            'success':       success,
+            'failed':        failed,
+            'running':       running,
+            'cancelled':     cancelled,
+            'success_rate':  round((success / total * 100) if total else 0, 1),
+            'recent_runs': list(recent),
+        })
+    return result
+
+
+def get_deployment_health(owner, hours=24, project_id=None):
+    """Deployment health stats."""
+    from ..containers.models import Container, ContainerDeployment
+    from django.utils import timezone as tz
+    now = tz.now()
+    since = now - timedelta(hours=hours)
+
+    containers_qs = Container.objects.filter(owner=owner)
+    if project_id:
+        containers_qs = containers_qs.filter(project_id=project_id)
+
+    result = []
+    for container in containers_qs:
+        deploys = ContainerDeployment.objects.filter(
+            container=container, started_at__gte=since
+        )
+        total   = deploys.count()
+        success = deploys.filter(status='success').count()
+        failed  = deploys.filter(status='failed').count()
+        running = deploys.filter(status='running').count()
+        recent  = deploys.order_by('-started_at').values(
+            'id', 'image_tag', 'trigger', 'status', 'started_at', 'ended_at'
+        )[:5]
+        result.append({
+            'container_id':   container.id,
+            'container_name': container.name,
+            'image':          container.image,
+            'total_deploys':  total,
+            'success':        success,
+            'failed':         failed,
+            'running':        running,
+            'success_rate':   round((success / total * 100) if total else 0, 1),
+            'recent_deploys': list(recent),
+        })
+    return result
+
+
+def get_project_health(owner):
+    """Per-project health summary aggregating pipelines, deployments, alerts."""
+    from ..pipelines.models import Pipeline, Project
+    from ..containers.models import ContainerDeployment, Container
+    from django.utils import timezone as tz
+    from django.db.models import Count
+    now = tz.now()
+    since_7d = now - timedelta(days=7)
+
+    result = []
+    for project in Project.objects.filter(owner=owner):
+        pl_runs     = Pipeline.objects.filter(project=project, started_at__gte=since_7d)
+        pl_total    = pl_runs.count()
+        pl_success  = pl_runs.filter(status='success').count()
+        pl_failed   = pl_runs.filter(status='failed').count()
+
+        dep_runs    = ContainerDeployment.objects.filter(
+            container__owner=owner, started_at__gte=since_7d
+        )
+        dep_total   = dep_runs.count()
+        dep_success = dep_runs.filter(status='success').count()
+        dep_failed  = dep_runs.filter(status='failed').count()
+
+        combined_total   = pl_total + dep_total
+        combined_success = pl_success + dep_success
+
+        if combined_total == 0:
+            health_score = 100
+        else:
+            health_score = round(combined_success / combined_total * 100, 1)
+
+        if health_score >= 90:
+            health_status = 'healthy'
+        elif health_score >= 70:
+            health_status = 'degraded'
+        else:
+            health_status = 'critical'
+
+        result.append({
+            'project_id':       project.id,
+            'project_name':     project.name,
+            'health_score':     health_score,
+            'health_status':    health_status,
+            'pipelines_7d':     pl_total,
+            'pipeline_success': pl_success,
+            'pipeline_failed':  pl_failed,
+            'deploys_7d':       dep_total,
+            'deploy_success':   dep_success,
+            'deploy_failed':    dep_failed,
+        })
+    return result
+
+
+def get_activity_feed(owner, event_type=None, project_id=None, hours=24, limit=50):
+    """Return audit activity events, merging DB records with synthetic recent events."""
+    from .models import PlatformActivityEvent
+    from ..pipelines.models import Pipeline
+    from ..containers.models import ContainerDeployment
+    from django.utils import timezone as tz
+    now = tz.now()
+    since = now - timedelta(hours=hours)
+
+    # Real events from DB
+    events_qs = PlatformActivityEvent.objects.filter(owner=owner, created_at__gte=since)
+    if event_type:
+        events_qs = events_qs.filter(event_type=event_type)
+    if project_id:
+        events_qs = events_qs.filter(project_id=project_id)
+
+    db_events = list(events_qs.values(
+        'id', 'event_type', 'actor', 'project_id', 'project_name',
+        'resource_type', 'resource_id', 'resource_name',
+        'environment', 'description', 'severity', 'created_at'
+    )[:limit])
+
+    # Augment with real pipeline events if DB is empty
+    if not db_events:
+        db_events = _synthesize_activity(owner, since, limit)
+
+    for ev in db_events:
+        if hasattr(ev.get('created_at'), 'isoformat'):
+            ev['created_at'] = ev['created_at'].isoformat()
+
+    return db_events[:limit]
+
+
+def _synthesize_activity(owner, since, limit):
+    """Generate activity events from real pipeline/deployment records."""
+    from ..pipelines.models import Pipeline
+    from ..containers.models import ContainerDeployment
+    events = []
+
+    for pl in Pipeline.objects.filter(project__owner=owner, started_at__gte=since).order_by('-started_at')[:20]:
+        ev_type = 'pipeline_failed' if pl.status == 'failed' else 'pipeline_run'
+        events.append({
+            'id':            f'pl-{pl.id}',
+            'event_type':    ev_type,
+            'actor':         pl.triggered_by,
+            'project_id':    pl.project_id,
+            'project_name':  pl.project.name,
+            'resource_type': 'pipeline',
+            'resource_id':   pl.id,
+            'resource_name': pl.pipeline_name,
+            'environment':   pl.branch,
+            'description':   f'Pipeline {pl.pipeline_name} {pl.status} on branch {pl.branch}',
+            'severity':      'critical' if pl.status == 'failed' else 'info',
+            'created_at':    pl.started_at.isoformat() if pl.started_at else None,
+        })
+
+    for dep in ContainerDeployment.objects.filter(
+        container__owner=owner, started_at__gte=since
+    ).order_by('-started_at')[:20]:
+        if dep.status == 'failed':
+            ev_type, sev = 'deployment_failed', 'critical'
+        elif dep.status == 'success':
+            ev_type, sev = 'deployment_succeeded', 'info'
+        else:
+            ev_type, sev = 'deployment_started', 'info'
+        events.append({
+            'id':            f'dep-{dep.id}',
+            'event_type':    ev_type,
+            'actor':         dep.trigger,
+            'project_id':    '',
+            'project_name':  '',
+            'resource_type': 'deployment',
+            'resource_id':   dep.id,
+            'resource_name': dep.container.name,
+            'environment':   '',
+            'description':   f'Deploy {dep.image_tag} to {dep.container.name}: {dep.status}',
+            'severity':      sev,
+            'created_at':    dep.started_at.isoformat() if dep.started_at else None,
+        })
+
+    events.sort(key=lambda x: x.get('created_at') or '', reverse=True)
+    return events[:limit]
