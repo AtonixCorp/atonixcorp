@@ -67,6 +67,11 @@ from ..pipelines.viewsets import (
     PipelineArtifactViewSet,
 )
 from ..kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
+from ..apim.viewsets import (
+    ApimOverviewViewSet, ApiDefinitionViewSet, ApiGatewayViewSet,
+    ApiConsumerViewSet, ApiKeyViewSet, ApiProductViewSet,
+    ApiPolicyViewSet, ApimAnalyticsViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -191,6 +196,18 @@ router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename
 # ============================================================================
 router.register(r'kubernetes/config',    KubeConfigViewSet,  basename='kube-config')
 router.register(r'kubernetes/sync-runs', KubeSyncRunViewSet, basename='kube-sync-run')
+
+# ============================================================================
+# API MANAGEMENT ENDPOINTS
+# ============================================================================
+router.register(r'apim/overview',   ApimOverviewViewSet,   basename='apim-overview')
+router.register(r'apim/apis',       ApiDefinitionViewSet,  basename='apim-api')
+router.register(r'apim/gateways',   ApiGatewayViewSet,     basename='apim-gateway')
+router.register(r'apim/consumers',  ApiConsumerViewSet,    basename='apim-consumer')
+router.register(r'apim/keys',       ApiKeyViewSet,         basename='apim-key')
+router.register(r'apim/products',   ApiProductViewSet,     basename='apim-product')
+router.register(r'apim/policies',   ApiPolicyViewSet,      basename='apim-policy')
+router.register(r'apim/analytics',  ApimAnalyticsViewSet,  basename='apim-analytics')
 
 # URL Patterns
 urlpatterns = [
