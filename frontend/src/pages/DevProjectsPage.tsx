@@ -11,6 +11,7 @@ import {
   Divider,
   InputAdornment,
   LinearProgress,
+  Snackbar,
   Stack,
   TextField,
   Tooltip,
@@ -24,14 +25,17 @@ import BuildIcon from '@mui/icons-material/Build';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import { useNavigate } from 'react-router-dom';
+import { CreateProjectModal } from '../components/Developer/CreateProjectModal';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived';
-type ProjectLang = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java';
+type ProjectLang = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL';
 
 interface Project {
   id: string;
@@ -46,6 +50,7 @@ interface Project {
   updatedAt: string;
   members: string[];
   tags: string[];
+  provider: 'github' | 'gitlab' | 'bitbucket';
 }
 
 const PROJECTS: Project[] = [
@@ -62,6 +67,7 @@ const PROJECTS: Project[] = [
     updatedAt: '1 hour ago',
     members: ['F', 'J', 'S'],
     tags: ['infra', 'core'],
+    provider: 'github' as const,
   },
   {
     id: 'p2',
@@ -76,6 +82,7 @@ const PROJECTS: Project[] = [
     updatedAt: '3 hours ago',
     members: ['F', 'J'],
     tags: ['payments', 'critical'],
+    provider: 'github' as const,
   },
   {
     id: 'p3',
@@ -90,6 +97,7 @@ const PROJECTS: Project[] = [
     updatedAt: 'Yesterday',
     members: ['S', 'J'],
     tags: ['ml', 'data'],
+    provider: 'gitlab' as const,
   },
   {
     id: 'p4',
@@ -104,6 +112,7 @@ const PROJECTS: Project[] = [
     updatedAt: '2 days ago',
     members: ['F'],
     tags: ['security', 'core'],
+    provider: 'github' as const,
   },
   {
     id: 'p5',
@@ -118,6 +127,7 @@ const PROJECTS: Project[] = [
     updatedAt: '4 hours ago',
     members: ['J', 'S', 'F'],
     tags: ['streaming', 'infra'],
+    provider: 'gitlab' as const,
   },
   {
     id: 'p6',
@@ -132,6 +142,7 @@ const PROJECTS: Project[] = [
     updatedAt: '1 week ago',
     members: ['F'],
     tags: ['security'],
+    provider: 'bitbucket' as const,
   },
 ];
 
@@ -139,7 +150,13 @@ const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: s
   active:      { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Active'      },
   'in-progress':{ color: dashboardSemanticColors.info,   bg: 'rgba(0,224,255,.12)',   label: 'In Progress' },
   completed:   { color: dashboardSemanticColors.purple,  bg: 'rgba(139,92,246,.12)',  label: 'Completed'   },
-  archived:    { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Archived' },
+  archived:    { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Archived'    },
+};
+
+const PROVIDER_ICON: Record<string, React.ReactNode> = {
+  github:    <GitHubIcon sx={{ fontSize: '.85rem' }} />,
+  gitlab:    <Box component="span" sx={{ fontWeight: 900, fontSize: '.72rem', color: '#fc6d26' }}>GL</Box>,
+  bitbucket: <Box component="span" sx={{ fontWeight: 900, fontSize: '.72rem', color: '#0052cc' }}>BB</Box>,
 };
 
 const LANG_COLOR: Record<ProjectLang, string> = {
@@ -148,6 +165,7 @@ const LANG_COLOR: Record<ProjectLang, string> = {
   Go:         '#00acd7',
   Rust:       '#ce422b',
   Java:       '#f89820',
+  HCL:        '#7b42bc',
 };
 
 const BUILD_CONFIG = {
@@ -159,10 +177,34 @@ const BUILD_CONFIG = {
 const MEMBER_COLORS = ['#00E0FF', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 const DevProjectsPage: React.FC = () => {
-  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState<Project[]>(PROJECTS);
+  const [query, setQuery]       = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | ProjectStatus>('all');
+  const [modalOpen, setModalOpen]       = useState(false);
+  const [snack, setSnack]               = useState<string | null>(null);
 
-  const filtered = PROJECTS.filter((p) => {
+  const handleCreated = (name: string, provider: 'github' | 'gitlab' | 'bitbucket' | null) => {
+    const newProject: Project = {
+      id: `p${Date.now()}`,
+      name: name || 'new-project',
+      description: 'Newly imported repository.',
+      status: 'in-progress',
+      language: 'TypeScript',
+      branch: 'main',
+      progress: 0,
+      openIssues: 0,
+      lastBuild: 'pending',
+      updatedAt: 'Just now',
+      members: ['Y'],
+      tags: ['new'],
+      provider: provider ?? 'github',
+    };
+    setProjects((prev) => [newProject, ...prev]);
+    setSnack(`Project "${newProject.name}" created — first deployment queued.`);
+  };
+
+  const filtered = projects.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(query.toLowerCase()) ||
       p.description.toLowerCase().includes(query.toLowerCase()) ||
@@ -172,11 +214,11 @@ const DevProjectsPage: React.FC = () => {
   });
 
   const counts = {
-    all:          PROJECTS.length,
-    active:       PROJECTS.filter(p => p.status === 'active').length,
-    'in-progress':PROJECTS.filter(p => p.status === 'in-progress').length,
-    completed:    PROJECTS.filter(p => p.status === 'completed').length,
-    archived:     PROJECTS.filter(p => p.status === 'archived').length,
+    all:           projects.length,
+    active:        projects.filter(p => p.status === 'active').length,
+    'in-progress': projects.filter(p => p.status === 'in-progress').length,
+    completed:     projects.filter(p => p.status === 'completed').length,
+    archived:      projects.filter(p => p.status === 'archived').length,
   };
 
   return (
@@ -195,6 +237,7 @@ const DevProjectsPage: React.FC = () => {
           variant="contained"
           size="small"
           startIcon={<AddIcon />}
+          onClick={() => setModalOpen(true)}
           sx={{
             bgcolor: dashboardTokens.colors.brandPrimary,
             color: '#0a0f1a',
@@ -213,12 +256,12 @@ const DevProjectsPage: React.FC = () => {
       {/* Stats bar */}
       <Stack direction={{ xs: 'column', sm: 'row' }} gap={1.5} sx={{ mb: 3 }}>
         {[
-          { label: 'Total',       value: PROJECTS.length,                                            color: dashboardSemanticColors.info    },
-          { label: 'Active',      value: counts.active,                                              color: dashboardSemanticColors.success  },
-          { label: 'In Progress', value: counts['in-progress'],                                      color: dashboardSemanticColors.info    },
-          { label: 'Completed',   value: counts.completed,                                           color: dashboardSemanticColors.purple  },
-          { label: 'Archived',    value: counts.archived,                                            color: t.textSecondary                 },
-          { label: 'Failing',     value: PROJECTS.filter(p => p.lastBuild === 'failing').length,     color: dashboardSemanticColors.danger  },
+          { label: 'Total',       value: projects.length,                                             color: dashboardSemanticColors.info    },
+          { label: 'Active',      value: counts.active,                                               color: dashboardSemanticColors.success  },
+          { label: 'In Progress', value: counts['in-progress'],                                       color: dashboardSemanticColors.info    },
+          { label: 'Completed',   value: counts.completed,                                            color: dashboardSemanticColors.purple  },
+          { label: 'Archived',    value: counts.archived,                                             color: t.textSecondary                 },
+          { label: 'Failing',     value: projects.filter(p => p.lastBuild === 'failing').length,      color: dashboardSemanticColors.danger  },
         ].map((s) => (
           <Card key={s.label} sx={{ flex: 1, border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '8px' }}>
             <CardContent sx={{ p: '12px 16px !important' }}>
@@ -313,7 +356,10 @@ const DevProjectsPage: React.FC = () => {
                   '&:hover': { borderColor: dashboardTokens.colors.brandPrimary + '66', boxShadow: `0 0 0 1px ${dashboardTokens.colors.brandPrimary}22`, transform: 'translateY(-1px)' },
                 }}
               >
-                <CardActionArea sx={{ flex: 1, p: 0, borderRadius: '10px', '&:hover': { bgcolor: 'transparent' } }}>
+                <CardActionArea
+                  onClick={() => navigate(`/dev-dashboard/projects/${project.id}`)}
+                  sx={{ flex: 1, p: 0, borderRadius: '10px', '&:hover': { bgcolor: 'transparent' } }}
+                >
                   <CardContent sx={{ p: '16px !important', display: 'flex', flexDirection: 'column', height: '100%', gap: 1.25 }}>
 
                     {/* Top row */}
@@ -330,9 +376,12 @@ const DevProjectsPage: React.FC = () => {
                           <Typography sx={{ fontSize: '.72rem', color: t.textSecondary, fontFamily: FONT }}>{project.branch}</Typography>
                         </Box>
                       </Box>
-                      <Box component="span" sx={{ color: t.textSecondary, display: 'flex' }}>
-                        <MoreHorizIcon sx={{ fontSize: '1rem' }} />
-                      </Box>
+                      <Tooltip title={project.provider}>
+                        <Box sx={{ color: t.textSecondary, display: 'flex', alignItems: 'center' }}>
+                          {PROVIDER_ICON[project.provider]}
+                        </Box>
+                      </Tooltip>
+                      <ArrowForwardIosIcon sx={{ fontSize: '.65rem', color: t.textSecondary, opacity: 0.4, flexShrink: 0 }} />
                     </Box>
 
                     {/* Description */}
@@ -409,6 +458,20 @@ const DevProjectsPage: React.FC = () => {
           })}
         </Box>
       )}
+      <CreateProjectModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={handleCreated}
+      />
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={5000}
+        onClose={() => setSnack(null)}
+        message={snack}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        ContentProps={{ sx: { bgcolor: dashboardSemanticColors.success, color: '#fff', fontFamily: FONT, fontSize: '.82rem', fontWeight: 600 } }}
+      />
     </Box>
   );
 };

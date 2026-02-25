@@ -63,6 +63,7 @@ import MonitorSettingsPage        from './pages/MonitorSettingsPage';
 import TeamsPage                  from './pages/TeamsPage';
 import DevGroupsPage              from './pages/DevGroupsPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
+import DevProjectDetailPage       from './pages/DevProjectDetailPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
 import DevOperationalPage         from './pages/DevOperationalPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
@@ -92,6 +93,7 @@ const AppShell: React.FC = () => {
             <Route path="/dev-dashboard" element={<Navigate to="/dev-dashboard/deployments" replace />} />
             <Route path="/dev-dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/dev-dashboard/projects"     element={<DevProjectsPage />} />
+            <Route path="/dev-dashboard/projects/:id"  element={<DevProjectDetailPage />} />
             <Route path="/dev-dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/dev-dashboard/containers-k8s" element={<DevContainersPage />} />
             <Route path="/dev-dashboard/monitoring" element={<DevMonitoringPage />} />
