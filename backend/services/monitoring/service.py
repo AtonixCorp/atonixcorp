@@ -611,11 +611,11 @@ def get_resource_health(owner):
 
     # Storage buckets
     for bkt in StorageBucket.objects.filter(owner=owner):
-        health = 'green' if bkt.status == 'active' else 'yellow'
+        health = 'green' if bkt.status == 'running' else 'yellow'
         resources.append({
             'type': 'bucket', 'id': bkt.resource_id,
             'name': bkt.name, 'status': bkt.status, 'health': health,
-            'detail': f'{bkt.region} · {bkt.size_gb}GB used', 'created_at': bkt.created_at and bkt.created_at.isoformat(),
+            'detail': f'{bkt.region} · {round(bkt.total_size_gb, 2)}GB used', 'created_at': bkt.created_at and bkt.created_at.isoformat(),
         })
 
     # Volumes
@@ -629,7 +629,7 @@ def get_resource_health(owner):
 
     # VPCs
     for vpc in VPC.objects.filter(owner=owner):
-        health = 'green' if vpc.status == 'active' else 'yellow'
+        health = 'green' if vpc.status in ('available', 'active', 'running') else ('red' if vpc.status in ('error', 'failed') else 'yellow')
         resources.append({
             'type': 'vpc', 'id': vpc.resource_id,
             'name': vpc.name, 'status': vpc.status, 'health': health,
