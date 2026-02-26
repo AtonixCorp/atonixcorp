@@ -59,7 +59,8 @@ import LightModeIcon         from '@mui/icons-material/LightMode';
 import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import FirstPageIcon         from '@mui/icons-material/FirstPage';
 import LastPageIcon          from '@mui/icons-material/LastPage';
-import ArrowBackIcon         from '@mui/icons-material/ArrowBack';
+import ArrowBackIcon         from '@mui/icons-material/ArrowBack'
+import RocketLaunchIcon      from '@mui/icons-material/RocketLaunch';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';

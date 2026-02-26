@@ -19,8 +19,13 @@ import {
   Tabs,
   Tab,
   Divider,
+  Drawer,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
+import DevDeployAppPage, { NewDeploymentPayload } from './DevDeployAppPage';
 
 type DeploymentStatus = 'running' | 'failed' | 'building';
 
@@ -41,7 +46,7 @@ interface DeploymentItem {
   vulnerabilities: Array<{ severity: 'Low' | 'Medium' | 'High' | 'Critical'; title: string }>;
 }
 
-const DEPLOYMENTS: DeploymentItem[] = [
+const INITIAL_DEPLOYMENTS: DeploymentItem[] = [
   {
     id: 'dep-1',
     appName: 'payment-service',
@@ -105,16 +110,43 @@ const severityColor = (severity: 'Low' | 'Medium' | 'High' | 'Critical') => {
 };
 
 const DevDeploymentsPage: React.FC = () => {
-  const [selected, setSelected] = useState<DeploymentItem | null>(null);
-  const [tab, setTab] = useState(0);
+  const [selected,    setSelected]   = useState<DeploymentItem | null>(null);
+  const [tab,         setTab]        = useState(0);
+  const [wizardOpen,  setWizardOpen] = useState(false);
+  const [deployments, setDeployments] = useState<DeploymentItem[]>(INITIAL_DEPLOYMENTS);
+  const [newItemId,   setNewItemId]  = useState<string | null>(null);
+
+  const handleDeployComplete = (payload: NewDeploymentPayload) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    const newItem: DeploymentItem = {
+      id:           `dep-${Date.now()}`,
+      appName:      payload.appName,
+      status:       'running',
+      environment:  payload.environment,
+      lastDeployed: now,
+      hostname:     payload.hostname,
+      image:        payload.image,
+      branch:       payload.branch,
+      owner:        'you',
+      createdAt:    now,
+      cpu:          '2%',
+      memory:       '18%',
+      errors:       0,
+      vulnerabilities: [],
+    };
+    setDeployments(prev => [newItem, ...prev]);
+    setNewItemId(newItem.id);
+    setTimeout(() => setNewItemId(null), 6000);
+    setWizardOpen(false);
+  };
 
   const summary = useMemo(() => {
-    const total = DEPLOYMENTS.length;
-    const running = DEPLOYMENTS.filter((item) => item.status === 'running').length;
-    const failed = DEPLOYMENTS.filter((item) => item.status === 'failed').length;
-    const lastDeploymentTime = DEPLOYMENTS[0]?.lastDeployed || 'N/A';
+    const total = deployments.length;
+    const running = deployments.filter((item) => item.status === 'running').length;
+    const failed = deployments.filter((item) => item.status === 'failed').length;
+    const lastDeploymentTime = deployments[0]?.lastDeployed || 'N/A';
     return { total, running, failed, lastDeploymentTime };
-  }, []);
+  }, [deployments]);
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: dashboardTokens.colors.background }}>
@@ -123,7 +155,14 @@ const DevDeploymentsPage: React.FC = () => {
           <Typography variant="h5" sx={{ fontWeight: 700, color: dashboardTokens.colors.textPrimary }}>Deployments</Typography>
           <Typography variant="body2" color="text.secondary">Overview-first deployment workspace for developers.</Typography>
         </Box>
-        <Button variant="contained" sx={dashboardPrimaryButtonSx}>Deploy new app</Button>
+        <Button
+          variant="contained"
+          startIcon={<RocketLaunchIcon sx={{ fontSize: '.85rem' }} />}
+          onClick={() => setWizardOpen(true)}
+          sx={dashboardPrimaryButtonSx}
+        >
+          Deploy new app
+        </Button>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
@@ -156,9 +195,20 @@ const DevDeploymentsPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {DEPLOYMENTS.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell>{item.appName}</TableCell>
+                {deployments.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    hover
+                    sx={item.id === newItemId ? {
+                      animation: 'flashNew 6s ease-out',
+                      '@keyframes flashNew': {
+                        '0%':   { bgcolor: 'rgba(0,224,255,.18)' },
+                        '40%':  { bgcolor: 'rgba(0,224,255,.10)' },
+                        '100%': { bgcolor: 'transparent' },
+                      },
+                    } : {}}
+                  >
+                      <TableCell>{item.appName}{item.id === newItemId && <Chip size="small" label="NEW" sx={{ ml:1, height:15, fontSize:'.58rem', fontWeight:800, bgcolor:`rgba(0,224,255,.18)`, color: dashboardTokens.colors.brandPrimary, border:`1px solid ${dashboardTokens.colors.brandPrimary}55`, '& .MuiChip-label':{ px:.6 } }} />}</TableCell>
                     <TableCell><Chip size="small" label={item.status} color={statusColor(item.status)} /></TableCell>
                     <TableCell>{item.environment}</TableCell>
                     <TableCell>{item.lastDeployed}</TableCell>
@@ -273,6 +323,45 @@ const DevDeploymentsPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ── Deploy App Wizard drawer ── */}
+      <Drawer
+        anchor="right"
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100vw', md: 'calc(100vw - 260px)' },
+            bgcolor: dashboardTokens.colors.background,
+            backgroundImage: 'none',
+          },
+        }}
+      >
+        {/* Drawer header with close button */}
+        <Box sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          px: 2.5, py: 1.25,
+          borderBottom: `1px solid ${dashboardTokens.colors.border}`,
+          bgcolor: dashboardTokens.colors.surface,
+          flexShrink: 0,
+        }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <RocketLaunchIcon sx={{ fontSize: '1rem', color: dashboardTokens.colors.brandPrimary }} />
+            <Typography sx={{ fontWeight: 800, fontSize: '.92rem', color: dashboardTokens.colors.textPrimary, fontFamily: '"Inter", sans-serif' }}>
+              Deploy App
+            </Typography>
+          </Stack>
+          <IconButton size="small" onClick={() => setWizardOpen(false)}
+            sx={{ color: dashboardTokens.colors.textSecondary, '&:hover': { color: dashboardTokens.colors.textPrimary } }}>
+            <CloseIcon sx={{ fontSize: '1.1rem' }} />
+          </IconButton>
+        </Box>
+
+        {/* Wizard content fills remaining height */}
+        <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <DevDeployAppPage onDeployComplete={handleDeployComplete} />
+        </Box>
+      </Drawer>
     </Box>
   );
 };
