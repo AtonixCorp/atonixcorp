@@ -73,6 +73,7 @@ from ..apim.viewsets import (
     ApiPolicyViewSet, ApimAnalyticsViewSet,
 )
 from ..groups.viewsets import GroupViewSet
+from ..resources.viewsets import ResourceViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -214,6 +215,11 @@ router.register(r'apim/analytics',  ApimAnalyticsViewSet,  basename='apim-analyt
 # GROUP PLATFORM ENDPOINTS
 # ============================================================================
 router.register(r'groups', GroupViewSet, basename='group')
+
+# ============================================================================
+# RESOURCE CONTROL CENTER
+# ============================================================================
+router.register(r'resources', ResourceViewSet, basename='resource')
 
 # URL Patterns
 urlpatterns = [

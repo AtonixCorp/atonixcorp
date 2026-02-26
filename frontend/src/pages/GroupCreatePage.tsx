@@ -7,7 +7,6 @@ import {
   Chip,
   CircularProgress,
   Divider,
-  FormControlLabel,
   InputAdornment,
   Stack,
   Step,
@@ -15,13 +14,13 @@ import {
   Stepper,
   Switch,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import FolderOpenIcon from '@mui/icons-material/FolderOpenRounded';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -29,12 +28,14 @@ import PublicIcon from '@mui/icons-material/Public';
 import { useNavigate } from 'react-router-dom';
 import {
   createGroup,
+  Group,
   GroupCreatePayload,
   GroupResources,
   GroupRole,
   GroupType,
   GroupVisibility,
 } from '../services/groupsApi';
+import GroupProjectCreateModal from '../components/Groups/GroupProjectCreateModal';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
@@ -488,6 +489,8 @@ const GroupCreatePage: React.FC = () => {
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [createdGroup, setCreatedGroup] = useState<Group | null>(null);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
 
   const canNext = () => {
     if (step === 0) return state.name.trim().length > 0 && state.handle.trim().length > 0;
@@ -517,7 +520,7 @@ const GroupCreatePage: React.FC = () => {
     };
     try {
       const group = await createGroup(payload);
-      navigate(`/groups/${group.id}`);
+      setCreatedGroup(group);
     } catch (err: any) {
       const detail = err?.response?.data;
       if (typeof detail === 'object') {
@@ -530,6 +533,102 @@ const GroupCreatePage: React.FC = () => {
   };
 
   const isLast = step === STEP_LABELS.length - 1;
+  const BP  = dashboardTokens.colors.brandPrimary;
+
+  // ── Post-creation success screen ───────────────────────────────────────────
+  if (createdGroup) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: dashboardTokens.colors.background, display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 2, md: 4 }, fontFamily: FONT }}>
+        <Box sx={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
+
+          {/* Success icon */}
+          <Box sx={{ width: 72, height: 72, borderRadius: '50%', bgcolor: 'rgba(34,197,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>
+            <CheckCircleIcon sx={{ fontSize: '2.5rem', color: dashboardSemanticColors.success }} />
+          </Box>
+
+          <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', color: t.textPrimary, fontFamily: FONT, letterSpacing: '-.02em', mb: 0.75 }}>
+            Group created!
+          </Typography>
+          <Typography sx={{ color: t.textSecondary, fontSize: '.9rem', fontFamily: FONT, mb: 4 }}>
+            <Box component="span" sx={{ fontWeight: 700, color: t.textPrimary }}>{createdGroup.name}</Box>
+            {' '}is ready. What would you like to do next?
+          </Typography>
+
+          {/* CTAs */}
+          <Stack spacing={1.5}>
+            {/* Primary CTA — create a project */}
+            <Box
+              onClick={() => setProjectModalOpen(true)}
+              sx={{
+                border: `1px solid ${t.border}`, borderRadius: '12px', p: '16px 20px',
+                bgcolor: t.surface, cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 2,
+                transition: 'border-color .15s, background .15s',
+                '&:hover': { borderColor: BP, bgcolor: 'rgba(0,224,255,0.04)' },
+              }}
+            >
+              <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: 'rgba(0,224,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: BP, flexShrink: 0 }}>
+                <FolderOpenIcon />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '.95rem', color: t.textPrimary, fontFamily: FONT }}>
+                  Create your first project
+                </Typography>
+                <Typography sx={{ fontSize: '.8rem', color: t.textSecondary, fontFamily: FONT }}>
+                  Add a repository, choose a language and configure visibility.
+                </Typography>
+              </Box>
+              <ArrowForwardIcon sx={{ color: t.textSecondary, fontSize: '1.1rem', flexShrink: 0 }} />
+            </Box>
+
+            {/* Secondary CTA — go to group */}
+            <Box
+              onClick={() => navigate(`/groups/${createdGroup.id}`)}
+              sx={{
+                border: `1px solid ${t.border}`, borderRadius: '12px', p: '16px 20px',
+                bgcolor: t.surface, cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 2,
+                transition: 'border-color .15s, background .15s',
+                '&:hover': { borderColor: t.borderStrong, bgcolor: t.surfaceSubtle ?? t.surface },
+              }}
+            >
+              <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: 'rgba(139,92,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dashboardSemanticColors.purple, flexShrink: 0 }}>
+                <GroupsIcon />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '.95rem', color: t.textPrimary, fontFamily: FONT }}>
+                  Go to group dashboard
+                </Typography>
+                <Typography sx={{ fontSize: '.8rem', color: t.textSecondary, fontFamily: FONT }}>
+                  Manage members, settings, and resources for this group.
+                </Typography>
+              </Box>
+              <ArrowForwardIcon sx={{ color: t.textSecondary, fontSize: '1.1rem', flexShrink: 0 }} />
+            </Box>
+          </Stack>
+
+          <Typography
+            onClick={() => navigate('/developer/Dashboard/groups')}
+            sx={{ mt: 3, fontSize: '.8rem', color: t.textSecondary, fontFamily: FONT, cursor: 'pointer', '&:hover': { color: t.textPrimary } }}
+          >
+            ← Back to all groups
+          </Typography>
+        </Box>
+
+        {/* Project creation modal */}
+        <GroupProjectCreateModal
+          open={projectModalOpen}
+          groupId={createdGroup.id}
+          groupName={createdGroup.name}
+          onClose={() => setProjectModalOpen(false)}
+          onCreated={() => {
+            setProjectModalOpen(false);
+            navigate(`/groups/${createdGroup.id}/projects`);
+          }}
+        />
+      </Box>
+    );
+  }
 
   return (
     <Box

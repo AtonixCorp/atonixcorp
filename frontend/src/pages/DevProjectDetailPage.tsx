@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Avatar,
-  AvatarGroup,
   Box,
   Button,
   Card,
@@ -19,7 +18,6 @@ import {
   TableHead,
   TableRow,
   Tabs,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -27,7 +25,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import GitBranchIcon from '@mui/icons-material/AccountTree';
-import BuildIcon from '@mui/icons-material/Build';
+
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import CloseIcon from '@mui/icons-material/Close';
@@ -142,7 +140,7 @@ const MEMBER_COLORS = ['#00E0FF', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 /* ── Component ───────────────────────────────────────────────────── */
 
 const DevProjectDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: _id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [logOpen, setLogOpen] = useState(false);

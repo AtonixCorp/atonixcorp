@@ -3,20 +3,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Box,
+  Button,
   Chip,
   CircularProgress,
   Collapse,
   Divider,
   IconButton,
+  InputAdornment,
+  LinearProgress,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Stack,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AlertsIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import ArtifactsIcon from '@mui/icons-material/Inventory2Outlined';
@@ -39,7 +42,6 @@ import InfraIcon from '@mui/icons-material/StorageOutlined';
 import IntegrationsIcon from '@mui/icons-material/ExtensionOutlined';
 import InviteIcon from '@mui/icons-material/MailOutlined';
 import IssuesIcon from '@mui/icons-material/BugReportOutlined';
-import KeyIcon from '@mui/icons-material/KeyOutlined';
 import LogsIcon from '@mui/icons-material/SubjectOutlined';
 import ManageIcon from '@mui/icons-material/ManageAccountsOutlined';
 import MembersIcon from '@mui/icons-material/PeopleOutlined';
@@ -49,7 +51,6 @@ import MilestonesIcon from '@mui/icons-material/FlagOutlined';
 import MonitorIcon from '@mui/icons-material/MonitorHeartOutlined';
 import OperateIcon from '@mui/icons-material/TuneOutlined';
 import OverviewIcon from '@mui/icons-material/GridViewOutlined';
-import PinIcon from '@mui/icons-material/PushPinOutlined';
 import PipelineIcon from '@mui/icons-material/AccountTreeOutlined';
 import PlanIcon from '@mui/icons-material/EventNoteOutlined';
 import ReleasesIcon from '@mui/icons-material/NewReleasesOutlined';
@@ -70,14 +71,66 @@ import TokenIcon from '@mui/icons-material/TokenOutlined';
 import TracingIcon from '@mui/icons-material/ScatterPlotOutlined';
 import UptimeIcon from '@mui/icons-material/WatchLaterOutlined';
 import WebhookIcon from '@mui/icons-material/WebhookOutlined';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate, useParams } from 'react-router-dom';
+import ArrowBackIcon    from '@mui/icons-material/ArrowBack';
+import AddIcon          from '@mui/icons-material/Add';
+import SearchIcon       from '@mui/icons-material/Search';
+import OpenInNewIcon    from '@mui/icons-material/OpenInNew';
+import WorkspacesIcon   from '@mui/icons-material/WorkspacesOutlined';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getGroup, Group } from '../services/groupsApi';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import GroupProjectCreateModal from '../components/Groups/GroupProjectCreateModal';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const SIDEBAR_EXPANDED = 220;
 const SIDEBAR_COLLAPSED = 52;
+
+// ─── Project types + mock data ────────────────────────────────────────────────
+
+type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived';
+type BuildStatus   = 'passing' | 'failing' | 'pending';
+type ProjectLang   = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL';
+
+interface GroupProject {
+  id:          string;
+  name:        string;
+  description: string;
+  status:      ProjectStatus;
+  language:    ProjectLang;
+  branch:      string;
+  progress:    number;
+  openIssues:  number;
+  lastBuild:   BuildStatus;
+  updatedAt:   string;
+  members:     string[];
+  tags:        string[];
+  starred:     boolean;
+}
+
+const LANG_COLORS: Record<ProjectLang, string> = {
+  TypeScript: '#3178c6',
+  Python:     '#3572a5',
+  Go:         '#00acd7',
+  Rust:       '#ce422b',
+  Java:       '#b07219',
+  HCL:        '#7b42bc',
+};
+
+const STATUS_COLOR: Record<ProjectStatus, string> = {
+  'active':      dashboardSemanticColors.success,
+  'in-progress': dashboardSemanticColors.warning,
+  'completed':   dashboardSemanticColors.info,
+  'archived':    '#94a3b8',
+};
+
+const MOCK_PROJECTS: GroupProject[] = [
+  { id: 'p1', name: 'api-gateway',      description: 'Central API gateway for routing, auth, and rate limiting across all microservices.', status: 'active',      language: 'Go',         branch: 'main',               progress: 88,  openIssues: 4,  lastBuild: 'passing', updatedAt: '1 hour ago',  members: ['F','J','S'], tags: ['infra','core'],        starred: true  },
+  { id: 'p2', name: 'payment-service',  description: 'Stripe and crypto payment processing with webhook handling and retry logic.',           status: 'in-progress', language: 'TypeScript', branch: 'feat/crypto-support', progress: 54,  openIssues: 11, lastBuild: 'failing', updatedAt: '3 hours ago', members: ['F','J'],     tags: ['payments','critical'], starred: false },
+  { id: 'p3', name: 'ml-pipeline',      description: 'Data ingestion, feature engineering, and model training pipeline for recommendation.', status: 'in-progress', language: 'Python',     branch: 'dev/model-v3',       progress: 41,  openIssues: 7,  lastBuild: 'pending', updatedAt: 'Yesterday',   members: ['S','J'],     tags: ['ml','data'],           starred: true  },
+  { id: 'p4', name: 'infra-modules',    description: 'Terraform modules for VPC, compute, and database provisioning across all envs.',       status: 'active',      language: 'HCL',        branch: 'main',               progress: 95,  openIssues: 1,  lastBuild: 'passing', updatedAt: '2 days ago',  members: ['F'],         tags: ['infra','terraform'],   starred: false },
+  { id: 'p5', name: 'auth-service',     description: 'OAuth2 / OIDC identity provider with multi-tenant and SSO support.',                  status: 'completed',   language: 'Go',         branch: 'main',               progress: 100, openIssues: 0,  lastBuild: 'passing', updatedAt: '1 week ago',  members: ['F','S'],     tags: ['auth','security'],     starred: false },
+  { id: 'p6', name: 'data-warehouse',   description: 'Snowflake-backed analytics warehouse with dbt models and Airflow orchestration.',       status: 'in-progress', language: 'Python',     branch: 'feat/dbt-v2',        progress: 63,  openIssues: 5,  lastBuild: 'passing', updatedAt: '4 hours ago', members: ['S','J','F'], tags: ['data','analytics'],    starred: true  },
+];
 
 // ─── Nav tree ─────────────────────────────────────────────────────────────────
 
@@ -107,6 +160,15 @@ const NAV_SECTIONS: NavGroup[] = [
       { id: 'invitations',   label: 'Invitations',     icon: <InviteIcon /> },
       { id: 'tokens',        label: 'Access Tokens',   icon: <TokenIcon /> },
       { id: 'billing',       label: 'Billing',         icon: <BillingIcon /> },
+    ],
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    icon: <WorkspacesIcon />,
+    items: [
+      { id: 'projects',         label: 'All Projects', icon: <OverviewIcon /> },
+      { id: 'projects-starred', label: 'Starred',      icon: <StarBorderIcon /> },
     ],
   },
   {
@@ -195,12 +257,192 @@ const NAV_SECTIONS: NavGroup[] = [
   },
 ];
 
+// ─── Group Projects Section ───────────────────────────────────────────────────
+
+function GroupProjectsSection({ filter, onNewProject }: { filter: 'all' | 'starred'; onNewProject: () => void }) {
+  const navigate                    = useNavigate();
+  const t                           = dashboardTokens.colors;
+  const [search,       setSearch]   = useState('');
+  const [statusFilter, setStatus]   = useState<'all' | ProjectStatus>('all');
+
+  const buildColor = (b: BuildStatus) =>
+    b === 'passing' ? dashboardSemanticColors.success
+    : b === 'failing' ? dashboardSemanticColors.danger
+    : dashboardSemanticColors.warning;
+
+  const displayed = MOCK_PROJECTS
+    .filter(p => filter === 'starred' ? p.starred : true)
+    .filter(p => statusFilter === 'all' || p.status === statusFilter)
+    .filter(p => !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.description.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: t.textPrimary, fontFamily: FONT, letterSpacing: '-.02em' }}>
+            {filter === 'starred' ? 'Starred Projects' : 'All Projects'}
+          </Typography>
+          <Chip
+            label={displayed.length}
+            size="small"
+            sx={{ height: 18, fontSize: '.7rem', fontWeight: 700, bgcolor: t.surface, color: t.textSecondary, border: `1px solid ${t.border}` }}
+          />
+        </Box>
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={onNewProject}
+          sx={{ textTransform: 'none', fontFamily: FONT, fontWeight: 600, fontSize: '.8rem', borderRadius: '6px' }}
+        >
+          New Project
+        </Button>
+      </Box>
+
+      {/* Search + status filter */}
+      <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          placeholder="Search projects…"
+          size="small"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ fontSize: '.9rem', color: t.textSecondary }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ width: 220, '& .MuiInputBase-root': { fontFamily: FONT, fontSize: '.875rem', borderRadius: '8px' } }}
+        />
+        {(['all', 'active', 'in-progress', 'completed', 'archived'] as const).map(s => (
+          <Chip
+            key={s}
+            label={s === 'all' ? 'All' : s.replace('-', ' ')}
+            size="small"
+            onClick={() => setStatus(s)}
+            variant={statusFilter === s ? 'filled' : 'outlined'}
+            sx={{ textTransform: 'capitalize', cursor: 'pointer', fontFamily: FONT, fontSize: '.75rem', fontWeight: statusFilter === s ? 700 : 500 }}
+          />
+        ))}
+      </Box>
+
+      {/* Project cards */}
+      {displayed.length === 0 ? (
+        <Box sx={{ py: 8, textAlign: 'center' }}>
+          <Typography sx={{ color: t.textSecondary, fontFamily: FONT, fontSize: '.875rem' }}>
+            No projects match your filter.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1.25}>
+          {displayed.map(project => (
+            <Box
+              key={project.id}
+              onClick={() => navigate(`/developer/Dashboard/projects/${project.id}`)}
+              sx={{
+                border: `1px solid ${t.border}`,
+                borderRadius: '8px',
+                p: '12px 16px',
+                bgcolor: t.surface,
+                cursor: 'pointer',
+                transition: 'border-color .15s, background .15s',
+                '&:hover': { borderColor: dashboardSemanticColors.info, bgcolor: t.surfaceSubtle ?? t.surface },
+              }}
+            >
+              {/* Top row: name + language + build status + open-in-new */}
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.75 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.25 }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, fontFamily: FONT }}>
+                      {project.name}
+                    </Typography>
+                    <Chip
+                      label={project.language}
+                      size="small"
+                      sx={{ height: 16, fontSize: '.68rem', fontWeight: 700, bgcolor: 'transparent', border: `1px solid ${LANG_COLORS[project.language]}`, color: LANG_COLORS[project.language], borderRadius: '4px' }}
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: buildColor(project.lastBuild), flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '.7rem', color: buildColor(project.lastBuild), fontFamily: FONT, fontWeight: 600 }}>
+                        {project.lastBuild}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Typography sx={{ fontSize: '.8rem', color: t.textSecondary, fontFamily: FONT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {project.description}
+                  </Typography>
+                </Box>
+                <Tooltip title="Open in Developer Dashboard">
+                  <Box
+                    component="span"
+                    onClick={e => { e.stopPropagation(); navigate(`/developer/Dashboard/projects/${project.id}`); }}
+                    sx={{ color: t.textSecondary, cursor: 'pointer', mt: '2px', flexShrink: 0, '&:hover': { color: dashboardSemanticColors.info } }}
+                  >
+                    <OpenInNewIcon sx={{ fontSize: '.9rem' }} />
+                  </Box>
+                </Tooltip>
+              </Box>
+
+              {/* Progress bar */}
+              <LinearProgress
+                variant="determinate"
+                value={project.progress}
+                sx={{
+                  height: 3, borderRadius: 2, mb: 0.75, bgcolor: t.border,
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: project.progress === 100 ? dashboardSemanticColors.success : dashboardSemanticColors.info,
+                  },
+                }}
+              />
+
+              {/* Footer meta row */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <BranchIcon sx={{ fontSize: '.75rem', color: t.textSecondary }} />
+                  <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, fontFamily: FONT }}>{project.branch}</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, fontFamily: FONT }}>{project.openIssues} open issues</Typography>
+                <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, fontFamily: FONT }}>Updated {project.updatedAt}</Typography>
+                <Chip
+                  label={project.status.replace('-', ' ')}
+                  size="small"
+                  sx={{ height: 16, fontSize: '.68rem', fontWeight: 700, textTransform: 'capitalize', bgcolor: 'transparent', border: `1px solid ${STATUS_COLOR[project.status]}`, color: STATUS_COLOR[project.status], borderRadius: '4px' }}
+                />
+                {project.starred && (
+                  <StarBorderIcon sx={{ fontSize: '.8rem', color: dashboardSemanticColors.warning }} />
+                )}
+                <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
+                  {project.tags.map(tag => (
+                    <Chip key={tag} label={tag} size="small" sx={{ height: 15, fontSize: '.65rem', fontFamily: FONT, bgcolor: t.surfaceSubtle ?? t.surface }} />
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+      )}
+    </Box>
+  );
+}
+
 // ─── Section content map ──────────────────────────────────────────────────────
 
-function SectionContent({ section, group }: { section: string; group: Group | null }) {
+function SectionContent({ section, group, onNewProject }: { section: string; group: Group | null; onNewProject: () => void }) {
   const t = dashboardTokens.colors;
 
   if (!group) return null;
+
+  if (section === 'projects') {
+    return <GroupProjectsSection filter="all" onNewProject={onNewProject} />;
+  }
+
+  if (section === 'projects-starred') {
+    return <GroupProjectsSection filter="starred" onNewProject={onNewProject} />;
+  }
 
   if (section === 'overview') {
     return (
@@ -263,7 +505,7 @@ function SectionContent({ section, group }: { section: string; group: Group | nu
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10 }}>
-      <GroupsIcon sx={{ fontSize: '3rem', color: dashboardTokens.colors.textTertiary ?? t.textSecondary, mb: 2, opacity: .4 }} />
+      <GroupsIcon sx={{ fontSize: '3rem', color: t.textSecondary, mb: 2, opacity: .4 }} />
       <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: t.textSecondary, fontFamily: FONT }}>
         {sectionLabel}
       </Typography>
@@ -279,13 +521,23 @@ function SectionContent({ section, group }: { section: string; group: Group | nu
 const GroupDashboardPage: React.FC = () => {
   const { groupId, section = 'overview' } = useParams<{ groupId: string; section: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const t = dashboardTokens.colors;
 
-  const [group, setGroup] = useState<Group | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [group,            setGroup]            = useState<Group | null>(null);
+  const [loading,          setLoading]          = useState(true);
+  const [sidebarOpen,      setSidebarOpen]      = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['manage']));
+  const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const isMounted = useRef(true);
+
+  // Auto-open the project create modal when redirected here with ?new=1
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setCreateProjectOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -313,6 +565,10 @@ const GroupDashboardPage: React.FC = () => {
   };
 
   const goTo = (sectionId: string) => {
+    if (sectionId === 'projects-new') {
+      setCreateProjectOpen(true);
+      return;
+    }
     navigate(`/groups/${groupId}/${sectionId}`);
   };
 
@@ -569,10 +825,24 @@ const GroupDashboardPage: React.FC = () => {
               <CircularProgress size={28} sx={{ color: dashboardTokens.colors.brandPrimary }} />
             </Box>
           ) : (
-            <SectionContent section={section} group={group} />
+            <SectionContent section={section} group={group} onNewProject={() => setCreateProjectOpen(true)} />
           )}
         </Box>
       </Box>
+
+      {/* Group Project Create Modal */}
+      {groupId && group && (
+        <GroupProjectCreateModal
+          open={createProjectOpen}
+          groupId={groupId}
+          groupName={group.name}
+          onClose={() => setCreateProjectOpen(false)}
+          onCreated={() => {
+            setCreateProjectOpen(false);
+            navigate(`/groups/${groupId}/projects`);
+          }}
+        />
+      )}
     </Box>
   );
 };

@@ -31,9 +31,6 @@ import {
 
 // ─── Colour palettes ──────────────────────────────────────────────────────────
 
-const HEALTH_COLOR: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-  healthy: 'success', degraded: 'warning', unhealthy: 'error', unknown: 'default',
-}
 
 const STATUS_COLOR: Record<string, 'success' | 'warning' | 'error' | 'default' | 'info'> = {
   active: 'success', draft: 'default', deprecated: 'warning', retired: 'error',
@@ -196,7 +193,7 @@ function OverviewTab({ overview, audit }: { overview: ApimOverview | null; audit
 
 // ─── Tab 1 – APIs ─────────────────────────────────────────────────────────────
 
-function ApisTab({ environment, onRefresh }: { environment: string; onRefresh: () => void }) {
+function ApisTab({ environment, onRefresh: _onRefresh }: { environment: string; onRefresh: () => void }) {
   const [apis, setApis] = useState<ApiDefinition[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('')

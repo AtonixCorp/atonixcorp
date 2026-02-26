@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -102,7 +101,7 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
   // Selection state
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedRepo, setSelectedRepo] = useState<any>(null);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [_selectedFile, setSelectedFile] = useState<any>(null);
   const [selectedPipeline, setSelectedPipeline] = useState<any>(null);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
 

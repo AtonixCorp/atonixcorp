@@ -59,6 +59,7 @@ import LightModeIcon         from '@mui/icons-material/LightMode';
 import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import FirstPageIcon         from '@mui/icons-material/FirstPage';
 import LastPageIcon          from '@mui/icons-material/LastPage';
+import ArrowBackIcon         from '@mui/icons-material/ArrowBack';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -497,6 +498,37 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           )}
         </Box>
       </Box>
+
+      {/* Back to Cloud Dashboard — shown in developer / marketing / monitor modes */}
+      {(dashboardMode === 'developer' || dashboardMode === 'marketing' || dashboardMode === 'monitor') && (
+        <Box
+          onClick={() => navigate('/dashboard')}
+          sx={{
+            px: collapsed ? 0 : 1.5,
+            py: 0.75,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: 1,
+            borderBottom: `1px solid ${SB_DIV}`,
+            cursor: 'pointer',
+            flexShrink: 0,
+            '&:hover': { bgcolor: BLUE_HOVER },
+            transition: 'background .15s',
+          }}
+        >
+          <Tooltip title={collapsed ? 'Back to Cloud Dashboard' : ''} placement="right">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: collapsed ? 'center' : 'flex-start' }}>
+              <ArrowBackIcon sx={{ fontSize: '.9rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
+              {!collapsed && (
+                <Typography sx={{ fontSize: '.78rem', fontWeight: 600, color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.01em' }}>
+                  Cloud Dashboard
+                </Typography>
+              )}
+            </Box>
+          </Tooltip>
+        </Box>
+      )}
 
       {/* Navigation */}
       <Box

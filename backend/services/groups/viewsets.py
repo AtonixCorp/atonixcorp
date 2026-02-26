@@ -246,3 +246,22 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = self.get_object()
         logs = group.audit_logs.order_by('-created_at')[:200]
         return Response(GroupAuditLogSerializer(logs, many=True).data)
+    # ── /groups/{id}/projects/ ────────────────────────────────────────────────────
+
+    @action(detail=True, methods=['get', 'post'], url_path='projects')
+    def projects(self, request, pk=None):
+        """
+        GET  /groups/{id}/projects/  – list projects belonging to this group.
+        POST /groups/{id}/projects/  – create a new project inside the group.
+
+        Projects are not yet a first-class model – this endpoint returns an
+        empty list on GET and a 501 on POST until the Project model is wired up.
+        """
+        group = self.get_object()  # noqa: F841 – ensures permission check runs
+        if request.method == 'GET':
+            # TODO: replace with Project.objects.filter(group=group) once modelled
+            return Response([])
+        return Response(
+            {'detail': 'Project creation via group API is not yet available.'},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )

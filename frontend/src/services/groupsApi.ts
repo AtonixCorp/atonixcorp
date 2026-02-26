@@ -216,6 +216,55 @@ export async function listAuditLogs(groupId: string): Promise<GroupAuditLog[]> {
   return unwrap<GroupAuditLog>(data)
 }
 
+// ─── Group Projects ───────────────────────────────────────────────────────────
+
+export type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived'
+export type BuildStatus   = 'passing' | 'failing'   | 'pending'
+export type ProjectLang   = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL'
+
+export interface GroupProject {
+  id:          string
+  name:        string
+  description: string
+  status:      ProjectStatus
+  language:    ProjectLang
+  branch:      string
+  progress:    number
+  open_issues: number
+  last_build:  BuildStatus
+  updated_at:  string
+  tags:        string[]
+  starred:     boolean
+}
+
+export interface GroupProjectCreatePayload {
+  name:         string
+  description?: string
+  visibility?:  'public' | 'internal' | 'private'
+  language?:    ProjectLang
+}
+
+export async function listGroupProjects(groupId: string): Promise<GroupProject[]> {
+  try {
+    const { data } = await client.get(`${BASE}/${groupId}/projects/`)
+    return unwrap<GroupProject>(data)
+  } catch {
+    return []
+  }
+}
+
+export async function createGroupProject(
+  groupId: string,
+  payload: GroupProjectCreatePayload,
+): Promise<GroupProject | null> {
+  try {
+    const { data } = await client.post(`${BASE}/${groupId}/projects/`, payload)
+    return data as GroupProject
+  } catch {
+    return null
+  }
+}
+
 // ─── Legacy compat export (kept for any existing imports) ─────────────────────
 export const groupsApi = { listGroups, getGroup, createGroup, updateGroup, deleteGroup }
 export default groupsApi

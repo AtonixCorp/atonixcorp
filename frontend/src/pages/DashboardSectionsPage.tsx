@@ -3,7 +3,7 @@ import {
   Box,
   Card,
   CardActionArea,
-  CardContent,
+
   Chip,
   InputAdornment,
   Stack,
@@ -391,7 +391,7 @@ const GroupSection: React.FC<GroupSectionProps> = ({ group, groupRef }) => {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboardMode = 'cloud' }) => {
+const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboardMode: _dashboardMode = 'cloud' }) => {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>(SECTION_GROUPS[0].id);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
