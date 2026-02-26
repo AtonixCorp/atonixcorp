@@ -161,6 +161,72 @@ export interface AlertRule {
   description: string;
 }
 
+// ─── New integration types ─────────────────────────────────────────────────
+
+export interface ContainerHealth {
+  id: string | number;
+  name: string;
+  image: string;
+  status: string;
+  health: 'green' | 'yellow' | 'red';
+  cpu_vcpus: number;
+  memory_mib: number;
+  replicas: number;
+  cpu_sim: number;
+  memory_sim: number;
+  restarts_1h: number;
+  last_deploy: string | null;
+  last_deploy_status: string | null;
+}
+
+export interface KubernetesHealth {
+  config_id: string | number;
+  project_id: string;
+  environment: string;
+  cluster_endpoint: string;
+  namespace: string;
+  health: 'green' | 'yellow' | 'red';
+  total_syncs_24h: number;
+  failed_syncs_24h: number;
+  last_sync_status: string | null;
+  last_sync_at: string | null;
+  pods_running: number;
+  pods_failed: number;
+  pods_pending: number;
+  node_cpu_pct: number;
+  node_memory_pct: number;
+}
+
+export interface ResourceHealthItem {
+  type: string;
+  id: string;
+  name: string;
+  status: string;
+  health: 'green' | 'yellow' | 'red';
+  detail: string;
+  created_at: string | null;
+}
+
+export interface ResourceHealthSummary {
+  summary: { total: number; healthy: number; degraded: number; critical: number };
+  resources: ResourceHealthItem[];
+}
+
+export interface MetricPoint {
+  timestamp: string;
+  value: number;
+  unit: string;
+}
+
+export interface LogLine {
+  timestamp: string;
+  service: string;
+  level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+  message: string;
+  pod: string;
+  region: string;
+}
+
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 export const monitoringApi = {
@@ -232,9 +298,27 @@ export const monitoringApi = {
 
   // ── Metrics ─────────────────────────────────────────────────────────────
   getMetrics: (params: { resource?: string; metric?: string; hours?: number }) =>
-    client.get(`${BASE}/metrics/`, { params }),
+    client.get<{ points: MetricPoint[] }>(`${BASE}/metrics/`, { params }),
 
   // ── Logs ────────────────────────────────────────────────────────────────
   getLogs: (params?: { service?: string; search?: string; hours?: number; limit?: number }) =>
-    client.get(`${BASE}/logs/`, { params }),
+    client.get<{ count: number; logs: LogLine[] }>(`${BASE}/logs/`, { params }),
+
+  // ── Container Health ──────────────────────────────────────────────────
+  getContainerHealth: () =>
+    client.get<{ count: number; results: ContainerHealth[] }>(
+      `${BASE}/monitoring/dev/container-health/`
+    ),
+
+  // ── Kubernetes Health ────────────────────────────────────────────────
+  getKubernetesHealth: () =>
+    client.get<{ count: number; results: KubernetesHealth[] }>(
+      `${BASE}/monitoring/dev/kubernetes-health/`
+    ),
+
+  // ── Resource Health (all platform resources) ─────────────────────────
+  getResourceHealth: () =>
+    client.get<ResourceHealthSummary>(
+      `${BASE}/monitoring/dev/resource-health/`
+    ),
 };

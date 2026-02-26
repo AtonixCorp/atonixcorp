@@ -250,3 +250,21 @@ class DevMonitoringViewSet(viewsets.ViewSet):
         data = svc.get_service_health(request.user)
         return Response({'count': len(data), 'results': data})
 
+    @action(detail=False, methods=['get'], url_path='container-health')
+    def container_health(self, request):
+        """GET /monitoring/dev/container-health/ — all containers with health status."""
+        data = svc.get_container_health(request.user)
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='kubernetes-health')
+    def kubernetes_health(self, request):
+        """GET /monitoring/dev/kubernetes-health/ — k8s cluster health per config."""
+        data = svc.get_kubernetes_health(request.user)
+        return Response({'count': len(data), 'results': data})
+
+    @action(detail=False, methods=['get'], url_path='resource-health')
+    def resource_health(self, request):
+        """GET /monitoring/dev/resource-health/ — unified health index for all resources."""
+        data = svc.get_resource_health(request.user)
+        return Response(data)
+

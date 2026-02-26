@@ -486,6 +486,176 @@ def get_activity_feed(owner, event_type=None, project_id=None, hours=24, limit=5
     return db_events[:limit]
 
 
+def get_container_health(owner):
+    """Return health rows for every container owned by the user."""
+    from ..containers.models import Container, ContainerDeployment
+    from django.utils import timezone as tz
+    now = tz.now()
+    since_1h = now - timedelta(hours=1)
+
+    result = []
+    for c in Container.objects.filter(owner=owner).select_related():
+        last_deploy = (
+            ContainerDeployment.objects
+            .filter(container=c)
+            .order_by('-started_at')
+            .first()
+        )
+        recent_restarts = ContainerDeployment.objects.filter(
+            container=c, started_at__gte=since_1h
+        ).count()
+
+        if c.status == 'running':
+            if recent_restarts >= 3:
+                health = 'red'
+            else:
+                cpu_sim = _wave(40, 20, hash(c.id) % 10)
+                health = 'yellow' if cpu_sim > 75 else 'green'
+        elif c.status in ('stopped', 'created'):
+            health = 'yellow'
+        else:
+            health = 'red'
+
+        result.append({
+            'id':           c.id,
+            'name':         c.name,
+            'image':        c.image,
+            'status':       c.status,
+            'health':       health,
+            'cpu_vcpus':    c.cpu,
+            'memory_mib':   c.memory,
+            'replicas':     c.replicas,
+            'cpu_sim':      round(_wave(40, 20, hash(str(c.id)) % 10), 1),
+            'memory_sim':   round(_wave(55, 15, hash(str(c.id) + 'm') % 10), 1),
+            'restarts_1h':  recent_restarts,
+            'last_deploy':  last_deploy.started_at.isoformat() if last_deploy and last_deploy.started_at else None,
+            'last_deploy_status': last_deploy.status if last_deploy else None,
+        })
+    return result
+
+
+def get_kubernetes_health(owner):
+    """Return health overview from kubernetes integration data."""
+    from ..kubernetes_integration.models import KubeConfig, KubeSyncRun
+    from django.utils import timezone as tz
+    now = tz.now()
+    since_24h = now - timedelta(hours=24)
+
+    configs = KubeConfig.objects.filter(owner=owner)
+    result = []
+    for cfg in configs:
+        recent_syncs = KubeSyncRun.objects.filter(config=cfg, created_at__gte=since_24h)
+        total_syncs  = recent_syncs.count()
+        failed_syncs = recent_syncs.filter(status='failed').count()
+        last_sync    = recent_syncs.order_by('-created_at').first()
+
+        if last_sync is None:
+            health = 'yellow'
+        elif last_sync.status == 'failed':
+            health = 'red'
+        elif failed_syncs > 0:
+            health = 'yellow'
+        else:
+            health = 'green'
+
+        # Simulated pod metrics (realistic noise)
+        seed = hash(str(cfg.id)) % 100
+        result.append({
+            'config_id':         cfg.id,
+            'project_id':        cfg.project_id,
+            'environment':       cfg.environment,
+            'cluster_endpoint':  cfg.cluster_endpoint,
+            'namespace':         cfg.namespace,
+            'health':            health,
+            'total_syncs_24h':   total_syncs,
+            'failed_syncs_24h':  failed_syncs,
+            'last_sync_status':  last_sync.status if last_sync else None,
+            'last_sync_at':      last_sync.created_at.isoformat() if last_sync else None,
+            # Simulated real-time metrics
+            'pods_running':      max(0, 3 + seed % 5),
+            'pods_failed':       failed_syncs,
+            'pods_pending':      1 if health == 'yellow' else 0,
+            'node_cpu_pct':      round(_wave(45, 20, seed), 1),
+            'node_memory_pct':   round(_wave(60, 15, seed + 3), 1),
+        })
+    return result
+
+
+def get_resource_health(owner):
+    """Unified resource health index — all resource types, one health colour each."""
+    from ..compute.models import Instance
+    from ..storage.models import StorageBucket, StorageVolume
+    from ..networking.models import VPC
+    from ..database.models import ManagedDatabase
+    from ..pipelines.models import Project
+
+    resources = []
+
+    # Compute instances
+    for inst in Instance.objects.filter(owner=owner):
+        health = 'green' if inst.status == 'ACTIVE' else ('red' if inst.status in ('ERROR', 'DELETED') else 'yellow')
+        resources.append({
+            'type': 'instance', 'id': inst.resource_id,
+            'name': inst.name, 'status': inst.status, 'health': health,
+            'detail': f'{inst.flavor} · {inst.region}', 'created_at': inst.created_at and inst.created_at.isoformat(),
+        })
+
+    # Databases
+    for db in ManagedDatabase.objects.filter(owner=owner):
+        health = 'green' if db.status == 'available' else ('red' if db.status in ('failed', 'deleted') else 'yellow')
+        resources.append({
+            'type': 'database', 'id': db.resource_id,
+            'name': db.name, 'status': db.status, 'health': health,
+            'detail': f'{db.engine} {db.engine_version} · {db.region}', 'created_at': db.created_at and db.created_at.isoformat(),
+        })
+
+    # Storage buckets
+    for bkt in StorageBucket.objects.filter(owner=owner):
+        health = 'green' if bkt.status == 'active' else 'yellow'
+        resources.append({
+            'type': 'bucket', 'id': bkt.resource_id,
+            'name': bkt.name, 'status': bkt.status, 'health': health,
+            'detail': f'{bkt.region} · {bkt.size_gb}GB used', 'created_at': bkt.created_at and bkt.created_at.isoformat(),
+        })
+
+    # Volumes
+    for vol in StorageVolume.objects.filter(owner=owner):
+        health = 'green' if vol.status == 'available' else ('red' if vol.status == 'error' else 'yellow')
+        resources.append({
+            'type': 'volume', 'id': vol.resource_id,
+            'name': vol.name, 'status': vol.status, 'health': health,
+            'detail': f'{vol.size_gb}GB · {vol.region}', 'created_at': vol.created_at and vol.created_at.isoformat(),
+        })
+
+    # VPCs
+    for vpc in VPC.objects.filter(owner=owner):
+        health = 'green' if vpc.status == 'active' else 'yellow'
+        resources.append({
+            'type': 'vpc', 'id': vpc.resource_id,
+            'name': vpc.name, 'status': vpc.status, 'health': health,
+            'detail': f'{vpc.cidr_block} · {vpc.region}', 'created_at': vpc.created_at and vpc.created_at.isoformat(),
+        })
+
+    # Projects
+    for proj in Project.objects.filter(owner=owner):
+        resources.append({
+            'type': 'project', 'id': str(proj.id),
+            'name': proj.name, 'status': 'active', 'health': 'green',
+            'detail': f'CI/CD project', 'created_at': proj.created_at and proj.created_at.isoformat(),
+        })
+
+    # Aggregate health summary
+    total   = len(resources)
+    healthy  = sum(1 for r in resources if r['health'] == 'green')
+    degraded = sum(1 for r in resources if r['health'] == 'yellow')
+    critical = sum(1 for r in resources if r['health'] == 'red')
+
+    return {
+        'summary': {'total': total, 'healthy': healthy, 'degraded': degraded, 'critical': critical},
+        'resources': resources,
+    }
+
+
 def _synthesize_activity(owner, since, limit):
     """Generate activity events from real pipeline/deployment records."""
     from ..pipelines.models import Pipeline

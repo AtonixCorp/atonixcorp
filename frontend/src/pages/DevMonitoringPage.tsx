@@ -25,12 +25,18 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import CloudIcon from '@mui/icons-material/Cloud';
 import HistoryIcon from '@mui/icons-material/History';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import StorageIcon from '@mui/icons-material/Storage';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
+import HubIcon from '@mui/icons-material/Hub';
+import InsightsIcon from '@mui/icons-material/Insights';
 
 import {
   monitoringApi,
   DevOverview, PipelineHealth, DeploymentHealth,
   ProjectHealth, ActivityEvent, ServiceHealth,
   MonitoringAlert, Incident, AlertRule,
+  ContainerHealth, KubernetesHealth, ResourceHealthSummary,
+  MetricPoint, LogLine,
 } from '../services/monitoringApi';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -255,13 +261,17 @@ function ActivityRow({ ev }: { ev: ActivityEvent }) {
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 const TAB_LABELS = [
-  { label: 'Overview',    icon: <CheckCircleIcon fontSize="small" /> },
-  { label: 'Pipelines',   icon: <AccountTreeIcon fontSize="small" /> },
-  { label: 'Deployments', icon: <RocketLaunchIcon fontSize="small" /> },
-  { label: 'Projects',    icon: <FolderSpecialIcon fontSize="small" /> },
-  { label: 'Services',    icon: <CloudIcon fontSize="small" /> },
-  { label: 'Activity',    icon: <HistoryIcon fontSize="small" /> },
-  { label: 'Alerts',      icon: <NotificationsActiveIcon fontSize="small" /> },
+  { label: 'Overview',       icon: <CheckCircleIcon fontSize="small" /> },
+  { label: 'Pipelines',      icon: <AccountTreeIcon fontSize="small" /> },
+  { label: 'Deployments',    icon: <RocketLaunchIcon fontSize="small" /> },
+  { label: 'Projects',       icon: <FolderSpecialIcon fontSize="small" /> },
+  { label: 'Services',       icon: <CloudIcon fontSize="small" /> },
+  { label: 'Activity',       icon: <HistoryIcon fontSize="small" /> },
+  { label: 'Alerts',         icon: <NotificationsActiveIcon fontSize="small" /> },
+  { label: 'Resources',      icon: <StorageIcon fontSize="small" /> },
+  { label: 'Containers',     icon: <ViewInArIcon fontSize="small" /> },
+  { label: 'Kubernetes',     icon: <HubIcon fontSize="small" /> },
+  { label: 'Logs & Metrics', icon: <InsightsIcon fontSize="small" /> },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -284,6 +294,15 @@ const DevMonitoringPage: React.FC = () => {
   const [alertFilter, setAlertFilter] = useState<'all' | 'active' | 'resolved'>('active');
   const [incidentFilter, setIncidentFilter] = useState<'all' | 'open' | 'resolved'>('open');
   const [actFilter, setActFilter] = useState<string>('all');
+  const [containers, setContainers] = useState<ContainerHealth[]>([]);
+  const [kubernetesHealth, setKubernetesHealth] = useState<KubernetesHealth[]>([]);
+  const [resourceHealth, setResourceHealth] = useState<ResourceHealthSummary | null>(null);
+  const [metricPoints, setMetricPoints] = useState<MetricPoint[]>([]);
+  const [selectedMetric, setSelectedMetric] = useState<string>('cpu_percent');
+  const [logLines, setLogLines] = useState<LogLine[]>([]);
+  const [logSearch, setLogSearch] = useState<string>('');
+  const [logService, setLogService] = useState<string>('');
+  const [resourceTypeFilter, setResourceTypeFilter] = useState<string>('all');
 
   const hours = HOURS_MAP[timeRange];
   const abortRef = useRef<AbortController | null>(null);
@@ -295,7 +314,7 @@ const DevMonitoringPage: React.FC = () => {
     try {
       const [
         ovRes, plRes, depRes, prjRes, svcRes, actRes,
-        alRes, incRes, arRes,
+        alRes, incRes, arRes, ctRes, k8sRes, rhRes, logRes,
       ] = await Promise.allSettled([
         monitoringApi.getDevOverview(),
         monitoringApi.getPipelineHealth({ hours }),
@@ -306,6 +325,10 @@ const DevMonitoringPage: React.FC = () => {
         monitoringApi.getAlerts(),
         monitoringApi.getIncidents(),
         monitoringApi.getAlertRules(),
+        monitoringApi.getContainerHealth(),
+        monitoringApi.getKubernetesHealth(),
+        monitoringApi.getResourceHealth(),
+        monitoringApi.getLogs({ hours: 1, limit: 200 }),
       ]);
 
       if (ovRes.status === 'fulfilled') setOverview(ovRes.value.data as DevOverview);
@@ -317,6 +340,10 @@ const DevMonitoringPage: React.FC = () => {
       if (alRes.status === 'fulfilled') setAlerts(unwrap<MonitoringAlert>(alRes.value.data));
       if (incRes.status === 'fulfilled') setIncidents(unwrap<Incident>(incRes.value.data));
       if (arRes.status === 'fulfilled') setAlertRules(unwrap<AlertRule>(arRes.value.data));
+      if (ctRes.status === 'fulfilled') setContainers(unwrap<ContainerHealth>(ctRes.value.data));
+      if (k8sRes.status === 'fulfilled') setKubernetesHealth(unwrap<KubernetesHealth>(k8sRes.value.data));
+      if (rhRes.status === 'fulfilled') setResourceHealth(rhRes.value.data as ResourceHealthSummary);
+      if (logRes.status === 'fulfilled') setLogLines((logRes.value.data as any)?.logs ?? []);
 
       setLastRefresh(new Date());
     } finally {
@@ -899,6 +926,382 @@ const DevMonitoringPage: React.FC = () => {
     </Stack>
   );
 
+  // ── Tab: Resources ─────────────────────────────────────────────────────────
+  const renderResources = () => {
+    const all = resourceHealth?.resources ?? [];
+    const filtered = resourceTypeFilter === 'all' ? all : all.filter(r => r.type === resourceTypeFilter);
+    const types = Array.from(new Set(all.map(r => r.type)));
+    const s = resourceHealth?.summary;
+    const healthColor = (h: string) => h === 'green' ? '#2e7d32' : h === 'yellow' ? '#ed6c02' : '#d32f2f';
+    const healthLabel = (h: string) => h === 'green' ? 'healthy' : h === 'yellow' ? 'degraded' : 'critical';
+    return (
+      <Stack spacing={3}>
+        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+          <StatCard title="Total Resources" value={s?.total ?? '—'} color="info" icon={<StorageIcon fontSize="small" />} />
+          <StatCard title="Healthy" value={s?.healthy ?? '—'} color="success" icon={<CheckCircleIcon fontSize="small" />} />
+          <StatCard title="Degraded" value={s?.degraded ?? '—'} color={s && s.degraded > 0 ? 'warning' : 'success'} icon={<WarningIcon fontSize="small" />} />
+          <StatCard title="Critical" value={s?.critical ?? '—'} color={s && s.critical > 0 ? 'error' : 'success'} icon={<ErrorIcon fontSize="small" />} />
+        </Stack>
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Resource Type</InputLabel>
+            <Select value={resourceTypeFilter} label="Resource Type" onChange={e => setResourceTypeFilter(e.target.value)}>
+              <MenuItem value="all">All Types</MenuItem>
+              {types.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <Typography variant="body2" color="text.secondary">{filtered.length} resources</Typography>
+        </Stack>
+        {filtered.length === 0 ? (
+          <Alert severity="info">No resources found. Create compute, database, storage, or networking resources to see them here.</Alert>
+        ) : (
+          <TableContainer component={Card}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Health</TableCell>
+                  <TableCell>Details</TableCell>
+                  <TableCell>Created</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filtered.map(r => (
+                  <TableRow key={`${r.type}-${r.id}`} hover>
+                    <TableCell><Chip label={r.type} size="small" variant="outlined" /></TableCell>
+                    <TableCell><Typography fontWeight={600} variant="body2">{r.name}</Typography></TableCell>
+                    <TableCell><Chip label={r.status} size="small" /></TableCell>
+                    <TableCell>
+                      <Chip
+                        label={healthLabel(r.health)}
+                        size="small"
+                        sx={{ bgcolor: `${healthColor(r.health)}22`, color: healthColor(r.health), fontWeight: 700, border: `1px solid ${healthColor(r.health)}` }}
+                      />
+                    </TableCell>
+                    <TableCell><Typography variant="caption" color="text.secondary">{r.detail}</Typography></TableCell>
+                    <TableCell><Typography variant="caption" color="text.secondary">{timeAgo(r.created_at)}</Typography></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Stack>
+    );
+  };
+
+  // ── Tab: Containers ────────────────────────────────────────────────────────
+  const renderContainers = () => (
+    <Stack spacing={2}>
+      {containers.length === 0 ? (
+        <Alert severity="info">No containers found. Deploy an application to see container health here.</Alert>
+      ) : (
+        <TableContainer component={Card}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Container</TableCell>
+                <TableCell>Image</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Health</TableCell>
+                <TableCell align="right">CPU (sim)</TableCell>
+                <TableCell align="right">Memory (sim)</TableCell>
+                <TableCell align="right">Replicas</TableCell>
+                <TableCell align="right">Restarts/h</TableCell>
+                <TableCell>Last Deploy</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {containers.map(c => {
+                const hc = c.health === 'green' ? '#2e7d32' : c.health === 'yellow' ? '#ed6c02' : '#d32f2f';
+                return (
+                  <TableRow key={c.id} hover sx={c.health === 'red' ? { bgcolor: `#d32f2f0a` } : {}}>
+                    <TableCell><Typography fontWeight={600} variant="body2">{c.name}</Typography></TableCell>
+                    <TableCell><Typography variant="caption" fontFamily="monospace">{c.image}</Typography></TableCell>
+                    <TableCell><Chip label={c.status} size="small" color={c.status === 'running' ? 'success' : c.status === 'stopped' ? 'default' : 'error'} /></TableCell>
+                    <TableCell>
+                      <Chip
+                        icon={c.health === 'green' ? <CheckCircleIcon /> : c.health === 'yellow' ? <WarningIcon /> : <ErrorIcon />}
+                        label={c.health === 'green' ? 'Healthy' : c.health === 'yellow' ? 'Degraded' : 'Critical'}
+                        size="small"
+                        sx={{ bgcolor: `${hc}22`, color: hc, border: `1px solid ${hc}`, fontWeight: 700 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack alignItems="flex-end">
+                        <Typography variant="body2" fontWeight={600} color={c.cpu_sim > 80 ? 'error' : c.cpu_sim > 60 ? 'warning.main' : 'text.primary'}>{c.cpu_sim}%</Typography>
+                        <LinearProgress variant="determinate" value={c.cpu_sim} color={c.cpu_sim > 80 ? 'error' : c.cpu_sim > 60 ? 'warning' : 'success'} sx={{ width: 60, height: 4, borderRadius: 2 }} />
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack alignItems="flex-end">
+                        <Typography variant="body2" fontWeight={600} color={c.memory_sim > 85 ? 'error' : c.memory_sim > 70 ? 'warning.main' : 'text.primary'}>{c.memory_sim}%</Typography>
+                        <LinearProgress variant="determinate" value={c.memory_sim} color={c.memory_sim > 85 ? 'error' : c.memory_sim > 70 ? 'warning' : 'success'} sx={{ width: 60, height: 4, borderRadius: 2 }} />
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right">{c.replicas}</TableCell>
+                    <TableCell align="right">
+                      <Chip
+                        label={c.restarts_1h}
+                        size="small"
+                        color={c.restarts_1h >= 3 ? 'error' : c.restarts_1h > 0 ? 'warning' : 'default'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">{timeAgo(c.last_deploy)}</Typography>
+                      {c.last_deploy_status && (
+                        <Chip label={c.last_deploy_status} size="small" color={statusColor(c.last_deploy_status)} sx={{ ml: 0.5 }} />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Stack>
+  );
+
+  // ── Tab: Kubernetes ────────────────────────────────────────────────────────
+  const renderKubernetes = () => (
+    <Stack spacing={2}>
+      {kubernetesHealth.length === 0 ? (
+        <Alert severity="info">No Kubernetes clusters configured. Add a cluster configuration in the Kubernetes integration settings.</Alert>
+      ) : kubernetesHealth.map(k => {
+        const hc = k.health === 'green' ? '#2e7d32' : k.health === 'yellow' ? '#ed6c02' : '#d32f2f';
+        return (
+          <Card key={k.config_id} sx={{ border: `1px solid ${hc}44` }}>
+            <CardContent>
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+                    <HubIcon fontSize="small" sx={{ color: hc }} />
+                    <Typography fontWeight={700}>{k.namespace}</Typography>
+                    <Chip label={k.environment} size="small" variant="outlined" />
+                    <Chip
+                      label={k.health === 'green' ? 'Healthy' : k.health === 'yellow' ? 'Degraded' : 'Critical'}
+                      size="small"
+                      sx={{ bgcolor: `${hc}22`, color: hc, border: `1px solid ${hc}`, fontWeight: 700 }}
+                    />
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary" fontFamily="monospace">{k.cluster_endpoint}</Typography>
+                </Box>
+                <Stack direction="row" spacing={3}>
+                  <Box textAlign="center">
+                    <Typography variant="h5" fontWeight={800} color="#4caf50">{k.pods_running}</Typography>
+                    <Typography variant="caption" color="text.secondary">Running</Typography>
+                  </Box>
+                  <Box textAlign="center">
+                    <Typography variant="h5" fontWeight={800} color={k.pods_pending > 0 ? '#ff9800' : 'text.secondary'}>{k.pods_pending}</Typography>
+                    <Typography variant="caption" color="text.secondary">Pending</Typography>
+                  </Box>
+                  <Box textAlign="center">
+                    <Typography variant="h5" fontWeight={800} color={k.pods_failed > 0 ? '#f44336' : 'text.secondary'}>{k.pods_failed}</Typography>
+                    <Typography variant="caption" color="text.secondary">Failed</Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" spacing={4} flexWrap="wrap">
+                <Box sx={{ flex: 1, minWidth: 200 }}>
+                  <Typography variant="caption" color="text.secondary">Node CPU</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" mt={0.25}>
+                    <LinearProgress
+                      variant="determinate" value={k.node_cpu_pct}
+                      color={k.node_cpu_pct > 80 ? 'error' : k.node_cpu_pct > 60 ? 'warning' : 'success'}
+                      sx={{ flex: 1, height: 8, borderRadius: 4 }}
+                    />
+                    <Typography variant="body2" fontWeight={700}>{k.node_cpu_pct}%</Typography>
+                  </Stack>
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 200 }}>
+                  <Typography variant="caption" color="text.secondary">Node Memory</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" mt={0.25}>
+                    <LinearProgress
+                      variant="determinate" value={k.node_memory_pct}
+                      color={k.node_memory_pct > 85 ? 'error' : k.node_memory_pct > 70 ? 'warning' : 'success'}
+                      sx={{ flex: 1, height: 8, borderRadius: 4 }}
+                    />
+                    <Typography variant="body2" fontWeight={700}>{k.node_memory_pct}%</Typography>
+                  </Stack>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Syncs (24h)</Typography>
+                  <Typography variant="body2">
+                    <span style={{ color: '#4caf50' }}>✓ {k.total_syncs_24h - k.failed_syncs_24h}</span>
+                    {' / '}
+                    <span style={{ color: '#f44336' }}>✗ {k.failed_syncs_24h}</span>
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Last Sync</Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    {k.last_sync_status && <StatusIcon status={k.last_sync_status} />}
+                    <Typography variant="body2">{timeAgo(k.last_sync_at)}</Typography>
+                  </Stack>
+                </Box>
+              </Stack>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </Stack>
+  );
+
+  // ── Tab: Logs & Metrics ────────────────────────────────────────────────────
+  const METRIC_CHOICES = [
+    'cpu_percent', 'memory_percent', 'latency_ms', 'error_rate',
+    'request_rate', 'queue_length', 'disk_io_read', 'disk_io_write',
+    'network_in', 'network_out',
+  ];
+  const LOG_SERVICES = ['compute', 'database', 'storage', 'containers', 'networking', 'pipelines', 'dns', 'email'];
+  const LOG_LEVEL_COLOR: Record<string, string> = {
+    ERROR: '#f44336', WARN: '#ff9800', INFO: '#4caf50', DEBUG: '#9e9e9e',
+  };
+  const filteredLogs = logLines.filter(l =>
+    (!logService || l.service === logService) &&
+    (!logSearch || l.message.toLowerCase().includes(logSearch.toLowerCase()))
+  );
+
+  const refreshLogs = async () => {
+    const res = await monitoringApi.getLogs({ service: logService || undefined, search: logSearch || undefined, hours: 1, limit: 200 });
+    setLogLines((res.data as any)?.logs ?? []);
+  };
+
+  const refreshMetrics = async () => {
+    const res = await monitoringApi.getMetrics({ metric: selectedMetric, hours: hours });
+    setMetricPoints((res.data as any)?.points ?? []);
+  };
+
+  const renderLogsAndMetrics = () => (
+    <Stack spacing={3}>
+      {/* Metrics */}
+      <Card>
+        <CardHeader
+          title="Metric Explorer"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          action={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <InputLabel>Metric</InputLabel>
+                <Select value={selectedMetric} label="Metric" onChange={e => { setSelectedMetric(e.target.value); }}>
+                  {METRIC_CHOICES.map(m => <MenuItem key={m} value={m}>{m.replace(/_/g, ' ')}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <Button size="small" variant="outlined" startIcon={<RefreshIcon />} onClick={refreshMetrics}>Load</Button>
+            </Stack>
+          }
+        />
+        <CardContent>
+          {metricPoints.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <InsightsIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+              <Typography color="text.secondary">Select a metric and click Load to view time-series data.</Typography>
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="caption" color="text.secondary" mb={1} display="block">
+                {metricPoints.length} data points · {selectedMetric.replace(/_/g, ' ')} · last {timeRange}
+              </Typography>
+              <Box sx={{ overflowX: 'auto' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: 120, minWidth: 600, p: 1 }}>
+                  {metricPoints.map((pt, i) => {
+                    const maxVal = Math.max(...metricPoints.map(p => p.value));
+                    const pct = maxVal > 0 ? (pt.value / maxVal) * 100 : 0;
+                    const color = pct > 80 ? '#f44336' : pct > 60 ? '#ff9800' : '#00E0FF';
+                    return (
+                      <Tooltip key={i} title={`${pt.value}${pt.unit} @ ${new Date(pt.timestamp).toLocaleTimeString()}`}>
+                        <Box sx={{
+                          flex: 1, minWidth: 4, maxWidth: 12,
+                          height: `${Math.max(4, pct)}%`,
+                          bgcolor: color, borderRadius: '2px 2px 0 0',
+                          transition: 'height 0.2s', cursor: 'crosshair',
+                        }} />
+                      </Tooltip>
+                    );
+                  })}
+                </Box>
+              </Box>
+              <Stack direction="row" justifyContent="space-between" mt={1}>
+                <Typography variant="caption" color="text.secondary">Min: {Math.min(...metricPoints.map(p => p.value)).toFixed(1)}{metricPoints[0]?.unit}</Typography>
+                <Typography variant="caption" color="text.secondary">Avg: {(metricPoints.reduce((a, p) => a + p.value, 0) / metricPoints.length).toFixed(1)}{metricPoints[0]?.unit}</Typography>
+                <Typography variant="caption" color="text.secondary">Max: {Math.max(...metricPoints.map(p => p.value)).toFixed(1)}{metricPoints[0]?.unit}</Typography>
+              </Stack>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Logs */}
+      <Card>
+        <CardHeader
+          title="Log Stream"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          subheader="Platform-wide structured log tail — last hour"
+          action={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <FormControl size="small" sx={{ minWidth: 130 }}>
+                <InputLabel>Service</InputLabel>
+                <Select value={logService} label="Service" onChange={e => setLogService(e.target.value)}>
+                  <MenuItem value="">All Services</MenuItem>
+                  {LOG_SERVICES.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <Button size="small" variant="outlined" startIcon={<RefreshIcon />} onClick={refreshLogs}>Refresh</Button>
+            </Stack>
+          }
+        />
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
+            <input
+              type="text" placeholder="Search logs…"
+              value={logSearch}
+              onChange={e => setLogSearch(e.target.value)}
+              style={{
+                width: '100%', background: '#111', border: '1px solid #333',
+                color: '#fff', padding: '6px 12px', borderRadius: 4,
+                fontSize: 13, fontFamily: 'monospace', outline: 'none',
+              }}
+            />
+          </Box>
+          <Box sx={{ maxHeight: 480, overflowY: 'auto' }}>
+            {filteredLogs.length === 0 ? (
+              <Box p={4} textAlign="center">
+                <Typography color="text.secondary">No logs matching your filters. Click Refresh to reload.</Typography>
+              </Box>
+            ) : filteredLogs.map((ln, i) => (
+              <Stack key={i} direction="row" spacing={2} alignItems="flex-start" sx={{ p: 1, borderBottom: '1px solid #1a1a1a', '&:hover': { bgcolor: '#111' } }}>
+                <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80, fontFamily: 'monospace', pt: 0.15 }}>
+                  {new Date(ln.timestamp).toLocaleTimeString()}
+                </Typography>
+                <Chip
+                  label={ln.level}
+                  size="small"
+                  sx={{ minWidth: 52, fontFamily: 'monospace', fontWeight: 700, fontSize: '0.65rem',
+                         bgcolor: `${LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e'}22`,
+                         color: LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e' }}
+                />
+                <Typography variant="caption" sx={{ minWidth: 90, color: '#00E0FF', fontFamily: 'monospace' }}>{ln.service}</Typography>
+                <Typography variant="caption" sx={{ flex: 1, fontFamily: 'monospace', color: ln.level === 'ERROR' ? '#ff6b6b' : ln.level === 'WARN' ? '#ffa726' : '#e0e0e0' }}>
+                  {ln.message}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80, fontFamily: 'monospace' }}>{ln.pod}</Typography>
+              </Stack>
+            ))}
+          </Box>
+          <Box sx={{ p: 1, borderTop: '1px solid #222', bgcolor: '#0a0a0a' }}>
+            <Typography variant="caption" color="text.secondary">
+              {filteredLogs.length} lines · {logService || 'all services'} · last 1h
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
   const tabContent = [
     renderOverview,
     renderPipelines,
@@ -907,6 +1310,10 @@ const DevMonitoringPage: React.FC = () => {
     renderServices,
     renderActivity,
     renderAlerts,
+    renderResources,
+    renderContainers,
+    renderKubernetes,
+    renderLogsAndMetrics,
   ];
 
   return (
