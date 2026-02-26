@@ -640,7 +640,7 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
 
   const isDashboardRoute =
     location.pathname.startsWith('/dashboard') ||
-    location.pathname.startsWith('/dev-dashboard') ||
+    location.pathname.startsWith('/developer/Dashboard') ||
     location.pathname.startsWith('/marketing-dashboard') ||
     location.pathname.startsWith('/domains/dashboard') ||
     location.pathname.startsWith('/monitor-dashboard');

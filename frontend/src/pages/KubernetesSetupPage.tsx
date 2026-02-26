@@ -545,7 +545,7 @@ const KubernetesSetupPage: React.FC = () => {
             <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
               {existingConfig && (
                 <Button variant="contained"
-                  onClick={() => navigate(`/dev-dashboard/kubernetes/monitor/${existingConfig.id}`)}>
+                  onClick={() => navigate(`/developer/Dashboard/kubernetes/monitor/${existingConfig.id}`)}>
                   Open Kubernetes Monitor
                 </Button>
               )}

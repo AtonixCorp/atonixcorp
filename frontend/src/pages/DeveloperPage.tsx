@@ -10,24 +10,24 @@ const sections: DevSection[] = [
   {
     title: 'Build & Delivery',
     items: [
-      { name: 'Deployments', description: 'Release workflows, environments, and deployment orchestration.', route: '/dev-dashboard/deployments' },
-      { name: 'CI/CD Pipelines', description: 'Build, test, and promote workloads across environments.', route: '/dev-dashboard/cicd' },
-      { name: 'Containers', description: 'Container lifecycle, image management, and vulnerability scanning.', route: '/dev-dashboard/containers' },
-      { name: 'Kubernetes', description: 'Cluster health, nodes, workloads, and namespace management.', route: '/dev-dashboard/kubernetes' },
+      { name: 'Deployments', description: 'Release workflows, environments, and deployment orchestration.', route: '/developer/Dashboard/deployments' },
+      { name: 'CI/CD Pipelines', description: 'Build, test, and promote workloads across environments.', route: '/developer/Dashboard/cicd' },
+      { name: 'Containers', description: 'Container lifecycle, image management, and vulnerability scanning.', route: '/developer/Dashboard/containers' },
+      { name: 'Kubernetes', description: 'Cluster health, nodes, workloads, and namespace management.', route: '/developer/Dashboard/kubernetes' },
     ],
   },
   {
     title: 'Operate & Observe',
     items: [
-      { name: 'Monitoring', description: 'Metrics, traces, logs, and runtime alerts.', route: '/dev-dashboard/monitoring' },
-      { name: 'Resource Control', description: 'Quota, limits, and policy enforcement for teams.', route: '/dev-dashboard/resource-control' },
-      { name: 'API Management', description: 'API policies, versioning, and lifecycle governance.', route: '/dev-dashboard/api-management' },
+      { name: 'Monitoring', description: 'Metrics, traces, logs, and runtime alerts.', route: '/developer/Dashboard/monitoring' },
+      { name: 'Resource Control', description: 'Quota, limits, and policy enforcement for teams.', route: '/developer/Dashboard/resource-control' },
+      { name: 'API Management', description: 'API policies, versioning, and lifecycle governance.', route: '/developer/Dashboard/api-management' },
     ],
   },
   {
     title: 'Developer Workspace',
     items: [
-      { name: 'Workspace', description: 'Developer profile, preferences, and productivity setup.', route: '/dev-dashboard/workspace' },
+      { name: 'Workspace', description: 'Developer profile, preferences, and productivity setup.', route: '/developer/Dashboard/workspace' },
       { name: 'Service Docs', description: 'Cross-service documentation references and implementation notes.', route: '/docs' },
     ],
   },

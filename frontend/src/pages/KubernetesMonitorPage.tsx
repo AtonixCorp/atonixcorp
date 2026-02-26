@@ -318,7 +318,7 @@ const KubernetesMonitorPage: React.FC = () => {
             </IconButton>
           </Tooltip>
           <Button variant="outlined" size="small"
-            onClick={() => navigate(`/dev-dashboard/kubernetes/setup/${data?.namespace?.split('-')[1] ?? ''}`)}>
+            onClick={() => navigate(`/developer/Dashboard/kubernetes/setup/${data?.namespace?.split('-')[1] ?? ''}`)}>
             Setup
           </Button>
           <Button variant="outlined" size="small" onClick={() => navigate(-1)}>

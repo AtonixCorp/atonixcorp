@@ -39,13 +39,13 @@ interface NavEntry {
 }
 
 const developerNav: NavEntry[] = [
-  { label: 'Deployments', path: '/dev-dashboard/deployments', icon: <RocketLaunchIcon /> },
-  { label: 'CI/CD Pipelines', path: '/dev-dashboard/cicd', icon: <AutorenewIcon /> },
-  { label: 'Containers', path: '/dev-dashboard/containers', icon: <ViewInArIcon /> },
-  { label: 'Kubernetes', path: '/dev-dashboard/kubernetes', icon: <HubIcon /> },
-  { label: 'Monitoring', path: '/dev-dashboard/monitoring', icon: <MonitorHeartIcon /> },
-  { label: 'API Management', path: '/dev-dashboard/api-management', icon: <ApiIcon /> },
-  { label: 'Resource Control', path: '/dev-dashboard/resource-control', icon: <StorageIcon /> },
+  { label: 'Deployments', path: '/developer/Dashboard/deployments', icon: <RocketLaunchIcon /> },
+  { label: 'CI/CD Pipelines', path: '/developer/Dashboard/cicd', icon: <AutorenewIcon /> },
+  { label: 'Containers', path: '/developer/Dashboard/containers', icon: <ViewInArIcon /> },
+  { label: 'Kubernetes', path: '/developer/Dashboard/kubernetes', icon: <HubIcon /> },
+  { label: 'Monitoring', path: '/developer/Dashboard/monitoring', icon: <MonitorHeartIcon /> },
+  { label: 'API Management', path: '/developer/Dashboard/api-management', icon: <ApiIcon /> },
+  { label: 'Resource Control', path: '/developer/Dashboard/resource-control', icon: <StorageIcon /> },
 ];
 
 const marketingNav: NavEntry[] = [
@@ -94,7 +94,7 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
           <Tooltip title="Developer Tools" placement="right">
             <ListItemButton
               selected={mode === 'developer'}
-              onClick={() => navigate('/dev-dashboard/deployments')}
+              onClick={() => navigate('/developer/Dashboard/deployments')}
               sx={{
                 mx: 1,
                 borderRadius: RADIUS,

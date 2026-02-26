@@ -166,7 +166,7 @@ const DevProjectDetailPage: React.FC = () => {
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 3 }}>
         <IconButton
           size="small"
-          onClick={() => navigate('/dev-dashboard/projects')}
+          onClick={() => navigate('/developer/Dashboard/projects')}
           sx={{ color: t.textSecondary, border: `1px solid ${t.border}`, borderRadius: '7px', mt: 0.2 }}
         >
           <ArrowBackIcon sx={{ fontSize: '1rem' }} />

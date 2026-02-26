@@ -87,7 +87,7 @@ const DevKubernetesPage: React.FC = () => {
             <IconButton onClick={fetchAll}><RefreshIcon /></IconButton>
           </Tooltip>
           <Button variant="contained" startIcon={<AddIcon />}
-            onClick={() => navigate('/dev-dashboard/kubernetes/setup/new')}>
+            onClick={() => navigate('/developer/Dashboard/kubernetes/setup/new')}>
             Connect Project
           </Button>
         </Stack>
@@ -122,7 +122,7 @@ const DevKubernetesPage: React.FC = () => {
                     Connect a project to a cluster and Git repository to get started.
                   </Typography>
                   <Button variant="contained" startIcon={<AddIcon />}
-                    onClick={() => navigate('/dev-dashboard/kubernetes/setup/new')}>
+                    onClick={() => navigate('/developer/Dashboard/kubernetes/setup/new')}>
                     Connect Your First Project
                   </Button>
                 </Box>
@@ -162,12 +162,12 @@ const DevKubernetesPage: React.FC = () => {
                         <TableCell align="right">
                           <Stack direction="row" spacing={0.5} justifyContent="flex-end">
                             <Tooltip title="Monitor">
-                              <IconButton size="small" onClick={() => navigate(`/dev-dashboard/kubernetes/monitor/${cfg.id}`)}>
+                              <IconButton size="small" onClick={() => navigate(`/developer/Dashboard/kubernetes/monitor/${cfg.id}`)}>
                                 <VisibilityIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Setup / Sync">
-                              <IconButton size="small" onClick={() => navigate(`/dev-dashboard/kubernetes/setup/${cfg.project_id}`)}>
+                              <IconButton size="small" onClick={() => navigate(`/developer/Dashboard/kubernetes/setup/${cfg.project_id}`)}>
                                 <SettingsIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>

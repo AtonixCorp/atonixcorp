@@ -83,7 +83,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppShell: React.FC = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
-  const isDeveloperDashboard = location.pathname.startsWith('/dev-dashboard');
+  const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
@@ -93,25 +93,25 @@ const AppShell: React.FC = () => {
       <ProtectedRoute>
         <DashboardLayout dashboardMode="developer">
           <Routes>
-            <Route path="/dev-dashboard" element={<Navigate to="/dev-dashboard/deployments" replace />} />
-            <Route path="/dev-dashboard/deployments" element={<DevDeploymentsPage />} />
-            <Route path="/dev-dashboard/projects"     element={<DevProjectsPage />} />
-            <Route path="/dev-dashboard/projects/:id"  element={<DevProjectDetailPage />} />
-            <Route path="/dev-dashboard/cicd" element={<DevPipelinesPage />} />
-            <Route path="/dev-dashboard/containers" element={<DevContainersPage />} />
-            <Route path="/dev-dashboard/kubernetes" element={<DevKubernetesPage />} />
-            <Route path="/dev-dashboard/kubernetes/setup/:projectId" element={<KubernetesSetupPage />} />
-            <Route path="/dev-dashboard/kubernetes/monitor/:configId" element={<KubernetesMonitorPage />} />
-            <Route path="/dev-dashboard/monitoring" element={<DevMonitoringPage />} />
-            <Route path="/dev-dashboard/api-management" element={<DevApiManagementPage />} />
-            <Route path="/dev-dashboard/resource-control" element={<DevResourceControlPage />} />
-            <Route path="/dev-dashboard/workspace" element={<DevWorkspacePage />} />
-            <Route path="/dev-dashboard/groups" element={<DevGroupsPage />} />
-            <Route path="/dev-dashboard/environment" element={<DevEnvironmentPage />} />
-            <Route path="/dev-dashboard/operational" element={<DevOperationalPage />} />
-            <Route path="/dev-dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
-            <Route path="/dev-dashboard/settings/*" element={<DevSettingsPage />} />
-            <Route path="/dev-dashboard/*" element={<Navigate to="/dev-dashboard/deployments" replace />} />
+            <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
+            <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
+            <Route path="/developer/Dashboard/projects"     element={<DevProjectsPage />} />
+            <Route path="/developer/Dashboard/projects/:id"  element={<DevProjectDetailPage />} />
+            <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
+            <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />
+            <Route path="/developer/Dashboard/kubernetes" element={<DevKubernetesPage />} />
+            <Route path="/developer/Dashboard/kubernetes/setup/:projectId" element={<KubernetesSetupPage />} />
+            <Route path="/developer/Dashboard/kubernetes/monitor/:configId" element={<KubernetesMonitorPage />} />
+            <Route path="/developer/Dashboard/monitoring" element={<DevMonitoringPage />} />
+            <Route path="/developer/Dashboard/api-management" element={<DevApiManagementPage />} />
+            <Route path="/developer/Dashboard/resource-control" element={<DevResourceControlPage />} />
+            <Route path="/developer/Dashboard/workspace" element={<DevWorkspacePage />} />
+            <Route path="/developer/Dashboard/groups" element={<DevGroupsPage />} />
+            <Route path="/developer/Dashboard/environment" element={<DevEnvironmentPage />} />
+            <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
+            <Route path="/developer/Dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
+            <Route path="/developer/Dashboard/settings/*" element={<DevSettingsPage />} />
+            <Route path="/developer/Dashboard/*" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>
@@ -163,7 +163,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domains"                  element={<DomainPage />} />
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<Navigate to="/marketing-dashboard/campaigns" replace />} />
-            <Route path="/dashboard/developer-tools"          element={<Navigate to="/dev-dashboard/deployments" replace />} />
+            <Route path="/dashboard/developer-tools"          element={<Navigate to="/developer/Dashboard/deployments" replace />} />
             <Route path="/dashboard/marketing-tools"          element={<Navigate to="/marketing-dashboard/analytics" replace />} />
             <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />
             <Route path="/dashboard/load-balancers"           element={<LoadBalancersPage />} />

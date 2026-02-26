@@ -123,27 +123,25 @@ const CLOUD_NAV: NavItem[] = [
   },
   { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/dashboard/sections' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
-  { label: 'Teams',     icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
-  { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/dev-dashboard/deployments' },
+  { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/deployments' },
   { label: 'Marketing', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
   { label: 'Monitor',   icon: <MonitorIcon   {...I()} />, path: '/monitor-dashboard/overview' },
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
-  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/dev-dashboard/deployments' },
-  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/dev-dashboard/projects'   },
-  { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/dev-dashboard/cicd' },
-  { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/dev-dashboard/containers' },
-  { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/dev-dashboard/kubernetes' },
-  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/dev-dashboard/monitoring' },
-  { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/dev-dashboard/api-management' },
-  { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/dev-dashboard/sections' },
-  { label: 'Groups',   icon: <GroupsIcon   {...I()} />, path: '/dev-dashboard/groups' },
-  { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/dev-dashboard/resource-control' },
-  { label: 'Workplace',        icon: <PersonIcon  {...I()} />, path: '/dev-dashboard/workspace'    },
-  { label: 'Environment',      icon: <TuneIcon    {...I()} />, path: '/dev-dashboard/environment'  },
-  { label: 'Operational',      icon: <GppGoodIcon {...I()} />, path: '/dev-dashboard/operational'  },
-  { label: 'Teams',            icon: <TeamIcon    {...I()} />, path: '/dashboard/teams'            },
+  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/developer/Dashboard/deployments' },
+  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'   },
+  { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
+  { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
+  { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },
+  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/developer/Dashboard/monitoring' },
+  { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/developer/Dashboard/api-management' },
+  { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/developer/Dashboard/sections' },
+  { label: 'Groups',   icon: <GroupsIcon   {...I()} />, path: '/developer/Dashboard/groups' },
+  { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/developer/Dashboard/resource-control' },
+  { label: 'Workplace',        icon: <PersonIcon  {...I()} />, path: '/developer/Dashboard/workspace'    },
+  { label: 'Environment',      icon: <TuneIcon    {...I()} />, path: '/developer/Dashboard/environment'  },
+  { label: 'Operational',      icon: <GppGoodIcon {...I()} />, path: '/developer/Dashboard/operational'  },
 ];
 
 const MARKETING_NAV: NavItem[] = [
@@ -365,7 +363,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
   const navigate  = useNavigate();
   const { mode: _mode }  = useColorMode();
   const routeBase = dashboardMode === 'developer'
-    ? '/dev-dashboard'
+    ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
       ? '/marketing-dashboard'
       : dashboardMode === 'domains'
@@ -520,14 +518,17 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           ))}
         </List>
 
-        {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
-
-        <NavSectionLabel collapsed={collapsed}>Account</NavSectionLabel>
-        <List disablePadding>
-          {accountNav.map(item => (
-            <NavRow key={item.label} item={item} collapsed={collapsed} />
-          ))}
-        </List>
+        {accountNav.length > 0 && (
+          <>
+            {!collapsed && <Divider sx={{ borderColor: SB_DIV, my: 1, mx: 2 }} />}
+            <NavSectionLabel collapsed={collapsed}>Account</NavSectionLabel>
+            <List disablePadding>
+              {accountNav.map(item => (
+                <NavRow key={item.label} item={item} collapsed={collapsed} />
+              ))}
+            </List>
+          </>
+        )}
 
         {supportNav.length > 0 && (
           <>
@@ -590,7 +591,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
   const routeBase = dashboardMode === 'developer'
-    ? '/dev-dashboard'
+    ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
       ? '/marketing-dashboard'
       : dashboardMode === 'domains'

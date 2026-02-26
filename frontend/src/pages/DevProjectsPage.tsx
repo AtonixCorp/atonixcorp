@@ -357,7 +357,7 @@ const DevProjectsPage: React.FC = () => {
                 }}
               >
                 <CardActionArea
-                  onClick={() => navigate(`/dev-dashboard/projects/${project.id}`)}
+                  onClick={() => navigate(`/developer/Dashboard/projects/${project.id}`)}
                   sx={{ flex: 1, p: 0, borderRadius: '10px', '&:hover': { bgcolor: 'transparent' } }}
                 >
                   <CardContent sx={{ p: '16px !important', display: 'flex', flexDirection: 'column', height: '100%', gap: 1.25 }}>
