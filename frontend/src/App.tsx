@@ -70,7 +70,8 @@ import GroupDashboardPage         from './pages/GroupDashboardPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
 import DevProjectDetailPage       from './pages/DevProjectDetailPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
-import DevOperationalPage         from './pages/DevOperationalPage';
+import DevOperationalPage         from './pages/DevOperationalPage'
+import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
 
 // Protected route – redirects to home if not authenticated
@@ -111,6 +112,7 @@ const AppShell: React.FC = () => {
         <DashboardLayout dashboardMode="developer">
           <Routes>
             <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
+            <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/developer/Dashboard/projects"     element={<DevProjectsPage />} />
             <Route path="/developer/Dashboard/projects/:id"  element={<DevProjectDetailPage />} />

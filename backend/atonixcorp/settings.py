@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'services.pipelines',
     'services.containers',
     'services.kubernetes_integration',
+    'services.deployments',
 ]
 
 HAS_GRAPHENE_DJANGO = importlib.util.find_spec('graphene_django') is not None

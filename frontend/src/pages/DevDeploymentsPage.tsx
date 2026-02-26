@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,13 +20,10 @@ import {
   Tabs,
   Tab,
   Divider,
-  Drawer,
-  IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
-import DevDeployAppPage, { NewDeploymentPayload } from './DevDeployAppPage';
+import { NewDeploymentPayload } from './DevDeployAppPage';
 
 type DeploymentStatus = 'running' | 'failed' | 'building';
 
@@ -110,35 +108,41 @@ const severityColor = (severity: 'Low' | 'Medium' | 'High' | 'Critical') => {
 };
 
 const DevDeploymentsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selected,    setSelected]   = useState<DeploymentItem | null>(null);
   const [tab,         setTab]        = useState(0);
-  const [wizardOpen,  setWizardOpen] = useState(false);
   const [deployments, setDeployments] = useState<DeploymentItem[]>(INITIAL_DEPLOYMENTS);
   const [newItemId,   setNewItemId]  = useState<string | null>(null);
 
-  const handleDeployComplete = (payload: NewDeploymentPayload) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-    const newItem: DeploymentItem = {
-      id:           `dep-${Date.now()}`,
-      appName:      payload.appName,
-      status:       'running',
-      environment:  payload.environment,
-      lastDeployed: now,
-      hostname:     payload.hostname,
-      image:        payload.image,
-      branch:       payload.branch,
-      owner:        'you',
-      createdAt:    now,
-      cpu:          '2%',
-      memory:       '18%',
-      errors:       0,
-      vulnerabilities: [],
-    };
-    setDeployments(prev => [newItem, ...prev]);
-    setNewItemId(newItem.id);
-    setTimeout(() => setNewItemId(null), 6000);
-    setWizardOpen(false);
-  };
+  // Pick up a newly deployed app when navigating back from the deploy wizard
+  useEffect(() => {
+    const raw = localStorage.getItem('ATONIX_NEW_DEPLOY');
+    if (!raw) return;
+    try {
+      const payload: NewDeploymentPayload = JSON.parse(raw);
+      localStorage.removeItem('ATONIX_NEW_DEPLOY');
+      const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const newItem: DeploymentItem = {
+        id:           `dep-${Date.now()}`,
+        appName:      payload.appName,
+        status:       'running',
+        environment:  payload.environment,
+        lastDeployed: now,
+        hostname:     payload.hostname,
+        image:        payload.image,
+        branch:       payload.branch,
+        owner:        'you',
+        createdAt:    now,
+        cpu:          '2%',
+        memory:       '18%',
+        errors:       0,
+        vulnerabilities: [],
+      };
+      setDeployments(prev => [newItem, ...prev]);
+      setNewItemId(newItem.id);
+      setTimeout(() => setNewItemId(null), 6000);
+    } catch {}
+  }, []);
 
   const summary = useMemo(() => {
     const total = deployments.length;
@@ -158,7 +162,7 @@ const DevDeploymentsPage: React.FC = () => {
         <Button
           variant="contained"
           startIcon={<RocketLaunchIcon sx={{ fontSize: '.85rem' }} />}
-          onClick={() => setWizardOpen(true)}
+          onClick={() => navigate('/developer/Dashboard/deploy-app')}
           sx={dashboardPrimaryButtonSx}
         >
           Deploy new app
@@ -323,45 +327,6 @@ const DevDeploymentsPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* ── Deploy App Wizard drawer ── */}
-      <Drawer
-        anchor="right"
-        open={wizardOpen}
-        onClose={() => setWizardOpen(false)}
-        PaperProps={{
-          sx: {
-            width: { xs: '100vw', md: 'calc(100vw - 260px)' },
-            bgcolor: dashboardTokens.colors.background,
-            backgroundImage: 'none',
-          },
-        }}
-      >
-        {/* Drawer header with close button */}
-        <Box sx={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          px: 2.5, py: 1.25,
-          borderBottom: `1px solid ${dashboardTokens.colors.border}`,
-          bgcolor: dashboardTokens.colors.surface,
-          flexShrink: 0,
-        }}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <RocketLaunchIcon sx={{ fontSize: '1rem', color: dashboardTokens.colors.brandPrimary }} />
-            <Typography sx={{ fontWeight: 800, fontSize: '.92rem', color: dashboardTokens.colors.textPrimary, fontFamily: '"Inter", sans-serif' }}>
-              Deploy App
-            </Typography>
-          </Stack>
-          <IconButton size="small" onClick={() => setWizardOpen(false)}
-            sx={{ color: dashboardTokens.colors.textSecondary, '&:hover': { color: dashboardTokens.colors.textPrimary } }}>
-            <CloseIcon sx={{ fontSize: '1.1rem' }} />
-          </IconButton>
-        </Box>
-
-        {/* Wizard content fills remaining height */}
-        <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <DevDeployAppPage onDeployComplete={handleDeployComplete} />
-        </Box>
-      </Drawer>
     </Box>
   );
 };

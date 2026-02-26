@@ -2,6 +2,7 @@
 // 11-step guided deployment: source → stack → infra → review → live deploy
 
 import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box, Typography, Stack, Card, CardContent, Button, Chip,
   TextField, LinearProgress, Tooltip, IconButton, Divider,
@@ -299,6 +300,7 @@ export interface NewDeploymentPayload {
 }
 
 const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) => void }> = ({ onDeployComplete }) => {
+  const navigate = useNavigate()
   const [step,    setStep]    = useState(1)
   const [state,   setState]   = useState<WizardState>(DEFAULT)
   const [deploying, setDeploying] = useState(false)
@@ -363,7 +365,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
         if (delay === lines[lines.length - 1].delay) {
           setTimeout(() => {
             setDeployDone(true)
-            onDeployComplete?.({
+            const payload: NewDeploymentPayload = {
               appName:    plan.proj,
               environment:'prod',
               branch:     state.gitBranch || 'main',
@@ -373,7 +375,9 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               frontend:   state.frontend,
               backend:    state.backend,
               database:   state.database,
-            })
+            }
+            localStorage.setItem('ATONIX_NEW_DEPLOY', JSON.stringify(payload))
+            onDeployComplete?.(payload)
           }, 400)
         }
       }, delay)
@@ -937,7 +941,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                       </Stack>
                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                         {[
-                          { label:'View Operational',  color: t.brand },
+                          { label:'View Deployments',    color: t.brand },
                           { label:'View CI/CD Pipeline', color: S.purple },
                           { label:'View Logs',           color: S.info },
                           { label:'View Monitoring',     color: S.success },
@@ -947,7 +951,13 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                             sx={{ fontFamily:FONT, fontWeight:700, fontSize:'.74rem', textTransform:'none', borderRadius:'6px',
                               borderColor:`${b.color}55`, color:b.color,
                               '&:hover':{ borderColor:b.color, bgcolor:`${b.color}10` } }}
-                            onClick={b.label === 'Deploy Another' ? () => { setState(DEFAULT); setStep(1); setDeploying(false); setDeployDone(false); setLogLines([]) } : undefined}>
+                            onClick={
+                              b.label === 'Deploy Another'
+                                ? () => { setState(DEFAULT); setStep(1); setDeploying(false); setDeployDone(false); setLogLines([]) }
+                                : b.label === 'View Deployments'
+                                ? () => navigate('/developer/Dashboard/deployments')
+                                : undefined
+                            }>
                             {b.label}
                           </Button>
                         ))}

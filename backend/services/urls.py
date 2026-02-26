@@ -64,6 +64,12 @@ from .pipelines.viewsets import (
     PipelineArtifactViewSet,
 )
 from .kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
+from .deployments.viewsets import (
+    DeploymentTemplateViewSet,
+    DeploymentRequestViewSet,
+    DeploymentExecutionViewSet,
+    DeploymentAuditLogViewSet,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -177,6 +183,14 @@ router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename
 # ============================================================================
 router.register(r'kubernetes/config',    KubeConfigViewSet,   basename='kube-config')
 router.register(r'kubernetes/sync-runs', KubeSyncRunViewSet,  basename='kube-sync-run')
+
+# ============================================================================
+# DEPLOY SERVICE ENDPOINTS
+# ============================================================================
+router.register(r'deploy/templates',   DeploymentTemplateViewSet,  basename='deploy-template')
+router.register(r'deploy/requests',    DeploymentRequestViewSet,   basename='deploy-request')
+router.register(r'deploy/executions',  DeploymentExecutionViewSet, basename='deploy-execution')
+router.register(r'deploy/audit-logs',  DeploymentAuditLogViewSet,  basename='deploy-audit-log')
 
 # URL Patterns
 urlpatterns = [
