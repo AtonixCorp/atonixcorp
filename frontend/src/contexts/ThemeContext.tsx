@@ -643,7 +643,8 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
     location.pathname.startsWith('/developer/Dashboard') ||
     location.pathname.startsWith('/marketing-dashboard') ||
     location.pathname.startsWith('/domains/dashboard') ||
-    location.pathname.startsWith('/monitor-dashboard');
+    location.pathname.startsWith('/monitor-dashboard') ||
+    location.pathname.startsWith('/groups');
 
   const effectiveMode: ThemeMode = isDashboardRoute ? mode : 'light';
 

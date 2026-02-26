@@ -65,6 +65,8 @@ import DashboardSectionsPage     from './pages/DashboardSectionsPage';
 import MonitorSettingsPage        from './pages/MonitorSettingsPage';
 import TeamsPage                  from './pages/TeamsPage';
 import DevGroupsPage              from './pages/DevGroupsPage';
+import GroupCreatePage            from './pages/GroupCreatePage';
+import GroupDashboardPage         from './pages/GroupDashboardPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
 import DevProjectDetailPage       from './pages/DevProjectDetailPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
@@ -87,6 +89,21 @@ const AppShell: React.FC = () => {
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
+  const isGroupsPage = location.pathname.startsWith('/groups');
+
+  if (isGroupsPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/groups/new"                      element={<GroupCreatePage />} />
+          <Route path="/groups/:groupId"                 element={<GroupDashboardPage />} />
+          <Route path="/groups/:groupId/:section"        element={<GroupDashboardPage />} />
+          <Route path="/groups/:groupId/:section/:sub"   element={<GroupDashboardPage />} />
+          <Route path="/groups/*"                        element={<Navigate to="/developer/Dashboard/groups" replace />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
 
   if (isDeveloperDashboard) {
     return (

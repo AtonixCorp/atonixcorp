@@ -1,23 +1,20 @@
 import React from 'react';
 import { Box, Paper, Typography, List, ListItem, ListItemText, TextField, Button } from '@mui/material';
-import { groupsApi } from '../../services/groupsApi';
+import { listGroups, createGroup, Group } from '../../services/groupsApi';
 
 const GroupUserDashboard: React.FC = () => {
-	const [groups, setGroups] = React.useState<any[]>([]);
+	const [groups, setGroups] = React.useState<Group[]>([]);
 	const [name, setName] = React.useState('');
 
 	React.useEffect(() => {
 		let mounted = true;
-		const parts = window.location.pathname.split('/');
-		const id = parts.includes('enterprise') ? parts[parts.indexOf('enterprise') + 1] : 'default';
-		groupsApi.list(id).then(r => { if (mounted) setGroups(r || []); });
+		listGroups().then(r => { if (mounted) setGroups(r || []); });
 		return () => { mounted = false; };
 	}, []);
 
 	const create = async () => {
-		const parts = window.location.pathname.split('/');
-		const id = parts.includes('enterprise') ? parts[parts.indexOf('enterprise') + 1] : 'default';
-		const g = await groupsApi.create(id, { name });
+		const handle = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+		const g = await createGroup({ name, handle, visibility: 'private', group_type: 'developer' });
 		setGroups(s => [...s, g]);
 		setName('');
 	};

@@ -72,6 +72,7 @@ from ..apim.viewsets import (
     ApiConsumerViewSet, ApiKeyViewSet, ApiProductViewSet,
     ApiPolicyViewSet, ApimAnalyticsViewSet,
 )
+from ..groups.viewsets import GroupViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -208,6 +209,11 @@ router.register(r'apim/keys',       ApiKeyViewSet,         basename='apim-key')
 router.register(r'apim/products',   ApiProductViewSet,     basename='apim-product')
 router.register(r'apim/policies',   ApiPolicyViewSet,      basename='apim-policy')
 router.register(r'apim/analytics',  ApimAnalyticsViewSet,  basename='apim-analytics')
+
+# ============================================================================
+# GROUP PLATFORM ENDPOINTS
+# ============================================================================
+router.register(r'groups', GroupViewSet, basename='group')
 
 # URL Patterns
 urlpatterns = [
