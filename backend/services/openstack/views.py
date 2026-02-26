@@ -50,9 +50,9 @@ from rest_framework.response import Response
 from rest_framework import status as http_status
 
 from infrastructure.openstack_conn import is_openstack_configured
-import services.openstack.compute as osc
-import services.openstack.network as osn
-import services.openstack.volume as osv
+import infrastructure.openstack.compute as osc
+import infrastructure.openstack.network as osn
+import infrastructure.openstack.volume as osv
 
 logger = logging.getLogger(__name__)
 

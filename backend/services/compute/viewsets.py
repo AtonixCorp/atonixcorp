@@ -28,7 +28,7 @@ from .serializers import (
     AutoScalingGroupCreateSerializer, AutoScalingGroupUpdateSerializer,
     ScalingPolicySerializer
 )
-from ..openstack.kubernetes import (
+from infrastructure.openstack.kubernetes import (
     provision_kubernetes_cluster,
     deploy_kubernetes_manifest,
     deploy_serverless_function,

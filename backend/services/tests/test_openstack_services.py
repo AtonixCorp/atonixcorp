@@ -110,7 +110,7 @@ class TestOpenStackConnIsConfigured(unittest.TestCase):
 
 # ── Compute service ────────────────────────────────────────────────────────────
 
-CONN_PATH = "services.openstack.compute.get_connection"
+CONN_PATH = "infrastructure.openstack.compute.get_connection"
 
 
 class TestOpenStackCompute(unittest.TestCase):
@@ -124,7 +124,7 @@ class TestOpenStackCompute(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.compute.servers.return_value = [_fake_server(), _fake_server(id="srv-2", name="s2")]
 
-        from services.openstack.compute import list_servers
+        from infrastructure.openstack.compute import list_servers
         result = list_servers()
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]["name"], "test-server")
@@ -135,7 +135,7 @@ class TestOpenStackCompute(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.compute.get_server.return_value = _fake_server()
 
-        from services.openstack.compute import get_server
+        from infrastructure.openstack.compute import get_server
         result = get_server("srv-uuid-1")
         self.assertIsNotNone(result)
         self.assertEqual(result["id"], "srv-uuid-1")
@@ -146,7 +146,7 @@ class TestOpenStackCompute(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.compute.get_server.return_value = None
 
-        from services.openstack.compute import get_server
+        from infrastructure.openstack.compute import get_server
         result = get_server("nonexistent")
         self.assertIsNone(result)
 
@@ -157,7 +157,7 @@ class TestOpenStackCompute(unittest.TestCase):
         conn.compute.create_server.return_value = _fake_server(status="BUILD")
         conn.compute.wait_for_server.return_value = _fake_server(status="ACTIVE")
 
-        from services.openstack.compute import create_server
+        from infrastructure.openstack.compute import create_server
         result = create_server(
             name="new-srv",
             image_id="img-1",
@@ -171,7 +171,7 @@ class TestOpenStackCompute(unittest.TestCase):
         conn = self._mock_conn()
         mock_get_conn.return_value = conn
 
-        from services.openstack.compute import delete_server
+        from infrastructure.openstack.compute import delete_server
         delete_server("srv-uuid-1")
         conn.compute.delete_server.assert_called_once_with("srv-uuid-1", ignore_missing=True)
 
@@ -181,7 +181,7 @@ class TestOpenStackCompute(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.compute.flavors.return_value = [_fake_flavor(), _fake_flavor(id="flv-2", name="m1.large")]
 
-        from services.openstack.compute import list_flavors
+        from infrastructure.openstack.compute import list_flavors
         result = list_flavors()
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]["vcpus"], 2)
@@ -189,7 +189,7 @@ class TestOpenStackCompute(unittest.TestCase):
 
 # ── Network service ────────────────────────────────────────────────────────────
 
-NET_CONN_PATH = "services.openstack.network.get_connection"
+NET_CONN_PATH = "infrastructure.openstack.network.get_connection"
 
 
 class TestOpenStackNetwork(unittest.TestCase):
@@ -203,7 +203,7 @@ class TestOpenStackNetwork(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.network.networks.return_value = [_fake_network()]
 
-        from services.openstack.network import list_networks
+        from infrastructure.openstack.network import list_networks
         result = list_networks()
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["name"], "test-net")
@@ -214,7 +214,7 @@ class TestOpenStackNetwork(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.network.create_network.return_value = _fake_network(name="new-net")
 
-        from services.openstack.network import create_network
+        from infrastructure.openstack.network import create_network
         result = create_network(name="new-net")
         self.assertEqual(result["name"], "new-net")
 
@@ -223,7 +223,7 @@ class TestOpenStackNetwork(unittest.TestCase):
         conn = self._mock_conn()
         mock_get_conn.return_value = conn
 
-        from services.openstack.network import delete_network
+        from infrastructure.openstack.network import delete_network
         delete_network("net-uuid-1")
         conn.network.delete_network.assert_called_once_with("net-uuid-1", ignore_missing=True)
 
@@ -234,7 +234,7 @@ class TestOpenStackNetwork(unittest.TestCase):
         fake_sg = MagicMock(id="sg-1", name="default", description="", security_group_rules=[])
         conn.network.security_groups.return_value = [fake_sg]
 
-        from services.openstack.network import list_security_groups
+        from infrastructure.openstack.network import list_security_groups
         result = list_security_groups()
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["name"], "default")
@@ -251,14 +251,14 @@ class TestOpenStackNetwork(unittest.TestCase):
         )
         conn.network.ips.return_value = [fake_fip]
 
-        from services.openstack.network import list_floating_ips
+        from infrastructure.openstack.network import list_floating_ips
         result = list_floating_ips()
         self.assertEqual(result[0]["floating_ip_address"], "203.0.113.5")
 
 
 # ── Volume service ─────────────────────────────────────────────────────────────
 
-VOL_CONN_PATH = "services.openstack.volume.get_connection"
+VOL_CONN_PATH = "infrastructure.openstack.volume.get_connection"
 
 
 class TestOpenStackVolume(unittest.TestCase):
@@ -272,7 +272,7 @@ class TestOpenStackVolume(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.block_storage.volumes.return_value = [_fake_volume()]
 
-        from services.openstack.volume import list_volumes
+        from infrastructure.openstack.volume import list_volumes
         result = list_volumes()
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["name"], "test-vol")
@@ -283,7 +283,7 @@ class TestOpenStackVolume(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.block_storage.get_volume.return_value = _fake_volume()
 
-        from services.openstack.volume import get_volume
+        from infrastructure.openstack.volume import get_volume
         result = get_volume("vol-uuid-1")
         self.assertIsNotNone(result)
 
@@ -293,7 +293,7 @@ class TestOpenStackVolume(unittest.TestCase):
         mock_get_conn.return_value = conn
         conn.block_storage.get_volume.return_value = None
 
-        from services.openstack.volume import get_volume
+        from infrastructure.openstack.volume import get_volume
         result = get_volume("nonexistent")
         self.assertIsNone(result)
 
@@ -304,7 +304,7 @@ class TestOpenStackVolume(unittest.TestCase):
         conn.block_storage.create_volume.return_value = _fake_volume(name="data-vol", status="creating")
         conn.block_storage.wait_for_status.return_value = _fake_volume(name="data-vol", status="available")
 
-        from services.openstack.volume import create_volume
+        from infrastructure.openstack.volume import create_volume
         result = create_volume(name="data-vol", size_gb=50)
         self.assertEqual(result["name"], "data-vol")
 
@@ -313,7 +313,7 @@ class TestOpenStackVolume(unittest.TestCase):
         conn = self._mock_conn()
         mock_get_conn.return_value = conn
 
-        from services.openstack.volume import delete_volume
+        from infrastructure.openstack.volume import delete_volume
         delete_volume("vol-uuid-1")
         conn.block_storage.delete_volume.assert_called_once_with("vol-uuid-1", ignore_missing=True)
 
@@ -331,7 +331,7 @@ class TestOpenStackVolume(unittest.TestCase):
         )
         conn.block_storage.snapshots.return_value = [fake_snap]
 
-        from services.openstack.volume import list_snapshots
+        from infrastructure.openstack.volume import list_snapshots
         result = list_snapshots()
         self.assertEqual(result[0]["name"], "daily-snap")
 
