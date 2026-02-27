@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Drawer,
   IconButton,
   LinearProgress,
+  Snackbar,
   Stack,
   Tab,
   Table,
@@ -18,6 +25,7 @@ import {
   TableHead,
   TableRow,
   Tabs,
+  TextField,
   Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -145,9 +153,31 @@ const DevProjectDetailPage: React.FC = () => {
   const [tab, setTab] = useState(0);
   const [logOpen, setLogOpen] = useState(false);
   const [selectedDeployment, setSelectedDeployment] = useState<string | null>(null);
+  const [archiveOpen, setArchiveOpen]         = useState(false);
+  const [deleteOpen, setDeleteOpen]           = useState(false);
+  const [deleteInput, setDeleteInput]         = useState('');
+  const [archiving, setArchiving]             = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
+  const [snack, setSnack]                     = useState<string | null>(null);
 
   // In a real app you'd fetch by id; using mock for now
   const project = MOCK_PROJECT;
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    await new Promise(r => setTimeout(r, 1200));
+    setArchiving(false);
+    setArchiveOpen(false);
+    setSnack(`Project "${project.name}" archived.`);
+    setTimeout(() => navigate('/developer/Dashboard/projects'), 1600);
+  };
+
+  const handleDeleteProject = async () => {
+    setDeletingProject(true);
+    await new Promise(r => setTimeout(r, 1800));
+    setDeletingProject(false);
+    navigate('/developer/Dashboard/projects');
+  };
 
   const statCards = [
     { label: 'Progress',     value: `${project.progress}%`,         color: dashboardSemanticColors.success },
@@ -614,10 +644,20 @@ const DevProjectDetailPage: React.FC = () => {
                 Danger Zone
               </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
-                <Button variant="outlined" size="small" sx={{ fontFamily: FONT, textTransform: 'none', fontSize: '.78rem', borderColor: `${dashboardSemanticColors.danger}55`, color: dashboardSemanticColors.danger, borderRadius: '7px', '&:hover': { borderColor: dashboardSemanticColors.danger, bgcolor: `${dashboardSemanticColors.danger}0a` } }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setArchiveOpen(true)}
+                  sx={{ fontFamily: FONT, textTransform: 'none', fontSize: '.78rem', borderColor: `${dashboardSemanticColors.danger}55`, color: dashboardSemanticColors.danger, borderRadius: '7px', '&:hover': { borderColor: dashboardSemanticColors.danger, bgcolor: `${dashboardSemanticColors.danger}0a` } }}
+                >
                   Archive Project
                 </Button>
-                <Button variant="outlined" size="small" sx={{ fontFamily: FONT, textTransform: 'none', fontSize: '.78rem', borderColor: `${dashboardSemanticColors.danger}55`, color: dashboardSemanticColors.danger, borderRadius: '7px', '&:hover': { borderColor: dashboardSemanticColors.danger, bgcolor: `${dashboardSemanticColors.danger}0a` } }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setDeleteOpen(true)}
+                  sx={{ fontFamily: FONT, textTransform: 'none', fontSize: '.78rem', borderColor: `${dashboardSemanticColors.danger}55`, color: dashboardSemanticColors.danger, borderRadius: '7px', '&:hover': { borderColor: dashboardSemanticColors.danger, bgcolor: `${dashboardSemanticColors.danger}0a` } }}
+                >
                   Delete Project
                 </Button>
               </Stack>
@@ -627,6 +667,110 @@ const DevProjectDetailPage: React.FC = () => {
       )}
 
     </Box>
+
+      {/* ── Archive dialog ───────────────────────────────────────── */}
+      <Dialog
+        open={archiveOpen}
+        onClose={() => { if (!archiving) setArchiveOpen(false) }}
+        PaperProps={{ sx: { bgcolor: dashboardTokens.colors.surface, border: `1px solid ${dashboardTokens.colors.border}`, borderRadius: '12px', minWidth: 400 } }}
+      >
+        <DialogTitle sx={{ color: dashboardSemanticColors.warning, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          Archive Project
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Alert severity="warning" sx={{ mb: 2, fontSize: '.82rem', fontFamily: FONT }}>
+            Archiving <strong>{project.name}</strong> will disable all pipelines and deployments.
+            The project will become read-only.
+          </Alert>
+          <Typography sx={{ fontSize: '.82rem', color: dashboardTokens.colors.textSecondary, fontFamily: FONT }}>
+            You can unarchive the project at any time from project settings.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={() => setArchiveOpen(false)} disabled={archiving}
+            sx={{ color: dashboardTokens.colors.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleArchive} disabled={archiving}
+            sx={{
+              bgcolor: dashboardSemanticColors.warning, color: '#0a0f1a', fontWeight: 700,
+              textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 145,
+              '&:hover': { bgcolor: '#d97706', boxShadow: 'none' },
+              '&.Mui-disabled': { bgcolor: 'rgba(245,158,11,.4)', color: '#0a0f1a' },
+            }}>
+            {archiving
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#0a0f1a' }} /><span>Archiving…</span></Stack>
+              : 'Archive Project'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete dialog ─────────────────────────────────────────── */}
+      <Dialog
+        open={deleteOpen}
+        onClose={() => { if (!deletingProject) { setDeleteOpen(false); setDeleteInput('') } }}
+        PaperProps={{ sx: { bgcolor: dashboardTokens.colors.surface, border: `1px solid rgba(239,68,68,.4)`, borderRadius: '12px', minWidth: 420 } }}
+      >
+        <DialogTitle sx={{ color: dashboardSemanticColors.danger, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          Delete Project
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Alert severity="error" sx={{ mb: 2, fontSize: '.82rem', fontFamily: FONT }}>
+            This action is <strong>permanent and irreversible.</strong> All pipelines, deployments,
+            and data for <strong>{project.name}</strong> will be permanently deleted.
+          </Alert>
+          <Typography sx={{ fontSize: '.82rem', color: dashboardTokens.colors.textSecondary, fontFamily: FONT, mb: 1.25 }}>
+            Type{' '}
+            <Box component="strong" sx={{ color: dashboardTokens.colors.textPrimary, fontFamily: 'monospace' }}>
+              {project.name}
+            </Box>{' '}
+            to confirm deletion.
+          </Typography>
+          <TextField
+            size="small"
+            fullWidth
+            autoComplete="off"
+            value={deleteInput}
+            onChange={e => setDeleteInput(e.target.value)}
+            placeholder={project.name}
+            sx={{
+              '& .MuiOutlinedInput-root': { bgcolor: 'rgba(239,68,68,.05)', color: dashboardTokens.colors.textPrimary, fontSize: '.82rem', fontFamily: 'monospace' },
+              '& fieldset': { borderColor: dashboardTokens.colors.border },
+              '& .MuiOutlinedInput-root:hover fieldset': { borderColor: dashboardSemanticColors.danger },
+              '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: dashboardSemanticColors.danger },
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => { setDeleteOpen(false); setDeleteInput('') }}
+            disabled={deletingProject}
+            sx={{ color: dashboardTokens.colors.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteProject}
+            disabled={deleteInput !== project.name || deletingProject}
+            sx={{ fontWeight: 700, textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 148 }}
+          >
+            {deletingProject
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#fff' }} /><span>Deleting…</span></Stack>
+              : 'Delete Project'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={4000}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="info" onClose={() => setSnack(null)} sx={{ fontFamily: FONT }}>{snack}</Alert>
+      </Snackbar>
   );
 };
 

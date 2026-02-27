@@ -2,6 +2,7 @@
 // Personal cockpit: Overview · Sessions · Tools · Logs · Settings
 
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -10,6 +11,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   LinearProgress,
@@ -23,6 +28,7 @@ import {
   TableRow,
   Tab,
   Tabs,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -710,12 +716,39 @@ function LogsTab() {
 
 // ─── Tab 4 — Settings ────────────────────────────────────────────────────────
 
-function SettingsTab() {
-  const [autoStart, setAutoStart]     = useState(true)
-  const [darkMode, setDarkMode]       = useState(true)
+function SettingsTab({ onToast, onDelete, onReset }: { onToast: (msg: string) => void; onDelete: () => void; onReset: () => void }) {
+  const [autoStart, setAutoStart]         = useState(true)
+  const [darkMode, setDarkMode]           = useState(true)
   const [notifications, setNotifications] = useState(true)
-  const [autoSave, setAutoSave]       = useState(true)
-  const [telemetry, setTelemetry]     = useState(false)
+  const [autoSave, setAutoSave]           = useState(true)
+  const [telemetry, setTelemetry]         = useState(false)
+
+  const [resetOpen, setResetOpen]     = useState(false)
+  const [deleteOpen, setDeleteOpen]   = useState(false)
+  const [deleteInput, setDeleteInput] = useState('')
+  const [resetting, setResetting]     = useState(false)
+  const [deleting, setDeleting]       = useState(false)
+
+  const WORKSPACE_ID = MOCK_SESSION.id
+
+  const handleReset = async () => {
+    setResetting(true)
+    await new Promise(r => setTimeout(r, 1800))
+    setResetting(false)
+    setResetOpen(false)
+    onReset()
+    onToast('Workspace is resetting… you will be reconnected shortly.')
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    await new Promise(r => setTimeout(r, 2000))
+    setDeleting(false)
+    setDeleteOpen(false)
+    setDeleteInput('')
+    onToast('Workspace deleted.')
+    onDelete()
+  }
 
   const rows: { label: string; sub: string; value: boolean; set: (v: boolean) => void }[] = [
     { label: 'Auto-start workspace on login', sub: 'Workspace starts automatically when you log in to AtonixCorp Cloud.', value: autoStart, set: setAutoStart },
@@ -727,6 +760,7 @@ function SettingsTab() {
 
   return (
     <Stack spacing={2}>
+      {/* Preferences */}
       <Card sx={{ border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '10px' }}>
         <CardContent sx={{ p: '14px 18px !important' }}>
           <SectionTitle>Workspace Preferences</SectionTitle>
@@ -745,31 +779,125 @@ function SettingsTab() {
         </CardContent>
       </Card>
 
-      <Card sx={{ border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '10px' }}>
+      {/* Danger Zone */}
+      <Card sx={{ border: `1px solid rgba(239,68,68,.35)`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '10px' }}>
         <CardContent sx={{ p: '14px 18px !important' }}>
           <SectionTitle>Danger Zone</SectionTitle>
-          <Stack spacing={1}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1, borderBottom: `1px solid ${t.border}` }}>
+          <Stack spacing={0}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, borderBottom: `1px solid ${t.border}`, gap: 2 }}>
               <Box>
                 <Typography sx={{ fontSize: '.85rem', fontWeight: 600, color: t.textPrimary, fontFamily: FONT }}>Reset workspace</Typography>
                 <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, fontFamily: FONT }}>Destroy and re-provision from a clean image. All unsaved work will be lost.</Typography>
               </Box>
-              <Button size="small" variant="outlined" sx={{ borderColor: S.warning, color: S.warning, fontWeight: 700, fontSize: '.75rem', textTransform: 'none', borderRadius: '5px', '&:hover': { borderColor: S.warning, bgcolor: 'rgba(245,158,11,.08)' } }}>
+              <Button size="small" variant="outlined" onClick={() => setResetOpen(true)}
+                sx={{ borderColor: S.warning, color: S.warning, fontWeight: 700, fontSize: '.75rem', textTransform: 'none', borderRadius: '5px', flexShrink: 0,
+                  '&:hover': { borderColor: S.warning, bgcolor: 'rgba(245,158,11,.08)' } }}>
                 Reset
               </Button>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, gap: 2 }}>
               <Box>
                 <Typography sx={{ fontSize: '.85rem', fontWeight: 600, color: S.danger, fontFamily: FONT }}>Delete workspace</Typography>
                 <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, fontFamily: FONT }}>Permanently delete this workspace and all associated data.</Typography>
               </Box>
-              <Button size="small" variant="outlined" sx={{ borderColor: S.danger, color: S.danger, fontWeight: 700, fontSize: '.75rem', textTransform: 'none', borderRadius: '5px', '&:hover': { borderColor: S.danger, bgcolor: 'rgba(239,68,68,.08)' } }}>
+              <Button size="small" variant="outlined" onClick={() => setDeleteOpen(true)}
+                sx={{ borderColor: S.danger, color: S.danger, fontWeight: 700, fontSize: '.75rem', textTransform: 'none', borderRadius: '5px', flexShrink: 0,
+                  '&:hover': { borderColor: S.danger, bgcolor: 'rgba(239,68,68,.08)' } }}>
                 Delete
               </Button>
             </Box>
           </Stack>
         </CardContent>
       </Card>
+
+      {/* ── Reset confirmation ───────────────────────────────────────────── */}
+      <Dialog
+        open={resetOpen}
+        onClose={() => { if (!resetting) setResetOpen(false) }}
+        PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid ${t.border}`, borderRadius: '12px', minWidth: 400 } }}
+      >
+        <DialogTitle sx={{ color: S.warning, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          Reset Workspace
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Alert severity="warning" sx={{ mb: 2, fontSize: '.82rem', fontFamily: FONT }}>
+            This will destroy and re-provision <strong>{WORKSPACE_ID}</strong> from a clean image.
+            All unsaved work will be permanently lost.
+          </Alert>
+          <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, fontFamily: FONT }}>
+            Persistent volumes will be preserved. The workspace will be offline for approximately
+            2–5 minutes during re-provisioning.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={() => setResetOpen(false)} disabled={resetting}
+            sx={{ color: t.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleReset} disabled={resetting}
+            sx={{
+              bgcolor: S.warning, color: '#0a0f1a', fontWeight: 700, textTransform: 'none',
+              fontFamily: FONT, boxShadow: 'none', minWidth: 140,
+              '&:hover': { bgcolor: '#d97706', boxShadow: 'none' },
+              '&.Mui-disabled': { bgcolor: 'rgba(245,158,11,.4)', color: '#0a0f1a' },
+            }}>
+            {resetting
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#0a0f1a' }} /><span>Resetting…</span></Stack>
+              : 'Reset Workspace'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete confirmation ──────────────────────────────────────────── */}
+      <Dialog
+        open={deleteOpen}
+        onClose={() => { if (!deleting) { setDeleteOpen(false); setDeleteInput('') } }}
+        PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid rgba(239,68,68,.4)`, borderRadius: '12px', minWidth: 420 } }}
+      >
+        <DialogTitle sx={{ color: S.danger, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          Delete Workspace
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Alert severity="error" sx={{ mb: 2, fontSize: '.82rem', fontFamily: FONT }}>
+            This action is <strong>permanent and irreversible.</strong> All data, configurations,
+            volumes, and settings for <strong>{WORKSPACE_ID}</strong> will be deleted.
+          </Alert>
+          <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, fontFamily: FONT, mb: 1.25 }}>
+            Type{' '}
+            <Box component="strong" sx={{ color: t.textPrimary, fontFamily: 'monospace' }}>
+              {WORKSPACE_ID}
+            </Box>{' '}
+            to confirm.
+          </Typography>
+          <TextField
+            size="small"
+            fullWidth
+            autoComplete="off"
+            value={deleteInput}
+            onChange={e => setDeleteInput(e.target.value)}
+            placeholder={WORKSPACE_ID}
+            sx={{
+              '& .MuiOutlinedInput-root': { bgcolor: 'rgba(239,68,68,.05)', color: t.textPrimary, fontSize: '.82rem', fontFamily: 'monospace' },
+              '& fieldset': { borderColor: t.border },
+              '& .MuiOutlinedInput-root:hover fieldset': { borderColor: S.danger },
+              '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: S.danger },
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={() => { setDeleteOpen(false); setDeleteInput('') }} disabled={deleting}
+            sx={{ color: t.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDelete}
+            disabled={deleteInput !== WORKSPACE_ID || deleting}
+            sx={{ fontWeight: 700, textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 148 }}>
+            {deleting
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#fff' }} /><span>Deleting…</span></Stack>
+              : 'Delete Workspace'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }
@@ -779,6 +907,7 @@ function SettingsTab() {
 const TABS = ['Overview', 'Sessions', 'Tools', 'Logs', 'Settings']
 
 const DevWorkspacePage: React.FC = () => {
+  const navigate                = useNavigate()
   const [tab, setTab]           = useState(0)
   const [sessionRunning, setSessionRunning] = useState(true)
   const [toast, setToast]       = useState<string | null>(null)
@@ -786,6 +915,19 @@ const DevWorkspacePage: React.FC = () => {
   const handleStartStop = (start: boolean) => {
     setSessionRunning(start)
     setToast(start ? 'Workspace starting…' : 'Workspace stopped.')
+  }
+
+  const handleWorkspaceReset = () => {
+    setSessionRunning(false)
+    setToast('Workspace is resetting…')
+    setTimeout(() => {
+      setSessionRunning(true)
+      setToast('Workspace back online.')
+    }, 4500)
+  }
+
+  const handleWorkspaceDelete = () => {
+    navigate('/developer/Dashboard')
   }
 
   return (
@@ -835,7 +977,7 @@ const DevWorkspacePage: React.FC = () => {
       {tab === 1 && <SessionsTab />}
       {tab === 2 && <ToolsTab />}
       {tab === 3 && <LogsTab />}
-      {tab === 4 && <SettingsTab />}
+      {tab === 4 && <SettingsTab onToast={setToast} onDelete={handleWorkspaceDelete} onReset={handleWorkspaceReset} />}
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="info" onClose={() => setToast(null)} sx={{ fontFamily: FONT }}>{toast}</Alert>

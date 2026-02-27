@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Avatar,
   AvatarGroup,
   Box,
@@ -8,7 +9,13 @@ import {
   CardActionArea,
   CardContent,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  IconButton,
   InputAdornment,
   LinearProgress,
   Snackbar,
@@ -27,6 +34,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useNavigate } from 'react-router-dom';
 import { CreateProjectModal } from '../components/Developer/CreateProjectModal';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
@@ -183,6 +191,9 @@ const DevProjectsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | ProjectStatus>('all');
   const [modalOpen, setModalOpen]       = useState(false);
   const [snack, setSnack]               = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleteInput, setDeleteInput]   = useState('');
+  const [deletingProject, setDeletingProject] = useState(false);
 
   const handleCreated = (name: string, provider: 'github' | 'gitlab' | 'bitbucket' | null) => {
     const newProject: Project = {
@@ -202,6 +213,17 @@ const DevProjectsPage: React.FC = () => {
     };
     setProjects((prev) => [newProject, ...prev]);
     setSnack(`Project "${newProject.name}" created — first deployment queued.`);
+  };
+
+  const handleDeleteProject = async () => {
+    if (!deleteTarget) return;
+    setDeletingProject(true);
+    await new Promise(r => setTimeout(r, 1500));
+    setProjects(prev => prev.filter(p => p.id !== deleteTarget.id));
+    setDeletingProject(false);
+    setDeleteTarget(null);
+    setDeleteInput('');
+    setSnack(`Project "${deleteTarget.name}" deleted.`);
   };
 
   const filtered = projects.filter((p) => {
@@ -346,6 +368,7 @@ const DevProjectsPage: React.FC = () => {
               <Card
                 key={project.id}
                 sx={{
+                  position: 'relative',
                   border: `1px solid ${t.border}`,
                   bgcolor: t.surface,
                   boxShadow: 'none',
@@ -353,7 +376,8 @@ const DevProjectsPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'all .14s',
-                  '&:hover': { borderColor: dashboardTokens.colors.brandPrimary + '66', boxShadow: `0 0 0 1px ${dashboardTokens.colors.brandPrimary}22`, transform: 'translateY(-1px)' },
+                  '& .proj-del': { opacity: 0, transition: 'opacity .15s' },
+                  '&:hover': { borderColor: dashboardTokens.colors.brandPrimary + '66', boxShadow: `0 0 0 1px ${dashboardTokens.colors.brandPrimary}22`, transform: 'translateY(-1px)', '& .proj-del': { opacity: 1 } },
                 }}
               >
                 <CardActionArea
@@ -453,11 +477,85 @@ const DevProjectsPage: React.FC = () => {
 
                   </CardContent>
                 </CardActionArea>
+                <Tooltip title="Delete project">
+                  <IconButton
+                    className="proj-del"
+                    size="small"
+                    onClick={() => setDeleteTarget(project)}
+                    sx={{
+                      position: 'absolute', top: 10, right: 10,
+                      color: dashboardSemanticColors.danger,
+                      bgcolor: 'rgba(239,68,68,.08)',
+                      width: 26, height: 26,
+                      '&:hover': { bgcolor: 'rgba(239,68,68,.2)' },
+                    }}
+                  >
+                    <DeleteOutlineIcon sx={{ fontSize: '.8rem' }} />
+                  </IconButton>
+                </Tooltip>
               </Card>
             );
           })}
         </Box>
       )}
+      {/* ── Delete project confirmation ──────────────────────────── */}
+      <Dialog
+        open={!!deleteTarget}
+        onClose={() => { if (!deletingProject) { setDeleteTarget(null); setDeleteInput('') } }}
+        PaperProps={{ sx: { bgcolor: dashboardTokens.colors.surface, border: `1px solid rgba(239,68,68,.4)`, borderRadius: '12px', minWidth: 420 } }}
+      >
+        <DialogTitle sx={{ color: dashboardSemanticColors.danger, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          Delete Project
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Alert severity="error" sx={{ mb: 2, fontSize: '.82rem', fontFamily: FONT }}>
+            This action is <strong>permanent and irreversible.</strong> All pipelines, deployments,
+            and data for <strong>{deleteTarget?.name}</strong> will be deleted.
+          </Alert>
+          <Typography sx={{ fontSize: '.82rem', color: dashboardTokens.colors.textSecondary, fontFamily: FONT, mb: 1.25 }}>
+            Type{' '}
+            <Box component="strong" sx={{ color: dashboardTokens.colors.textPrimary, fontFamily: 'monospace' }}>
+              {deleteTarget?.name}
+            </Box>{' '}
+            to confirm.
+          </Typography>
+          <TextField
+            size="small"
+            fullWidth
+            autoComplete="off"
+            value={deleteInput}
+            onChange={e => setDeleteInput(e.target.value)}
+            placeholder={deleteTarget?.name ?? ''}
+            sx={{
+              '& .MuiOutlinedInput-root': { bgcolor: 'rgba(239,68,68,.05)', color: dashboardTokens.colors.textPrimary, fontSize: '.82rem', fontFamily: 'monospace' },
+              '& fieldset': { borderColor: dashboardTokens.colors.border },
+              '& .MuiOutlinedInput-root:hover fieldset': { borderColor: dashboardSemanticColors.danger },
+              '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: dashboardSemanticColors.danger },
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => { setDeleteTarget(null); setDeleteInput('') }}
+            disabled={deletingProject}
+            sx={{ color: dashboardTokens.colors.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteProject}
+            disabled={deleteInput !== deleteTarget?.name || deletingProject}
+            sx={{ fontWeight: 700, textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 140 }}
+          >
+            {deletingProject
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#fff' }} /><span>Deleting…</span></Stack>
+              : 'Delete Project'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <CreateProjectModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
