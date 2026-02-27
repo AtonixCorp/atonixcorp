@@ -34,6 +34,29 @@ import LayersIcon            from '@mui/icons-material/Layers'
 import MonitorHeartIcon      from '@mui/icons-material/MonitorHeart'
 import KeyIcon               from '@mui/icons-material/Key'
 import HistoryIcon           from '@mui/icons-material/History'
+import AccountBalanceIcon    from '@mui/icons-material/AccountBalance'
+import DeveloperModeIcon     from '@mui/icons-material/DeveloperMode'
+import StorefrontIcon        from '@mui/icons-material/Storefront'
+import ArticleIcon           from '@mui/icons-material/Article'
+import ScienceIcon           from '@mui/icons-material/Science'
+import ChatIcon              from '@mui/icons-material/Chat'
+import PsychologyIcon        from '@mui/icons-material/Psychology'
+import TuneIcon              from '@mui/icons-material/Tune'
+import WebIcon               from '@mui/icons-material/Web'
+import BoltIcon              from '@mui/icons-material/Bolt'
+import PhoneAndroidIcon      from '@mui/icons-material/PhoneAndroid'
+import DescriptionIcon       from '@mui/icons-material/Description'
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import TerminalIcon          from '@mui/icons-material/Terminal'
+import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions'
+import SpeedIcon             from '@mui/icons-material/Speed'
+import DiamondIcon           from '@mui/icons-material/Diamond'
+import WindowIcon            from '@mui/icons-material/Window'
+import BuildIcon             from '@mui/icons-material/Build'
+import MemoryIcon            from '@mui/icons-material/Memory'
+import DnsIcon               from '@mui/icons-material/Dns'
+import AdjustIcon            from '@mui/icons-material/Adjust'
+import AccountTreeIcon       from '@mui/icons-material/AccountTree'
 
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -188,7 +211,7 @@ const buildLogScript = (state: WizardState): Array<{ text: string; type: 'info'|
       : `[CONTAINER] Container started — health check OK`,                                      type:'success', delay: 16500 },
   { text: `[MONITOR] Monitoring rules activated — alerting on p95 > 800ms`,                    type:'info', delay: 17200 },
   { text: `[AUDIT]  Deployment event recorded in Audit Logs`,                                  type:'info', delay: 17800 },
-  { text: `[DONE]  Deployment successful 🚀  — https://${(state.project||'new-app').toLowerCase()}.atonixcorp.app`, type:'success', delay: 18500 },
+  { text: `[DONE]  Deployment successful — https://${(state.project||'new-app').toLowerCase()}.atonixcorp.app`, type:'success', delay: 18500 },
 ]
 
 // ─── Existing mock projects ────────────────────────────────────────────────────
@@ -518,17 +541,17 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
             <StepHeader step={2} title="Choose Application Type" subtitle="Helps the platform select the right architecture, scaling, and security defaults." />
             <Stack direction="row" flexWrap="wrap" gap={1.5} useFlexGap sx={{ mt:2 }}>
               {[
-                { val:'financial',   label:'Financial App',     icon:'💳', desc:'Payments, banking, trading. PCI-DSS aware.' },
-                { val:'technology',  label:'Technology App',    icon:'⚙️',  desc:'SaaS, internal tools, APIs.' },
-                { val:'ecommerce',   label:'E-Commerce',        icon:'🛍️',  desc:'Storefronts, checkout, inventory.' },
-                { val:'news',        label:'News / Media',      icon:'📰', desc:'Publishing, video, real-time updates.' },
-                { val:'research',    label:'Research / Science',icon:'🔬', desc:'Data processing, notebooks, pipelines.' },
-                { val:'social',      label:'Social App',        icon:'💬', desc:'Feeds, messaging, notifications.' },
-                { val:'ai',          label:'AI / ML App',       icon:'🤖', desc:'Model serving, training, inference.' },
-                { val:'custom',      label:'Custom',            icon:'✳️',  desc:'I will configure everything manually.' },
+                { val:'financial',   label:'Financial App',     icon:<AccountBalanceIcon sx={{ fontSize:'1.2rem' }} />, desc:'Payments, banking, trading. PCI-DSS aware.' },
+                { val:'technology',  label:'Technology App',    icon:<DeveloperModeIcon  sx={{ fontSize:'1.2rem' }} />, desc:'SaaS, internal tools, APIs.' },
+                { val:'ecommerce',   label:'E-Commerce',        icon:<StorefrontIcon     sx={{ fontSize:'1.2rem' }} />, desc:'Storefronts, checkout, inventory.' },
+                { val:'news',        label:'News / Media',      icon:<ArticleIcon        sx={{ fontSize:'1.2rem' }} />, desc:'Publishing, video, real-time updates.' },
+                { val:'research',    label:'Research / Science',icon:<ScienceIcon        sx={{ fontSize:'1.2rem' }} />, desc:'Data processing, notebooks, pipelines.' },
+                { val:'social',      label:'Social App',        icon:<ChatIcon           sx={{ fontSize:'1.2rem' }} />, desc:'Feeds, messaging, notifications.' },
+                { val:'ai',          label:'AI / ML App',       icon:<PsychologyIcon     sx={{ fontSize:'1.2rem' }} />, desc:'Model serving, training, inference.' },
+                { val:'custom',      label:'Custom',            icon:<TuneIcon           sx={{ fontSize:'1.2rem' }} />, desc:'I will configure everything manually.' },
               ].map(o => (
                 <OptionCard key={o.val} label={o.label} description={o.desc}
-                  icon={<Typography sx={{ fontSize:'1.2rem', lineHeight:1 }}>{o.icon}</Typography>}
+                  icon={o.icon}
                   selected={state.appType === o.val} onClick={() => set('appType', o.val)} />
               ))}
             </Stack>
@@ -541,17 +564,17 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
             <StepHeader step={3} title="Choose Frontend Technology" subtitle="The platform will auto-generate build commands, CI/CD steps, and environment variables." />
             <Stack direction="row" flexWrap="wrap" gap={1.5} useFlexGap sx={{ mt:2 }}>
               {[
-                { val:'React',       icon:'⚛️',  desc:'CRA / Vite, build → dist/' },
-                { val:'Next.js',     icon:'▲',   desc:'SSR + SSG, Node.js runtime' },
-                { val:'Vue',         icon:'💚',  desc:'Vite / Nuxt supported' },
-                { val:'Angular',     icon:'🔴',  desc:'ng build, standard CLI' },
-                { val:'Svelte',      icon:'🟠',  desc:'SvelteKit compatible' },
-                { val:'Flutter Web', icon:'🐦',  desc:'flutter build web' },
-                { val:'Static HTML', icon:'📄',  desc:'Plain HTML/CSS/JS, no build step' },
-                { val:'None',        icon:'—',   desc:'No frontend (API-only)' },
+                { val:'React',       icon:<CodeIcon         sx={{ fontSize:'1.1rem' }} />, desc:'CRA / Vite, build → dist/' },
+                { val:'Next.js',     icon:<WebIcon          sx={{ fontSize:'1.1rem' }} />, desc:'SSR + SSG, Node.js runtime' },
+                { val:'Vue',         icon:<LayersIcon       sx={{ fontSize:'1.1rem' }} />, desc:'Vite / Nuxt supported' },
+                { val:'Angular',     icon:<AdjustIcon       sx={{ fontSize:'1.1rem' }} />, desc:'ng build, standard CLI' },
+                { val:'Svelte',      icon:<BoltIcon         sx={{ fontSize:'1.1rem' }} />, desc:'SvelteKit compatible' },
+                { val:'Flutter Web', icon:<PhoneAndroidIcon sx={{ fontSize:'1.1rem' }} />, desc:'flutter build web' },
+                { val:'Static HTML', icon:<DescriptionIcon  sx={{ fontSize:'1.1rem' }} />, desc:'Plain HTML/CSS/JS, no build step' },
+                { val:'None',        icon:<CodeIcon         sx={{ fontSize:'1.1rem' }} />, desc:'No frontend (API-only)' },
               ].map(o => (
                 <OptionCard key={o.val} label={o.val}  description={o.desc}
-                  icon={<Typography sx={{ fontSize:'1.1rem', lineHeight:1 }}>{o.icon}</Typography>}
+                  icon={o.icon}
                   selected={state.frontend === o.val} onClick={() => set('frontend', o.val)} />
               ))}
             </Stack>
@@ -564,20 +587,20 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
             <StepHeader step={4} title="Choose Backend Technology" subtitle="Auto-generates Dockerfile, health checks, build commands, and runtime config." />
             <Stack direction="row" flexWrap="wrap" gap={1.5} useFlexGap sx={{ mt:2 }}>
               {[
-                { val:'Node.js',       icon:'🟢', desc:'Express, Fastify, NestJS' },
-                { val:'Python/Django', icon:'🐍', desc:'Full-stack Django framework' },
-                { val:'Python/FastAPI',icon:'⚡', desc:'Async Python REST API' },
-                { val:'Python/Flask',  icon:'🌶️', desc:'Lightweight WSGI framework' },
-                { val:'PHP/Laravel',   icon:'🐘', desc:'Laravel + Composer' },
-                { val:'Java/Spring',   icon:'☕', desc:'Spring Boot JAR deploy' },
-                { val:'Go',            icon:'🐹', desc:'Compiled Go binary' },
-                { val:'Ruby/Rails',    icon:'💎', desc:'Rails + Puma' },
-                { val:'.NET',          icon:'🟣', desc:'.NET 8 / ASP.NET Core' },
-                { val:'Rust',          icon:'🦀', desc:'Actix / Axum binary' },
-                { val:'None',          icon:'—',  desc:'Frontend only / static site' },
+                { val:'Node.js',       icon:<TerminalIcon                  sx={{ fontSize:'1.1rem' }} />, desc:'Express, Fastify, NestJS' },
+                { val:'Python/Django', icon:<CodeIcon                      sx={{ fontSize:'1.1rem' }} />, desc:'Full-stack Django framework' },
+                { val:'Python/FastAPI',icon:<BoltIcon                      sx={{ fontSize:'1.1rem' }} />, desc:'Async Python REST API' },
+                { val:'Python/Flask',  icon:<LocalFireDepartmentIcon       sx={{ fontSize:'1.1rem' }} />, desc:'Lightweight WSGI framework' },
+                { val:'PHP/Laravel',   icon:<IntegrationInstructionsIcon   sx={{ fontSize:'1.1rem' }} />, desc:'Laravel + Composer' },
+                { val:'Java/Spring',   icon:<LayersIcon                    sx={{ fontSize:'1.1rem' }} />, desc:'Spring Boot JAR deploy' },
+                { val:'Go',            icon:<SpeedIcon                     sx={{ fontSize:'1.1rem' }} />, desc:'Compiled Go binary' },
+                { val:'Ruby/Rails',    icon:<DiamondIcon                   sx={{ fontSize:'1.1rem' }} />, desc:'Rails + Puma' },
+                { val:'.NET',          icon:<WindowIcon                    sx={{ fontSize:'1.1rem' }} />, desc:'.NET 8 / ASP.NET Core' },
+                { val:'Rust',          icon:<BuildIcon                     sx={{ fontSize:'1.1rem' }} />, desc:'Actix / Axum binary' },
+                { val:'None',          icon:<TerminalIcon                  sx={{ fontSize:'1.1rem' }} />, desc:'Frontend only / static site' },
               ].map(o => (
                 <OptionCard key={o.val} label={o.val} description={o.desc}
-                  icon={<Typography sx={{ fontSize:'1.1rem', lineHeight:1 }}>{o.icon}</Typography>}
+                  icon={o.icon}
                   selected={state.backend === o.val} onClick={() => set('backend', o.val)} />
               ))}
             </Stack>
@@ -590,16 +613,16 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
             <StepHeader step={5} title="Choose Database" subtitle="The platform will provision, connect, and inject credentials automatically." />
             <Stack direction="row" flexWrap="wrap" gap={1.5} useFlexGap sx={{ mt:2 }}>
               {[
-                { val:'PostgreSQL', icon:'🐘', desc:'ACID-compliant relational DB. Default choice.' },
-                { val:'MySQL',      icon:'🐬', desc:'Wide compatibility, high performance.' },
-                { val:'MongoDB',    icon:'🍃', desc:'Flexible document store.' },
-                { val:'Redis',      icon:'🔴', desc:'In-memory cache + pub/sub.' },
-                { val:'NoSQL',      icon:'📦', desc:'DynamoDB-style key-value store.' },
-                { val:'SQLite',     icon:'📁', desc:'Local development only. Not for production.' },
-                { val:'None',       icon:'—',  desc:'No database required.' },
+                { val:'PostgreSQL', icon:<StorageIcon    sx={{ fontSize:'1.1rem' }} />, desc:'ACID-compliant relational DB. Default choice.' },
+                { val:'MySQL',      icon:<DnsIcon        sx={{ fontSize:'1.1rem' }} />, desc:'Wide compatibility, high performance.' },
+                { val:'MongoDB',    icon:<HubIcon        sx={{ fontSize:'1.1rem' }} />, desc:'Flexible document store.' },
+                { val:'Redis',      icon:<MemoryIcon     sx={{ fontSize:'1.1rem' }} />, desc:'In-memory cache + pub/sub.' },
+                { val:'NoSQL',      icon:<ViewInArIcon   sx={{ fontSize:'1.1rem' }} />, desc:'DynamoDB-style key-value store.' },
+                { val:'SQLite',     icon:<FolderOpenIcon sx={{ fontSize:'1.1rem' }} />, desc:'Local development only. Not for production.' },
+                { val:'None',       icon:<StorageIcon    sx={{ fontSize:'1.1rem' }} />, desc:'No database required.' },
               ].map(o => (
                 <OptionCard key={o.val} label={o.val} description={o.desc}
-                  icon={<Typography sx={{ fontSize:'1.1rem', lineHeight:1 }}>{o.icon}</Typography>}
+                  icon={o.icon}
                   selected={state.database === o.val} onClick={() => set('database', o.val)} wide />
               ))}
             </Stack>
@@ -919,7 +942,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                       <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb:1.25 }}>
                         <CheckCircleIcon sx={{ fontSize:'1.2rem', color:S.success }} />
                         <Typography sx={{ fontWeight:800, fontSize:'1rem', color:t.textPrimary, fontFamily:FONT }}>
-                          {plan.proj} is live 🚀
+                          {plan.proj} is live
                         </Typography>
                       </Stack>
                       <Stack spacing={.5} sx={{ mb:2 }}>
@@ -1010,17 +1033,17 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
         {/* Current selections */}
         <Stack spacing={.6}>
           {[
-            { label:'Source',     val:state.source,     icon:'📡' },
-            { label:'App Type',   val:state.appType,    icon:'📦' },
-            { label:'Frontend',   val:state.frontend,   icon:'⚛️' },
-            { label:'Backend',    val:state.backend,    icon:'⚙️' },
-            { label:'Database',   val:state.database,   icon:'🗄️' },
-            { label:'Mode',       val:state.deployMode, icon:'🚀' },
-            { label:'Project',    val:state.project || state.newProject, icon:'📁' },
-            { label:'Branch',     val:state.gitBranch,  icon:'🌿' },
+            { label:'Source',     val:state.source,     icon:<HubIcon         sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'App Type',   val:state.appType,    icon:<LayersIcon      sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Frontend',   val:state.frontend,   icon:<WebIcon         sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Backend',    val:state.backend,    icon:<TerminalIcon    sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Database',   val:state.database,   icon:<StorageIcon     sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Mode',       val:state.deployMode, icon:<RocketLaunchIcon sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Project',    val:state.project || state.newProject, icon:<FolderOpenIcon sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
+            { label:'Branch',     val:state.gitBranch,  icon:<AccountTreeIcon sx={{ fontSize:'.85rem', color:t.textSecondary }} /> },
           ].map(r => (
             <Box key={r.label} sx={{ display:'flex', alignItems:'center', gap:.75, py:.45, borderBottom:`1px solid ${t.border}` }}>
-              <Typography sx={{ fontSize:'.75rem', lineHeight:1 }}>{r.icon}</Typography>
+              <Box sx={{ display:'flex', alignItems:'center', flexShrink:0 }}>{r.icon}</Box>
               <Box sx={{ flex:1, minWidth:0 }}>
                 <Typography sx={{ fontSize:'.6rem', color:t.textSecondary, fontFamily:FONT, textTransform:'uppercase', letterSpacing:'.07em' }}>{r.label}</Typography>
                 <Typography sx={{ fontSize:'.73rem', color: r.val ? t.textPrimary : t.border, fontFamily:FONT, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>

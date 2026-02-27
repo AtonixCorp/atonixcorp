@@ -188,6 +188,7 @@ const DevProjectDetailPage: React.FC = () => {
   ];
 
   return (
+    <>
     <Box sx={{ p: { xs: 2, md: 3 }, fontFamily: FONT }}>
 
       {/* Back + header */}
@@ -771,6 +772,7 @@ const DevProjectDetailPage: React.FC = () => {
       >
         <Alert severity="info" onClose={() => setSnack(null)} sx={{ fontFamily: FONT }}>{snack}</Alert>
       </Snackbar>
+    </>
   );
 };
 

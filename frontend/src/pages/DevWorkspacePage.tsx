@@ -29,6 +29,7 @@ import {
   Tab,
   Tabs,
   TextField,
+  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -88,11 +89,27 @@ function statusDot(s: string) {
 
 type WorkspaceHealth = 'healthy' | 'warning' | 'crashed'
 
-const MOCK_SESSION = {
+type WorkspaceSession = {
+  id:         string
+  owner:      string
+  status:     'running' | 'stopped'
+  health:     WorkspaceHealth
+  ide:        string
+  uptime:     string
+  cpu:        number
+  ram:        number
+  started:    string
+  region:     string
+  image:      string
+  containers: number
+  volumes:    number
+}
+
+const MOCK_SESSION: WorkspaceSession = {
   id:          'ws-john-01',
   owner:       'john.doe',
-  status:      'running' as const,
-  health:      'healthy' as WorkspaceHealth,
+  status:      'running',
+  health:      'healthy',
   ide:         'VS Code',
   uptime:      '4h 32m',
   cpu:         38,
@@ -209,8 +226,8 @@ function HealthBadge({ health }: { health: WorkspaceHealth }) {
 
 // ─── Tab 0 — Overview ─────────────────────────────────────────────────────────
 
-function OverviewTab({ onStartStop }: { onStartStop: (s: boolean) => void }) {
-  const s  = MOCK_SESSION
+function OverviewTab({ onStartStop, ws }: { onStartStop: (s: boolean) => void; ws: WorkspaceSession }) {
+  const s  = ws
   const isRunning = s.status === 'running'
 
   return (
@@ -716,7 +733,7 @@ function LogsTab() {
 
 // ─── Tab 4 — Settings ────────────────────────────────────────────────────────
 
-function SettingsTab({ onToast, onDelete, onReset }: { onToast: (msg: string) => void; onDelete: () => void; onReset: () => void }) {
+function SettingsTab({ onToast, onDelete, onReset, wsId }: { onToast: (msg: string) => void; onDelete: () => void; onReset: () => void; wsId: string }) {
   const [autoStart, setAutoStart]         = useState(true)
   const [darkMode, setDarkMode]           = useState(true)
   const [notifications, setNotifications] = useState(true)
@@ -729,7 +746,7 @@ function SettingsTab({ onToast, onDelete, onReset }: { onToast: (msg: string) =>
   const [resetting, setResetting]     = useState(false)
   const [deleting, setDeleting]       = useState(false)
 
-  const WORKSPACE_ID = MOCK_SESSION.id
+  const WORKSPACE_ID = wsId
 
   const handleReset = async () => {
     setResetting(true)
@@ -904,30 +921,82 @@ function SettingsTab({ onToast, onDelete, onReset }: { onToast: (msg: string) =>
 
 // ─── Root page ─────────────────────────────────────────────────────────────────
 
+const TEMPLATES = [
+  'atonix/devbox:22.04-lts',
+  'atonix/devbox:python3.12',
+  'atonix/devbox:node20',
+  'atonix/devbox:go1.22',
+  'atonix/devbox:rust-latest',
+]
+const REGIONS = ['us-east-1', 'us-west-2', 'eu-west-1', 'ap-southeast-1']
+const IDES    = ['VS Code', 'JetBrains Remote Dev', 'Zed', 'Neovim']
+
 const TABS = ['Overview', 'Sessions', 'Tools', 'Logs', 'Settings']
 
 const DevWorkspacePage: React.FC = () => {
-  const navigate                = useNavigate()
-  const [tab, setTab]           = useState(0)
-  const [sessionRunning, setSessionRunning] = useState(true)
-  const [toast, setToast]       = useState<string | null>(null)
+  const navigate = useNavigate()
+  const [tab, setTab]     = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+
+  // ── Workspace list ────────────────────────────────────────────────────────────
+  const [workspaces,  setWorkspaces]  = useState<WorkspaceSession[]>([MOCK_SESSION])
+  const [activeWsId,  setActiveWsId]  = useState(MOCK_SESSION.id)
+
+  const activeWs  = workspaces.find(w => w.id === activeWsId) ?? workspaces[0]
+  const isRunning = activeWs?.status === 'running'
+
+  // ── Create dialog state ───────────────────────────────────────────────────────
+  const [createOpen,  setCreateOpen]  = useState(false)
+  const [creating,    setCreating]    = useState(false)
+  const [createForm,  setCreateForm]  = useState({ name: '', template: TEMPLATES[0], region: REGIONS[0], ide: IDES[0] })
+  const [nameError,   setNameError]   = useState('')
+
+  const setForm = (key: keyof typeof createForm, val: string) =>
+    setCreateForm(prev => ({ ...prev, [key]: val }))
+
+  const handleCreateWorkspace = async () => {
+    const name = createForm.name.trim().toLowerCase().replace(/\s+/g, '-')
+    if (!name) { setNameError('Workspace name is required.'); return }
+    if (workspaces.some(w => w.id === name)) { setNameError('A workspace with that name already exists.'); return }
+    setNameError('')
+    setCreating(true)
+    await new Promise(r => setTimeout(r, 1600))
+    const newWs: WorkspaceSession = {
+      id: name, owner: 'john.doe', status: 'stopped', health: 'healthy',
+      ide: createForm.ide, uptime: '—', cpu: 0, ram: 0,
+      started: new Date().toISOString(), region: createForm.region,
+      image: createForm.template, containers: 0, volumes: 0,
+    }
+    setWorkspaces(prev => [...prev, newWs])
+    setActiveWsId(name)
+    setCreating(false)
+    setCreateOpen(false)
+    setCreateForm({ name: '', template: TEMPLATES[0], region: REGIONS[0], ide: IDES[0] })
+    setToast(`Workspace "${name}" created.`)
+  }
 
   const handleStartStop = (start: boolean) => {
-    setSessionRunning(start)
+    setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: start ? 'running' : 'stopped' } : w))
     setToast(start ? 'Workspace starting…' : 'Workspace stopped.')
   }
 
   const handleWorkspaceReset = () => {
-    setSessionRunning(false)
+    setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: 'stopped' } : w))
     setToast('Workspace is resetting…')
     setTimeout(() => {
-      setSessionRunning(true)
+      setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: 'running' } : w))
       setToast('Workspace back online.')
     }, 4500)
   }
 
   const handleWorkspaceDelete = () => {
-    navigate('/developer/Dashboard')
+    const remaining = workspaces.filter(w => w.id !== activeWsId)
+    setWorkspaces(remaining)
+    if (remaining.length > 0) {
+      setActiveWsId(remaining[0].id)
+    } else {
+      navigate('/developer/Dashboard')
+    }
   }
 
   return (
@@ -943,12 +1012,23 @@ const DevWorkspacePage: React.FC = () => {
           </Typography>
         </Box>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1.5, py: 0.5, borderRadius: '20px', bgcolor: sessionRunning ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)' }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: sessionRunning ? S.success : S.danger, animation: sessionRunning ? 'pulse 2s infinite' : 'none' }} />
-            <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: sessionRunning ? S.success : S.danger, fontFamily: FONT }}>
-              {sessionRunning ? 'Running' : 'Offline'}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1.5, py: 0.5, borderRadius: '20px', bgcolor: isRunning ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)' }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isRunning ? S.success : S.danger, animation: isRunning ? 'pulse 2s infinite' : 'none' }} />
+            <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: isRunning ? S.success : S.danger, fontFamily: FONT }}>
+              {isRunning ? 'Running' : 'Offline'}
             </Typography>
           </Box>
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+            onClick={() => setCreateOpen(true)}
+            sx={{ fontWeight: 700, fontSize: '.78rem', textTransform: 'none', borderRadius: '7px', boxShadow: 'none',
+              bgcolor: dashboardTokens.colors.brandPrimary, color: '#0a0f1a',
+              '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' } }}
+          >
+            New Workspace
+          </Button>
           <Tooltip title="Notifications">
             <IconButton size="small" sx={{ color: t.textSecondary }}>
               <NotificationsNoneIcon fontSize="small" />
@@ -956,6 +1036,27 @@ const DevWorkspacePage: React.FC = () => {
           </Tooltip>
         </Stack>
       </Box>
+
+      {/* Workspace switcher */}
+      {workspaces.length > 1 && (
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }} useFlexGap>
+          {workspaces.map(ws => (
+            <Chip
+              key={ws.id}
+              label={ws.id}
+              size="small"
+              onClick={() => setActiveWsId(ws.id)}
+              icon={<Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ws.status === 'running' ? S.success : S.danger, ml: 0.5, flexShrink: 0 }} />}
+              sx={{
+                fontFamily: FONT, fontWeight: ws.id === activeWsId ? 700 : 500, cursor: 'pointer',
+                bgcolor: ws.id === activeWsId ? 'rgba(0,224,255,.12)' : t.surface,
+                color:   ws.id === activeWsId ? dashboardTokens.colors.brandPrimary : t.textSecondary,
+                border:  `1px solid ${ws.id === activeWsId ? dashboardTokens.colors.brandPrimary : t.border}`,
+              }}
+            />
+          ))}
+        </Stack>
+      )}
 
       {/* Tabs */}
       <Tabs
@@ -973,11 +1074,98 @@ const DevWorkspacePage: React.FC = () => {
         {TABS.map(label => <Tab key={label} label={label} />)}
       </Tabs>
 
-      {tab === 0 && <OverviewTab onStartStop={handleStartStop} />}
+      {tab === 0 && <OverviewTab onStartStop={handleStartStop} ws={activeWs} />}
       {tab === 1 && <SessionsTab />}
       {tab === 2 && <ToolsTab />}
       {tab === 3 && <LogsTab />}
-      {tab === 4 && <SettingsTab onToast={setToast} onDelete={handleWorkspaceDelete} onReset={handleWorkspaceReset} />}
+      {tab === 4 && <SettingsTab onToast={setToast} onDelete={handleWorkspaceDelete} onReset={handleWorkspaceReset} wsId={activeWs.id} />}
+
+      {/* ── Create Workspace dialog ───────────────────────────────────────── */}
+      <Dialog
+        open={createOpen}
+        onClose={() => { if (!creating) { setCreateOpen(false); setNameError('') } }}
+        PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid ${t.border}`, borderRadius: '12px', minWidth: 460 } }}
+      >
+        <DialogTitle sx={{ color: t.textPrimary, fontFamily: FONT, fontSize: '1rem', fontWeight: 800, pb: 1 }}>
+          New Workspace
+        </DialogTitle>
+        <DialogContent sx={{ pt: '0 !important' }}>
+          <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, fontFamily: FONT, mb: 2.5 }}>
+            A workspace gives you a personal cloud development environment — terminal, editor, and tools — inside AtonixCorp Cloud.
+          </Typography>
+          <Stack spacing={2}>
+            <TextField
+              label="Workspace Name"
+              placeholder="e.g. my-workspace"
+              size="small"
+              fullWidth
+              autoFocus
+              value={createForm.name}
+              onChange={e => { setForm('name', e.target.value); setNameError('') }}
+              error={Boolean(nameError)}
+              helperText={nameError || 'Lowercase letters, numbers, and hyphens only.'}
+              sx={{ '& .MuiInputLabel-root': { fontFamily: FONT }, '& .MuiInputBase-input': { fontFamily: FONT } }}
+            />
+            <TextField
+              label="Environment Image"
+              size="small"
+              select
+              fullWidth
+              value={createForm.template}
+              onChange={e => setForm('template', e.target.value)}
+              sx={{ '& .MuiInputLabel-root': { fontFamily: FONT }, '& .MuiInputBase-input': { fontFamily: FONT } }}
+            >
+              {TEMPLATES.map(tp => <MenuItem key={tp} value={tp} sx={{ fontFamily: FONT, fontSize: '.82rem' }}>{tp}</MenuItem>)}
+            </TextField>
+            <Stack direction="row" spacing={1.5}>
+              <TextField
+                label="Region"
+                size="small"
+                select
+                fullWidth
+                value={createForm.region}
+                onChange={e => setForm('region', e.target.value)}
+                sx={{ '& .MuiInputLabel-root': { fontFamily: FONT }, '& .MuiInputBase-input': { fontFamily: FONT } }}
+              >
+                {REGIONS.map(r => <MenuItem key={r} value={r} sx={{ fontFamily: FONT, fontSize: '.82rem' }}>{r}</MenuItem>)}
+              </TextField>
+              <TextField
+                label="IDE"
+                size="small"
+                select
+                fullWidth
+                value={createForm.ide}
+                onChange={e => setForm('ide', e.target.value)}
+                sx={{ '& .MuiInputLabel-root': { fontFamily: FONT }, '& .MuiInputBase-input': { fontFamily: FONT } }}
+              >
+                {IDES.map(ide => <MenuItem key={ide} value={ide} sx={{ fontFamily: FONT, fontSize: '.82rem' }}>{ide}</MenuItem>)}
+              </TextField>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => { setCreateOpen(false); setNameError('') }}
+            disabled={creating}
+            sx={{ color: t.textSecondary, textTransform: 'none', fontFamily: FONT, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateWorkspace}
+            disabled={!createForm.name.trim() || creating}
+            sx={{ bgcolor: dashboardTokens.colors.brandPrimary, color: '#0a0f1a', fontWeight: 700,
+              textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 165,
+              '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
+              '&.Mui-disabled': { bgcolor: 'rgba(0,224,255,.25)', color: 'rgba(0,0,0,.4)' } }}
+          >
+            {creating
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#0a0f1a' }} /><span>Creating…</span></Stack>
+              : 'Create Workspace'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="info" onClose={() => setToast(null)} sx={{ fontFamily: FONT }}>{toast}</Alert>

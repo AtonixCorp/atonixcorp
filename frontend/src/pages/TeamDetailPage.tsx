@@ -13,8 +13,17 @@ import ArrowBackIcon     from '@mui/icons-material/ArrowBack';
 import AddIcon           from '@mui/icons-material/Add';
 import DeleteIcon        from '@mui/icons-material/Delete';
 import PersonAddIcon     from '@mui/icons-material/PersonAdd';
+import PersonRemoveIcon  from '@mui/icons-material/PersonRemove';
+import EditIcon          from '@mui/icons-material/Edit';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import LinkIcon          from '@mui/icons-material/Link';
 import LinkOffIcon       from '@mui/icons-material/LinkOff';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+import AttachFileIcon    from '@mui/icons-material/AttachFile';
+import AssignmentIcon    from '@mui/icons-material/Assignment';
+import EmailIcon         from '@mui/icons-material/Email';
+import InfoIcon          from '@mui/icons-material/Info';
+import GroupAddIcon      from '@mui/icons-material/GroupAdd';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import SaveIcon          from '@mui/icons-material/Save';
 import SecurityIcon      from '@mui/icons-material/Security';
@@ -678,12 +687,23 @@ function ActivityTab({ teamId }: { teamId: string }) {
       .finally(() => setLoading(false));
   }, [teamId]);
 
-  const ACTION_ICONS: Record<string, string> = {
-    team_created: '🏗️', team_updated: '✏️', member_added: '➕', member_removed: '➖',
-    role_changed: '🔄', resource_attached: '🔗', resource_detached: '🔓',
-    portfolio_created: '📁', portfolio_deleted: '🗑️', portfolio_item_added: '📎',
-    permissions_updated: '🔐', template_applied: '📋', invitation_sent: '📧',
+  const iconSx = { fontSize: '1rem', color: t.textSecondary };
+  const ACTION_ICONS: Record<string, React.ReactNode> = {
+    team_created:        <GroupAddIcon          sx={iconSx} />,
+    team_updated:        <EditIcon              sx={iconSx} />,
+    member_added:        <PersonAddIcon         sx={iconSx} />,
+    member_removed:      <PersonRemoveIcon      sx={iconSx} />,
+    role_changed:        <ManageAccountsIcon    sx={iconSx} />,
+    resource_attached:   <LinkIcon              sx={iconSx} />,
+    resource_detached:   <LinkOffIcon           sx={iconSx} />,
+    portfolio_created:   <CreateNewFolderIcon   sx={iconSx} />,
+    portfolio_deleted:   <DeleteIcon            sx={iconSx} />,
+    portfolio_item_added:<AttachFileIcon        sx={iconSx} />,
+    permissions_updated: <SecurityIcon          sx={iconSx} />,
+    template_applied:    <AssignmentIcon        sx={iconSx} />,
+    invitation_sent:     <EmailIcon             sx={iconSx} />,
   };
+  const fallbackIcon = <InfoIcon sx={iconSx} />;
 
   if (loading) return <LinearProgress sx={{ mt: 2 }} />;
 
@@ -697,7 +717,9 @@ function ActivityTab({ teamId }: { teamId: string }) {
         <Stack spacing={0}>
           {logs.map((log) => (
             <Stack key={log.id} direction="row" spacing={1.5} sx={{ py: 1.25, borderBottom: `1px solid ${t.border}` }} alignItems="flex-start">
-              <Typography sx={{ fontSize: '1rem', mt: 0.15, flexShrink: 0 }}>{ACTION_ICONS[log.action] ?? '📌'}</Typography>
+              <Box sx={{ mt: 0.15, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                {ACTION_ICONS[log.action] ?? fallbackIcon}
+              </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography sx={{ fontSize: '.82rem', color: t.textPrimary }}>
                   <strong>{log.actor?.full_name || log.actor?.username || 'System'}</strong>{' '}
