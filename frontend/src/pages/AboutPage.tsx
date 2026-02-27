@@ -3,8 +3,8 @@ import { Box, Container, Typography, Card, CardContent } from '@mui/material';
 import { People as PeopleIcon, Flag as FlagIcon, Lightbulb as LightbulbIcon } from '@mui/icons-material';
 
 const AboutPage: React.FC = () => {
-  const primaryBlue = '#0A0F1F';
-  const accentCyan = '#276fd3';
+  const primaryBlue = '#111827';
+  const accentCyan = '#153d75';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
 

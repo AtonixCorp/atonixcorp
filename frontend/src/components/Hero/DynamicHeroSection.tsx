@@ -61,8 +61,8 @@ const ___projectStories: ProjectStory[] = [
     animationType: 'particles',
     ctaText: 'Launch Exploration',
     ctaLink: '/projects/planivar',
-    color: '#0f172a',
-    gradient: 'linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3730a3 100%)',
+    color: '#111827',
+    gradient: 'linear-gradient(135deg, #111827 0%, #1e40af 50%, #3730a3 100%)',
     accentColor: '#1e40af',
     backgroundImage: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80'
   },
@@ -81,8 +81,8 @@ const ___projectStories: ProjectStory[] = [
     ctaText: 'Harness Energy',
     ctaLink: '/projects/voltoraiq',
     color: '#1e3a8a',
-    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #276fd3 100%)',
-    accentColor: '#276fd3',
+    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #153d75 100%)',
+    accentColor: '#153d75',
     backgroundImage: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
   },
   {

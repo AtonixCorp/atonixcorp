@@ -1211,7 +1211,7 @@ const DevMonitoringPage: React.FC = () => {
                   {metricPoints.map((pt, i) => {
                     const maxVal = Math.max(...metricPoints.map(p => p.value));
                     const pct = maxVal > 0 ? (pt.value / maxVal) * 100 : 0;
-                    const color = pct > 80 ? '#f44336' : pct > 60 ? '#ff9800' : '#26a69a';
+                    const color = pct > 80 ? '#f44336' : pct > 60 ? '#ff9800' : '#153d75';
                     return (
                       <Tooltip key={i} title={`${pt.value}${pt.unit} @ ${new Date(pt.timestamp).toLocaleTimeString()}`}>
                         <Box sx={{
@@ -1284,7 +1284,7 @@ const DevMonitoringPage: React.FC = () => {
                          bgcolor: `${LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e'}22`,
                          color: LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e' }}
                 />
-                <Typography variant="caption" sx={{ minWidth: 90, color: '#26a69a', fontFamily: 'monospace' }}>{ln.service}</Typography>
+                <Typography variant="caption" sx={{ minWidth: 90, color: '#153d75', fontFamily: 'monospace' }}>{ln.service}</Typography>
                 <Typography variant="caption" sx={{ flex: 1, fontFamily: 'monospace', color: ln.level === 'ERROR' ? '#ff6b6b' : ln.level === 'WARN' ? '#ffa726' : '#e0e0e0' }}>
                   {ln.message}
                 </Typography>

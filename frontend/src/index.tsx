@@ -13,7 +13,7 @@ function ____showBootstrapError(message: string): void {
   rootEl.innerHTML = `
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FFFFFF;padding:24px;">
       <div style="max-width:720px;width:100%;border:1px solid #e5e7eb;border-radius:8px;background:#ffffff;padding:20px;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-        <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Frontend failed to render</h2>
+        <h2 style="margin:0 0 8px;color:#111827;font-size:20px;">Frontend failed to render</h2>
         <p style="margin:0;color:#475569;line-height:1.45;">${message}</p>
         <p style="margin:12px 0 0;color:#64748b;font-size:13px;">Open browser DevTools Console for full stack trace.</p>
       </div>

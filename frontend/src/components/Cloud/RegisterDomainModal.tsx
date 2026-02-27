@@ -28,9 +28,9 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
     bg:        isDark ? '#0D1826' : '#FFFFFF',
     card:      isDark ? '#132336' : '#F9FAFB',
     border:    isDark ? '#1E3A5F' : '#E5E7EB',
-    text:      isDark ? '#e0e9f4' : '#0A0F1F',
+    text:      isDark ? '#e0e9f4' : '#111827',
     muted:     isDark ? '#6b8aab' : '#6B7280',
-    brand:     '#0A0F1F',
+    brand:     '#111827',
     available: isDark ? '#1a3d2e' : '#DCFCE7',
     taken:     isDark ? '#3d1a1a' : '#FEE2E2',
   };
@@ -261,7 +261,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={() => step === 0 ? (selected ? setStep(1) : handleSearch()) : setStep(2)}
             disabled={step === 0 ? (!name || !selected) : false}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#0f2d5a' } }}
           >
             {step === 0 ? (selected ? 'Configure' : 'Search') : 'Review'}
           </Button>
@@ -271,7 +271,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={handleRegister}
             disabled={submitting}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#0f2d5a' } }}
           >
             {submitting ? <CircularProgress size={20} color="inherit" /> : 'Register Domain'}
           </Button>

@@ -156,7 +156,7 @@ const PROJECTS: Project[] = [
 
 const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: string }> = {
   active:      { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Active'      },
-  'in-progress':{ color: dashboardSemanticColors.info,   bg: 'rgba(38,166,154,.12)',   label: 'In Progress' },
+  'in-progress':{ color: dashboardSemanticColors.info,   bg: 'rgba(21,61,117,.12)',   label: 'In Progress' },
   completed:   { color: dashboardSemanticColors.purple,  bg: 'rgba(139,92,246,.12)',  label: 'Completed'   },
   archived:    { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Archived'    },
 };
@@ -182,7 +182,7 @@ const BUILD_CONFIG = {
   pending: { color: dashboardSemanticColors.warning, label: 'Pending', icon: <HourglassTopIcon sx={{ fontSize: '.78rem' }} /> },
 };
 
-const MEMBER_COLORS = ['#26a69a', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
+const MEMBER_COLORS = ['#153d75', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 const DevProjectsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -316,9 +316,9 @@ const DevProjectsPage: React.FC = () => {
                   borderRadius: '6px',
                   px: 1.25,
                   color: isActive ? (cfg?.color ?? dashboardTokens.colors.brandPrimary) : t.textSecondary,
-                  bgcolor: isActive ? (cfg?.bg ?? 'rgba(38,166,154,.10)') : 'transparent',
+                  bgcolor: isActive ? (cfg?.bg ?? 'rgba(21,61,117,.10)') : 'transparent',
                   border: `1px solid ${isActive ? (cfg?.color ?? dashboardTokens.colors.brandPrimary) + '44' : 'transparent'}`,
-                  '&:hover': { bgcolor: cfg?.bg ?? 'rgba(38,166,154,.07)' },
+                  '&:hover': { bgcolor: cfg?.bg ?? 'rgba(21,61,117,.07)' },
                 }}
               >
                 {f === 'all' ? `All (${counts.all})` : `${f.replace('-', ' ')} (${counts[f]})`}
@@ -338,7 +338,7 @@ const DevProjectsPage: React.FC = () => {
               bgcolor: t.surface, color: t.textPrimary, borderRadius: '8px', fontSize: '.875rem',
               '& fieldset': { borderColor: t.border },
               '&:hover fieldset': { borderColor: t.borderStrong },
-              '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(38,166,154,0.14)' },
+              '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(21,61,117,0.14)' },
             },
             '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
           }}
@@ -388,7 +388,7 @@ const DevProjectsPage: React.FC = () => {
 
                     {/* Top row */}
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                      <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: 'rgba(38,166,154,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dashboardTokens.colors.brandPrimary, flexShrink: 0 }}>
+                      <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: 'rgba(21,61,117,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dashboardTokens.colors.brandPrimary, flexShrink: 0 }}>
                         <FolderIcon sx={{ fontSize: '1rem' }} />
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>

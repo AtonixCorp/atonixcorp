@@ -185,7 +185,7 @@ const GroupProjectCreateModal: React.FC<GroupProjectCreateModalProps> = ({
         <Box
           sx={{
             width: 32, height: 32, borderRadius: '8px',
-            bgcolor: 'rgba(38,166,154,0.12)',
+            bgcolor: 'rgba(21,61,117,0.12)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: BP, flexShrink: 0,
           }}
@@ -290,7 +290,7 @@ const GroupProjectCreateModal: React.FC<GroupProjectCreateModalProps> = ({
                 '& .MuiToggleButton-root': {
                   fontFamily: FONT, fontSize: '.78rem', fontWeight: 600, textTransform: 'none',
                   borderColor: t.border, color: t.textSecondary,
-                  '&.Mui-selected': { bgcolor: 'rgba(38,166,154,0.1)', color: BP, borderColor: BP },
+                  '&.Mui-selected': { bgcolor: 'rgba(21,61,117,0.1)', color: BP, borderColor: BP },
                 },
               }}
             >

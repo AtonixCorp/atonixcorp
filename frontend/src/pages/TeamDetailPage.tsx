@@ -556,7 +556,7 @@ function PortfoliosTab({ team, reload }: { team: Team; reload: () => void }) {
   };
 
   const PORT_TYPE_COLOR: Record<PortfolioType, string> = {
-    developer: '#26a69a', marketing: '#A855F7', data: '#22C55E', general: '#6B7280',
+    developer: '#153d75', marketing: '#A855F7', data: '#22C55E', general: '#6B7280',
   };
 
   return (
@@ -740,7 +740,7 @@ function ActivityTab({ teamId }: { teamId: string }) {
 
 // ─── Tab 6: Settings ──────────────────────────────────────────────────────────
 
-const AVATAR_COLORS_SETTINGS = ['#26a69a', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
+const AVATAR_COLORS_SETTINGS = ['#153d75', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
 
 function SettingsTab({ team, reload }: { team: Team; reload: () => void }) {
   const navigate = useNavigate();

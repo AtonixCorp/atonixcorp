@@ -69,11 +69,11 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       borderRadius: '8px',
       bgcolor:  isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB',
       '& fieldset': { borderColor: border },
-      '&:hover fieldset': { borderColor: '#26a69a' },
-      '&.Mui-focused fieldset': { borderColor: '#26a69a' },
+      '&:hover fieldset': { borderColor: '#153d75' },
+      '&.Mui-focused fieldset': { borderColor: '#153d75' },
     },
-    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#26a69a' } },
-    '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' },
+    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#153d75' } },
+    '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#111827' },
     '& .MuiFormHelperText-root': { color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' },
   };
 
@@ -82,8 +82,8 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       PaperProps={{ sx: { bgcolor: isDark ? '#0D1826' : '#ffffff', borderRadius: '14px', border: `1px solid ${border}` } }}>
 
       <DialogTitle sx={{ pt: 2.5, pb: 0, px: 3 }}>
-        <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
-          Create Repository
+        <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#111827'}>
+          Deploy Container
         </Typography>
         <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF' }}>
           A namespace for storing and distributing container images.
@@ -125,13 +125,13 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
               {([['private', 'Private', 'Only you can access', LockIcon], ['public', 'Public', 'Anyone can pull', PublicIcon]] as const).map(([val, label, desc, Icon]) => (
                 <Box key={val} onClick={() => setVisibility(val as RepoVisibility)}
                   sx={{ flex: 1, p: 1.75, borderRadius: '10px', cursor: 'pointer',
-                    border: `2px solid ${visibility === val ? (val === 'private' ? '#0A0F1F' : '#10B981') : border}`,
-                    bgcolor: visibility === val ? (val === 'private' ? 'rgba(38,166,154,.1)' : 'rgba(16,185,129,.07)') : (isDark ? 'rgba(255,255,255,.03)' : '#F9FAFB'),
+                    border: `2px solid ${visibility === val ? (val === 'private' ? '#111827' : '#10B981') : border}`,
+                    bgcolor: visibility === val ? (val === 'private' ? 'rgba(21,61,117,.1)' : 'rgba(16,185,129,.07)') : (isDark ? 'rgba(255,255,255,.03)' : '#F9FAFB'),
                     transition: 'all .14s', position: 'relative',
                   }}>
-                  {visibility === val && <CheckCircleIcon sx={{ position: 'absolute', top: 8, right: 8, fontSize: '.9rem', color: val === 'private' ? '#0A0F1F' : '#10B981' }} />}
-                  <Icon sx={{ fontSize: '1.3rem', color: val === 'private' ? '#0A0F1F' : '#10B981', mb: .5 }} />
-                  <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{label}</Typography>
+                  {visibility === val && <CheckCircleIcon sx={{ position: 'absolute', top: 8, right: 8, fontSize: '.9rem', color: val === 'private' ? '#111827' : '#10B981' }} />}
+                  <Icon sx={{ fontSize: '1.3rem', color: val === 'private' ? '#111827' : '#10B981', mb: .5 }} />
+                  <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#111827'}>{label}</Typography>
                   <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>{desc}</Typography>
                 </Box>
               ))}
@@ -148,14 +148,14 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
                 <Box key={r.key} onClick={() => setRegion(r.key)}
                   display="flex" alignItems="center" justifyContent="space-between"
                   sx={{ px: 1.5, py: 1, borderRadius: '8px', cursor: 'pointer',
-                    border: `1px solid ${region === r.key ? '#0A0F1F' : border}`,
-                    bgcolor: region === r.key ? 'rgba(38,166,154,.08)' : (isDark ? 'transparent' : 'transparent'),
-                    transition: 'all .12s', '&:hover': { borderColor: '#0A0F1F' },
+                    border: `1px solid ${region === r.key ? '#111827' : border}`,
+                    bgcolor: region === r.key ? 'rgba(21,61,117,.08)' : (isDark ? 'transparent' : 'transparent'),
+                    transition: 'all .12s', '&:hover': { borderColor: '#111827' },
                   }}>
-                  <Typography fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
+                  <Typography fontSize=".88rem" color={isDark ? '#ffffff' : '#111827'}>
                     {r.flag}&nbsp;&nbsp;{r.label}
                   </Typography>
-                  {region === r.key && <CheckCircleIcon sx={{ fontSize: '.9rem', color: '#0A0F1F' }} />}
+                  {region === r.key && <CheckCircleIcon sx={{ fontSize: '.9rem', color: '#111827' }} />}
                 </Box>
               ))}
             </Stack>
@@ -171,7 +171,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
               <strong>/{name || '<name>'}</strong>
             </Typography>
             <Box display="flex" gap={1} mt={.75} flexWrap="wrap">
-              <Chip size="small" label={visibility} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: visibility === 'private' ? 'rgba(38,166,154,.12)' : 'rgba(16,185,129,.1)', color: visibility === 'private' ? '#0A0F1F' : '#10B981' }} />
+              <Chip size="small" label={visibility} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: visibility === 'private' ? 'rgba(21,61,117,.12)' : 'rgba(16,185,129,.1)', color: visibility === 'private' ? '#111827' : '#10B981' }} />
               <Chip size="small" label={REGIONS.find(r => r.key === region)?.label ?? region} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6', color: isDark ? '#ffffff' : '#374151' }} />
             </Box>
           </Box>
@@ -186,8 +186,8 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         </Button>
         <Button variant="contained" disabled={!canSubmit} onClick={handleSubmit}
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-          sx={{ bgcolor: '#26a69a', '&:hover': { bgcolor: '#1d7a70' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
-          {loading ? 'Creating…' : 'Create Repository'}
+          sx={{ bgcolor: '#153d75', '&:hover': { bgcolor: '#0f2d5a' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
+          {loading ? 'Deploying…' : 'Deploy Container'}
         </Button>
       </DialogActions>
     </Dialog>

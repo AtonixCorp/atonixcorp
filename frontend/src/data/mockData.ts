@@ -599,7 +599,7 @@ export const ____mockTeams: Team[] = [
     mission: 'Advancing humanity through space research and open science',
     description: 'Planivarum pioneers sovereign space technologies, conducting advanced astrophysical research and enabling real-time scientific communication bridging Earth and the cosmos. We explore the mysteries of the universe while maintaining complete data sovereignty.',
     image: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80',
-    color_theme: '#0f172a',
+    color_theme: '#111827',
     is_active: true,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2025-10-31T00:00:00Z',

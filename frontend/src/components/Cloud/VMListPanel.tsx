@@ -141,21 +141,21 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         sx={{ px: 2.5, py: 1.75, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}` }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
-          <DnsIcon sx={{ color: '#0A0F1F', fontSize: '1.1rem' }} />
-          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".95rem">
+          <DnsIcon sx={{ color: '#111827', fontSize: '1.1rem' }} />
+          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize=".95rem">
             Virtual Machines
           </Typography>
           {!loading && vms.length > 0 && (
             <Chip
               label={vms.length}
               size="small"
-              sx={{ bgcolor: 'rgba(38,166,154,.1)', color: '#0A0F1F', fontWeight: 700, fontSize: '.7rem', height: 18 }}
+              sx={{ bgcolor: 'rgba(21,61,117,.1)', color: '#111827', fontWeight: 700, fontSize: '.7rem', height: 18 }}
             />
           )}
         </Stack>
         <Stack direction="row" spacing={.5}>
           <Tooltip title="Refresh">
-            <IconButton size="small" onClick={fetchVMs} disabled={loading} sx={{ color: '#64748b', '&:hover': { color: '#0f172a' } }}>
+            <IconButton size="small" onClick={fetchVMs} disabled={loading} sx={{ color: '#64748b', '&:hover': { color: '#111827' } }}>
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -166,9 +166,9 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
               startIcon={<AddIcon />}
               onClick={onCreateClick}
               sx={{
-                bgcolor: '#26a69a', color: '#fff', fontWeight: 700,
+                bgcolor: '#153d75', color: '#fff', fontWeight: 700,
                 fontSize: '.75rem', borderRadius: '6px', px: 1.5, py: .5,
-                '&:hover': { bgcolor: '#1d7a70' },
+                '&:hover': { bgcolor: '#0f2d5a' },
               }}
             >
               Create VM
@@ -232,7 +232,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
         </DialogTitle>
         <DialogContent>
           <Typography color={isDark ? '#ffffff' : '#64748b'} fontSize=".9rem">
-            <strong style={{ color: isDark ? '#ffffff' : '#0f172a' }}>{confirmDelete?.name}</strong> will be permanently deleted.
+            <strong style={{ color: isDark ? '#ffffff' : '#111827' }}>{confirmDelete?.name}</strong> will be permanently deleted.
             This cannot be undone.
           </Typography>
         </DialogContent>
@@ -278,7 +278,7 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
     : '—';
 
   return (
-    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(38,166,154,.03)' }, transition: 'background .15s' }}>
+    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(21,61,117,.03)' }, transition: 'background .15s' }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2}>
 
         {/* Icon */}
@@ -297,7 +297,7 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
         {/* Name + meta */}
         <Box flex={1} minWidth={0}>
           <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-            <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".9rem" noWrap>{vm.name}</Typography>
+            <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize=".9rem" noWrap>{vm.name}</Typography>
             <Chip
               label={st.label}
               size="small"
@@ -318,10 +318,10 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
                   size="small"
                   disabled={busy}
                   onClick={onStart}
-                  sx={{ color: '#0A0F1F', '&:hover': { bgcolor: 'rgba(38,166,154,.1)' } }}
+                  sx={{ color: '#111827', '&:hover': { bgcolor: 'rgba(21,61,117,.1)' } }}
                 >
                   {actionLoading === 'start'
-                    ? <CircularProgress size={16} sx={{ color: '#0A0F1F' }} />
+                    ? <CircularProgress size={16} sx={{ color: '#111827' }} />
                     : <PlayArrowIcon fontSize="small" />}
                 </IconButton>
               </span>
@@ -390,14 +390,14 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
     <Box
       sx={{
         width: 64, height: 64, borderRadius: '50%',
-        bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(38,166,154,.07)',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'rgba(38,166,154,.2)'}`,
+        bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(21,61,117,.07)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'rgba(21,61,117,.2)'}`,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 2,
       }}
     >
-      <DnsIcon sx={{ color: '#0A0F1F', fontSize: '1.8rem' }} />
+      <DnsIcon sx={{ color: '#111827', fontSize: '1.8rem' }} />
     </Box>
-    <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} fontSize=".95rem" mb={.75}>
+    <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize=".95rem" mb={.75}>
       No Virtual Machines Yet
     </Typography>
     <Typography color={isDark ? '#ffffff' : '#6B7280'} fontSize=".85rem" mb={2.5}>
@@ -409,9 +409,9 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
         startIcon={<AddIcon />}
         onClick={onCreateClick}
         sx={{
-          bgcolor: '#26a69a', color: '#fff', fontWeight: 700,
+          bgcolor: '#153d75', color: '#fff', fontWeight: 700,
           borderRadius: '6px', px: 3,
-          '&:hover': { bgcolor: '#1d7a70' },
+          '&:hover': { bgcolor: '#0f2d5a' },
         }}
       >
         Create Your First VM

@@ -66,7 +66,7 @@ Waiting for rollout...`;
 const STATUS_CONFIG = {
   success: { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)', label: 'Success', icon: <CheckCircleIcon sx={{ fontSize: '1rem' }} /> },
   failed: { color: dashboardSemanticColors.danger, bg: 'rgba(239,68,68,.12)', label: 'Failed', icon: <CancelIcon sx={{ fontSize: '1rem' }} /> },
-  running: { color: dashboardSemanticColors.info, bg: 'rgba(38,166,154,.12)', label: 'Running', icon: <HourglassTopIcon sx={{ fontSize: '1rem' }} /> },
+  running: { color: dashboardSemanticColors.info, bg: 'rgba(21,61,117,.12)', label: 'Running', icon: <HourglassTopIcon sx={{ fontSize: '1rem' }} /> },
   pending: { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Pending', icon: <HourglassTopIcon sx={{ fontSize: '1rem', opacity: 0.5 }} /> },
 };
 
@@ -279,7 +279,7 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
         </Box>
         <Box sx={{ p: 2, fontFamily: 'monospace', fontSize: '.78rem', color: '#e6edf3', lineHeight: 1.8, whiteSpace: 'pre-wrap', overflow: 'auto', flex: 1 }}>
           {MOCK_LOGS}
-          <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#26a69a', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
+          <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#153d75', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
         </Box>
       </Drawer>
     </>

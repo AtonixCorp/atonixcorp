@@ -84,7 +84,7 @@ const MOCK_PIPELINE_RUNS: PipelineRun[] = [
 const STATUS_CONFIG = {
   success: { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)', label: 'Success' },
   failed: { color: dashboardSemanticColors.danger, bg: 'rgba(239,68,68,.12)', label: 'Failed' },
-  running: { color: dashboardSemanticColors.info, bg: 'rgba(38,166,154,.12)', label: 'Running' },
+  running: { color: dashboardSemanticColors.info, bg: 'rgba(21,61,117,.12)', label: 'Running' },
   pending: { color: dashboardTokens.colors.textSecondary, bg: 'rgba(100,116,139,.12)', label: 'Pending' },
 };
 
@@ -239,7 +239,7 @@ const DevPipelinesPage: React.FC = () => {
                             color: dashboardTokens.colors.brandPrimary,
                             borderRadius: '6px',
                             py: 0.25,
-                            '&:hover': { bgcolor: 'rgba(38,166,154,.1)' },
+                            '&:hover': { bgcolor: 'rgba(21,61,117,.1)' },
                           }}
                         >
                           View

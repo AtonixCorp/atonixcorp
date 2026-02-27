@@ -77,8 +77,8 @@ const NAVY          = dashboardTokens.colors.surface;
 const NAVY2         = dashboardTokens.colors.surfaceSubtle;
 // Brand accent
 const BLUE          = dashboardTokens.colors.brandPrimary;
-const BLUE_DIM      = 'rgba(38,166,154,0.12)';
-const BLUE_HOVER    = 'rgba(38,166,154,0.08)';
+const BLUE_DIM      = 'rgba(21,61,117,0.12)';
+const BLUE_HOVER    = 'rgba(21,61,117,0.08)';
 // Typography on blue sidebar
 const TEXT_PRIMARY   = dashboardTokens.colors.textPrimary;
 const TEXT_SECONDARY = dashboardTokens.colors.textSecondary;
@@ -755,7 +755,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               </Box>
               {[
                 { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#26a69a' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#153d75' },
                 { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
               ].map((n, i) => (
                 <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>
@@ -808,7 +808,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
             >
               {/* User info header */}
               <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6'}` }}>
-                <Typography fontWeight={700} fontSize=".875rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
+                <Typography fontWeight={700} fontSize=".875rem" color={isDark ? '#ffffff' : '#111827'}>
                   {user?.first_name
                     ? `${user.first_name} ${user.last_name || ''}`.trim()
                     : user?.username}

@@ -120,12 +120,12 @@ function OptionCard({
       sx={{
         p: '12px 14px', borderRadius: '10px', cursor: 'pointer', userSelect: 'none',
         border: `1.5px solid ${selected ? t.brand : t.border}`,
-        bgcolor: selected ? `rgba(38,166,154,.07)` : t.surface,
+        bgcolor: selected ? `rgba(21,61,117,.07)` : t.surface,
         transition: 'all .15s',
         flex: wide ? '1 1 200px' : '1 1 140px',
         minWidth: wide ? 200 : 140,
         maxWidth: wide ? 280 : 180,
-        '&:hover': { borderColor: selected ? t.brand : 'rgba(38,166,154,.45)', bgcolor: selected ? `rgba(38,166,154,.09)` : 'rgba(38,166,154,.03)' },
+        '&:hover': { borderColor: selected ? t.brand : 'rgba(21,61,117,.45)', bgcolor: selected ? `rgba(21,61,117,.09)` : 'rgba(21,61,117,.03)' },
         position: 'relative',
       }}
     >
@@ -468,8 +468,8 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               sx={{
                 display:'flex', alignItems:'center', gap:1,
                 px:2, py:.7, mx:.5, borderRadius:'7px', cursor: done ? 'pointer' : 'default',
-                bgcolor: active ? `rgba(38,166,154,.1)` : 'transparent',
-                '&:hover': done ? { bgcolor:'rgba(38,166,154,.06)' } : {},
+                bgcolor: active ? `rgba(21,61,117,.1)` : 'transparent',
+                '&:hover': done ? { bgcolor:'rgba(21,61,117,.06)' } : {},
                 mb:.2,
               }}
             >
@@ -667,7 +667,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               onChange={e => set('description', e.target.value)}
               placeholder='e.g. "I am building a financial app that handles user accounts, transactions, and analytics across multiple currencies."'
               sx={{ mt:2, '& .MuiOutlinedInput-root':{ fontFamily:FONT, fontSize:'.84rem', bgcolor:t.surface, borderRadius:'10px',
-                '& fieldset':{ borderColor: t.border }, '&:hover fieldset':{ borderColor:'rgba(38,166,154,.5)' },
+                '& fieldset':{ borderColor: t.border }, '&:hover fieldset':{ borderColor:'rgba(21,61,117,.5)' },
                 '&.Mui-focused fieldset':{ borderColor: t.brand } },
                 '& textarea':{ color: t.textPrimary } }}
             />
@@ -677,7 +677,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
 
             {/* AI thinking */}
             {aiThinking && (
-              <Box sx={{ display:'flex', alignItems:'center', gap:1, mt:2, p:'10px 14px', borderRadius:'8px', border:`1px solid rgba(38,166,154,.25)`, bgcolor:'rgba(38,166,154,.05)' }}>
+              <Box sx={{ display:'flex', alignItems:'center', gap:1, mt:2, p:'10px 14px', borderRadius:'8px', border:`1px solid rgba(21,61,117,.25)`, bgcolor:'rgba(21,61,117,.05)' }}>
                 <CircularProgress size={14} sx={{ color: t.brand }} />
                 <Typography sx={{ fontSize:'.78rem', color: t.brand, fontFamily:FONT }}>AtonixCorp Intelligence is analyzing your description…</Typography>
               </Box>
@@ -685,7 +685,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
 
             {/* AI suggestions */}
             {aiSuggestions.length > 0 && (
-              <Box sx={{ mt:1.5, p:'12px 16px', borderRadius:'10px', border:`1px solid rgba(38,166,154,.28)`, bgcolor:'rgba(38,166,154,.05)' }}>
+              <Box sx={{ mt:1.5, p:'12px 16px', borderRadius:'10px', border:`1px solid rgba(21,61,117,.28)`, bgcolor:'rgba(21,61,117,.05)' }}>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb:1 }}>
                   <AutoAwesomeIcon sx={{ fontSize:'.9rem', color: t.brand }} />
                   <Typography sx={{ fontSize:'.75rem', fontWeight:700, color: t.brand, fontFamily:FONT }}>AtonixCorp Intelligence Suggestions</Typography>
@@ -715,8 +715,8 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               {MOCK_PROJECTS.map(p => (
                 <Box key={p} onClick={() => { set('project', p); set('newProject','') }}
                   sx={{ p:'10px 14px', borderRadius:'8px', border:`1.5px solid ${state.project===p ? t.brand : t.border}`,
-                    bgcolor: state.project===p ? 'rgba(38,166,154,.07)' : t.surface, cursor:'pointer', display:'flex', alignItems:'center', gap:1.5,
-                    '&:hover':{ borderColor:'rgba(38,166,154,.45)' } }}>
+                    bgcolor: state.project===p ? 'rgba(21,61,117,.07)' : t.surface, cursor:'pointer', display:'flex', alignItems:'center', gap:1.5,
+                    '&:hover':{ borderColor:'rgba(21,61,117,.45)' } }}>
                   <FolderOpenIcon sx={{ fontSize:'.9rem', color: state.project===p ? t.brand : t.textSecondary }} />
                   <Typography sx={{ fontSize:'.83rem', fontWeight:600, color: t.textPrimary, fontFamily:FONT, flex:1 }}>{p}</Typography>
                   {state.project===p && <CheckIcon sx={{ fontSize:'.85rem', color: t.brand }} />}
@@ -733,7 +733,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               onChange={e => { set('newProject', e.target.value); set('project','') }}
               size="small"
               sx={{ '& .MuiOutlinedInput-root':{ fontFamily:FONT, fontSize:'.83rem', bgcolor:t.surface, borderRadius:'8px',
-                '& fieldset':{ borderColor:t.border }, '&:hover fieldset':{ borderColor:'rgba(38,166,154,.5)' },
+                '& fieldset':{ borderColor:t.border }, '&:hover fieldset':{ borderColor:'rgba(21,61,117,.5)' },
                 '&.Mui-focused fieldset':{ borderColor:t.brand } },
                 '& input':{ color:t.textPrimary }
               }}
@@ -754,7 +754,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                   value={state.gitRepo} onChange={e => set('gitRepo', e.target.value)}
                   size="small"
                   sx={{ '& .MuiOutlinedInput-root':{ fontFamily:FONT, fontSize:'.83rem', bgcolor:t.surface, borderRadius:'8px',
-                    '& fieldset':{ borderColor:t.border }, '&:hover fieldset':{ borderColor:'rgba(38,166,154,.5)' },
+                    '& fieldset':{ borderColor:t.border }, '&:hover fieldset':{ borderColor:'rgba(21,61,117,.5)' },
                     '&.Mui-focused fieldset':{ borderColor:t.brand } },
                     '& input':{ color:t.textPrimary }
                   }}
@@ -766,7 +766,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                   {['main','master','develop','staging','production'].map(b => (
                     <Chip key={b} label={b} onClick={() => set('gitBranch', b)} size="small"
                       sx={{ fontFamily:FONT, fontSize:'.75rem', fontWeight:600, cursor:'pointer',
-                        bgcolor: state.gitBranch===b ? `rgba(38,166,154,.15)` : t.surfaceSubtle,
+                        bgcolor: state.gitBranch===b ? `rgba(21,61,117,.15)` : t.surfaceSubtle,
                         color: state.gitBranch===b ? t.brand : t.textSecondary,
                         border: `1px solid ${state.gitBranch===b ? t.brand : t.border}` }} />
                   ))}
@@ -899,8 +899,8 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                   variant="contained" size="large" startIcon={<RocketLaunchIcon />}
                   onClick={runDeploy}
                   sx={{ fontWeight:800, fontSize:'.88rem', borderRadius:'8px', textTransform:'none', fontFamily:FONT,
-                    bgcolor: t.brand, color:'#FFFFFF', boxShadow:'0 0 24px rgba(38,166,154,.35)',
-                    '&:hover':{ bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow:'0 0 32px rgba(38,166,154,.5)' },
+                    bgcolor: t.brand, color:'#FFFFFF', boxShadow:'0 0 24px rgba(21,61,117,.35)',
+                    '&:hover':{ bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow:'0 0 32px rgba(21,61,117,.5)' },
                     px:4, py:1.25 }}>
                   Deploy Now
                 </Button>
@@ -1136,9 +1136,9 @@ function ModeCard({ val: _val, label, icon, selected, onClick, features, recomme
     <Box onClick={onClick} sx={{
       flex:'1 1 220px', minWidth:220, maxWidth:320, p:'16px 18px', borderRadius:'12px', cursor:'pointer',
       border:`2px solid ${selected ? t.brand : recommended ? `${t.brand}44` : t.border}`,
-      bgcolor: selected ? 'rgba(38,166,154,.08)' : t.surface,
+      bgcolor: selected ? 'rgba(21,61,117,.08)' : t.surface,
       transition:'all .15s', position:'relative',
-      '&:hover':{ borderColor: selected ? t.brand : 'rgba(38,166,154,.6)', bgcolor:'rgba(38,166,154,.04)' },
+      '&:hover':{ borderColor: selected ? t.brand : 'rgba(21,61,117,.6)', bgcolor:'rgba(21,61,117,.04)' },
     }}>
       {recommended && (
         <Chip label="Recommended" size="small" sx={{ position:'absolute', top:10, right:10, height:17, fontSize:'.62rem', fontWeight:700, bgcolor:`${t.brand}22`, color:t.brand, '& .MuiChip-label':{ px:.7 } }} />

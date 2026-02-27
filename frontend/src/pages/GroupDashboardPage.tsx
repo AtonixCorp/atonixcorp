@@ -609,7 +609,7 @@ const GroupDashboardPage: React.FC = () => {
               <Box
                 sx={{
                   width: 30, height: 30, borderRadius: '7px', flexShrink: 0,
-                  bgcolor: group?.avatar_url ? 'transparent' : 'rgba(38,166,154,0.12)',
+                  bgcolor: group?.avatar_url ? 'transparent' : 'rgba(21,61,117,0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: dashboardTokens.colors.brandPrimary, overflow: 'hidden',
                   cursor: 'pointer',
@@ -716,9 +716,9 @@ const GroupDashboardPage: React.FC = () => {
                               py: 0.55,
                               mb: 0.15,
                               justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                              bgcolor: active ? 'rgba(38,166,154,0.1)' : 'transparent',
-                              '&:hover': { bgcolor: active ? 'rgba(38,166,154,0.14)' : t.surfaceHover },
-                              '&.Mui-selected': { bgcolor: 'rgba(38,166,154,0.1)', '&:hover': { bgcolor: 'rgba(38,166,154,0.14)' } },
+                              bgcolor: active ? 'rgba(21,61,117,0.1)' : 'transparent',
+                              '&:hover': { bgcolor: active ? 'rgba(21,61,117,0.14)' : t.surfaceHover },
+                              '&.Mui-selected': { bgcolor: 'rgba(21,61,117,0.1)', '&:hover': { bgcolor: 'rgba(21,61,117,0.14)' } },
                             }}
                           >
                             <ListItemIcon
@@ -743,7 +743,7 @@ const GroupDashboardPage: React.FC = () => {
                               />
                             )}
                             {sidebarOpen && item.badge && (
-                              <Chip label={item.badge} size="small" sx={{ height: 16, fontSize: '.65rem', bgcolor: 'rgba(38,166,154,.15)', color: dashboardTokens.colors.brandPrimary }} />
+                              <Chip label={item.badge} size="small" sx={{ height: 16, fontSize: '.65rem', bgcolor: 'rgba(21,61,117,.15)', color: dashboardTokens.colors.brandPrimary }} />
                             )}
                           </ListItemButton>
                         </Tooltip>
@@ -811,7 +811,7 @@ const GroupDashboardPage: React.FC = () => {
                 <Chip
                   label={group.my_role}
                   size="small"
-                  sx={{ textTransform: 'capitalize', bgcolor: 'rgba(38,166,154,0.1)', color: dashboardTokens.colors.brandPrimary, fontSize: '.72rem', height: 20, fontWeight: 700 }}
+                  sx={{ textTransform: 'capitalize', bgcolor: 'rgba(21,61,117,0.1)', color: dashboardTokens.colors.brandPrimary, fontSize: '.72rem', height: 20, fontWeight: 700 }}
                 />
               )}
             </Stack>

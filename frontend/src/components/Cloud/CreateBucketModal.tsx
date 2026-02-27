@@ -47,11 +47,11 @@ const CreateBucketModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
     dialogBg: isDark ? '#0D1826' : '#FFFFFF',
     border:   isDark ? '#1E3A5F' : '#E5E7EB',
     cardBg:   isDark ? '#132336' : '#F9FAFB',
-    text:     isDark ? '#e0e9f4' : '#0A0F1F',
+    text:     isDark ? '#e0e9f4' : '#111827',
     muted:    isDark ? '#93a8c0' : '#6B7280',
     inputBg:  isDark ? '#132336' : '#FFFFFF',
-    brand:    '#0A0F1F',
-    hover:    '#1d7a70',
+    brand:    '#111827',
+    hover:    '#0f2d5a',
   };
 
   const sx = {
@@ -255,7 +255,7 @@ const CreateBucketModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
           <Typography sx={{ fontSize: 13, fontWeight: 600, color: t.text }}>{row.value}</Typography>
         </Box>
       ))}
-      <Alert severity="info" sx={{ bgcolor: isDark ? '#0D2137' : '#EFF6FF', color: isDark ? '#93c4f0' : '#0A0F1F', border: `1px solid ${t.border}`, fontSize: 12 }}>
+      <Alert severity="info" sx={{ bgcolor: isDark ? '#0D2137' : '#EFF6FF', color: isDark ? '#93c4f0' : '#111827', border: `1px solid ${t.border}`, fontSize: 12 }}>
         Bucket creation will also provision the corresponding Swift container in OpenStack.
       </Alert>
     </Stack>

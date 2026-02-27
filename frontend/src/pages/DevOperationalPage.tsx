@@ -203,14 +203,14 @@ const MOCK_NODES: NodeMetrics[] = [
 // ─── Colour helpers ────────────────────────────────────────────────────────────
 
 const SEV_COLOR: Record<Severity, string>     = { info: S.info, warning: S.warning, critical: S.danger }
-const SEV_BG:    Record<Severity, string>     = { info:'rgba(38,166,154,.1)', warning:'rgba(245,158,11,.1)', critical:'rgba(239,68,68,.1)' }
+const SEV_BG:    Record<Severity, string>     = { info:'rgba(21,61,117,.1)', warning:'rgba(245,158,11,.1)', critical:'rgba(239,68,68,.1)' }
 const JOB_COLOR: Record<JobStatus, string>    = { running:S.info, scheduled:S.purple, failed:S.danger, pending:S.warning, success:S.success }
-const JOB_BG:    Record<JobStatus, string>    = { running:'rgba(38,166,154,.1)', scheduled:'rgba(139,92,246,.1)', failed:'rgba(239,68,68,.1)', pending:'rgba(245,158,11,.1)', success:'rgba(34,197,94,.1)' }
+const JOB_BG:    Record<JobStatus, string>    = { running:'rgba(21,61,117,.1)', scheduled:'rgba(139,92,246,.1)', failed:'rgba(239,68,68,.1)', pending:'rgba(245,158,11,.1)', success:'rgba(34,197,94,.1)' }
 const INC_COLOR: Record<IncStatus, string>    = { open:S.danger, investigating:S.warning, resolved:S.success }
 const SVC_STATUS_COLOR: Record<ServiceStatus,string> = { running:S.success, degraded:S.warning, stopped:S.danger }
 const SVC_STATUS_BG:    Record<ServiceStatus,string> = { running:'rgba(34,197,94,.12)', degraded:'rgba(245,158,11,.12)', stopped:'rgba(239,68,68,.12)' }
 const RB_STATUS_COLOR:  Record<RunbookStatus,string> = { success:S.success, running:S.info, failed:S.danger, pending:S.warning }
-const RB_STATUS_BG:     Record<RunbookStatus,string> = { success:'rgba(34,197,94,.12)', running:'rgba(38,166,154,.12)', failed:'rgba(239,68,68,.12)', pending:'rgba(245,158,11,.12)' }
+const RB_STATUS_BG:     Record<RunbookStatus,string> = { success:'rgba(34,197,94,.12)', running:'rgba(21,61,117,.12)', failed:'rgba(239,68,68,.12)', pending:'rgba(245,158,11,.12)' }
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -455,8 +455,8 @@ function JobsTab() {
         {(['all','running','failed','scheduled'] as const).map(f => (
           <Button key={f} size="small" onClick={() => setFilter(f)}
             sx={{ fontSize:'.76rem', textTransform:'capitalize', fontWeight:filter===f?700:500, borderRadius:'5px', px:1.25,
-              color:filter===f?S.info:t.textSecondary, bgcolor:filter===f?'rgba(38,166,154,.1)':'transparent',
-              border:`1px solid ${filter===f?'rgba(38,166,154,.3)':'transparent'}` }}>
+              color:filter===f?S.info:t.textSecondary, bgcolor:filter===f?'rgba(21,61,117,.1)':'transparent',
+              border:`1px solid ${filter===f?'rgba(21,61,117,.3)':'transparent'}` }}>
             {f}
           </Button>
         ))}
@@ -547,7 +547,7 @@ function JobsTab() {
                 </TableCell>
                 <TableCell align="right" sx={{ py:.9 }}>
                   <Button size="small" startIcon={<PlayArrowIcon sx={{ fontSize:'.75rem' }} />} disabled={rb.status==='running'}
-                    sx={{ fontSize:'.7rem', borderRadius:'5px', textTransform:'none', color:dashboardTokens.colors.brandPrimary, border:`1px solid rgba(38,166,154,0.28)`, px:.75, py:.25, minWidth:0, '&.Mui-disabled':{ opacity:.4 } }}>
+                    sx={{ fontSize:'.7rem', borderRadius:'5px', textTransform:'none', color:dashboardTokens.colors.brandPrimary, border:`1px solid rgba(21,61,117,0.28)`, px:.75, py:.25, minWidth:0, '&.Mui-disabled':{ opacity:.4 } }}>
                     Run
                   </Button>
                 </TableCell>
@@ -579,8 +579,8 @@ function AlertsTab() {
           <Button key={s} size="small" onClick={() => setSev(s)}
             sx={{ fontSize:'.76rem', textTransform:'capitalize', fontWeight:sev===s?700:500, borderRadius:'5px', px:1.25,
               color: sev===s ? (s==='all'?S.info:SEV_COLOR[s as Severity]) : t.textSecondary,
-              bgcolor: sev===s ? (s==='all'?'rgba(38,166,154,.1)':SEV_BG[s as Severity]) : 'transparent',
-              border:`1px solid ${sev===s?(s==='all'?'rgba(38,166,154,.3)':SEV_COLOR[s as Severity]+'55'):'transparent'}` }}>
+              bgcolor: sev===s ? (s==='all'?'rgba(21,61,117,.1)':SEV_BG[s as Severity]) : 'transparent',
+              border:`1px solid ${sev===s?(s==='all'?'rgba(21,61,117,.3)':SEV_COLOR[s as Severity]+'55'):'transparent'}` }}>
             {s}
           </Button>
         ))}
@@ -603,7 +603,7 @@ function AlertsTab() {
                 <Typography sx={{ fontWeight:700, fontSize:'.88rem', color:t.textPrimary, fontFamily:FONT }}>{a.title}</Typography>
                 <Stack direction="row" spacing={1} sx={{ mt:.4 }} flexWrap="wrap">
                   <Chip label={a.source}  size="small" sx={{ height:17, fontSize:'.62rem', bgcolor:'rgba(148,163,184,.1)', color:t.textSecondary, '& .MuiChip-label':{ px:.6 } }} />
-                  <Chip label={a.service} size="small" sx={{ height:17, fontSize:'.62rem', bgcolor:'rgba(38,166,154,.08)',  color:S.info,           '& .MuiChip-label':{ px:.6 } }} />
+                  <Chip label={a.service} size="small" sx={{ height:17, fontSize:'.62rem', bgcolor:'rgba(21,61,117,.08)',  color:S.info,           '& .MuiChip-label':{ px:.6 } }} />
                   {a.count > 1 && <Chip label={`×${a.count}`} size="small" sx={{ height:17, fontSize:'.62rem', fontWeight:700, bgcolor:SEV_BG[a.severity], color:SEV_COLOR[a.severity], '& .MuiChip-label':{ px:.6 } }} />}
                 </Stack>
               </Box>

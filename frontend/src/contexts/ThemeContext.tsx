@@ -25,8 +25,8 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#26a69a',
-      dark: '#1d7a70',
+      main: '#153d75',
+      dark: '#0f2d5a',
       light: '#33a0a0',
       contrastText: '#FFFFFF',
     },
@@ -42,7 +42,7 @@ const ___lightTheme = createTheme({
     },
     text: {
       // Darken default text colors for improved contrast across the app
-      primary: '#0f172a',
+      primary: '#111827',
       secondary: '#475569',
     },
     grey: {
@@ -55,7 +55,7 @@ const ___lightTheme = createTheme({
       600: '#475569',
       700: '#334155',
       800: '#1e293b',
-      900: '#0f172a',
+      900: '#111827',
     },
     success: {
       main: '#10b981',
@@ -161,17 +161,17 @@ const ___lightTheme = createTheme({
         styleOverrides: {
           root: {
             // Default typography color should use the theme's primary text color
-            color: '#0f172a',
+            color: '#111827',
           },
         },
       },
     MuiCssBaseline: {
       styleOverrides: {
         ':root': {
-          '--color-primary': '#0A0F1F',
+          '--color-primary': '#111827',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#26a69a',
-          '--color-accent-hover': '#1d7a70',
+          '--color-accent': '#153d75',
+          '--color-accent-hover': '#0f2d5a',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
@@ -196,7 +196,7 @@ const ___lightTheme = createTheme({
         },
         body: {
           backgroundColor: '#FFFFFF',
-          color: '#0A0F1F',
+          color: '#111827',
           fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
@@ -212,26 +212,64 @@ const ___lightTheme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 2,
+          borderRadius: '6px',
           fontWeight: 600,
           fontSize: '0.95rem',
           lineHeight: 1.2,
-          padding: '10px 20px',
-          boxShadow: 'none',
-          transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            boxShadow: 'none',
-          },
+          padding: '10px 22px',
+          transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
         },
+        /* ── Contained: solid fill with a subtle directional gradient ── */
         contained: {
+          background: 'linear-gradient(135deg, #1e4d8c 0%, #153d75 60%, #0f2d5a 100%)',
+          color: '#ffffff',
+          boxShadow: '0 1px 3px rgba(21,61,117,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
           '&:hover': {
+            background: 'linear-gradient(135deg, #245699 0%, #1a4788 60%, #153d75 100%)',
+            boxShadow: '0 4px 12px rgba(21,61,117,0.45)',
+            transform: 'translateY(-1px)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+            boxShadow: '0 1px 3px rgba(21,61,117,0.35)',
+          },
+        },
+        /* ── Outlined: 2px accent border, transparent fill ── */
+        outlined: {
+          border: '2px solid #153d75',
+          color: '#153d75',
+          backgroundColor: 'transparent',
+          letterSpacing: '0.01em',
+          '&:hover': {
+            border: '2px solid #0f2d5a',
+            color: '#0f2d5a',
+            backgroundColor: 'rgba(21,61,117,0.06)',
             boxShadow: 'none',
           },
         },
-        outlined: {
-          borderWidth: 1,
+        /* ── Text: no border, colour-sweep underline on hover ── */
+        text: {
+          color: '#153d75',
+          padding: '10px 14px',
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 6,
+            left: 14,
+            right: 14,
+            height: '2px',
+            borderRadius: '1px',
+            backgroundColor: '#153d75',
+            transform: 'scaleX(0)',
+            transition: 'transform 0.15s cubic-bezier(0.4,0,0.2,1)',
+          },
           '&:hover': {
-            borderWidth: 1,
+            backgroundColor: 'rgba(21,61,117,0.05)',
+            color: '#0f2d5a',
+          },
+          '&:hover::after': {
+            transform: 'scaleX(1)',
           },
         },
       },
@@ -318,8 +356,8 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#26a69a',
-      dark: '#1d7a70',
+      main: '#153d75',
+      dark: '#0f2d5a',
       light: '#33a0a0',
       contrastText: '#FFFFFF',
     },
@@ -454,8 +492,8 @@ const ___darkTheme = createTheme({
         ':root': {
           '--color-primary': '#0f1419',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#26a69a',
-          '--color-accent-hover': '#1d7a70',
+          '--color-accent': '#153d75',
+          '--color-accent-hover': '#0f2d5a',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
@@ -497,26 +535,64 @@ const ___darkTheme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 2,
+          borderRadius: '6px',
           fontWeight: 600,
           fontSize: '0.95rem',
           lineHeight: 1.2,
-          padding: '10px 20px',
-          boxShadow: 'none',
-          transition: 'background-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.12s cubic-bezier(0.4, 0, 0.2, 1), color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            boxShadow: 'none',
-          },
+          padding: '10px 22px',
+          transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
         },
+        /* ── Contained: glowing fill with gradient ── */
         contained: {
+          background: 'linear-gradient(135deg, #1e4d8c 0%, #153d75 60%, #0f2d5a 100%)',
+          color: '#ffffff',
+          boxShadow: '0 1px 3px rgba(21,61,117,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
           '&:hover': {
-            boxShadow: 'none',
+            background: 'linear-gradient(135deg, #245699 0%, #1a4788 60%, #153d75 100%)',
+            boxShadow: '0 4px 16px rgba(21,61,117,0.6)',
+            transform: 'translateY(-1px)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+            boxShadow: '0 1px 3px rgba(21,61,117,0.5)',
           },
         },
+        /* ── Outlined: glowing border in dark ── */
         outlined: {
-          borderWidth: 1,
+          border: '2px solid rgba(21,61,117,0.7)',
+          color: '#93b4e8',
+          backgroundColor: 'transparent',
+          letterSpacing: '0.01em',
           '&:hover': {
-            borderWidth: 1,
+            border: '2px solid #153d75',
+            color: '#bfd3f5',
+            backgroundColor: 'rgba(21,61,117,0.15)',
+            boxShadow: '0 0 0 3px rgba(21,61,117,0.2)',
+          },
+        },
+        /* ── Text: no border, sweep underline ── */
+        text: {
+          color: '#93b4e8',
+          padding: '10px 14px',
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: 6,
+            left: 14,
+            right: 14,
+            height: '2px',
+            borderRadius: '1px',
+            backgroundColor: '#93b4e8',
+            transform: 'scaleX(0)',
+            transition: 'transform 0.15s cubic-bezier(0.4,0,0.2,1)',
+          },
+          '&:hover': {
+            backgroundColor: 'rgba(21,61,117,0.1)',
+            color: '#bfd3f5',
+          },
+          '&:hover::after': {
+            transform: 'scaleX(1)',
           },
         },
       },

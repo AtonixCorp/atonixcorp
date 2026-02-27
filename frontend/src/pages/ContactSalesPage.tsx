@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 
 const ContactSalesPage: React.FC = () => {
-  const primaryBlue = '#0A0F1F';
+  const primaryBlue = '#111827';
   const darkGray = '#1F2937';
-  const accentCyan = '#276fd3';
+  const accentCyan = '#153d75';
   const lightGray = '#F3F4F6';
 
   const [submitted, setSubmitted] = useState(false);
@@ -118,7 +118,7 @@ const ContactSalesPage: React.FC = () => {
                       fontWeight: 700,
                       px: 2.5,
                       py: 1,
-                      '&:hover': { bgcolor: '#1e5daa' },
+                      '&:hover': { bgcolor: '#0f2d5a' },
                     }}
                   >
                     Submit Request

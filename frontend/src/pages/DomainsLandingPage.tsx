@@ -98,7 +98,7 @@ const DomainsLandingPage: React.FC = () => {
     <Box sx={{ bgcolor: dashboardTokens.colors.surface }}>
       <Box
         sx={{
-          background: 'linear-gradient(160deg, #0A0F1F 0%, #101B34 60%, #0A0F1F 100%)',
+          background: 'linear-gradient(160deg, #111827 0%, #101B34 60%, #111827 100%)',
           borderBottom: `1px solid ${dashboardTokens.colors.border}`,
           color: dashboardTokens.colors.white,
           py: { xs: 8, md: 10 },
@@ -106,7 +106,7 @@ const DomainsLandingPage: React.FC = () => {
       >
         <Container maxWidth="lg">
           <Stack spacing={3}>
-            <Chip label="Atonix Domains" sx={{ alignSelf: 'flex-start', bgcolor: 'rgba(39,111,211,.12)', color: '#276fd3', borderRadius: '2px' }} />
+            <Chip label="Atonix Domains" sx={{ alignSelf: 'flex-start', bgcolor: 'rgba(21,61,117,.12)', color: '#153d75', borderRadius: '2px' }} />
             <Typography component="h1" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' }, lineHeight: 1.05, letterSpacing: '-.03em', maxWidth: 900 }}>
               Domain platform with full lifecycle, DNS, SSL, billing, and operational dashboards.
             </Typography>
@@ -137,7 +137,7 @@ const DomainsLandingPage: React.FC = () => {
                 onClick={handleSearch}
                 disabled={checking}
                 endIcon={checking ? <CircularProgress size={16} color="inherit" /> : <ArrowForwardIcon />}
-                sx={{ bgcolor: '#276fd3', color: '#FFFFFF', borderRadius: '2px', fontWeight: 700, '&:hover': { bgcolor: '#1e5daa' } }}
+                sx={{ bgcolor: '#153d75', color: '#FFFFFF', borderRadius: '2px', fontWeight: 700, '&:hover': { bgcolor: '#0f2d5a' } }}
               >
                 Check Availability
               </Button>
@@ -145,7 +145,7 @@ const DomainsLandingPage: React.FC = () => {
                 component={RouterLink}
                 to="/domains/dashboard"
                 variant="outlined"
-                sx={{ borderRadius: '2px', borderColor: '#276fd3', color: '#276fd3' }}
+                sx={{ borderRadius: '2px', borderColor: '#153d75', color: '#153d75' }}
               >
                 Open Dashboard
               </Button>
@@ -198,7 +198,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card key={item.title} sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1.25} alignItems="center">
-                    <Box sx={{ color: '#276fd3' }}>{item.icon}</Box>
+                    <Box sx={{ color: '#153d75' }}>{item.icon}</Box>
                     <Typography sx={{ fontWeight: 700 }}>{item.title}</Typography>
                   </Stack>
                   <Typography sx={{ mt: 1.25, color: dashboardTokens.colors.textSecondary, fontSize: '.92rem' }}>{item.text}</Typography>
@@ -218,7 +218,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <DashboardIcon fontSize="small" sx={{ color: '#276fd3' }} />
+                    <DashboardIcon fontSize="small" sx={{ color: '#153d75' }} />
                     <Typography sx={{ fontWeight: 700 }}>User Dashboard</Typography>
                   </Stack>
                   {[
@@ -238,7 +238,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <AdminPanelSettingsIcon fontSize="small" sx={{ color: '#276fd3' }} />
+                    <AdminPanelSettingsIcon fontSize="small" sx={{ color: '#153d75' }} />
                     <Typography sx={{ fontWeight: 700 }}>Admin Console</Typography>
                   </Stack>
                   {[
@@ -257,7 +257,7 @@ const DomainsLandingPage: React.FC = () => {
             </Stack>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 2 }}>
-              <Button component={RouterLink} to="/domains/dashboard" variant="contained" sx={{ borderRadius: '2px', bgcolor: '#276fd3', '&:hover': { bgcolor: '#1e5daa' } }}>
+              <Button component={RouterLink} to="/domains/dashboard" variant="contained" sx={{ borderRadius: '2px', bgcolor: '#153d75', '&:hover': { bgcolor: '#0f2d5a' } }}>
                 Launch Domain Operations
               </Button>
               {!user && (

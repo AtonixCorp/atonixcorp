@@ -49,9 +49,9 @@ function buildCards(stats: DashboardStats | null): CardDef[] {
       title: 'Compute',
       subtitle: 'Virtual Machines',
       icon: <ComputerIcon />,
-      iconColor: '#0A0F1F',
-      iconBg: 'rgba(38,166,154,.1)',
-      borderColor: 'rgba(38,166,154,.2)',
+      iconColor: '#111827',
+      iconBg: 'rgba(21,61,117,.1)',
+      borderColor: 'rgba(21,61,117,.2)',
       rows: [
         { label: 'Total VMs',    value: c?.total_vms ?? 0 },
         { label: 'Running',      value: c?.running ?? 0, highlight: true },
@@ -148,7 +148,7 @@ const CloudOverviewCards: React.FC<CloudOverviewCardsProps> = ({ stats, loading 
                 {card.icon}
               </Box>
               <Box>
-                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0A0F1F'} fontSize=".95rem" lineHeight={1.2}>
+                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize=".95rem" lineHeight={1.2}>
                   {card.title}
                 </Typography>
                 <Typography variant="caption" sx={{ color: isDark ? '#ffffff' : '#6B7280' }}>

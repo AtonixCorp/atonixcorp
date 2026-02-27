@@ -43,11 +43,11 @@ const KEY_STATUS_COLOR: Record<string, 'success' | 'error' | 'warning' | 'defaul
 
 const TIER_COLOR: Record<string, string> = {
   free: '#78909c', starter: '#42a5f5', professional: '#7e57c2',
-  enterprise: '#ffa726', custom: '#26a69a',
+  enterprise: '#ffa726', custom: '#153d75',
 }
 
 const POLICY_COLOR: Record<string, string> = {
-  rate_limit: '#ef5350', auth: '#5c6bc0', cors: '#26a69a',
+  rate_limit: '#ef5350', auth: '#5c6bc0', cors: '#153d75',
   transform: '#ff7043', cache: '#66bb6a', ip_filter: '#ffa726',
   circuit_break: '#ec407a', retry: '#29b6f6', logging: '#78909c', custom: '#ab47bc',
 }

@@ -28,7 +28,7 @@ import {
 } from '../styles/dashboardDesignSystem';
 import { serversApi } from '../services/cloudApi';
 
-const COMPUTE_ACCENT = dashboardTokens.colors.brandPrimary;
+const COMPUTE_ACCENT = '#153d75';
 const CATALOG = computeCatalogPalette;
 const ACCENT_STRONG = computeUiTokens.accentStrong;
 const WHITE = dashboardTokens.colors.white;
@@ -653,7 +653,7 @@ const ComputePage: React.FC = () => {
               <StepLabel StepIconComponent={({ active, completed }) =>
                 <StepIconStyled active={active} completed={completed} icon={i + 1} isDark={isDark} />
               }>
-                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? dashboardTokens.colors.brandPrimary : dashboardTokens.colors.textTertiary }}>
+                <Typography sx={{ fontSize: '.8rem', fontWeight: activeStep === i ? 700 : 400, color: activeStep === i ? '#153d75' : dashboardTokens.colors.textTertiary }}>
                   {label}
                 </Typography>
               </StepLabel>

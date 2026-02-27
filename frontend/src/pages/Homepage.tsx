@@ -34,8 +34,8 @@ const SPEED = '120ms cubic-bezier(0.4, 0, 0.2, 1)';
 
 const COLORS = {
   navy: computeUiTokens.neutralStrong,
-  blue: dashboardTokens.colors.brandPrimary,
-  blueHover: dashboardTokens.colors.brandPrimaryHover,
+  blue: '#153d75',
+  blueHover: '#0f2d5a',
   white: dashboardTokens.colors.white,
   graphite: dashboardTokens.colors.textPrimary,
   silver: dashboardTokens.colors.border,

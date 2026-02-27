@@ -71,7 +71,7 @@ const sections: FooterSection[] = [
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const primaryNavy = computeUiTokens.neutralStrong;
-  const accentBlue = dashboardTokens.colors.brandPrimary;
+  const accentBlue = '#153d75';
   const socialLinks = [
     { name: 'Twitter', icon: <Twitter fontSize="small" />, url: 'https://twitter.com/AtonixCorp' },
     { name: 'GitHub', icon: <GitHub fontSize="small" />, url: 'https://github.com/AtonixCorp' },
@@ -156,7 +156,7 @@ const Footer: React.FC = () => {
                     color: 'rgba(255,255,255,.75)',
                     '&:hover': {
                       color: accentBlue,
-                      backgroundColor: 'rgba(39,111,211,.14)',
+                      backgroundColor: 'rgba(21,61,117,.14)',
                     },
                   }}
                 >

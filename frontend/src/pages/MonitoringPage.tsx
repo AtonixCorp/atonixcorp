@@ -38,7 +38,7 @@ function useThemeTokens() {
     border: dashboardTokens.colors.border,
     text: dashboardTokens.colors.textPrimary,
     subtext: dashboardTokens.colors.textSecondary,
-    brand: dashboardTokens.colors.brandPrimary,
+    brand: '#153d75',
   };
 }
 
@@ -199,7 +199,7 @@ function CreateIncidentDialog({ open, onClose, onCreated }: { open: boolean; onC
     '& .MuiInputLabel-root': { color: t.subtext },
     '& .MuiOutlinedInput-root': {
       '& fieldset': { borderColor: t.border },
-      '&:hover fieldset': { borderColor: dashboardTokens.colors.brandPrimary },
+      '&:hover fieldset': { borderColor: '#153d75' },
     },
   };
 

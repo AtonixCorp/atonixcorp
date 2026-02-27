@@ -115,7 +115,7 @@ const TEAM_TYPE_OPTIONS: { value: TeamType; label: string; desc: string; color: 
   { value: 'custom',     label: 'Custom Team',          desc: 'Define your own purpose, resources, and permission scope.',                   color: TEAM_TYPE_COLORS.custom },
 ];
 
-const AVATAR_COLORS = ['#26a69a', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
+const AVATAR_COLORS = ['#153d75', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
 
 interface WizardState {
   name: string;
@@ -126,7 +126,7 @@ interface WizardState {
 }
 
 const INITIAL_WIZARD: WizardState = {
-  name: '', description: '', avatar_color: '#26a69a',
+  name: '', description: '', avatar_color: '#153d75',
   team_type: 'developer', apply_template: true,
 };
 

@@ -141,7 +141,7 @@ const KubernetesPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Create Cluster</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Deploy Cluster</Button>
         </Stack>
       </Stack>
 

@@ -676,7 +676,7 @@ function EmptyState({ onCreate, isDark }: { onCreate: () => void; isDark: boolea
       </Typography>
       <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}
         sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-        Create First Repository
+        Deploy Container
       </Button>
     </Box>
   );
@@ -738,7 +738,7 @@ const ContainerRegistryPage: React.FC = () => {
           </Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreate(true)}
             sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-            New Repository
+            Deploy Container
           </Button>
         </Box>
       </Box>

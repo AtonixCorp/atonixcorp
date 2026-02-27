@@ -106,8 +106,8 @@ const StoragePage: React.FC = () => {
     panelBg: dashboardTokens.colors.background,
     cardBg: dashboardTokens.colors.surface,
     border: dashboardTokens.colors.border,
-    brand: dashboardTokens.colors.brandPrimary,
-    brandHover: dashboardTokens.colors.brandPrimaryHover,
+    brand: '#153d75',
+    brandHover: '#0f2d5a',
     hover: dashboardTokens.colors.surfaceHover,
     text: dashboardTokens.colors.textPrimary,
     muted: dashboardTokens.colors.textSecondary,
@@ -282,7 +282,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
         </Button>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
           sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, height: 34, fontSize: 12 }}>
-          Create Bucket
+          Deploy Storage
         </Button>
       </Box>
 
@@ -314,7 +314,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
                 <Typography sx={{ color: tokens.muted, fontSize: 13, mb: 2 }}>No buckets yet</Typography>
                 <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
                   sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, fontSize: 12 }}>
-                  Create Bucket
+                  Deploy Storage
                 </Button>
               </Box>
             ) : filtered.map(b => (
@@ -651,7 +651,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               </Typography>
               <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
                 sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, mt: 1 }}>
-                Create Bucket
+                Deploy Storage
               </Button>
             </Box>
           )

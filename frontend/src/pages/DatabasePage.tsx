@@ -659,7 +659,7 @@ const DatabasePage: React.FC = () => {
           </Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreate(true)}
             sx={{ bgcolor: uiPalette.accent, '&:hover': { bgcolor: uiPalette.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-            Create Database
+            Deploy Database
           </Button>
         </Box>
       </Box>

@@ -36,7 +36,7 @@ const STRATEGIES: StrategyMeta[] = [
   {
     id: 'full_copy', label: 'Full Copy',
     desc: 'Copy all schemas and data from source to target. Target is overwritten.',
-    tag: 'Most common', tagColor: '#0A0F1F', icon: '⬤',
+    tag: 'Most common', tagColor: '#111827', icon: '⬤',
   },
   {
     id: 'schema_only', label: 'Schema Only',
@@ -95,7 +95,7 @@ function TargetCard({
           <Typography fontWeight={800} fontSize=".65rem" color="#fff">{meta.icon}</Typography>
         </Box>
         <Box>
-          <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{db.name}</Typography>
+          <Typography fontWeight={700} fontSize=".88rem" color={isDark ? '#ffffff' : '#111827'}>{db.name}</Typography>
           <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF' }}>
             {db.engine_display} v{db.version}
           </Typography>
@@ -125,7 +125,7 @@ function StrategyCard({
     }}>
       {selected && <CheckCircleIcon sx={{ position: 'absolute', top: 8, right: 8, fontSize: '.9rem', color: s.tagColor }} />}
       <Box display="flex" alignItems="center" gap={1} mb={.75}>
-        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{s.label}</Typography>
+        <Typography fontWeight={700} fontSize=".9rem" color={isDark ? '#ffffff' : '#111827'}>{s.label}</Typography>
         <Chip size="small" label={s.tag}
           sx={{ height: 16, fontSize: '.6rem', fontWeight: 700, bgcolor: `${s.tagColor}18`, color: s.tagColor }} />
       </Box>
@@ -159,7 +159,7 @@ function ResultPanel({ result, isDark }: { result: DBMigrationResult; isDark: bo
             : <WarningAmberIcon sx={{ fontSize: '2rem', color: '#EF4444' }} />
           }
         </Box>
-        <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#0A0F1F'} textAlign="center">
+        <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#111827'} textAlign="center">
           {result.dry_run ? 'Dry-Run Complete' : 'Migration Complete'}
         </Typography>
         <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', maxWidth: 380, textAlign: 'center', mt: .5 }}>
@@ -175,7 +175,7 @@ function ResultPanel({ result, isDark }: { result: DBMigrationResult; isDark: bo
           { label: 'Duration', value: `${result.duration_s}s` },
         ].map(s => (
           <Box key={s.label} sx={{ textAlign: 'center', p: 1.5, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '10px', border: `1px solid ${border}` }}>
-            <Typography fontWeight={800} fontSize="1.15rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{s.value}</Typography>
+            <Typography fontWeight={800} fontSize="1.15rem" color={isDark ? '#ffffff' : '#111827'}>{s.value}</Typography>
             <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>{s.label}</Typography>
           </Box>
         ))}
@@ -183,9 +183,9 @@ function ResultPanel({ result, isDark }: { result: DBMigrationResult; isDark: bo
 
       {/* Route */}
       <Box sx={{ p: 1.5, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '10px', border: `1px solid ${border}`, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography fontWeight={700} fontSize=".82rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{result.source.name}</Typography>
+        <Typography fontWeight={700} fontSize=".82rem" color={isDark ? '#ffffff' : '#111827'}>{result.source.name}</Typography>
         <ArrowForwardIcon sx={{ fontSize: '.9rem', color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' }} />
-        <Typography fontWeight={700} fontSize=".82rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{result.target.name}</Typography>
+        <Typography fontWeight={700} fontSize=".82rem" color={isDark ? '#ffffff' : '#111827'}>{result.target.name}</Typography>
         <Box flex={1} />
         <Chip size="small" label={result.strategy} sx={{ fontSize: '.65rem', fontWeight: 700, bgcolor: isDark ? 'rgba(255,255,255,.08)' : '#E5E7EB', color: isDark ? '#ffffff' : '#374151' }} />
       </Box>
@@ -282,7 +282,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             <Typography fontWeight={800} fontSize=".7rem" color="#fff">{sourceMeta.icon}</Typography>
           </Box>
           <Box>
-            <Typography fontWeight={800} fontSize="1rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
+            <Typography fontWeight={800} fontSize="1rem" color={isDark ? '#ffffff' : '#111827'}>
               Migrate Database
             </Typography>
             <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF' }}>
@@ -291,7 +291,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
           </Box>
         </Box>
         {!result && (
-          <Stepper activeStep={step} alternativeLabel sx={{ '& .MuiStepLabel-label': { fontSize: '.75rem', color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', mt: .5, '&.Mui-active': { color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 } }, '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB', '&.Mui-active': { color: '#26a69a' }, '&.Mui-completed': { color: '#10B981' } } }}>
+          <Stepper activeStep={step} alternativeLabel sx={{ '& .MuiStepLabel-label': { fontSize: '.75rem', color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', mt: .5, '&.Mui-active': { color: isDark ? '#ffffff' : '#111827', fontWeight: 700 } }, '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB', '&.Mui-active': { color: '#153d75' }, '&.Mui-completed': { color: '#10B981' } } }}>
 
             {STEPS.map(label => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
           </Stepper>
@@ -309,7 +309,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             {/* ── Step 0: Choose target ── */}
             {step === 0 && (
               <Box>
-                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'} mb={.5}>
+                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#111827'} mb={.5}>
                   Choose destination database
                 </Typography>
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', display: 'block', mb: 2 }}>
@@ -339,13 +339,13 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             {/* ── Step 1: Strategy ── */}
             {step === 1 && (
               <Box>
-                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'} mb={.5}>
+                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#111827'} mb={.5}>
                   Select migration strategy
                 </Typography>
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', display: 'block', mb: 2 }}>
-                  Route: <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{source.name}</strong>
+                  Route: <strong style={{ color: isDark ? '#ffffff' : '#111827' }}>{source.name}</strong>
                   <ArrowForwardIcon sx={{ fontSize: '.8rem', mx: .5, verticalAlign: 'middle', color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }} />
-                  <strong style={{ color: isDark ? '#ffffff' : '#0A0F1F' }}>{target?.name}</strong>
+                  <strong style={{ color: isDark ? '#ffffff' : '#111827' }}>{target?.name}</strong>
                 </Typography>
                 <Stack spacing={1.5}>
                   {STRATEGIES.map(s => (
@@ -358,7 +358,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             {/* ── Step 2: Options + summary ── */}
             {step === 2 && (
               <Box>
-                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'} mb={2}>
+                <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#111827'} mb={2}>
                   Options &amp; review
                 </Typography>
 
@@ -369,7 +369,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                       <Box sx={{ width: 22, height: 22, borderRadius: '5px', bgcolor: sourceMeta.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Typography fontWeight={800} fontSize=".5rem" color="#fff">{sourceMeta.icon}</Typography>
                       </Box>
-                      <Typography fontWeight={700} fontSize=".85rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{source.name}</Typography>
+                      <Typography fontWeight={700} fontSize=".85rem" color={isDark ? '#ffffff' : '#111827'}>{source.name}</Typography>
                     </Box>
                     <ArrowForwardIcon sx={{ fontSize: '.85rem', color: isDark ? 'rgba(255,255,255,.3)' : '#9CA3AF' }} />
                     {targetMeta && target && (
@@ -377,7 +377,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                         <Box sx={{ width: 22, height: 22, borderRadius: '5px', bgcolor: targetMeta.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Typography fontWeight={800} fontSize=".5rem" color="#fff">{targetMeta.icon}</Typography>
                         </Box>
-                        <Typography fontWeight={700} fontSize=".85rem" color={isDark ? '#ffffff' : '#0A0F1F'}>{target.name}</Typography>
+                        <Typography fontWeight={700} fontSize=".85rem" color={isDark ? '#ffffff' : '#111827'}>{target.name}</Typography>
                       </Box>
                     )}
                   </Box>
@@ -398,9 +398,9 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                   value={tables} onChange={e => setTables(e.target.value)}
                   helperText="Comma-separated list. Empty = migrate all tables."
                   sx={{ mb: 2,
-                    '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: '#26a69a' }, '&.Mui-focused fieldset': { borderColor: '#26a69a' } },
-                    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#26a69a' } },
-                    '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' },
+                    '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: '#153d75' }, '&.Mui-focused fieldset': { borderColor: '#153d75' } },
+                    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#153d75' } },
+                    '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#111827' },
                     '& .MuiFormHelperText-root': { color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' },
                   }}
                 />
@@ -409,7 +409,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                 <Stack spacing={.75} mb={1}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '9px', border: `1px solid ${border}` }}>
                     <Box>
-                      <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'}>Truncate target first</Typography>
+                      <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#111827'}>Truncate target first</Typography>
                       <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>Drop all existing rows on the target before migrating</Typography>
                     </Box>
                     <Switch checked={truncate} onChange={e => setTruncate(e.target.checked)}
@@ -417,7 +417,7 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', borderRadius: '9px', border: `1px solid ${border}` }}>
                     <Box>
-                      <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#0A0F1F'}>Dry run</Typography>
+                      <Typography variant="body2" fontWeight={600} color={isDark ? '#ffffff' : '#111827'}>Dry run</Typography>
                       <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.4)' : '#9CA3AF' }}>Validate the migration without writing any data</Typography>
                     </Box>
                     <Switch checked={dryRun} onChange={e => setDryRun(e.target.checked)} size="small"
@@ -450,13 +450,13 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             )}
             {step < 2 ? (
               <Button variant="contained" disabled={!canNext} onClick={() => setStep(s => s + 1)}
-                sx={{ bgcolor: '#26a69a', '&:hover': { bgcolor: '#1d7a70' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+                sx={{ bgcolor: '#153d75', '&:hover': { bgcolor: '#0f2d5a' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
                 Continue
               </Button>
             ) : (
               <Button variant="contained" disabled={running} onClick={handleSubmit}
                 startIcon={running ? <CircularProgress size={14} color="inherit" /> : <SyncIcon />}
-                sx={{ bgcolor: dryRun ? '#10B981' : '#26a69a', '&:hover': { bgcolor: dryRun ? '#059669' : '#1d7a70' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+                sx={{ bgcolor: dryRun ? '#10B981' : '#153d75', '&:hover': { bgcolor: dryRun ? '#059669' : '#0f2d5a' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
                 {running ? 'Migrating…' : dryRun ? 'Run Dry Test' : 'Start Migration'}
               </Button>
             )}

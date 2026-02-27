@@ -103,7 +103,7 @@ const BareMetalVpsPage: React.FC = () => {
     <Box>
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #0A0F1F 0%, #1F2937 100%)',
+          background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
           color: '#FFFFFF',
           py: { xs: 4, md: 6 },
           textAlign: 'left',
@@ -124,17 +124,17 @@ const BareMetalVpsPage: React.FC = () => {
       <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: '#F3F4F6' }}>
         <Container maxWidth="lg">
           <Box sx={{ bgcolor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '2px', p: { xs: 2.5, md: 3 } }}>
-            <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#0A0F1F', mb: 1 }}>
+            <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', mb: 1 }}>
               Section: {content.section}
             </Typography>
             <Typography sx={{ color: '#1F2937', opacity: 0.82, lineHeight: 1.55, mb: 2 }}>
               This page is ready for detailed product documentation and can be edited later with full technical content, pricing tables, benchmarks, and architecture guidance.
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
-              <Button onClick={() => navigate('/features')} variant="outlined" sx={{ textTransform: 'none', borderRadius: '2px', borderColor: '#0A0F1F', color: '#0A0F1F' }}>
+              <Button onClick={() => navigate('/features')} variant="outlined" sx={{ textTransform: 'none', borderRadius: '2px', borderColor: '#111827', color: '#111827' }}>
                 Back to Features
               </Button>
-              <Button onClick={() => navigate('/contact')} variant="contained" sx={{ textTransform: 'none', borderRadius: '2px', bgcolor: '#276fd3', color: '#FFFFFF', '&:hover': { bgcolor: '#1e5daa' } }}>
+              <Button onClick={() => navigate('/contact')} variant="contained" sx={{ textTransform: 'none', borderRadius: '2px', bgcolor: '#153d75', color: '#FFFFFF', '&:hover': { bgcolor: '#0f2d5a' } }}>
                 Contact Sales
               </Button>
             </Stack>

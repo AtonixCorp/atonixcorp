@@ -30,7 +30,7 @@ const DOC_LINKS: DocLink[] = [
     title: 'Getting Started',
     description: 'Step-by-step guide from account setup to your first deployment.',
     badge: 'Recommended',
-    badgeColor: 'rgba(38,166,154,.12)',
+    badgeColor: 'rgba(21,61,117,.12)',
     path: '/docs#getting-started',
   },
   {
@@ -87,8 +87,8 @@ const DocsSupportPanel: React.FC = () => {
       {/* Header */}
       <Box sx={{ px: 3, py: 2.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}` }}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <MenuBookIcon sx={{ color: '#0A0F1F', fontSize: '1.2rem' }} />
-          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize="1rem">
+          <MenuBookIcon sx={{ color: '#111827', fontSize: '1.2rem' }} />
+          <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize="1rem">
             Documentation & Support
           </Typography>
           <Typography variant="caption" sx={{ color: isDark ? '#ffffff' : '#64748b', ml: .5 }}>
@@ -110,8 +110,8 @@ const DocsSupportPanel: React.FC = () => {
                 display: 'flex', flexDirection: 'column',
                 transition: 'all .18s',
                 '&:hover': {
-                  borderColor: 'rgba(38,166,154,.4)',
-                  bgcolor: isDark ? '#1A3050' : 'rgba(38,166,154,.04)',
+                  borderColor: 'rgba(21,61,117,.4)',
+                  bgcolor: isDark ? '#1A3050' : 'rgba(21,61,117,.04)',
                   transform: 'translateY(-2px)',
                 },
               }}
@@ -120,7 +120,7 @@ const DocsSupportPanel: React.FC = () => {
                 <Box
                   sx={{
                     width: 32, height: 32, borderRadius: 1.5,
-                    bgcolor: 'rgba(38,166,154,.08)', color: '#0A0F1F',
+                    bgcolor: 'rgba(21,61,117,.08)', color: '#111827',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                     '& svg': { fontSize: '1rem' },
@@ -128,7 +128,7 @@ const DocsSupportPanel: React.FC = () => {
                 >
                   {link.icon}
                 </Box>
-                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#0f172a'} fontSize=".88rem">
+                <Typography fontWeight={700} color={isDark ? '#ffffff' : '#111827'} fontSize=".88rem">
                   {link.title}
                 </Typography>
                 {link.badge && (
@@ -146,10 +146,10 @@ const DocsSupportPanel: React.FC = () => {
                 {link.description}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={.5} mt={1.5}>
-              <Typography variant="caption" sx={{ color: '#0A0F1F', fontWeight: 600, fontSize: '.75rem' }}>
+              <Typography variant="caption" sx={{ color: '#111827', fontWeight: 600, fontSize: '.75rem' }}>
                 Read more
               </Typography>
-              <ArrowForwardIcon sx={{ color: '#0A0F1F', fontSize: '.85rem' }} />
+              <ArrowForwardIcon sx={{ color: '#111827', fontSize: '.85rem' }} />
               </Stack>
             </Box>
           </Grid>
