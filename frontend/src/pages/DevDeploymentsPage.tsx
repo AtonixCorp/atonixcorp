@@ -206,13 +206,13 @@ const DevDeploymentsPage: React.FC = () => {
                     sx={item.id === newItemId ? {
                       animation: 'flashNew 6s ease-out',
                       '@keyframes flashNew': {
-                        '0%':   { bgcolor: 'rgba(0,224,255,.18)' },
-                        '40%':  { bgcolor: 'rgba(0,224,255,.10)' },
+                        '0%':   { bgcolor: 'rgba(38,166,154,.18)' },
+                        '40%':  { bgcolor: 'rgba(38,166,154,.10)' },
                         '100%': { bgcolor: 'transparent' },
                       },
                     } : {}}
                   >
-                      <TableCell>{item.appName}{item.id === newItemId && <Chip size="small" label="NEW" sx={{ ml:1, height:15, fontSize:'.58rem', fontWeight:800, bgcolor:`rgba(0,224,255,.18)`, color: dashboardTokens.colors.brandPrimary, border:`1px solid ${dashboardTokens.colors.brandPrimary}55`, '& .MuiChip-label':{ px:.6 } }} />}</TableCell>
+                      <TableCell>{item.appName}{item.id === newItemId && <Chip size="small" label="NEW" sx={{ ml:1, height:15, fontSize:'.58rem', fontWeight:800, bgcolor:`rgba(38,166,154,.18)`, color: dashboardTokens.colors.brandPrimary, border:`1px solid ${dashboardTokens.colors.brandPrimary}55`, '& .MuiChip-label':{ px:.6 } }} />}</TableCell>
                     <TableCell><Chip size="small" label={item.status} color={statusColor(item.status)} /></TableCell>
                     <TableCell>{item.environment}</TableCell>
                     <TableCell>{item.lastDeployed}</TableCell>

@@ -156,7 +156,7 @@ const Footer: React.FC = () => {
                     color: 'rgba(255,255,255,.75)',
                     '&:hover': {
                       color: accentBlue,
-                      backgroundColor: 'rgba(0,224,255,.14)',
+                      backgroundColor: 'rgba(39,111,211,.14)',
                     },
                   }}
                 >

@@ -100,8 +100,8 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
                 borderRadius: RADIUS,
                 mb: 1,
                 border: '1px solid transparent',
-                '&.Mui-selected': { bgcolor: 'rgba(0,224,255,.18)', borderColor: 'rgba(0,224,255,.45)' },
-                '&.Mui-selected:hover': { bgcolor: 'rgba(0,224,255,.24)' },
+                '&.Mui-selected': { bgcolor: 'rgba(38,166,154,.18)', borderColor: 'rgba(38,166,154,.45)' },
+                '&.Mui-selected:hover': { bgcolor: 'rgba(38,166,154,.24)' },
               }}
             >
               <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
@@ -117,8 +117,8 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
                 mx: 1,
                 borderRadius: RADIUS,
                 border: '1px solid transparent',
-                '&.Mui-selected': { bgcolor: 'rgba(0,224,255,.18)', borderColor: 'rgba(0,224,255,.45)' },
-                '&.Mui-selected:hover': { bgcolor: 'rgba(0,224,255,.24)' },
+                '&.Mui-selected': { bgcolor: 'rgba(38,166,154,.18)', borderColor: 'rgba(38,166,154,.45)' },
+                '&.Mui-selected:hover': { bgcolor: 'rgba(38,166,154,.24)' },
               }}
             >
               <ListItemIcon sx={{ color: 'inherit', minWidth: 0, justifyContent: 'center', width: '100%' }}>
@@ -174,11 +174,11 @@ const DualDashboardLayout: React.FC<DualDashboardLayoutProps> = ({ mode, childre
                     color: active ? dashboardTokens.colors.textPrimary : dashboardTokens.colors.textSecondary,
                   },
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(0,224,255,.10)',
-                    borderColor: 'rgba(0,224,255,.45)',
+                    bgcolor: 'rgba(38,166,154,.10)',
+                    borderColor: 'rgba(38,166,154,.45)',
                   },
                   '&.Mui-selected:hover': {
-                    bgcolor: 'rgba(0,224,255,.14)',
+                    bgcolor: 'rgba(38,166,154,.14)',
                   },
                   '&:hover': {
                     bgcolor: dashboardTokens.colors.surfaceSubtle,

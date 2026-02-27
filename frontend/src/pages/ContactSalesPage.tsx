@@ -12,7 +12,7 @@ import {
 const ContactSalesPage: React.FC = () => {
   const primaryBlue = '#0A0F1F';
   const darkGray = '#1F2937';
-  const accentCyan = '#008080';
+  const accentCyan = '#276fd3';
   const lightGray = '#F3F4F6';
 
   const [submitted, setSubmitted] = useState(false);
@@ -118,7 +118,7 @@ const ContactSalesPage: React.FC = () => {
                       fontWeight: 700,
                       px: 2.5,
                       py: 1,
-                      '&:hover': { bgcolor: '#006b6b' },
+                      '&:hover': { bgcolor: '#1e5daa' },
                     }}
                   >
                     Submit Request

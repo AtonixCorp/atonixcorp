@@ -146,7 +146,7 @@ export const TEAM_TYPE_LABELS: Record<TeamType, string> = {
 };
 
 export const TEAM_TYPE_COLORS: Record<TeamType, string> = {
-  developer:  '#00E0FF',
+  developer:  '#26a69a',
   production: '#F59E0B',
   marketing:  '#A855F7',
   data:       '#22C55E',

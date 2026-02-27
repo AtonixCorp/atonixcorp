@@ -343,7 +343,7 @@ const DevGroupsPage: React.FC = () => {
             fontSize: '.875rem',
             '& fieldset': { borderColor: t.border },
             '&:hover fieldset': { borderColor: t.borderStrong },
-            '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(0,224,255,0.14)' },
+            '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(38,166,154,0.14)' },
           },
           '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
         }}
@@ -402,7 +402,7 @@ const DevGroupsPage: React.FC = () => {
                         <Box
                           sx={{
                             width: 28, height: 28, borderRadius: '6px',
-                            bgcolor: group.avatar_url ? 'transparent' : 'rgba(0,224,255,0.12)',
+                            bgcolor: group.avatar_url ? 'transparent' : 'rgba(38,166,154,0.12)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: dashboardTokens.colors.brandPrimary, flexShrink: 0,
                             overflow: 'hidden',

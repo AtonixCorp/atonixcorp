@@ -605,7 +605,7 @@ const DevResourceControlPage: React.FC = () => {
             <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
               <Table size="small" stickyHeader>
                 <TableHead>
-                  <TableRow sx={{ '& th': { fontWeight: 800, fontSize: 12, bgcolor: '#f8fafc', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
+                  <TableRow sx={{ '& th': { fontWeight: 800, fontSize: 12, bgcolor: '#FFFFFF', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
                     <TableCell sx={{ pl: 2 }}>Name</TableCell>
                     <TableCell>Type</TableCell>
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Group</TableCell>

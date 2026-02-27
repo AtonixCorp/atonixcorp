@@ -37,7 +37,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         p: { xs: 3, md: 5 },
         position: 'relative',
         overflow: 'hidden',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,224,255,.2)'}`,
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(38,166,154,.2)'}`,
       }}
     >
       {/* Subtle grid backdrop */}
@@ -45,8 +45,8 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         sx={{
           position: 'absolute', inset: 0, zIndex: 0, borderRadius: 3,
           backgroundImage: `
-            linear-gradient(rgba(0,224,255,.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,224,255,.05) 1px, transparent 1px)`,
+            linear-gradient(rgba(38,166,154,.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(38,166,154,.05) 1px, transparent 1px)`,
 
           backgroundSize: '40px 40px',
           maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
@@ -58,7 +58,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
         sx={{
           position: 'absolute', top: -80, right: -80, width: 320, height: 320,
           borderRadius: '50%', zIndex: 0,
-          background: 'radial-gradient(circle, rgba(0,224,255,.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(38,166,154,.12) 0%, transparent 70%)',
         }}
       />
 
@@ -67,8 +67,8 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
           label="AtonixCorp Cloud Platform"
           size="small"
           sx={{
-            mb: 2, bgcolor: 'rgba(0,224,255,.1)', color: '#0A0F1F',
-            border: '1px solid rgba(0,224,255,.25)', fontWeight: 700,
+            mb: 2, bgcolor: 'rgba(38,166,154,.1)', color: '#0A0F1F',
+            border: '1px solid rgba(38,166,154,.25)', fontWeight: 700,
             fontSize: '.7rem', letterSpacing: '.05em', textTransform: 'uppercase',
           }}
         />
@@ -98,9 +98,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
             startIcon={<RocketLaunchIcon />}
             onClick={onDeployClick}
             sx={{
-              bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
+              bgcolor: '#26a69a', color: '#fff', fontWeight: 700,
               px: 3, borderRadius: '6px',
-              '&:hover': { bgcolor: '#006b6b', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(0,128,128,.35)' },
+              '&:hover': { bgcolor: '#1d7a70', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(38,166,154,.35)' },
               transition: 'all .2s',
             }}
           >
@@ -115,9 +115,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
               startIcon={action.icon}
               onClick={() => navigate(action.path)}
               sx={{
-                borderColor: 'rgba(0,128,128,.3)', color: '#0A0F1F', fontWeight: 600,
+                borderColor: 'rgba(38,166,154,.3)', color: '#0A0F1F', fontWeight: 600,
                 px: 2.5, borderRadius: '6px',
-                '&:hover': { borderColor: '#0A0F1F', color: '#008080', bgcolor: 'rgba(0,128,128,.06)' },
+                '&:hover': { borderColor: '#0A0F1F', color: '#26a69a', bgcolor: 'rgba(38,166,154,.06)' },
                 transition: 'all .2s',
               }}
             >

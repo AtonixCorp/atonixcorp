@@ -40,7 +40,7 @@ type ContainerStatus = 'running' | 'deploying' | 'failed' | 'stopped';
 
 const STATUS_CONFIG: Record<ContainerStatus, { color: string; bg: string; label: string; icon: React.ReactNode }> = {
   running:   { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Running',   icon: <CheckCircleIcon sx={{ fontSize: '.85rem' }} /> },
-  deploying: { color: dashboardSemanticColors.info,    bg: 'rgba(0,224,255,.12)',   label: 'Deploying', icon: <HourglassTopIcon sx={{ fontSize: '.85rem' }} /> },
+  deploying: { color: dashboardSemanticColors.info,    bg: 'rgba(38,166,154,.12)',   label: 'Deploying', icon: <HourglassTopIcon sx={{ fontSize: '.85rem' }} /> },
   failed:    { color: dashboardSemanticColors.danger,  bg: 'rgba(239,68,68,.12)',   label: 'Failed',    icon: <ErrorIcon sx={{ fontSize: '.85rem' }} /> },
   stopped:   { color: '#6B7280',                       bg: 'rgba(107,114,128,.12)', label: 'Stopped',   icon: <PauseCircleIcon sx={{ fontSize: '.85rem' }} /> },
 };

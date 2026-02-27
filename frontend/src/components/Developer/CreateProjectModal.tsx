@@ -119,7 +119,7 @@ const inputSx = {
     fontSize: '.875rem',
     '& fieldset': { borderColor: t.border },
     '&:hover fieldset': { borderColor: t.borderStrong },
-    '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 3px rgba(0,224,255,0.13)` },
+    '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 3px rgba(38,166,154,0.13)` },
   },
   '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
   '& .MuiInputLabel-root': { color: t.textSecondary, fontSize: '.875rem' },
@@ -264,7 +264,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ open, on
     >
       {/* Header */}
       <Box sx={{ px: 3, pt: 2.5, pb: 2, borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(0,224,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: ACCENT }}>
+        <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(38,166,154,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: ACCENT }}>
           <RocketLaunchIcon sx={{ fontSize: '1rem' }} />
         </Box>
         <Box sx={{ flex: 1 }}>
@@ -328,7 +328,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ open, on
                       borderRadius: '8px',
                       p: 1.5,
                       cursor: 'pointer',
-                      bgcolor: form.visibility === val ? 'rgba(0,224,255,0.08)' : t.surfaceSubtle,
+                      bgcolor: form.visibility === val ? 'rgba(38,166,154,0.08)' : t.surfaceSubtle,
                       display: 'flex', alignItems: 'center', gap: 1,
                       transition: 'all .12s',
                     }}
@@ -420,8 +420,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ open, on
                     display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.1,
                     borderBottom: i < visibleRepos.length - 1 ? `1px solid ${t.border}` : 'none',
                     cursor: 'pointer',
-                    bgcolor: form.selectedRepo === repo.name ? 'rgba(0,224,255,0.08)' : 'transparent',
-                    '&:hover': { bgcolor: form.selectedRepo === repo.name ? 'rgba(0,224,255,0.10)' : t.surfaceHover },
+                    bgcolor: form.selectedRepo === repo.name ? 'rgba(38,166,154,0.08)' : 'transparent',
+                    '&:hover': { bgcolor: form.selectedRepo === repo.name ? 'rgba(38,166,154,0.10)' : t.surfaceHover },
                   }}
                 >
                   {form.selectedRepo === repo.name
@@ -472,7 +472,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ open, on
         {step === 3 && (
           <Stack spacing={2}>
             {autoBuild && (
-              <Box sx={{ border: `1px solid rgba(0,224,255,.25)`, borderRadius: '8px', p: 1.5, bgcolor: 'rgba(0,224,255,.06)', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ border: `1px solid rgba(38,166,154,.25)`, borderRadius: '8px', p: 1.5, bgcolor: 'rgba(38,166,154,.06)', display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CheckCircleIcon sx={{ color: ACCENT, fontSize: '1rem' }} />
                 <Typography sx={{ fontSize: '.8rem', color: ACCENT, fontFamily: FONT }}>
                   Framework auto-detected: <strong>{selectedRepoObj?.lang}</strong>. Build settings pre-filled — adjust if needed.
@@ -490,7 +490,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ open, on
                 <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: t.textSecondary, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '.07em' }}>
                   Environment Variables
                 </Typography>
-                <Button size="small" startIcon={<AddIcon sx={{ fontSize: '.8rem' }} />} onClick={addEnvVar} sx={{ fontSize: '.72rem', textTransform: 'none', color: ACCENT, '&:hover': { bgcolor: 'rgba(0,224,255,.08)' } }}>
+                <Button size="small" startIcon={<AddIcon sx={{ fontSize: '.8rem' }} />} onClick={addEnvVar} sx={{ fontSize: '.72rem', textTransform: 'none', color: ACCENT, '&:hover': { bgcolor: 'rgba(38,166,154,.08)' } }}>
                   Add Variable
                 </Button>
               </Box>

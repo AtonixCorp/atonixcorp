@@ -81,8 +81,8 @@ const ___projectStories: ProjectStory[] = [
     ctaText: 'Harness Energy',
     ctaLink: '/projects/voltoraiq',
     color: '#1e3a8a',
-    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #008080 100%)',
-    accentColor: '#008080',
+    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #276fd3 100%)',
+    accentColor: '#276fd3',
     backgroundImage: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
   },
   {

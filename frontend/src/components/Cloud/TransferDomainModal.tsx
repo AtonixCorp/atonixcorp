@@ -149,7 +149,7 @@ const TransferDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={() => setStep(1)}
             disabled={!canProceed}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#006b6b' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
           >
             Review
           </Button>
@@ -159,7 +159,7 @@ const TransferDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={handleTransfer}
             disabled={submitting}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#006b6b' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
           >
             {submitting ? <CircularProgress size={20} color="inherit" /> : 'Initiate Transfer'}
           </Button>

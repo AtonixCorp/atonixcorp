@@ -454,13 +454,13 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
           <Chip
             label={`${totalVisible} section${totalVisible === 1 ? '' : 's'}`}
             sx={{
-              bgcolor: 'rgba(0,224,255,0.12)',
+              bgcolor: 'rgba(38,166,154,0.12)',
               color: ACCENT,
               fontWeight: 700,
               fontSize: '.75rem',
               height: 26,
               borderRadius: '6px',
-              border: `1px solid rgba(0,224,255,0.22)`,
+              border: `1px solid rgba(38,166,154,0.22)`,
               '& .MuiChip-label': { px: 1.25 },
             }}
           />
@@ -483,7 +483,7 @@ const DashboardSectionsPage: React.FC<DashboardSectionsPageProps> = ({ dashboard
                 fontSize: '.875rem',
                 '& fieldset': { borderColor: t.border },
                 '&:hover fieldset': { borderColor: t.borderStrong },
-                '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 3px rgba(0,224,255,0.14)` },
+                '&.Mui-focused fieldset': { borderColor: ACCENT, boxShadow: `0 0 0 3px rgba(38,166,154,0.14)` },
               },
               '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
             }}

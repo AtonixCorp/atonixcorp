@@ -30,7 +30,7 @@ const DOC_LINKS: DocLink[] = [
     title: 'Getting Started',
     description: 'Step-by-step guide from account setup to your first deployment.',
     badge: 'Recommended',
-    badgeColor: 'rgba(0,224,255,.12)',
+    badgeColor: 'rgba(38,166,154,.12)',
     path: '/docs#getting-started',
   },
   {
@@ -110,8 +110,8 @@ const DocsSupportPanel: React.FC = () => {
                 display: 'flex', flexDirection: 'column',
                 transition: 'all .18s',
                 '&:hover': {
-                  borderColor: 'rgba(0,224,255,.4)',
-                  bgcolor: isDark ? '#1A3050' : 'rgba(0,224,255,.04)',
+                  borderColor: 'rgba(38,166,154,.4)',
+                  bgcolor: isDark ? '#1A3050' : 'rgba(38,166,154,.04)',
                   transform: 'translateY(-2px)',
                 },
               }}
@@ -120,7 +120,7 @@ const DocsSupportPanel: React.FC = () => {
                 <Box
                   sx={{
                     width: 32, height: 32, borderRadius: 1.5,
-                    bgcolor: 'rgba(0,224,255,.08)', color: '#0A0F1F',
+                    bgcolor: 'rgba(38,166,154,.08)', color: '#0A0F1F',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                     '& svg': { fontSize: '1rem' },

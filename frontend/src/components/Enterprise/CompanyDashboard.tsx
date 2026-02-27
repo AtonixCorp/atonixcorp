@@ -231,7 +231,7 @@ const CompanyDashboard: React.FC = () => {
         <Paper sx={{
           p: { xs: 2, sm: 3 },
           mb: 3,
-          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          background: 'linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%)',
           borderRadius: { xs: 2, sm: 3 }
         }}>
           <Box sx={{
@@ -397,7 +397,7 @@ const CompanyDashboard: React.FC = () => {
                     mb: 2,
                     border: '1px solid #e2e8f0',
                     '&:hover': {
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#FFFFFF',
                     },
                     p: { xs: 1.5, sm: 2 },
                   }}
@@ -474,7 +474,7 @@ const CompanyDashboard: React.FC = () => {
                     mb: 2,
                     border: '1px solid #e2e8f0',
                     '&:hover': {
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#FFFFFF',
                     },
                     p: { xs: 1.5, sm: 2 },
                   }}
@@ -509,7 +509,7 @@ const CompanyDashboard: React.FC = () => {
                           sx={{
                             height: { xs: 3, sm: 4 },
                             borderRadius: 2,
-                            backgroundColor: '#f1f5f9',
+                            backgroundColor: '#EEEEEE',
                             '& .MuiLinearProgress-bar': {
                               backgroundColor: project.status === 'completed' ? '#22c55e' : '#3b82f6',
                               borderRadius: 2,

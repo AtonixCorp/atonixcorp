@@ -182,7 +182,7 @@ const CreateMailboxModal: React.FC<Props> = ({
           variant="contained"
           onClick={handleCreate}
           disabled={submitting || !localPart || !password}
-          sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#006b6b' } }}
+          sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
         >
           {submitting ? <CircularProgress size={20} color="inherit" /> : 'Create Mailbox'}
         </Button>

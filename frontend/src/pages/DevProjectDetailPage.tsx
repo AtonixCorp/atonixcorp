@@ -127,7 +127,7 @@ Waiting for rollout...`;
 const STATUS_CONFIG = {
   success:  { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Success',  icon: <CheckCircleIcon  sx={{ fontSize: '1rem' }} /> },
   failed:   { color: dashboardSemanticColors.danger,  bg: 'rgba(239,68,68,.12)',   label: 'Failed',   icon: <CancelIcon       sx={{ fontSize: '1rem' }} /> },
-  running:  { color: dashboardSemanticColors.info,    bg: 'rgba(0,224,255,.12)',   label: 'Running',  icon: <HourglassTopIcon sx={{ fontSize: '1rem' }} /> },
+  running:  { color: dashboardSemanticColors.info,    bg: 'rgba(38,166,154,.12)',   label: 'Running',  icon: <HourglassTopIcon sx={{ fontSize: '1rem' }} /> },
 };
 
 const ENV_STATUS_CONFIG = {
@@ -143,7 +143,7 @@ const STAGE_STATUS_CONFIG = {
   pending: { color: dashboardTokens.colors.textSecondary, icon: <HourglassTopIcon sx={{ fontSize: '.9rem', opacity: 0.35 }} /> },
 };
 
-const MEMBER_COLORS = ['#008080', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
+const MEMBER_COLORS = ['#26a69a', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 /* ── Component ───────────────────────────────────────────────────── */
 
@@ -321,7 +321,7 @@ const DevProjectDetailPage: React.FC = () => {
                 Last Commit
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                <Box sx={{ width: 30, height: 30, borderRadius: '7px', bgcolor: 'rgba(0,224,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dashboardTokens.colors.brandPrimary, flexShrink: 0 }}>
+                <Box sx={{ width: 30, height: 30, borderRadius: '7px', bgcolor: 'rgba(38,166,154,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: dashboardTokens.colors.brandPrimary, flexShrink: 0 }}>
                   <GitBranchIcon sx={{ fontSize: '.9rem' }} />
                 </Box>
                 <Box>
@@ -443,7 +443,7 @@ const DevProjectDetailPage: React.FC = () => {
             </Box>
             <Box sx={{ p: 2, fontFamily: 'monospace', fontSize: '.78rem', color: '#e6edf3', lineHeight: 1.8, whiteSpace: 'pre-wrap', overflow: 'auto', flex: 1 }}>
               {MOCK_LOG}
-              <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#008080', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
+              <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#26a69a', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
             </Box>
           </Drawer>
         </Box>

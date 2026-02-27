@@ -158,7 +158,7 @@ function StyledInput(props: React.ComponentProps<typeof TextField>) {
           fontFamily: FONT,
           '& fieldset': { borderColor: t.border },
           '&:hover fieldset': { borderColor: t.borderStrong },
-          '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(0,224,255,0.14)' },
+          '&.Mui-focused fieldset': { borderColor: dashboardTokens.colors.brandPrimary, boxShadow: '0 0 0 3px rgba(38,166,154,0.14)' },
         },
         '& .MuiInputBase-input::placeholder': { color: t.textSecondary, opacity: 1 },
         ...(props.sx as any),
@@ -235,7 +235,7 @@ function Step1Identity({ state, setState }: { state: WizardState; setState: Reac
                 sx={{
                   flex: 1,
                   border: `1.5px solid ${state.visibility === opt.value ? dashboardTokens.colors.brandPrimary : t.border}`,
-                  bgcolor: state.visibility === opt.value ? 'rgba(0,224,255,0.06)' : t.surface,
+                  bgcolor: state.visibility === opt.value ? 'rgba(38,166,154,0.06)' : t.surface,
                   borderRadius: '8px',
                   p: '12px 14px',
                   cursor: 'pointer',
@@ -341,7 +341,7 @@ function Step3Role({ state, setState }: { state: WizardState; setState: React.Di
               onClick={() => setState((s) => ({ ...s, default_role: role.value }))}
               sx={{
                 border: `1.5px solid ${selected ? dashboardTokens.colors.brandPrimary : t.border}`,
-                bgcolor: selected ? 'rgba(0,224,255,0.06)' : t.surface,
+                bgcolor: selected ? 'rgba(38,166,154,0.06)' : t.surface,
                 borderRadius: '8px',
                 p: '12px 16px',
                 cursor: 'pointer',
@@ -384,8 +384,8 @@ function Step4Resources({ state, setState }: { state: WizardState; setState: Rea
             <Box
               key={key}
               sx={{
-                border: `1px solid ${on ? 'rgba(0,224,255,0.35)' : t.border}`,
-                bgcolor: on ? 'rgba(0,224,255,0.04)' : 'transparent',
+                border: `1px solid ${on ? 'rgba(38,166,154,0.35)' : t.border}`,
+                bgcolor: on ? 'rgba(38,166,154,0.04)' : 'transparent',
                 borderRadius: '8px',
                 p: '10px 14px',
                 display: 'flex',
@@ -409,7 +409,7 @@ function Step4Resources({ state, setState }: { state: WizardState; setState: Rea
                 size="small"
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': { color: dashboardTokens.colors.brandPrimary },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: 'rgba(0,224,255,0.5)' },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: 'rgba(38,166,154,0.5)' },
                 }}
               />
             </Box>
@@ -431,7 +431,7 @@ function Step5Review({ state }: { state: WizardState }) {
     { label: 'Description',  value: state.description || '—' },
     { label: 'Visibility',   value: <Chip label={state.visibility} size="small" sx={{ textTransform: 'capitalize', bgcolor: t.surfaceSubtle, color: t.textSecondary, fontSize: '.75rem', height: 18 }} /> },
     { label: 'Group Type',   value: <Chip label={state.group_type} size="small" sx={{ textTransform: 'capitalize', bgcolor: t.surfaceSubtle, color: t.textSecondary, fontSize: '.75rem', height: 18 }} /> },
-    { label: 'Default Role', value: <Chip label={state.default_role} size="small" sx={{ textTransform: 'capitalize', bgcolor: 'rgba(0,224,255,0.10)', color: dashboardTokens.colors.brandPrimary, fontSize: '.75rem', height: 18 }} /> },
+    { label: 'Default Role', value: <Chip label={state.default_role} size="small" sx={{ textTransform: 'capitalize', bgcolor: 'rgba(38,166,154,0.10)', color: dashboardTokens.colors.brandPrimary, fontSize: '.75rem', height: 18 }} /> },
     {
       label: 'Resources',
       value: (
@@ -564,10 +564,10 @@ const GroupCreatePage: React.FC = () => {
                 bgcolor: t.surface, cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 2,
                 transition: 'border-color .15s, background .15s',
-                '&:hover': { borderColor: BP, bgcolor: 'rgba(0,224,255,0.04)' },
+                '&:hover': { borderColor: BP, bgcolor: 'rgba(38,166,154,0.04)' },
               }}
             >
-              <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: 'rgba(0,224,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: BP, flexShrink: 0 }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: 'rgba(38,166,154,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: BP, flexShrink: 0 }}>
                 <FolderOpenIcon />
               </Box>
               <Box sx={{ flex: 1 }}>
@@ -664,7 +664,7 @@ const GroupCreatePage: React.FC = () => {
           <Box
             sx={{
               width: 40, height: 40, borderRadius: '10px',
-              bgcolor: 'rgba(0,224,255,0.12)',
+              bgcolor: 'rgba(38,166,154,0.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: dashboardTokens.colors.brandPrimary,
             }}

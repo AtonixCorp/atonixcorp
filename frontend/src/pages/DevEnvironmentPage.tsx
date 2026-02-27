@@ -216,7 +216,7 @@ const ENVS: Env[] = [
     metrics: { cpu: 68, memory: 74, networkIn: '320 MB/h', networkOut: '180 MB/h', latency: 120, throughput: '240 req/s' },
   },
   {
-    id: 'dev', label: 'Development', color: '#008080', bg: 'rgba(0,128,128,.10)', protected: false,
+    id: 'dev', label: 'Development', color: '#26a69a', bg: 'rgba(38,166,154,.10)', protected: false,
     health: 'healthy', version: 'v1.5.0-dev', errorRate: '0.8%', lastDeploy: '3 hours ago', locked: false,
     services: [
       { name: 'api-gateway',     type: 'Deployment', status: 'running', version: '1.5.0-dev', replicas: '1/1' },
@@ -531,7 +531,7 @@ function EnvDetailCard({ env, onLockToggle, onPromote }: {
                 <TableRow key={r.path} sx={{ '& td': { borderColor: t.border } }}>
                   <TableCell sx={{ fontFamily: 'monospace', fontSize: '.78rem', color: t.textPrimary, py: 0.75 }}>{r.path}</TableCell>
                   <TableCell sx={{ py: 0.75 }}>
-                    <Chip label={r.method} size="small" sx={{ height: 18, fontSize: '.66rem', fontWeight: 700, bgcolor: 'rgba(0,224,255,.1)', color: S.info, '& .MuiChip-label': { px: 0.7 } }} />
+                    <Chip label={r.method} size="small" sx={{ height: 18, fontSize: '.66rem', fontWeight: 700, bgcolor: 'rgba(38,166,154,.1)', color: S.info, '& .MuiChip-label': { px: 0.7 } }} />
                   </TableCell>
                   <TableCell sx={{ py: 0.75 }}>
                     <Chip label={r.status} size="small" sx={{ height: 18, fontSize: '.66rem', fontWeight: 700, bgcolor: STATUS_BG[r.status] ?? 'rgba(148,163,184,.1)', color: STATUS_COLOR[r.status] ?? t.textSecondary, '& .MuiChip-label': { px: 0.7 } }} />
@@ -647,7 +647,7 @@ function EnvDetailCard({ env, onLockToggle, onPromote }: {
                       </TableCell>
                     </TableRow>
                     {expandRotation[sec.name] && sec.rotationHistory?.map((r, ri) => (
-                      <TableRow key={ri} sx={{ '& td': { borderColor: t.border, bgcolor: 'rgba(0,224,255,.03)' } }}>
+                      <TableRow key={ri} sx={{ '& td': { borderColor: t.border, bgcolor: 'rgba(38,166,154,.03)' } }}>
                         <TableCell colSpan={5} sx={{ py: 0.5, pl: 3, fontSize: '.72rem', color: t.textSecondary, fontFamily: FONT }}>
                           ↳ Rotated on <strong style={{ color: t.textPrimary }}>{r.date}</strong> by <strong style={{ color: t.textPrimary }}>{r.by}</strong>
                         </TableCell>
@@ -956,7 +956,7 @@ function GlobalSecretsTab({ envs }: { envs: Env[] }) {
                               label={`${sec.rotationHistory.length} rotation${sec.rotationHistory.length !== 1 ? 's' : ''}`}
                               size="small" onClick={() => setExpandRot(p => ({ ...p, [key]: !p[key] }))}
                               icon={<HistoryIcon sx={{ fontSize: '.72rem !important' }} />}
-                              sx={{ height: 18, fontSize: '.62rem', fontWeight: 700, cursor: 'pointer', bgcolor: 'rgba(0,224,255,.08)', color: S.info, '& .MuiChip-label': { px: 0.6 } }}
+                              sx={{ height: 18, fontSize: '.62rem', fontWeight: 700, cursor: 'pointer', bgcolor: 'rgba(38,166,154,.08)', color: S.info, '& .MuiChip-label': { px: 0.6 } }}
                             />
                           )}
                         </TableCell>
@@ -968,7 +968,7 @@ function GlobalSecretsTab({ envs }: { envs: Env[] }) {
                         </TableCell>
                       </TableRow>
                       {expandRot[key] && sec.rotationHistory?.map((r, ri) => (
-                        <TableRow key={ri} sx={{ '& td': { borderColor: t.border, bgcolor: 'rgba(0,224,255,.025)' } }}>
+                        <TableRow key={ri} sx={{ '& td': { borderColor: t.border, bgcolor: 'rgba(38,166,154,.025)' } }}>
                           <TableCell colSpan={6} sx={{ py: 0.5, pl: 3, fontSize: '.72rem', color: t.textSecondary, fontFamily: FONT }}>
                             ↳ Rotated on <strong style={{ color: t.textPrimary }}>{r.date}</strong> by <strong style={{ color: t.textPrimary }}>{r.by}</strong>
                           </TableCell>
@@ -991,7 +991,7 @@ function GlobalSecretsTab({ envs }: { envs: Env[] }) {
 const WIZARD_STEPS = ['General', 'Services', 'Config', 'Access & Review']
 
 const ENV_TYPE_OPTIONS = [
-  { value: 'development', label: 'Development', color: '#008080', bg: 'rgba(0,128,128,.12)' },
+  { value: 'development', label: 'Development', color: '#26a69a', bg: 'rgba(38,166,154,.12)' },
   { value: 'staging',     label: 'Staging',     color: '#a855f7', bg: 'rgba(168,85,247,.12)' },
   { value: 'production',  label: 'Production',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
   { value: 'testing',     label: 'Testing',     color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
@@ -1163,7 +1163,7 @@ function NewEnvironmentDialog({ onClose, onCreate }: {
               sx={{
                 flex: 1, px: 1.5, py: 1, borderRadius: '8px', cursor: 'pointer', transition: 'all .15s',
                 border: `2px solid ${form.multiMode === mode.value ? dashboardSemanticColors.info : dashboardTokens.colors.border}`,
-                bgcolor: form.multiMode === mode.value ? 'rgba(0,224,255,.08)' : 'transparent',
+                bgcolor: form.multiMode === mode.value ? 'rgba(38,166,154,.08)' : 'transparent',
               }}
             >
               <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.82rem', color: form.multiMode === mode.value ? dashboardSemanticColors.info : dashboardTokens.colors.textPrimary }}>
@@ -1261,7 +1261,7 @@ function NewEnvironmentDialog({ onClose, onCreate }: {
           </Stack>
 
           {form.envTypes.length > 0 && (
-            <Box sx={{ mt: 1.5, px: 1.25, py: 0.75, borderRadius: '6px', bgcolor: 'rgba(0,224,255,.06)', border: `1px solid rgba(0,224,255,.2)` }}>
+            <Box sx={{ mt: 1.5, px: 1.25, py: 0.75, borderRadius: '6px', bgcolor: 'rgba(38,166,154,.06)', border: `1px solid rgba(38,166,154,.2)` }}>
               <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: dashboardSemanticColors.info }}>
                 <strong>{form.envTypes.length}</strong> environment{form.envTypes.length > 1 ? 's' : ''} will be created:&nbsp;
                 {form.envTypes.map(v => ENV_TYPE_OPTIONS.find(o => o.value === v)?.label).join(', ')}

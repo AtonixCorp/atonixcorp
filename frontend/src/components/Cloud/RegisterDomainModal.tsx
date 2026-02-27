@@ -261,7 +261,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={() => step === 0 ? (selected ? setStep(1) : handleSearch()) : setStep(2)}
             disabled={step === 0 ? (!name || !selected) : false}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#006b6b' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
           >
             {step === 0 ? (selected ? 'Configure' : 'Search') : 'Review'}
           </Button>
@@ -271,7 +271,7 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
             variant="contained"
             onClick={handleRegister}
             disabled={submitting}
-            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#006b6b' } }}
+            sx={{ bgcolor: t.brand, '&:hover': { bgcolor: '#1d7a70' } }}
           >
             {submitting ? <CircularProgress size={20} color="inherit" /> : 'Register Domain'}
           </Button>

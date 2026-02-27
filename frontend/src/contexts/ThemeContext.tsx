@@ -25,8 +25,8 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#008080',
-      dark: '#006b6b',
+      main: '#26a69a',
+      dark: '#1d7a70',
       light: '#33a0a0',
       contrastText: '#FFFFFF',
     },
@@ -37,8 +37,8 @@ const ___lightTheme = createTheme({
       contrastText: '#ffffff',
     },
     background: {
-      default: '#f8fafc',
-      paper: '#ffffff',
+      default: '#FFFFFF',
+      paper: '#FFFFFF',
     },
     text: {
       // Darken default text colors for improved contrast across the app
@@ -170,16 +170,16 @@ const ___lightTheme = createTheme({
         ':root': {
           '--color-primary': '#0A0F1F',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#008080',
-          '--color-accent-hover': '#006b6b',
+          '--color-accent': '#26a69a',
+          '--color-accent-hover': '#1d7a70',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
           '--color-surface': '#111827',
           '--dashboard-background': '#FFFFFF',
           '--dashboard-surface': '#FFFFFF',
-          '--dashboard-surface-subtle': '#F9FAFB',
-          '--dashboard-surface-hover': '#F3F4F6',
+          '--dashboard-surface-subtle': '#F5F5F5',
+          '--dashboard-surface-hover': '#F0F0F0',
           '--dashboard-border': '#E5E7EB',
           '--dashboard-border-strong': '#D1D5DB',
           '--dashboard-text-primary': '#111827',
@@ -318,8 +318,8 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#008080',
-      dark: '#006b6b',
+      main: '#26a69a',
+      dark: '#1d7a70',
       light: '#33a0a0',
       contrastText: '#FFFFFF',
     },
@@ -454,8 +454,8 @@ const ___darkTheme = createTheme({
         ':root': {
           '--color-primary': '#0f1419',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#008080',
-          '--color-accent-hover': '#006b6b',
+          '--color-accent': '#26a69a',
+          '--color-accent-hover': '#1d7a70',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',

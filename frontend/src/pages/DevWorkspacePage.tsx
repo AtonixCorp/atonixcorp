@@ -648,7 +648,7 @@ function ToolsTab() {
                   <TableCell sx={{ fontWeight: 700, fontSize: '.82rem', color: t.textPrimary, py: 0.75, fontFamily: FONT }}>{p.name}</TableCell>
                   <TableCell sx={{ py: 0.75 }}>
                     {p.scopes.split(',').map(sc => (
-                      <Chip key={sc} label={sc} size="small" sx={{ mr: 0.4, height: 16, fontSize: '.62rem', bgcolor: 'rgba(0,224,255,.1)', color: S.info, '& .MuiChip-label': { px: 0.5 } }} />
+                      <Chip key={sc} label={sc} size="small" sx={{ mr: 0.4, height: 16, fontSize: '.62rem', bgcolor: 'rgba(38,166,154,.1)', color: S.info, '& .MuiChip-label': { px: 0.5 } }} />
                     ))}
                   </TableCell>
                   <TableCell sx={{ fontSize: '.78rem', color: t.textSecondary, py: 0.75, fontFamily: FONT }}>{p.expiry}</TableCell>
@@ -1049,7 +1049,7 @@ const DevWorkspacePage: React.FC = () => {
               icon={<Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ws.status === 'running' ? S.success : S.danger, ml: 0.5, flexShrink: 0 }} />}
               sx={{
                 fontFamily: FONT, fontWeight: ws.id === activeWsId ? 700 : 500, cursor: 'pointer',
-                bgcolor: ws.id === activeWsId ? 'rgba(0,224,255,.12)' : t.surface,
+                bgcolor: ws.id === activeWsId ? 'rgba(38,166,154,.12)' : t.surface,
                 color:   ws.id === activeWsId ? dashboardTokens.colors.brandPrimary : t.textSecondary,
                 border:  `1px solid ${ws.id === activeWsId ? dashboardTokens.colors.brandPrimary : t.border}`,
               }}
@@ -1158,7 +1158,7 @@ const DevWorkspacePage: React.FC = () => {
             sx={{ bgcolor: dashboardTokens.colors.brandPrimary, color: '#FFFFFF', fontWeight: 700,
               textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 165,
               '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
-              '&.Mui-disabled': { bgcolor: 'rgba(0,128,128,.25)', color: 'rgba(255,255,255,.4)' } }}
+              '&.Mui-disabled': { bgcolor: 'rgba(38,166,154,.25)', color: 'rgba(255,255,255,.4)' } }}
           >
             {creating
               ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#FFFFFF' }} /><span>Creating…</span></Stack>

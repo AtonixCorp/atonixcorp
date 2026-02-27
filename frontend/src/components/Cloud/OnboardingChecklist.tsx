@@ -95,7 +95,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: allDone ? 'rgba(0,224,255,.4)' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
+        borderColor: allDone ? 'rgba(38,166,154,.4)' : isDark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
         borderRadius: '8px',
         overflow: 'hidden',
         background: isDark ? '#132336' : '#ffffff',
@@ -118,7 +118,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
             label={`${pct}% Complete`}
             size="small"
             sx={{
-              bgcolor: allDone ? 'rgba(0,224,255,.1)' : 'rgba(0,0,0,.05)',
+              bgcolor: allDone ? 'rgba(38,166,154,.1)' : 'rgba(0,0,0,.05)',
               color: allDone ? '#0A0F1F' : '#6B7280',
               fontWeight: 700, fontSize: '.7rem',
             }}
@@ -136,7 +136,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         sx={{
           height: 3,
           bgcolor: '#e2e8f0',
-          '& .MuiLinearProgress-bar': { bgcolor: '#008080' },
+          '& .MuiLinearProgress-bar': { bgcolor: '#26a69a' },
         }}
       />
 
@@ -194,10 +194,10 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
                           }
                         }}
                         sx={{
-                          borderColor: 'rgba(0,224,255,.35)', color: '#0A0F1F',
+                          borderColor: 'rgba(38,166,154,.35)', color: '#0A0F1F',
                           fontWeight: 600, fontSize: '.78rem', borderRadius: '6px',
                           whiteSpace: 'nowrap', flexShrink: 0,
-                          '&:hover': { borderColor: '#0A0F1F', bgcolor: 'rgba(0,224,255,.06)' },
+                          '&:hover': { borderColor: '#0A0F1F', bgcolor: 'rgba(38,166,154,.06)' },
                         }}
                       >
                         {marking === step.key

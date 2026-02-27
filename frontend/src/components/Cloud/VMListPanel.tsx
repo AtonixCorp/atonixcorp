@@ -149,7 +149,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
             <Chip
               label={vms.length}
               size="small"
-              sx={{ bgcolor: 'rgba(0,224,255,.1)', color: '#0A0F1F', fontWeight: 700, fontSize: '.7rem', height: 18 }}
+              sx={{ bgcolor: 'rgba(38,166,154,.1)', color: '#0A0F1F', fontWeight: 700, fontSize: '.7rem', height: 18 }}
             />
           )}
         </Stack>
@@ -166,9 +166,9 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
               startIcon={<AddIcon />}
               onClick={onCreateClick}
               sx={{
-                bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
+                bgcolor: '#26a69a', color: '#fff', fontWeight: 700,
                 fontSize: '.75rem', borderRadius: '6px', px: 1.5, py: .5,
-                '&:hover': { bgcolor: '#006b6b' },
+                '&:hover': { bgcolor: '#1d7a70' },
               }}
             >
               Create VM
@@ -278,7 +278,7 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
     : '—';
 
   return (
-    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(0,224,255,.03)' }, transition: 'background .15s' }}>
+    <Box sx={{ px: 2.5, py: 2, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : 'rgba(38,166,154,.03)' }, transition: 'background .15s' }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2}>
 
         {/* Icon */}
@@ -318,7 +318,7 @@ const VMRow: React.FC<VMRowProps> = ({ vm, actionLoading, onStart, onStop, onReb
                   size="small"
                   disabled={busy}
                   onClick={onStart}
-                  sx={{ color: '#0A0F1F', '&:hover': { bgcolor: 'rgba(0,224,255,.1)' } }}
+                  sx={{ color: '#0A0F1F', '&:hover': { bgcolor: 'rgba(38,166,154,.1)' } }}
                 >
                   {actionLoading === 'start'
                     ? <CircularProgress size={16} sx={{ color: '#0A0F1F' }} />
@@ -390,8 +390,8 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
     <Box
       sx={{
         width: 64, height: 64, borderRadius: '50%',
-        bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,224,255,.07)',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'rgba(0,224,255,.2)'}`,
+        bgcolor: isDark ? 'rgba(255,255,255,.06)' : 'rgba(38,166,154,.07)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : 'rgba(38,166,154,.2)'}`,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', mb: 2,
       }}
     >
@@ -409,9 +409,9 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
         startIcon={<AddIcon />}
         onClick={onCreateClick}
         sx={{
-          bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
+          bgcolor: '#26a69a', color: '#fff', fontWeight: 700,
           borderRadius: '6px', px: 3,
-          '&:hover': { bgcolor: '#006b6b' },
+          '&:hover': { bgcolor: '#1d7a70' },
         }}
       >
         Create Your First VM

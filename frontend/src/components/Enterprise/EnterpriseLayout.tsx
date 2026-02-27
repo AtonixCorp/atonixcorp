@@ -80,7 +80,7 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        background: 'linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)',
         width: 260,
       }}
     >
@@ -138,7 +138,7 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
       {/* Mobile AppBar */}
       <AppBar
         position="fixed"

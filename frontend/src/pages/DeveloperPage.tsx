@@ -37,7 +37,7 @@ const DeveloperPage: React.FC = () => {
   const primaryBlue = '#0A0F1F';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
-  const accentCyan = '#008080';
+  const accentCyan = '#276fd3';
 
   return (
     <Box>

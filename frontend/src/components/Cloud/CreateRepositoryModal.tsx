@@ -69,10 +69,10 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       borderRadius: '8px',
       bgcolor:  isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB',
       '& fieldset': { borderColor: border },
-      '&:hover fieldset': { borderColor: '#008080' },
-      '&.Mui-focused fieldset': { borderColor: '#008080' },
+      '&:hover fieldset': { borderColor: '#26a69a' },
+      '&.Mui-focused fieldset': { borderColor: '#26a69a' },
     },
-    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#008080' } },
+    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#26a69a' } },
     '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' },
     '& .MuiFormHelperText-root': { color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' },
   };
@@ -126,7 +126,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
                 <Box key={val} onClick={() => setVisibility(val as RepoVisibility)}
                   sx={{ flex: 1, p: 1.75, borderRadius: '10px', cursor: 'pointer',
                     border: `2px solid ${visibility === val ? (val === 'private' ? '#0A0F1F' : '#10B981') : border}`,
-                    bgcolor: visibility === val ? (val === 'private' ? 'rgba(0,224,255,.1)' : 'rgba(16,185,129,.07)') : (isDark ? 'rgba(255,255,255,.03)' : '#F9FAFB'),
+                    bgcolor: visibility === val ? (val === 'private' ? 'rgba(38,166,154,.1)' : 'rgba(16,185,129,.07)') : (isDark ? 'rgba(255,255,255,.03)' : '#F9FAFB'),
                     transition: 'all .14s', position: 'relative',
                   }}>
                   {visibility === val && <CheckCircleIcon sx={{ position: 'absolute', top: 8, right: 8, fontSize: '.9rem', color: val === 'private' ? '#0A0F1F' : '#10B981' }} />}
@@ -149,7 +149,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
                   display="flex" alignItems="center" justifyContent="space-between"
                   sx={{ px: 1.5, py: 1, borderRadius: '8px', cursor: 'pointer',
                     border: `1px solid ${region === r.key ? '#0A0F1F' : border}`,
-                    bgcolor: region === r.key ? 'rgba(0,224,255,.08)' : (isDark ? 'transparent' : 'transparent'),
+                    bgcolor: region === r.key ? 'rgba(38,166,154,.08)' : (isDark ? 'transparent' : 'transparent'),
                     transition: 'all .12s', '&:hover': { borderColor: '#0A0F1F' },
                   }}>
                   <Typography fontSize=".88rem" color={isDark ? '#ffffff' : '#0A0F1F'}>
@@ -171,7 +171,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
               <strong>/{name || '<name>'}</strong>
             </Typography>
             <Box display="flex" gap={1} mt={.75} flexWrap="wrap">
-              <Chip size="small" label={visibility} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: visibility === 'private' ? 'rgba(0,224,255,.12)' : 'rgba(16,185,129,.1)', color: visibility === 'private' ? '#0A0F1F' : '#10B981' }} />
+              <Chip size="small" label={visibility} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: visibility === 'private' ? 'rgba(38,166,154,.12)' : 'rgba(16,185,129,.1)', color: visibility === 'private' ? '#0A0F1F' : '#10B981' }} />
               <Chip size="small" label={REGIONS.find(r => r.key === region)?.label ?? region} sx={{ height: 16, fontSize: '.62rem', fontWeight: 700, bgcolor: isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6', color: isDark ? '#ffffff' : '#374151' }} />
             </Box>
           </Box>
@@ -186,7 +186,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         </Button>
         <Button variant="contained" disabled={!canSubmit} onClick={handleSubmit}
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-          sx={{ bgcolor: '#008080', '&:hover': { bgcolor: '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
+          sx={{ bgcolor: '#26a69a', '&:hover': { bgcolor: '#1d7a70' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
           {loading ? 'Creating…' : 'Create Repository'}
         </Button>
       </DialogActions>
