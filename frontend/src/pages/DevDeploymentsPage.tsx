@@ -21,7 +21,6 @@ import {
   Tab,
   Divider,
 } from '@mui/material';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
 import { NewDeploymentPayload } from './DevDeployAppPage';
 
@@ -153,7 +152,7 @@ const DevDeploymentsPage: React.FC = () => {
   }, [deployments]);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: dashboardTokens.colors.background }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: dashboardTokens.colors.background, '& .MuiSvgIcon-root': { display: 'none' } }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={2} gap={1}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: dashboardTokens.colors.textPrimary }}>Deployments</Typography>
@@ -161,7 +160,6 @@ const DevDeploymentsPage: React.FC = () => {
         </Box>
         <Button
           variant="contained"
-          startIcon={<RocketLaunchIcon sx={{ fontSize: '.85rem' }} />}
           onClick={() => navigate('/developer/Dashboard/deploy-app')}
           sx={dashboardPrimaryButtonSx}
         >

@@ -20,10 +20,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DownloadIcon from '@mui/icons-material/Download';
 import { kubernetesApi } from '../services/cloudApi';
 import type { CreateKubernetesClusterPayload, KubernetesCluster } from '../types/kubernetes';
@@ -141,7 +139,7 @@ const KubernetesPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Deploy Cluster</Button>
+          <Button variant="contained" onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Deploy Cluster</Button>
         </Stack>
       </Stack>
 
@@ -221,7 +219,7 @@ const KubernetesPage: React.FC = () => {
                       onChange={(event) => setYaml(event.target.value)}
                     />
                     <Stack direction="row" justifyContent="flex-end" mt={1}>
-                      <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={deployYaml} sx={dashboardPrimaryButtonSx}>Deploy Manifest</Button>
+                      <Button variant="contained" onClick={deployYaml} sx={dashboardPrimaryButtonSx}>Deploy Manifest</Button>
                     </Stack>
                   </Box>
                 )}

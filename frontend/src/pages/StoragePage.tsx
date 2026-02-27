@@ -35,6 +35,7 @@ import {
   dashboardTokens,
   dashboardSemanticColors,
 } from '../styles/dashboardDesignSystem';
+import { DeployButton } from '../components/deploy/DeployDropdown';
 
 // ── colour helpers ────────────────────────────────────────────────────────────
 
@@ -280,10 +281,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
           sx={{ border: `1px solid ${tokens.border}`, color: tokens.muted, fontSize: 12, height: 34, '&:hover': { borderColor: STORAGE_ACCENT, color: STORAGE_ACCENT } }}>
           Refresh
         </Button>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-          sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, height: 34, fontSize: 12 }}>
-          Deploy Storage
-        </Button>
+        <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} size="small" />
       </Box>
 
       {error && <Alert severity="error" sx={{ mx: 3, mt: 1 }}>{error}</Alert>}
@@ -312,10 +310,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               <Box sx={{ p: 4, textAlign: 'center' }}>
                 <FolderOpenIcon sx={{ fontSize: 48, color: tokens.muted, mb: 1 }} />
                 <Typography sx={{ color: tokens.muted, fontSize: 13, mb: 2 }}>No buckets yet</Typography>
-                <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-                  sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, fontSize: 12 }}>
-                  Deploy Storage
-                </Button>
+                <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} size="small" />
               </Box>
             ) : filtered.map(b => (
               <Box key={b.resource_id} onClick={() => selectBucket(b)}
@@ -649,10 +644,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               <Typography sx={{ fontSize: 13, color: tokens.muted, textAlign: 'center', maxWidth: 300 }}>
                 Choose a bucket from the list, or create a new one to get started.
               </Typography>
-              <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
-                sx={{ bgcolor: tokens.brand, '&:hover': { bgcolor: tokens.brandHover }, mt: 1 }}>
-                Deploy Storage
-              </Button>
+              <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} />
             </Box>
           )
         )}

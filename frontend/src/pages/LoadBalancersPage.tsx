@@ -189,7 +189,7 @@ const LoadBalancersPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>Deploy Load Balancer</Button>
+          <Button variant="contained" onClick={() => setOpenCreate(true)}>Deploy Load Balancer</Button>
         </Stack>
       </Stack>
 

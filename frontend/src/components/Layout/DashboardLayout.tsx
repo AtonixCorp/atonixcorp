@@ -64,6 +64,7 @@ import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem';
+import { DeployDropdown } from '../deploy/DeployDropdown';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -167,7 +168,6 @@ const DOMAINS_NAV: NavItem[] = [
 
 const DOMAINS_ACCOUNT_NAV: NavItem[] = [
   { label: 'Billing',  icon: <BillingIcon  {...I()} />, path: '/dashboard/billing' },
-  { label: 'Settings', icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
 ];
 
 const MONITOR_NAV: NavItem[] = [
@@ -179,19 +179,13 @@ const MONITOR_NAV: NavItem[] = [
   { label: 'Sections',   icon: <ViewListIcon          {...I()} />, path: '/monitor-dashboard/sections'   },
 ];
 
-const MONITOR_ACCOUNT_NAV: NavItem[] = [
-  { label: 'Settings', icon: <SettingsIcon {...I()} />, path: '/monitor-dashboard/settings' },
-];
+const MONITOR_ACCOUNT_NAV: NavItem[] = [];
 
 const MONITOR_SUPPORT_NAV: NavItem[] = [];
 
 const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 
-const ACCOUNT_NAV: NavItem[] = [
-  { label: 'Billing',   icon: <BillingIcon  {...I()} />, path: '/dashboard/billing'  },
-  { label: 'Teams',     icon: <TeamIcon     {...I()} />, path: '/dashboard/teams'    },
-  { label: 'Settings',  icon: <SettingsIcon {...I()} />, path: '/dashboard/settings' },
-];
+const ACCOUNT_NAV: NavItem[] = [];
 
 const DEVELOPER_ACCOUNT_NAV: NavItem[] = [];
 
@@ -704,6 +698,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
 
             <Box sx={{ flex: 1 }} />
 
+            {/* Deploy+ dropdown */}
+            <DeployDropdown />
+
             {/* Dark / Light mode toggle */}
             <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
               <IconButton
@@ -822,6 +819,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               </Box>
               {[
                 { label: 'Profile',       icon: <PersonIcon />,            path: `${routeBase}/settings/profile` },
+                { label: 'Settings',      icon: <SettingsIcon />,          path: `${routeBase}/settings` },
                 { label: 'Preferences',   icon: <TuneIcon />,              path: `${routeBase}/settings/preferences` },
                 { label: 'Notifications', icon: <NotificationsNoneIcon />, path: `${routeBase}/settings/notifications` },
               ].map(item => (
@@ -872,15 +870,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
 
               <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
 
-              {/* Billing + Sign out */}
-              {dashboardMode === 'cloud' && (
-                <MenuItem onClick={() => { setProfileAnchor(null); navigate(`${routeBase}/billing`); }}
-                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
-                  <BillingIcon sx={{ fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' }} />
-                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>Billing</Typography>
-                </MenuItem>
-              )}
               <MenuItem onClick={handleLogout}
                 sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, mb: .5, borderRadius: '2px',
                   '&:hover': { bgcolor: 'rgba(239,68,68,.08)' } }}>

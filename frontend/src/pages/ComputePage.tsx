@@ -707,7 +707,6 @@ const ComputePage: React.FC = () => {
             ) : (
               <>
                 <Button fullWidth variant="contained" disabled={!canNext() || deploying}
-                  startIcon={deploying ? <CircularProgress size={14} color="inherit" /> : <RocketLaunchIcon />}
                   onClick={handleDeploy}
                   sx={{ bgcolor: computeUiTokens.successStrong, '&:hover': { bgcolor: computeUiTokens.successHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
                   {deploying ? 'Deploying…' : 'Deploy Server'}

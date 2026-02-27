@@ -674,7 +674,7 @@ function EmptyState({ onCreate, isDark }: { onCreate: () => void; isDark: boolea
       <Typography variant="body2" sx={{ color: isDark ? REGISTRY_PALETTE.panelMutedDark : REGISTRY_PALETTE.textMuted, mb: 3, maxWidth: 360, mx: 'auto' }}>
         Push Docker, OCI and Helm images to a private, multi-region container registry. Fully managed and secured.
       </Typography>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}
+      <Button variant="contained" onClick={onCreate}
         sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
         Deploy Container
       </Button>
@@ -736,7 +736,7 @@ const ContainerRegistryPage: React.FC = () => {
             sx={{ textTransform: 'none', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textBody, borderColor: border, '&:hover': { bgcolor: isDark ? REGISTRY_PALETTE.panelMedDark : 'rgba(0,0,0,.04)' } }}>
             Refresh
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreate(true)}
+          <Button variant="contained" onClick={() => setCreate(true)}
             sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
             Deploy Container
           </Button>

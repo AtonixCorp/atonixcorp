@@ -1,17 +1,17 @@
-// Deploy App — Intelligent Application Deployment Wizard
-// 11-step guided deployment: source → stack → infra → review → live deploy
+// Deploy App - Intelligent Application Deployment Wizard
+// 11-step guided deployment: source -> stack -> infra -> review -> live deploy
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Box, Typography, Stack, Button, Chip,
+   Box, Typography, Stack, Button, Chip,
   TextField, LinearProgress, Tooltip, IconButton, Divider,
   Collapse, CircularProgress, Fade
 } from '@mui/material'
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem'
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
-import CheckCircleIcon      from '@mui/icons-material/CheckCircle'
+ import CheckCircleIcon      from '@mui/icons-material/CheckCircle'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import GitHubIcon            from '@mui/icons-material/GitHub'
 import StorageIcon           from '@mui/icons-material/Storage'
@@ -107,7 +107,7 @@ const DEFAULT: WizardState = {
   deployMode: '', description: '', project: '', newProject: '', gitRepo: '', gitBranch: 'main',
 }
 
-// ─── Option card ──────────────────────────────────────────────────────────────
+ // ─── Option card ──────────────────────────────────────────────────────────────
 function OptionCard({
   label, description, icon, selected, onClick, badge, wide,
 }: {
@@ -177,7 +177,7 @@ function CodeBlock({ code }: { code: string }) {
 // ─── Log line ─────────────────────────────────────────────────────────────────
 function LogLine({ text, type }: { text: string; type: 'info'|'success'|'warn'|'error' }) {
   const c = type==='success' ? S.success : type==='warn' ? S.warning : type==='error' ? S.danger : t.textSecondary
-  const prefix = type==='success' ? '✓ ' : type==='warn' ? '⚠ ' : type==='error' ? '✕ ' : '  '
+  const prefix = type==='success' ? '[OK] ' : type==='warn' ? '[WARN] ' : type==='error' ? '[ERR] ' : '  '
   return (
     <Typography sx={{ fontFamily:'monospace', fontSize:'.72rem', color: c, lineHeight:1.6 }}>{prefix}{text}</Typography>
   )
@@ -187,31 +187,31 @@ function LogLine({ text, type }: { text: string; type: 'info'|'success'|'warn'|'
 const buildLogScript = (state: WizardState): Array<{ text: string; type: 'info'|'success'|'warn'|'error'; delay: number }> => [
   { text: `[CI/CD] Pipeline created for ${state.project || state.newProject || 'new-app'}`, type:'info',    delay: 300  },
   { text: `[GIT]   Cloning ${state.gitRepo || 'github.com/org/repo'} branch ${state.gitBranch}`, type:'info', delay: 900  },
-  { text: `[GIT]   HEAD is at a7e3c9f  – clone complete`,                                       type:'success', delay: 1500 },
+   { text: `[GIT]   HEAD is at a7e3c9f - clone complete`,                                        type:'success', delay: 1500 },
   { text: `[ENV]   Injecting environment variables (${state.appType||'app'} profile)`,           type:'info', delay: 2100 },
-  { text: `[ENV]   DATABASE_URL, SECRET_KEY, API_PORT  — 3 variables injected`,                 type:'success', delay: 2700 },
-  { text: `[BUILD] Detecting build system — ${state.frontend||'React'} + ${state.backend||'Node.js'}`, type:'info', delay: 3200 },
-  { text: `[BUILD] Installing dependencies…`,                                                    type:'info', delay: 4000  },
+  { text: `[ENV]   DATABASE_URL, SECRET_KEY, API_PORT - 3 variables injected`,                  type:'success', delay: 2700 },
+  { text: `[BUILD] Detecting build system - ${state.frontend||'React'} + ${state.backend||'Node.js'}`, type:'info', delay: 3200 },
+  { text: `[BUILD] Installing dependencies...`,                                                  type:'info', delay: 4000  },
   { text: `[BUILD] Build command: npm run build`,                                                type:'info', delay: 5000  },
-  { text: `[BUILD] Build complete — dist/  (2.4 MB)`,                                           type:'success', delay: 6200 },
-  { text: `[DOCKER] Building container image…`,                                                  type:'info', delay: 7000  },
-  { text: `[DOCKER] Step 1/8 — FROM node:20-alpine`,                                            type:'info', delay: 7500  },
-  { text: `[DOCKER] Step 5/8 — COPY dist/ /app/dist/`,                                          type:'info', delay: 8400  },
-  { text: `[DOCKER] Step 8/8 — CMD ["node","server.js"]`,                                       type:'info', delay: 9200  },
+  { text: `[BUILD] Build complete - dist/  (2.4 MB)`,                                            type:'success', delay: 6200 },
+  { text: `[DOCKER] Building container image...`,                                                type:'info', delay: 7000  },
+  { text: `[DOCKER] Step 1/8 - FROM node:20-alpine`,                                             type:'info', delay: 7500  },
+  { text: `[DOCKER] Step 5/8 - COPY dist/ /app/dist/`,                                           type:'info', delay: 8400  },
+  { text: `[DOCKER] Step 8/8 - CMD ["node","server.js"]`,                                       type:'info', delay: 9200  },
   { text: `[DOCKER] Image built: registry.atonixcorp.io/${state.project||'app'}:latest`,        type:'success', delay: 10000 },
-  { text: `[REGISTRY] Pushing image to AtonixCorp Container Registry…`,                        type:'info', delay: 10800 },
+  { text: `[REGISTRY] Pushing image to AtonixCorp Container Registry...`,                       type:'info', delay: 10800 },
   { text: `[REGISTRY] Push complete`,                                                            type:'success', delay: 12000 },
-  { text: `[DB]    Provisioning ${state.database||'PostgreSQL'} instance…`,                    type:'info', delay: 12700 },
-  { text: `[DB]    Instance ready — atonix-pg-${Math.floor(Math.random()*900+100)}`,            type:'success', delay: 14000 },
+  { text: `[DB]    Provisioning ${state.database||'PostgreSQL'} instance...`,                   type:'info', delay: 12700 },
+  { text: `[DB]    Instance ready - atonix-pg-${Math.floor(Math.random()*900+100)}`,             type:'success', delay: 14000 },
   { text: state.deployMode === 'kubernetes'
-      ? `[K8S]   Applying Kubernetes manifests (deployment + service + ingress)…`
-      : `[CONTAINER] Deploying container to runtime…`,                                          type:'info', delay: 14800 },
+      ? `[K8S]   Applying Kubernetes manifests (deployment + service + ingress)...`
+      : `[CONTAINER] Deploying container to runtime...`,                                         type:'info', delay: 14800 },
   { text: state.deployMode === 'kubernetes'
-      ? `[K8S]   Pods: 2/2 Running — Health checks passing`
-      : `[CONTAINER] Container started — health check OK`,                                      type:'success', delay: 16500 },
-  { text: `[MONITOR] Monitoring rules activated — alerting on p95 > 800ms`,                    type:'info', delay: 17200 },
+        ? `[K8S]   Pods: 2/2 Running - Health checks passing`
+        : `[CONTAINER] Container started - health check OK`,                                      type:'success', delay: 16500 },
+      { text: `[MONITOR] Monitoring rules activated - alerting on p95 > 800ms`,                     type:'info', delay: 17200 },
   { text: `[AUDIT]  Deployment event recorded in Audit Logs`,                                  type:'info', delay: 17800 },
-  { text: `[DONE]  Deployment successful — https://${(state.project||'new-app').toLowerCase()}.atonixcorp.app`, type:'success', delay: 18500 },
+     { text: `[DONE]  Deployment successful - https://${(state.project||'new-app').toLowerCase()}.atonixcorp.app`, type:'success', delay: 18500 },
 ]
 
 // ─── Existing mock projects ────────────────────────────────────────────────────
@@ -422,7 +422,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
   const pct = Math.round(((step - 1) / 10) * 100)
 
   return (
-    <Box sx={{ display:'flex', height:'calc(100vh - 64px)', fontFamily:FONT, overflow:'hidden' }}>
+    <Box sx={{ display:'flex', height:'calc(100vh - 64px)', fontFamily:FONT, overflow:'hidden', '& .MuiSvgIcon-root': { display: 'none' } }}>
 
       {/* ─── Left sidebar — step list ─── */}
       <Box sx={{
@@ -679,7 +679,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
             {aiThinking && (
               <Box sx={{ display:'flex', alignItems:'center', gap:1, mt:2, p:'10px 14px', borderRadius:'8px', border:`1px solid rgba(21,61,117,.25)`, bgcolor:'rgba(21,61,117,.05)' }}>
                 <CircularProgress size={14} sx={{ color: t.brand }} />
-                <Typography sx={{ fontSize:'.78rem', color: t.brand, fontFamily:FONT }}>AtonixCorp Intelligence is analyzing your description…</Typography>
+                  <Typography sx={{ fontSize:'.78rem', color: t.brand, fontFamily:FONT }}>AtonixCorp Intelligence is analyzing your description...</Typography>
               </Box>
             )}
 
@@ -782,7 +782,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               </Box>
               {state.gitRepo.length > 8 && (
                 <InfoBanner icon={<AutoAwesomeIcon sx={{ fontSize:'.9rem' }} />} color={t.brand}>
-                  Auto-detected: Dockerfile ✓  &nbsp;|&nbsp;  Kubernetes manifests ✓  &nbsp;|&nbsp;  .env.example ✓  &nbsp;|&nbsp;  package.json ✓
+                  Auto-detected: Dockerfile (detected)  |  Kubernetes manifests (detected)  |  .env.example (detected)  |  package.json (detected)
                 </InfoBanner>
               )}
             </Stack>
@@ -896,7 +896,7 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                   </Stack>
                 </Box>
                 <Button
-                  variant="contained" size="large" startIcon={<RocketLaunchIcon />}
+                  variant="contained" size="large"
                   onClick={runDeploy}
                   sx={{ fontWeight:800, fontSize:'.88rem', borderRadius:'8px', textTransform:'none', fontFamily:FONT,
                     bgcolor: t.brand, color:'#FFFFFF', boxShadow:'0 0 24px rgba(21,61,117,.35)',
@@ -994,7 +994,6 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
         {step < 11 && (
           <Stack direction="row" justifyContent="space-between" sx={{ mt:3, pt:2, borderTop:`1px solid ${t.border}` }}>
             <Button
-              startIcon={<ArrowBackIcon sx={{ fontSize:'.85rem' }} />}
               disabled={step === 1}
               onClick={() => setStep(s => s - 1)}
               sx={{ fontFamily:FONT, fontWeight:700, fontSize:'.8rem', textTransform:'none', borderRadius:'7px',
@@ -1004,7 +1003,6 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               Back
             </Button>
             <Button
-              endIcon={<ArrowForwardIcon sx={{ fontSize:'.85rem' }} />}
               disabled={!canNext()}
               onClick={() => setStep(s => s + 1)}
               variant="contained"
