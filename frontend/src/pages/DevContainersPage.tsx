@@ -223,7 +223,7 @@ const DevContainersPage: React.FC = () => {
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setWizardOpen(true)}
-          sx={{ bgcolor: t.brandPrimary, color: '#0a0f1a', fontWeight: 700, fontSize: '.8rem', borderRadius: '6px', textTransform: 'none', boxShadow: 'none', fontFamily: FONT, '&:hover': { bgcolor: t.brandPrimaryHover, boxShadow: 'none' } }}>
+          sx={{ bgcolor: t.brandPrimary, color: '#FFFFFF', fontWeight: 700, fontSize: '.8rem', borderRadius: '6px', textTransform: 'none', boxShadow: 'none', fontFamily: FONT, '&:hover': { bgcolor: t.brandPrimaryHover, boxShadow: 'none' } }}>
           Create Container
         </Button>
       </Box>

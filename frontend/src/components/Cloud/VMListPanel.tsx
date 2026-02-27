@@ -168,7 +168,7 @@ const VMListPanel: React.FC<VMListPanelProps> = ({ refreshKey = 0, onCreateClick
               sx={{
                 bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
                 fontSize: '.75rem', borderRadius: '6px', px: 1.5, py: .5,
-                '&:hover': { bgcolor: '#00C8E5' },
+                '&:hover': { bgcolor: '#006b6b' },
               }}
             >
               Create VM
@@ -411,7 +411,7 @@ const EmptyState: React.FC<{ onCreateClick?: () => void }> = ({ onCreateClick })
         sx={{
           bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
           borderRadius: '6px', px: 3,
-          '&:hover': { bgcolor: '#00C8E5' },
+          '&:hover': { bgcolor: '#006b6b' },
         }}
       >
         Create Your First VM

@@ -147,7 +147,7 @@ const DevPipelinesPage: React.FC = () => {
           onClick={() => setRunModalOpen(true)}
           sx={{
             bgcolor: dashboardTokens.colors.brandPrimary,
-            color: '#0a0f1a',
+            color: '#FFFFFF',
             fontWeight: 700,
             fontSize: '.8rem',
             borderRadius: '6px',

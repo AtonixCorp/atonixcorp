@@ -145,7 +145,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
     >
       <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <RocketLaunchIcon sx={{ color: '#00E0FF' }} />
+          <RocketLaunchIcon sx={{ color: '#008080' }} />
           <Typography fontWeight={800} fontSize="1.1rem" color="#fff">
             Deploy Your First Server
           </Typography>
@@ -166,10 +166,10 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                 sx={{
                   '& .MuiStepLabel-label': { color: '#9ca3af', fontSize: '.8rem' },
                   '& .MuiStepLabel-label.Mui-active': { color: '#fff', fontWeight: 700 },
-                  '& .MuiStepLabel-label.Mui-completed': { color: '#00E0FF' },
+                  '& .MuiStepLabel-label.Mui-completed': { color: '#008080' },
                   '& .MuiStepIcon-root': { color: 'rgba(255,255,255,.1)' },
-                  '& .MuiStepIcon-root.Mui-active': { color: '#00E0FF' },
-                  '& .MuiStepIcon-root.Mui-completed': { color: '#00E0FF' },
+                  '& .MuiStepIcon-root.Mui-active': { color: '#008080' },
+                  '& .MuiStepIcon-root.Mui-completed': { color: '#008080' },
                 }}
               >
                 {label}
@@ -181,7 +181,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
 
       <DialogContent sx={{ pt: 2 }}>
         {success && (
-          <Alert severity="success" sx={{ mb: 2, bgcolor: 'rgba(0,224,255,.1)', color: '#00E0FF', border: '1px solid rgba(0,224,255,.3)' }}>
+          <Alert severity="success" sx={{ mb: 2, bgcolor: 'rgba(0,128,128,.1)', color: '#008080', border: '1px solid rgba(0,128,128,.3)' }}>
             Server is being provisioned! Redirecting…
           </Alert>
         )}
@@ -193,7 +193,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
 
         {loadingOpts ? (
           <Box sx={{ textAlign: 'center', py: 5 }}>
-            <CircularProgress sx={{ color: '#00E0FF' }} />
+            <CircularProgress sx={{ color: '#008080' }} />
             <Typography mt={2} color="#9ca3af" fontSize=".9rem">Loading cloud options…</Typography>
           </Box>
         ) : (
@@ -211,11 +211,11 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                           p: 2, borderRadius: 2, cursor: 'pointer',
                           border: '1px solid',
                           borderColor: selectedImage?.image_id === img.image_id
-                            ? '#00E0FF' : 'rgba(255,255,255,.08)',
+                            ? '#008080' : 'rgba(255,255,255,.08)',
                           bgcolor: selectedImage?.image_id === img.image_id
-                            ? 'rgba(0,224,255,.08)' : 'rgba(255,255,255,.03)',
+                            ? 'rgba(0,128,128,.08)' : 'rgba(255,255,255,.03)',
                           transition: 'all .15s',
-                          '&:hover': { borderColor: 'rgba(0,224,255,.5)', bgcolor: 'rgba(0,224,255,.05)' },
+                          '&:hover': { borderColor: 'rgba(0,128,128,.5)', bgcolor: 'rgba(0,128,128,.05)' },
                         }}
                       >
                         <Box mb={.5} sx={{ lineHeight: 1 }}>{OS_ICONS[img.os_type] ?? OS_ICON_FALLBACK}</Box>
@@ -241,15 +241,15 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                         p: 2, borderRadius: 2, cursor: 'pointer',
                         border: '1px solid',
                         borderColor: selectedFlavor?.flavor_id === fl.flavor_id
-                          ? '#00E0FF' : 'rgba(255,255,255,.08)',
+                          ? '#008080' : 'rgba(255,255,255,.08)',
                         bgcolor: selectedFlavor?.flavor_id === fl.flavor_id
-                          ? 'rgba(0,224,255,.08)' : 'rgba(255,255,255,.03)',
+                          ? 'rgba(0,128,128,.08)' : 'rgba(255,255,255,.03)',
                         display: 'flex', alignItems: 'center', gap: 2,
                         transition: 'all .15s',
-                        '&:hover': { borderColor: 'rgba(0,224,255,.5)' },
+                        '&:hover': { borderColor: 'rgba(0,128,128,.5)' },
                       }}
                     >
-                      <ComputerIcon sx={{ color: fl.is_gpu ? '#f59e0b' : '#00E0FF', fontSize: '1.8rem', flexShrink: 0 }} />
+                      <ComputerIcon sx={{ color: fl.is_gpu ? '#f59e0b' : '#008080', fontSize: '1.8rem', flexShrink: 0 }} />
                       <Box flex={1}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Typography fontWeight={700} color="#fff" fontSize=".9rem">{fl.name}</Typography>
@@ -259,7 +259,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                           {fl.vcpus} vCPU · {(fl.memory_mb / 1024).toFixed(0)} GB RAM · {fl.disk_gb} GB SSD
                         </Typography>
                       </Box>
-                      <Typography fontWeight={700} color="#00E0FF" fontSize=".9rem">
+                      <Typography fontWeight={700} color="#008080" fontSize=".9rem">
                         ${fl.hourly_cost_usd}/hr
                       </Typography>
                     </Box>
@@ -305,15 +305,15 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                         sx={{
                           p: 1.5, borderRadius: 2, cursor: 'pointer',
                           border: '1px solid',
-                          borderColor: !selectedNetwork ? '#00E0FF' : 'rgba(255,255,255,.08)',
-                          bgcolor: !selectedNetwork ? 'rgba(0,224,255,.08)' : 'rgba(255,255,255,.03)',
+                          borderColor: !selectedNetwork ? '#008080' : 'rgba(255,255,255,.08)',
+                          bgcolor: !selectedNetwork ? 'rgba(0,128,128,.08)' : 'rgba(255,255,255,.03)',
                           display: 'flex', alignItems: 'center', gap: 1.5,
                           transition: 'all .15s',
                         }}
                       >
-                        <HubIcon sx={{ color: '#00E0FF', fontSize: '1.1rem' }} />
+                        <HubIcon sx={{ color: '#008080', fontSize: '1.1rem' }} />
                         <Typography fontSize=".85rem" color="#e6eef7" fontWeight={600}>Default Network</Typography>
-                        <Chip label="Recommended" size="small" sx={{ ml: 'auto', bgcolor: 'rgba(0,224,255,.12)', color: '#00E0FF', fontSize: '.65rem', height: 18 }} />
+                        <Chip label="Recommended" size="small" sx={{ ml: 'auto', bgcolor: 'rgba(0,128,128,.12)', color: '#008080', fontSize: '.65rem', height: 18 }} />
                       </Box>
                       {networks.map((net) => (
                         <Box
@@ -322,8 +322,8 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
                           sx={{
                             p: 1.5, borderRadius: 2, cursor: 'pointer',
                             border: '1px solid',
-                            borderColor: selectedNetwork?.id === net.id ? '#00E0FF' : 'rgba(255,255,255,.08)',
-                            bgcolor: selectedNetwork?.id === net.id ? 'rgba(0,224,255,.08)' : 'rgba(255,255,255,.03)',
+                            borderColor: selectedNetwork?.id === net.id ? '#008080' : 'rgba(255,255,255,.08)',
+                            bgcolor: selectedNetwork?.id === net.id ? 'rgba(0,128,128,.08)' : 'rgba(255,255,255,.03)',
                             display: 'flex', alignItems: 'center', gap: 1.5,
                             transition: 'all .15s',
                           }}
@@ -368,7 +368,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
             variant="contained"
             disabled={!canNext()}
             onClick={handleNext}
-            sx={{ bgcolor: '#00E0FF', color: '#05243b', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#00C8E5' } }}
+            sx={{ bgcolor: '#008080', color: '#FFFFFF', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#006b6b' } }}
           >
             Next
           </Button>
@@ -377,8 +377,8 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
             variant="contained"
             disabled={!canNext() || submitting}
             onClick={handleDeploy}
-            startIcon={submitting ? <CircularProgress size={16} sx={{ color: '#05243b' }} /> : <RocketLaunchIcon />}
-            sx={{ bgcolor: '#00E0FF', color: '#05243b', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#00C8E5' } }}
+            startIcon={submitting ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <RocketLaunchIcon />}
+            sx={{ bgcolor: '#008080', color: '#FFFFFF', fontWeight: 700, borderRadius: 2, px: 3, '&:hover': { bgcolor: '#006b6b' } }}
           >
             {submitting ? 'Deploying…' : 'Create Server'}
           </Button>
@@ -391,7 +391,7 @@ const DeployWizardModal: React.FC<DeployWizardModalProps> = ({ open, onClose, on
 const SummaryRow: React.FC<{ label: string; value: string; highlight?: boolean }> = ({ label, value, highlight }) => (
   <Stack direction="row" justifyContent="space-between">
     <Typography variant="caption" color="#9ca3af">{label}</Typography>
-    <Typography variant="caption" color={highlight ? '#00E0FF' : '#e6eef7'} fontWeight={highlight ? 700 : 400}>
+    <Typography variant="caption" color={highlight ? '#008080' : '#e6eef7'} fontWeight={highlight ? 700 : 400}>
       {value}
     </Typography>
   </Stack>
@@ -416,11 +416,11 @@ const textFieldSx = {
   '& .MuiOutlinedInput-root': {
     color: '#fff',
     '& fieldset': { borderColor: 'rgba(255,255,255,.15)' },
-    '&:hover fieldset': { borderColor: 'rgba(0,224,255,.5)' },
-    '&.Mui-focused fieldset': { borderColor: '#00E0FF' },
+    '&:hover fieldset': { borderColor: 'rgba(0,128,128,.5)' },
+    '&.Mui-focused fieldset': { borderColor: '#008080' },
   },
   '& .MuiInputLabel-root': { color: '#9ca3af' },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#00E0FF' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#008080' },
 };
 
 export default DeployWizardModal;

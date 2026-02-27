@@ -758,12 +758,12 @@ const GroupCreatePage: React.FC = () => {
             ) : (
               <Button
                 variant="contained"
-                startIcon={saving ? <CircularProgress size={14} sx={{ color: '#0a0f1a' }} /> : <CheckCircleOutlineIcon />}
+                startIcon={saving ? <CircularProgress size={14} sx={{ color: '#FFFFFF' }} /> : <CheckCircleOutlineIcon />}
                 disabled={saving}
                 onClick={handleCreate}
                 sx={{
                   bgcolor: dashboardTokens.colors.brandPrimary,
-                  color: '#0a0f1a',
+                  color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '.85rem',
                   textTransform: 'none',

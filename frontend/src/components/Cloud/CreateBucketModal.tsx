@@ -51,7 +51,7 @@ const CreateBucketModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
     muted:    isDark ? '#93a8c0' : '#6B7280',
     inputBg:  isDark ? '#132336' : '#FFFFFF',
     brand:    '#0A0F1F',
-    hover:    '#00C8E5',
+    hover:    '#006b6b',
   };
 
   const sx = {

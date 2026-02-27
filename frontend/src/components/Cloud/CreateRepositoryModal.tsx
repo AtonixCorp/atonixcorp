@@ -69,10 +69,10 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
       borderRadius: '8px',
       bgcolor:  isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB',
       '& fieldset': { borderColor: border },
-      '&:hover fieldset': { borderColor: '#00E0FF' },
-      '&.Mui-focused fieldset': { borderColor: '#00E0FF' },
+      '&:hover fieldset': { borderColor: '#008080' },
+      '&.Mui-focused fieldset': { borderColor: '#008080' },
     },
-    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#00E0FF' } },
+    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#008080' } },
     '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' },
     '& .MuiFormHelperText-root': { color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' },
   };
@@ -186,7 +186,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         </Button>
         <Button variant="contained" disabled={!canSubmit} onClick={handleSubmit}
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-          sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
+          sx={{ bgcolor: '#008080', '&:hover': { bgcolor: '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
           {loading ? 'Creating…' : 'Create Repository'}
         </Button>
       </DialogActions>

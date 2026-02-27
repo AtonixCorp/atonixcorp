@@ -753,7 +753,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               </Box>
               {[
                 { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#00E0FF' },
+                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#008080' },
                 { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
               ].map((n, i) => (
                 <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>

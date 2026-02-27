@@ -100,7 +100,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
             sx={{
               bgcolor: '#0A0F1F', color: '#fff', fontWeight: 700,
               px: 3, borderRadius: '6px',
-              '&:hover': { bgcolor: '#00C8E5', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(0,224,255,.35)' },
+              '&:hover': { bgcolor: '#006b6b', transform: 'translateY(-1px)', boxShadow: '0 4px 16px rgba(0,128,128,.35)' },
               transition: 'all .2s',
             }}
           >
@@ -115,9 +115,9 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({ username, onDeployClick }) =>
               startIcon={action.icon}
               onClick={() => navigate(action.path)}
               sx={{
-                borderColor: 'rgba(0,224,255,.3)', color: '#0A0F1F', fontWeight: 600,
+                borderColor: 'rgba(0,128,128,.3)', color: '#0A0F1F', fontWeight: 600,
                 px: 2.5, borderRadius: '6px',
-                '&:hover': { borderColor: '#0A0F1F', color: '#00C8E5', bgcolor: 'rgba(0,224,255,.06)' },
+                '&:hover': { borderColor: '#0A0F1F', color: '#008080', bgcolor: 'rgba(0,128,128,.06)' },
                 transition: 'all .2s',
               }}
             >

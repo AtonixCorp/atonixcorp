@@ -56,7 +56,7 @@ type MegaCategory = {
 };
 
 const IMPERIAL_MIDNIGHT = '#0A0F1F';
-const QUANTUM_CYAN = '#00E0FF';
+const QUANTUM_CYAN = '#008080';
 const CLOUD_SILVER = '#E5E7EB';
 const WHITE = '#FFFFFF';
 
@@ -475,7 +475,7 @@ const CloudPlatformHeader: React.FC = () => {
                         textTransform: 'none',
                         fontSize: 14,
                         fontWeight: 600,
-                        '&:hover': { bgcolor: '#00c8e6', boxShadow: 'none' },
+                        '&:hover': { bgcolor: '#006b6b', boxShadow: 'none' },
                       }}
                     >
                       Get Started
@@ -801,7 +801,7 @@ const CloudPlatformHeader: React.FC = () => {
                   setSignupOpen(true);
                 }}
                 variant="contained"
-                sx={{ borderRadius: 0, boxShadow: 'none', bgcolor: QUANTUM_CYAN, color: IMPERIAL_MIDNIGHT, textTransform: 'none', '&:hover': { boxShadow: 'none', bgcolor: '#00c8e6' } }}
+                sx={{ borderRadius: 0, boxShadow: 'none', bgcolor: QUANTUM_CYAN, color: '#FFFFFF', textTransform: 'none', '&:hover': { boxShadow: 'none', bgcolor: '#006b6b' } }}
               >
                 Get Started
               </Button>

@@ -25,10 +25,10 @@ const ___lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#00E0FF',
-      dark: '#00C8E5',
-      light: '#67EEFF',
-      contrastText: '#0A0F1F',
+      main: '#008080',
+      dark: '#006b6b',
+      light: '#33a0a0',
+      contrastText: '#FFFFFF',
     },
     secondary: {
       main: '#0A0F1F',
@@ -170,8 +170,8 @@ const ___lightTheme = createTheme({
         ':root': {
           '--color-primary': '#0A0F1F',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#00E0FF',
-          '--color-accent-hover': '#00C8E5',
+          '--color-accent': '#008080',
+          '--color-accent-hover': '#006b6b',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',
@@ -318,10 +318,10 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#00E0FF',
-      dark: '#00C8E5',
-      light: '#67EEFF',
-      contrastText: '#0f1419',
+      main: '#008080',
+      dark: '#006b6b',
+      light: '#33a0a0',
+      contrastText: '#FFFFFF',
     },
     secondary: {
       main: '#0f1419',
@@ -454,8 +454,8 @@ const ___darkTheme = createTheme({
         ':root': {
           '--color-primary': '#0f1419',
           '--color-primary-contrast': '#FFFFFF',
-          '--color-accent': '#00E0FF',
-          '--color-accent-hover': '#00C8E5',
+          '--color-accent': '#008080',
+          '--color-accent-hover': '#006b6b',
           '--color-text-primary': '#FFFFFF',
           '--color-text-secondary': '#A0A8B5',
           '--color-border': '#1F2937',

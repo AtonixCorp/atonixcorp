@@ -106,7 +106,7 @@ const DomainsLandingPage: React.FC = () => {
       >
         <Container maxWidth="lg">
           <Stack spacing={3}>
-            <Chip label="Atonix Domains" sx={{ alignSelf: 'flex-start', bgcolor: 'rgba(0,224,255,.12)', color: '#00E0FF', borderRadius: '2px' }} />
+            <Chip label="Atonix Domains" sx={{ alignSelf: 'flex-start', bgcolor: 'rgba(0,128,128,.12)', color: '#008080', borderRadius: '2px' }} />
             <Typography component="h1" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '3rem' }, lineHeight: 1.05, letterSpacing: '-.03em', maxWidth: 900 }}>
               Domain platform with full lifecycle, DNS, SSL, billing, and operational dashboards.
             </Typography>
@@ -137,7 +137,7 @@ const DomainsLandingPage: React.FC = () => {
                 onClick={handleSearch}
                 disabled={checking}
                 endIcon={checking ? <CircularProgress size={16} color="inherit" /> : <ArrowForwardIcon />}
-                sx={{ bgcolor: '#00E0FF', color: '#0A0F1F', borderRadius: '2px', fontWeight: 700, '&:hover': { bgcolor: '#00C8E5' } }}
+                sx={{ bgcolor: '#008080', color: '#FFFFFF', borderRadius: '2px', fontWeight: 700, '&:hover': { bgcolor: '#006b6b' } }}
               >
                 Check Availability
               </Button>
@@ -145,7 +145,7 @@ const DomainsLandingPage: React.FC = () => {
                 component={RouterLink}
                 to="/domains/dashboard"
                 variant="outlined"
-                sx={{ borderRadius: '2px', borderColor: '#00E0FF', color: '#00E0FF' }}
+                sx={{ borderRadius: '2px', borderColor: '#008080', color: '#008080' }}
               >
                 Open Dashboard
               </Button>
@@ -198,7 +198,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card key={item.title} sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1.25} alignItems="center">
-                    <Box sx={{ color: '#00E0FF' }}>{item.icon}</Box>
+                    <Box sx={{ color: '#008080' }}>{item.icon}</Box>
                     <Typography sx={{ fontWeight: 700 }}>{item.title}</Typography>
                   </Stack>
                   <Typography sx={{ mt: 1.25, color: dashboardTokens.colors.textSecondary, fontSize: '.92rem' }}>{item.text}</Typography>
@@ -218,7 +218,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <DashboardIcon fontSize="small" sx={{ color: '#00E0FF' }} />
+                    <DashboardIcon fontSize="small" sx={{ color: '#008080' }} />
                     <Typography sx={{ fontWeight: 700 }}>User Dashboard</Typography>
                   </Stack>
                   {[
@@ -238,7 +238,7 @@ const DomainsLandingPage: React.FC = () => {
               <Card sx={{ flex: 1, borderRadius: '4px', border: `1px solid ${dashboardTokens.colors.border}` }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <AdminPanelSettingsIcon fontSize="small" sx={{ color: '#00E0FF' }} />
+                    <AdminPanelSettingsIcon fontSize="small" sx={{ color: '#008080' }} />
                     <Typography sx={{ fontWeight: 700 }}>Admin Console</Typography>
                   </Stack>
                   {[

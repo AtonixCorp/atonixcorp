@@ -216,7 +216,7 @@ const ENVS: Env[] = [
     metrics: { cpu: 68, memory: 74, networkIn: '320 MB/h', networkOut: '180 MB/h', latency: 120, throughput: '240 req/s' },
   },
   {
-    id: 'dev', label: 'Development', color: '#00E0FF', bg: 'rgba(0,224,255,.10)', protected: false,
+    id: 'dev', label: 'Development', color: '#008080', bg: 'rgba(0,128,128,.10)', protected: false,
     health: 'healthy', version: 'v1.5.0-dev', errorRate: '0.8%', lastDeploy: '3 hours ago', locked: false,
     services: [
       { name: 'api-gateway',     type: 'Deployment', status: 'running', version: '1.5.0-dev', replicas: '1/1' },
@@ -991,7 +991,7 @@ function GlobalSecretsTab({ envs }: { envs: Env[] }) {
 const WIZARD_STEPS = ['General', 'Services', 'Config', 'Access & Review']
 
 const ENV_TYPE_OPTIONS = [
-  { value: 'development', label: 'Development', color: '#00E0FF', bg: 'rgba(0,224,255,.12)' },
+  { value: 'development', label: 'Development', color: '#008080', bg: 'rgba(0,128,128,.12)' },
   { value: 'staging',     label: 'Staging',     color: '#a855f7', bg: 'rgba(168,85,247,.12)' },
   { value: 'production',  label: 'Production',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
   { value: 'testing',     label: 'Testing',     color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },

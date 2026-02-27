@@ -134,7 +134,7 @@ const BareMetalVpsPage: React.FC = () => {
               <Button onClick={() => navigate('/features')} variant="outlined" sx={{ textTransform: 'none', borderRadius: '2px', borderColor: '#0A0F1F', color: '#0A0F1F' }}>
                 Back to Features
               </Button>
-              <Button onClick={() => navigate('/contact')} variant="contained" sx={{ textTransform: 'none', borderRadius: '2px', bgcolor: '#00E0FF', color: '#0A0F1F', '&:hover': { bgcolor: '#00c8e6' } }}>
+              <Button onClick={() => navigate('/contact')} variant="contained" sx={{ textTransform: 'none', borderRadius: '2px', bgcolor: '#008080', color: '#FFFFFF', '&:hover': { bgcolor: '#006b6b' } }}>
                 Contact Sales
               </Button>
             </Stack>

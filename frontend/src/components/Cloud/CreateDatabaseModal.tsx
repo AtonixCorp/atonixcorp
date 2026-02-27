@@ -226,7 +226,7 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
                 '& .MuiStepLabel-label.Mui-active': { color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 },
                 '& .MuiStepLabel-label.Mui-completed': { color: '#10B981', fontWeight: 600 },
                 '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB' },
-                '& .MuiStepIcon-root.Mui-active': { color: '#00E0FF' },
+                '& .MuiStepIcon-root.Mui-active': { color: '#008080' },
                 '& .MuiStepIcon-root.Mui-completed': { color: '#10B981' },
               }}>{s}</StepLabel>
             </Step>
@@ -303,11 +303,11 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
                     helperText="3–63 chars, lowercase letters, numbers and hyphens"
                     error={name.length > 0 && name.length < 3}
                     sx={{ '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& fieldset': { borderColor: border } },
-                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#00E0FF' } }} />
+                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#008080' } }} />
                   <TextField label="Initial database" value={dbName} onChange={e => setDbName(e.target.value)}
                     size="small" fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', color: isDark ? '#ffffff' : '#0A0F1F', '& fieldset': { borderColor: border } },
-                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#00E0FF' } }} />
+                      '& .MuiInputLabel-root': { color: textSec }, '& .MuiInputLabel-root.Mui-focused': { color: '#008080' } }} />
                   <Box>
                     <Typography variant="caption" fontWeight={600} sx={{ color: textSec, textTransform: 'uppercase', letterSpacing: '.07em', mb: .5, display: 'block' }}>Region</Typography>
                     <Stack spacing={.75}>
@@ -378,13 +378,13 @@ const CreateDatabaseModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
         )}
         {step < 2 ? (
           <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()} variant="contained"
-            sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
+            sx={{ bgcolor: '#008080', '&:hover': { bgcolor: '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
             Continue
           </Button>
         ) : (
           <Button onClick={handleSubmit} disabled={!canNext() || submitting} variant="contained"
             startIcon={submitting ? <CircularProgress size={14} color="inherit" /> : <LockIcon sx={{ fontSize: '1rem' }} />}
-            sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
+            sx={{ bgcolor: '#008080', '&:hover': { bgcolor: '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 3 }}>
             {submitting ? 'Deploying…' : 'Create Database'}
           </Button>
         )}

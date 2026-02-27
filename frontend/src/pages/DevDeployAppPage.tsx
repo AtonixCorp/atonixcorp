@@ -899,8 +899,8 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
                   variant="contained" size="large" startIcon={<RocketLaunchIcon />}
                   onClick={runDeploy}
                   sx={{ fontWeight:800, fontSize:'.88rem', borderRadius:'8px', textTransform:'none', fontFamily:FONT,
-                    bgcolor: t.brand, color:'#0a0f1a', boxShadow:'0 0 24px rgba(0,224,255,.35)',
-                    '&:hover':{ bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow:'0 0 32px rgba(0,224,255,.5)' },
+                    bgcolor: t.brand, color:'#FFFFFF', boxShadow:'0 0 24px rgba(0,128,128,.35)',
+                    '&:hover':{ bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow:'0 0 32px rgba(0,128,128,.5)' },
                     px:4, py:1.25 }}>
                   Deploy Now
                 </Button>
@@ -1009,9 +1009,9 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
               onClick={() => setStep(s => s + 1)}
               variant="contained"
               sx={{ fontFamily:FONT, fontWeight:800, fontSize:'.8rem', textTransform:'none', borderRadius:'7px',
-                bgcolor: t.brand, color:'#0a0f1a', boxShadow:'none',
+                bgcolor: t.brand, color:'#FFFFFF', boxShadow:'none',
                 '&:hover':{ bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow:'none' },
-                '&.Mui-disabled':{ bgcolor:`${t.brand}44`, color:'rgba(0,0,0,.4)' }, px:2.5 }}>
+                '&.Mui-disabled':{ bgcolor:`${t.brand}44`, color:'rgba(255,255,255,.4)' }, px:2.5 }}>
               {step === 10 ? 'Proceed to Deploy' : 'Continue'}
             </Button>
           </Stack>
@@ -1107,7 +1107,7 @@ function StepHeader({ step, title, subtitle }: { step:number; title:string; subt
     <Box sx={{ mb:1 }}>
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb:.4 }}>
         <Box sx={{ width:26, height:26, borderRadius:'50%', bgcolor: t.brand, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <Typography sx={{ fontSize:'.72rem', fontWeight:800, color:'#0a0f1a', fontFamily:FONT }}>{step}</Typography>
+          <Typography sx={{ fontSize:'.72rem', fontWeight:800, color:'#FFFFFF', fontFamily:FONT }}>{step}</Typography>
         </Box>
         <Typography sx={{ fontWeight:800, fontSize:'1.08rem', color:t.textPrimary, fontFamily:FONT, letterSpacing:'-.01em' }}>{title}</Typography>
       </Stack>

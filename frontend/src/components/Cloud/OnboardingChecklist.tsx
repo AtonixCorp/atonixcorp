@@ -136,7 +136,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ progress, loa
         sx={{
           height: 3,
           bgcolor: '#e2e8f0',
-          '& .MuiLinearProgress-bar': { bgcolor: '#00E0FF' },
+          '& .MuiLinearProgress-bar': { bgcolor: '#008080' },
         }}
       />
 

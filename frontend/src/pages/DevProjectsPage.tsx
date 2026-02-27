@@ -182,7 +182,7 @@ const BUILD_CONFIG = {
   pending: { color: dashboardSemanticColors.warning, label: 'Pending', icon: <HourglassTopIcon sx={{ fontSize: '.78rem' }} /> },
 };
 
-const MEMBER_COLORS = ['#00E0FF', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
+const MEMBER_COLORS = ['#008080', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 const DevProjectsPage: React.FC = () => {
   const navigate = useNavigate();

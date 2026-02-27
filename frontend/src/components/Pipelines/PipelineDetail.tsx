@@ -279,7 +279,7 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
         </Box>
         <Box sx={{ p: 2, fontFamily: 'monospace', fontSize: '.78rem', color: '#e6edf3', lineHeight: 1.8, whiteSpace: 'pre-wrap', overflow: 'auto', flex: 1 }}>
           {MOCK_LOGS}
-          <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#00E0FF', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
+          <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#008080', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
         </Box>
       </Drawer>
     </>

@@ -143,7 +143,7 @@ const STAGE_STATUS_CONFIG = {
   pending: { color: dashboardTokens.colors.textSecondary, icon: <HourglassTopIcon sx={{ fontSize: '.9rem', opacity: 0.35 }} /> },
 };
 
-const MEMBER_COLORS = ['#00E0FF', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
+const MEMBER_COLORS = ['#008080', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 /* ── Component ───────────────────────────────────────────────────── */
 
@@ -443,7 +443,7 @@ const DevProjectDetailPage: React.FC = () => {
             </Box>
             <Box sx={{ p: 2, fontFamily: 'monospace', fontSize: '.78rem', color: '#e6edf3', lineHeight: 1.8, whiteSpace: 'pre-wrap', overflow: 'auto', flex: 1 }}>
               {MOCK_LOG}
-              <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#00E0FF', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
+              <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#008080', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
             </Box>
           </Drawer>
         </Box>

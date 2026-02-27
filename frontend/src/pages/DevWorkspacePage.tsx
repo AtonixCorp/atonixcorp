@@ -269,7 +269,7 @@ function OverviewTab({ onStartStop, ws }: { onStartStop: (s: boolean) => void; w
                   fontWeight: 700, fontSize: '.78rem', borderRadius: '6px', textTransform: 'none',
                   ...(isRunning
                     ? { borderColor: S.danger, color: S.danger, '&:hover': { borderColor: S.danger, bgcolor: 'rgba(239,68,68,.08)' } }
-                    : { bgcolor: dashboardTokens.colors.brandPrimary, color: '#0a0f1a', boxShadow: 'none', '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' } }),
+                    : { bgcolor: dashboardTokens.colors.brandPrimary, color: '#FFFFFF', boxShadow: 'none', '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' } }),
                 }}
               >
                 {isRunning ? 'Stop Workspace' : 'Start Workspace'}
@@ -1024,7 +1024,7 @@ const DevWorkspacePage: React.FC = () => {
             startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
             onClick={() => setCreateOpen(true)}
             sx={{ fontWeight: 700, fontSize: '.78rem', textTransform: 'none', borderRadius: '7px', boxShadow: 'none',
-              bgcolor: dashboardTokens.colors.brandPrimary, color: '#0a0f1a',
+              bgcolor: dashboardTokens.colors.brandPrimary, color: '#FFFFFF',
               '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' } }}
           >
             New Workspace
@@ -1155,13 +1155,13 @@ const DevWorkspacePage: React.FC = () => {
             variant="contained"
             onClick={handleCreateWorkspace}
             disabled={!createForm.name.trim() || creating}
-            sx={{ bgcolor: dashboardTokens.colors.brandPrimary, color: '#0a0f1a', fontWeight: 700,
+            sx={{ bgcolor: dashboardTokens.colors.brandPrimary, color: '#FFFFFF', fontWeight: 700,
               textTransform: 'none', fontFamily: FONT, boxShadow: 'none', minWidth: 165,
               '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
-              '&.Mui-disabled': { bgcolor: 'rgba(0,224,255,.25)', color: 'rgba(0,0,0,.4)' } }}
+              '&.Mui-disabled': { bgcolor: 'rgba(0,128,128,.25)', color: 'rgba(255,255,255,.4)' } }}
           >
             {creating
-              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#0a0f1a' }} /><span>Creating…</span></Stack>
+              ? <Stack direction="row" alignItems="center" spacing={0.8}><CircularProgress size={13} sx={{ color: '#FFFFFF' }} /><span>Creating…</span></Stack>
               : 'Create Workspace'}
           </Button>
         </DialogActions>

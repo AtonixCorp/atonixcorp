@@ -12,7 +12,7 @@ import {
 const SupportPage: React.FC = () => {
   const primaryBlue = '#0A0F1F';
   const darkGray = '#1F2937';
-  const accentCyan = '#00E0FF';
+  const accentCyan = '#008080';
   const lightGray = '#F3F4F6';
 
   return (
@@ -129,7 +129,7 @@ const SupportPage: React.FC = () => {
                   fontWeight: 700,
                   px: 2.5,
                   py: 1,
-                  '&:hover': { bgcolor: '#00c8e6' },
+                  '&:hover': { bgcolor: '#006b6b' },
                 }}
               >
                 Submit Ticket

@@ -291,7 +291,8 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
           </Box>
         </Box>
         {!result && (
-          <Stepper activeStep={step} alternativeLabel sx={{ '& .MuiStepLabel-label': { fontSize: '.75rem', color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', mt: .5, '&.Mui-active': { color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 } }, '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB', '&.Mui-active': { color: '#00E0FF' }, '&.Mui-completed': { color: '#10B981' } } }}>
+          <Stepper activeStep={step} alternativeLabel sx={{ '& .MuiStepLabel-label': { fontSize: '.75rem', color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF', mt: .5, '&.Mui-active': { color: isDark ? '#ffffff' : '#0A0F1F', fontWeight: 700 } }, '& .MuiStepIcon-root': { color: isDark ? 'rgba(255,255,255,.15)' : '#E5E7EB', '&.Mui-active': { color: '#008080' }, '&.Mui-completed': { color: '#10B981' } } }}>
+
             {STEPS.map(label => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
           </Stepper>
         )}
@@ -397,8 +398,8 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
                   value={tables} onChange={e => setTables(e.target.value)}
                   helperText="Comma-separated list. Empty = migrate all tables."
                   sx={{ mb: 2,
-                    '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: '#00E0FF' }, '&.Mui-focused fieldset': { borderColor: '#00E0FF' } },
-                    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#00E0FF' } },
+                    '& .MuiOutlinedInput-root': { borderRadius: '8px', bgcolor: isDark ? 'rgba(255,255,255,.04)' : '#F9FAFB', '& fieldset': { borderColor: border }, '&:hover fieldset': { borderColor: '#008080' }, '&.Mui-focused fieldset': { borderColor: '#008080' } },
+                    '& .MuiInputLabel-root': { color: isDark ? 'rgba(255,255,255,.5)' : '#6B7280', '&.Mui-focused': { color: '#008080' } },
                     '& .MuiInputBase-input': { color: isDark ? '#ffffff' : '#0A0F1F' },
                     '& .MuiFormHelperText-root': { color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF' },
                   }}
@@ -449,13 +450,13 @@ const MigrateDatabaseModal: React.FC<Props> = ({ open, source, onClose }) => {
             )}
             {step < 2 ? (
               <Button variant="contained" disabled={!canNext} onClick={() => setStep(s => s + 1)}
-                sx={{ bgcolor: '#0A0F1F', '&:hover': { bgcolor: '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+                sx={{ bgcolor: '#008080', '&:hover': { bgcolor: '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
                 Continue
               </Button>
             ) : (
               <Button variant="contained" disabled={running} onClick={handleSubmit}
                 startIcon={running ? <CircularProgress size={14} color="inherit" /> : <SyncIcon />}
-                sx={{ bgcolor: dryRun ? '#10B981' : '#0A0F1F', '&:hover': { bgcolor: dryRun ? '#059669' : '#00C8E5' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
+                sx={{ bgcolor: dryRun ? '#10B981' : '#008080', '&:hover': { bgcolor: dryRun ? '#059669' : '#006b6b' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
                 {running ? 'Migrating…' : dryRun ? 'Run Dry Test' : 'Start Migration'}
               </Button>
             )}
