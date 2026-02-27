@@ -189,7 +189,7 @@ const LoadBalancersPage: React.FC = () => {
         </Box>
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>Create LB</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>Deploy Load Balancer</Button>
         </Stack>
       </Stack>
 
@@ -331,7 +331,7 @@ const LoadBalancersPage: React.FC = () => {
       </Box>
 
       <Dialog open={openCreate} onClose={() => setOpenCreate(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create Load Balancer</DialogTitle>
+        <DialogTitle>Deploy Load Balancer</DialogTitle>
         <DialogContent sx={{ display: 'grid', gap: 2, mt: 1 }}>
           <TextField label="Name" value={createForm.name} onChange={event => setCreateForm(prev => ({ ...prev, name: event.target.value }))} />
           <TextField label="Description" value={createForm.description || ''} onChange={event => setCreateForm(prev => ({ ...prev, description: event.target.value }))} />
@@ -352,7 +352,7 @@ const LoadBalancersPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreate(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createLoadBalancer}>Create</Button>
+          <Button variant="contained" onClick={createLoadBalancer}>Deploy</Button>
         </DialogActions>
       </Dialog>
 
@@ -375,7 +375,7 @@ const LoadBalancersPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenTargetGroup(false)}>Cancel</Button>
-          <Button variant="contained" onClick={createTargetGroup}>Create</Button>
+          <Button variant="contained" onClick={createTargetGroup}>Deploy</Button>
         </DialogActions>
       </Dialog>
 

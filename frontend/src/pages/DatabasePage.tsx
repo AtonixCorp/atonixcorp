@@ -591,7 +591,7 @@ function EmptyState({ onCreate, isDark }: { onCreate: () => void; isDark: boolea
       </Typography>
       <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}
         sx={{ bgcolor: uiPalette.accent, '&:hover': { bgcolor: uiPalette.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-        Create First Database
+        Deploy First Database
       </Button>
     </Box>
   );
@@ -706,7 +706,7 @@ const DatabasePage: React.FC = () => {
               <Box textAlign="center">
                 <TerminalIcon sx={{ fontSize: '3rem', color: isDark ? alpha(uiPalette.white, 0.12) : uiPalette.border, mb: 1.5 }} />
                 <Typography fontWeight={600} color={isDark ? uiPalette.panelGhostDark : uiPalette.textMuted} fontSize=".9rem">
-                  {databases.length > 0 ? 'Select a database to view details' : 'Create your first database'}
+                  {databases.length > 0 ? 'Select a database to view details' : 'Deploy your first database'}
                 </Typography>
               </Box>
             </Box>
