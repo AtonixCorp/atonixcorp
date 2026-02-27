@@ -464,41 +464,6 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         )}
       </Box>
 
-      {/* Org selector */}
-      <Box sx={{ px: collapsed ? 1 : 2, py: 1.25, borderBottom: `1px solid ${SB_DIV}`, flexShrink: 0 }}>
-        <Box
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 1,
-            px: collapsed ? 0 : 1.5, py: 0.75, borderRadius: '2px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            border: `1px solid ${SB_DIV}`,
-            cursor: 'pointer', bgcolor: SB_ORG,
-            '&:hover': { bgcolor: BLUE_HOVER },
-            transition: 'background .15s',
-          }}
-        >
-          <Box
-            sx={{
-              width: 22, height: 22, borderRadius: '2px',
-              bgcolor: BLUE, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', flexShrink: 0,
-            }}
-          >
-            <Typography sx={{ fontSize: '.6rem', fontWeight: 800, color: '#fff' }}>
-              {(user?.username || 'U')[0].toUpperCase()}
-            </Typography>
-          </Box>
-          {!collapsed && (
-            <>
-              <Typography sx={{ flex: 1, fontSize: '.82rem', fontWeight: 500, color: TEXT_PRIMARY, fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
-                {user?.username || 'My Organization'}
-              </Typography>
-              <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
-            </>
-          )}
-        </Box>
-      </Box>
-
       {/* Back to Cloud Dashboard — shown in developer / marketing / monitor modes */}
       {(dashboardMode === 'developer' || dashboardMode === 'marketing' || dashboardMode === 'monitor') && (
         <Box
@@ -576,32 +541,6 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         )}
       </Box>
 
-      {/* User strip */}
-      <Box
-        sx={{
-          px: 2, py: 1.5,
-          borderTop: `1px solid ${SB_DIV}`,
-          flexShrink: 0,
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1.25}>
-          <Avatar sx={{ width: 30, height: 30, bgcolor: BLUE, fontSize: '.8rem', fontWeight: 700 }}>
-            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
-          </Avatar>
-          {!collapsed && (
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontSize: '.82rem', fontWeight: 700, color: '#111827', fontFamily: FONT, letterSpacing: '-.01em' }} noWrap>
-                {user?.first_name
-                  ? `${user.first_name} ${user.last_name || ''}`.trim()
-                  : user?.username}
-              </Typography>
-              <Typography sx={{ fontSize: '.7rem', color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.005em' }} noWrap>
-                {user?.email || ''}
-              </Typography>
-            </Box>
-          )}
-        </Stack>
-      </Box>
     </Box>
   );
 };
