@@ -44,6 +44,7 @@ from .monitoring.viewsets import (
     AlertRuleViewSet, AlertViewSet,
     IncidentViewSet, LogViewSet,
     DevMonitoringViewSet,
+    SLOViewSet, TraceViewSet, DDoSRuleViewSet, DDoSAttackEventViewSet,
 )
 from .orchestration.viewsets import OrchestrationViewSet
 from .compliance.viewsets import ComplianceViewSet
@@ -70,6 +71,15 @@ from .deployments.viewsets import (
     DeploymentRequestViewSet,
     DeploymentExecutionViewSet,
     DeploymentAuditLogViewSet,
+)
+from .iam.viewsets import (
+    IAMUserViewSet, IAMGroupViewSet, IAMRoleViewSet,
+    IAMPolicyViewSet, AccessKeyViewSet, AuditLogViewSet,
+)
+from .kms.viewsets import EncryptionKeyViewSet as KMSKeyViewSet
+from .secrets.viewsets import SecretViewSet
+from .zero_trust.viewsets import (
+    ZeroTrustPolicyViewSet, DevicePostureViewSet, ZeroTrustAccessLogViewSet,
 )
 
 # Create router and register viewsets
@@ -159,6 +169,12 @@ router.register(r'orchestration',       OrchestrationViewSet,      basename='orc
 router.register(r'compliance',          ComplianceViewSet,         basename='compliance')
 router.register(r'marketing/overview',  MarketingOverviewViewSet,  basename='marketing-overview')
 
+# ── SLO / Tracing / DDoS ─────────────────────────────────────────────────────
+router.register(r'slos',                  SLOViewSet,              basename='slo')
+router.register(r'traces',                TraceViewSet,            basename='trace')
+router.register(r'ddos/rules',            DDoSRuleViewSet,         basename='ddos-rule')
+router.register(r'ddos/attacks',          DDoSAttackEventViewSet,  basename='ddos-attack')
+
 # ── Billing ─────────────────────────────────────────────────────────────────
 router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')
 router.register(r'billing/account',         BillingAccountViewSet,   basename='billing-account')
@@ -193,6 +209,33 @@ router.register(r'deploy/templates',   DeploymentTemplateViewSet,  basename='dep
 router.register(r'deploy/requests',    DeploymentRequestViewSet,   basename='deploy-request')
 router.register(r'deploy/executions',  DeploymentExecutionViewSet, basename='deploy-execution')
 router.register(r'deploy/audit-logs',  DeploymentAuditLogViewSet,  basename='deploy-audit-log')
+
+# ============================================================================
+# IAM ENDPOINTS
+# ============================================================================
+router.register(r'iam/users',        IAMUserViewSet,     basename='iam-user')
+router.register(r'iam/groups',       IAMGroupViewSet,    basename='iam-group')
+router.register(r'iam/roles',        IAMRoleViewSet,     basename='iam-role')
+router.register(r'iam/policies',     IAMPolicyViewSet,   basename='iam-policy')
+router.register(r'iam/access-keys',  AccessKeyViewSet,   basename='iam-access-key')
+router.register(r'iam/audit-logs',   AuditLogViewSet,    basename='iam-audit-log')
+
+# ============================================================================
+# KMS ENDPOINTS
+# ============================================================================
+router.register(r'kms/keys',    KMSKeyViewSet,  basename='kms-key')
+
+# ============================================================================
+# SECRETS VAULT ENDPOINTS
+# ============================================================================
+router.register(r'secrets/vault',  SecretViewSet,  basename='secret')
+
+# ============================================================================
+# ZERO-TRUST ENDPOINTS
+# ============================================================================
+router.register(r'zero-trust/policies',    ZeroTrustPolicyViewSet,     basename='zt-policy')
+router.register(r'zero-trust/devices',     DevicePostureViewSet,       basename='zt-device')
+router.register(r'zero-trust/access-logs', ZeroTrustAccessLogViewSet,  basename='zt-access-log')
 
 # URL Patterns
 urlpatterns = [

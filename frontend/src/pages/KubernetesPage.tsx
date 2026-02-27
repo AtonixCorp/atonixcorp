@@ -26,6 +26,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { kubernetesApi } from '../services/cloudApi';
 import type { CreateKubernetesClusterPayload, KubernetesCluster } from '../types/kubernetes';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { DeployDropdown } from '../components/deploy/DeployDropdown';
 
 const DEFAULT_YAML = `apiVersion: apps/v1
 kind: Deployment
@@ -137,9 +138,9 @@ const KubernetesPage: React.FC = () => {
           <Typography variant="h5" fontWeight={700}>Kubernetes</Typography>
           <Typography variant="body2" color="text.secondary">Create clusters, deploy YAML, and monitor health.</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Deploy Cluster</Button>
+          <DeployDropdown />
         </Stack>
       </Stack>
 
@@ -219,7 +220,7 @@ const KubernetesPage: React.FC = () => {
                       onChange={(event) => setYaml(event.target.value)}
                     />
                     <Stack direction="row" justifyContent="flex-end" mt={1}>
-                      <Button variant="contained" onClick={deployYaml} sx={dashboardPrimaryButtonSx}>Deploy Manifest</Button>
+                      <Button variant="contained" onClick={deployYaml} sx={dashboardPrimaryButtonSx}>Apply Manifest</Button>
                     </Stack>
                   </Box>
                 )}

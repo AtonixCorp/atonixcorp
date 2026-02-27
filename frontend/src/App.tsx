@@ -73,6 +73,16 @@ import DevEnvironmentPage         from './pages/DevEnvironmentPage';
 import DevOperationalPage         from './pages/DevOperationalPage'
 import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
+import EnterpriseOverviewDashboard from './pages/EnterpriseOverviewDashboard';
+import IAMPage                   from './pages/IAMPage';
+import KMSPage                   from './pages/KMSPage';
+import SecretsVaultPage          from './pages/SecretsVaultPage';
+import ZeroTrustPage             from './pages/ZeroTrustPage';
+import CompliancePage            from './pages/CompliancePage';
+import GPUWorkloadsPage          from './pages/GPUWorkloadsPage';
+import SLOPage                   from './pages/SLOPage';
+import TracingPage               from './pages/TracingPage';
+import DDoSPage                  from './pages/DDoSPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -163,7 +173,7 @@ const AppShell: React.FC = () => {
       <ProtectedRoute>
         <DashboardLayout>
           <Routes>
-            <Route path="/dashboard"                         element={<OnboardingDashboard />} />
+            <Route path="/dashboard"                         element={<EnterpriseOverviewDashboard />} />
             <Route path="/dashboard/compute"                 element={<ComputePage />} />
             <Route path="/dashboard/compute/create"          element={<ComputePage />} />
             <Route path="/dashboard/kubernetes"              element={<KubernetesPage />} />
@@ -190,10 +200,19 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/network"                  element={<NetworkPage />} />
             <Route path="/dashboard/orchestration"            element={<OrchestrationPage />} />
             <Route path="/dashboard/billing"                  element={<BillingPage />} />
+            <Route path="/dashboard/iam"                      element={<IAMPage />} />
+            <Route path="/dashboard/kms"                      element={<KMSPage />} />
+            <Route path="/dashboard/secrets"                  element={<SecretsVaultPage />} />
+            <Route path="/dashboard/zero-trust"               element={<ZeroTrustPage />} />
+            <Route path="/dashboard/compliance"               element={<CompliancePage />} />
+            <Route path="/dashboard/gpu"                      element={<GPUWorkloadsPage />} />
+            <Route path="/dashboard/slo"                      element={<SLOPage />} />
+            <Route path="/dashboard/tracing"                  element={<TracingPage />} />
+            <Route path="/dashboard/ddos"                     element={<DDoSPage />} />
             <Route path="/dashboard/sections"                 element={<DashboardSectionsPage dashboardMode="cloud" />} />
             <Route path="/dashboard/teams"                    element={<TeamsPage />} />
             <Route path="/dashboard/teams/:teamId"            element={<TeamDetailPage />} />
-            <Route path="/dashboard/*"                       element={<OnboardingDashboard />} />
+            <Route path="/dashboard/*"                       element={<EnterpriseOverviewDashboard />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

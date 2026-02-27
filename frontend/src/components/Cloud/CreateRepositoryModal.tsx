@@ -83,7 +83,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
 
       <DialogTitle sx={{ pt: 2.5, pb: 0, px: 3 }}>
         <Typography fontWeight={800} fontSize="1.05rem" color={isDark ? '#ffffff' : '#111827'}>
-          Deploy Container
+          Create Repository
         </Typography>
         <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : '#9CA3AF' }}>
           A namespace for storing and distributing container images.
@@ -187,7 +187,7 @@ const CreateRepositoryModal: React.FC<Props> = ({ open, onClose, onSuccess }) =>
         <Button variant="contained" disabled={!canSubmit} onClick={handleSubmit}
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
           sx={{ bgcolor: '#153d75', '&:hover': { bgcolor: '#0f2d5a' }, textTransform: 'none', borderRadius: '8px', fontWeight: 600, minWidth: 140 }}>
-          {loading ? 'Deploying…' : 'Deploy Container'}
+          {loading ? 'Creating…' : 'Create Repository'}
         </Button>
       </DialogActions>
     </Dialog>

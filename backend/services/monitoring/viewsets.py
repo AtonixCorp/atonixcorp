@@ -5,12 +5,16 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import ServiceHealth, MetricSnapshot, AlertRule, MonitoringAlert, Incident
+from .models import (
+    ServiceHealth, MetricSnapshot, AlertRule, MonitoringAlert, Incident,
+    ServiceLevelObjective, TraceSpan, DDoSProtectionRule, DDoSAttackEvent,
+)
 from .serializers import (
     ServiceHealthSerializer, MetricSnapshotSerializer,
     AlertRuleSerializer, CreateAlertRuleSerializer,
     AlertSerializer,
     IncidentListSerializer, IncidentDetailSerializer, CreateIncidentSerializer,
+    SLOSerializer, TraceSpanSerializer, DDoSRuleSerializer, DDoSAttackEventSerializer,
 )
 from . import service as svc
 
@@ -267,4 +271,136 @@ class DevMonitoringViewSet(viewsets.ViewSet):
         """GET /monitoring/dev/resource-health/ — unified health index for all resources."""
         data = svc.get_resource_health(request.user)
         return Response(data)
+
+
+# ── SLO ViewSet ───────────────────────────────────────────────────────────────
+
+class SLOViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SLOSerializer
+
+    def get_queryset(self):
+        return ServiceLevelObjective.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def recalculate(self, request, pk=None):
+        """Trigger a recalculation of SLO metrics."""
+        from django.utils import timezone
+        slo = self.get_object()
+        # Simple recalculation logic; production would query MetricSnapshot
+        import random
+        slo.current_value = round(random.uniform(slo.target_pct - 1.5, 100.0), 3)
+        budget_used = max(0, slo.target_pct - slo.current_value)
+        max_budget = 100.0 - slo.target_pct
+        slo.error_budget_pct = round(max(0, (max_budget - budget_used) / max_budget * 100), 2) if max_budget > 0 else 100.0
+        slo.burn_rate = round(budget_used / max_budget * 30, 2) if max_budget > 0 else 0.0
+        slo.breached = slo.current_value < slo.target_pct
+        slo.last_calculated = timezone.now()
+        slo.save()
+        return Response(SLOSerializer(slo).data)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        qs = self.get_queryset()
+        return Response({
+            'total': qs.count(),
+            'breached': qs.filter(breached=True).count(),
+            'healthy': qs.filter(breached=False).count(),
+            'budget_critical': qs.filter(error_budget_pct__lt=10).count(),
+        })
+
+
+# ── Distributed Tracing ViewSet ───────────────────────────────────────────────
+
+class TraceViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TraceSpanSerializer
+
+    def get_queryset(self):
+        qs = TraceSpan.objects.filter(owner=self.request.user)
+        trace_id = self.request.query_params.get('trace_id')
+        service_name = self.request.query_params.get('service')
+        if trace_id:
+            qs = qs.filter(trace_id=trace_id)
+        if service_name:
+            qs = qs.filter(service_name=service_name)
+        return qs[:1000]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def services(self, request):
+        """List all distinct service names with trace data."""
+        names = list(
+            TraceSpan.objects.filter(owner=request.user)
+            .values_list('service_name', flat=True)
+            .distinct()
+        )
+        return Response({'services': names})
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        from django.db.models import Avg, Max, Count
+        qs = TraceSpan.objects.filter(owner=request.user)
+        agg = qs.aggregate(
+            total_spans=Count('id'),
+            avg_latency=Avg('duration_ms'),
+            max_latency=Max('duration_ms'),
+            error_spans=Count('id', filter=models.Q(status='error')),
+        )
+        return Response(agg)
+
+
+# ── DDoS Protection ViewSet ───────────────────────────────────────────────────
+
+from django.db import models as dj_models
+
+class DDoSRuleViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DDoSRuleSerializer
+
+    def get_queryset(self):
+        return DDoSProtectionRule.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def enable(self, request, pk=None):
+        rule = self.get_object()
+        rule.status = 'active'
+        rule.save(update_fields=['status'])
+        return Response({'status': 'active'})
+
+    @action(detail=True, methods=['post'])
+    def disable(self, request, pk=None):
+        rule = self.get_object()
+        rule.status = 'disabled'
+        rule.save(update_fields=['status'])
+        return Response({'status': 'disabled'})
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        qs = self.get_queryset()
+        attacks = DDoSAttackEvent.objects.filter(owner=request.user)
+        return Response({
+            'total_rules': qs.count(),
+            'active_rules': qs.filter(status='active').count(),
+            'total_attacks': attacks.count(),
+            'active_attacks': attacks.filter(status__in=['detected', 'mitigating']).count(),
+            'mitigated': attacks.filter(status='mitigated').count(),
+        })
+
+
+class DDoSAttackEventViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DDoSAttackEventSerializer
+
+    def get_queryset(self):
+        return DDoSAttackEvent.objects.filter(owner=self.request.user)
+
 

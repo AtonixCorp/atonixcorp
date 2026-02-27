@@ -751,3 +751,144 @@ export const teamApi = {
   invite:                (teamId: string, email: string, role: string) => cloudClient.post(`/teams/${teamId}/invitations/`, { email, role }),
   revokeInvite:          (teamId: string, inviteId: string)         => cloudClient.post(`/teams/${teamId}/invitations/${inviteId}/revoke/`),
 };
+
+// ── IAM ───────────────────────────────────────────────────────────────────────
+export const iamApi = {
+  users: {
+    list:            ()                           => cloudClient.get('/iam/users/'),
+    get:             (id: number)                 => cloudClient.get(`/iam/users/${id}/`),
+    create:          (p: Record<string, unknown>) => cloudClient.post('/iam/users/', p),
+    update:          (id: number, p: Record<string, unknown>) => cloudClient.patch(`/iam/users/${id}/`, p),
+    delete:          (id: number)                 => cloudClient.delete(`/iam/users/${id}/`),
+    enableMFA:       (id: number)                 => cloudClient.post(`/iam/users/${id}/enable_mfa/`),
+    disableMFA:      (id: number)                 => cloudClient.post(`/iam/users/${id}/disable_mfa/`),
+    createAccessKey: (id: number)                 => cloudClient.post(`/iam/users/${id}/create_access_key/`),
+    accessKeys:      (id: number)                 => cloudClient.get(`/iam/users/${id}/access_keys/`),
+    mfaDevices:      (id: number)                 => cloudClient.get(`/iam/users/${id}/mfa_devices/`),
+  },
+  groups: {
+    list:        ()                            => cloudClient.get('/iam/groups/'),
+    get:         (id: number)                  => cloudClient.get(`/iam/groups/${id}/`),
+    create:      (p: Record<string, unknown>)  => cloudClient.post('/iam/groups/', p),
+    update:      (id: number, p: Record<string, unknown>) => cloudClient.patch(`/iam/groups/${id}/`, p),
+    delete:      (id: number)                  => cloudClient.delete(`/iam/groups/${id}/`),
+    addMember:   (id: number, userId: number)  => cloudClient.post(`/iam/groups/${id}/add_member/`, { user_id: userId }),
+    removeMember:(id: number, userId: number)  => cloudClient.post(`/iam/groups/${id}/remove_member/`, { user_id: userId }),
+  },
+  roles: {
+    list:       ()                            => cloudClient.get('/iam/roles/'),
+    get:        (id: number)                  => cloudClient.get(`/iam/roles/${id}/`),
+    create:     (p: Record<string, unknown>)  => cloudClient.post('/iam/roles/', p),
+    update:     (id: number, p: Record<string, unknown>) => cloudClient.patch(`/iam/roles/${id}/`, p),
+    delete:     (id: number)                  => cloudClient.delete(`/iam/roles/${id}/`),
+    assumeRole: (id: number)                  => cloudClient.post(`/iam/roles/${id}/assume_role/`),
+  },
+  policies: {
+    list:     ()                            => cloudClient.get('/iam/policies/'),
+    get:      (id: number)                  => cloudClient.get(`/iam/policies/${id}/`),
+    create:   (p: Record<string, unknown>)  => cloudClient.post('/iam/policies/', p),
+    update:   (id: number, p: Record<string, unknown>) => cloudClient.patch(`/iam/policies/${id}/`, p),
+    delete:   (id: number)                  => cloudClient.delete(`/iam/policies/${id}/`),
+    simulate: (id: number, action: string, resource: string) => cloudClient.post(`/iam/policies/${id}/simulate/`, { action, resource }),
+  },
+  accessKeys: {
+    list:       ()          => cloudClient.get('/iam/access-keys/'),
+    activate:   (id: number)=> cloudClient.post(`/iam/access-keys/${id}/activate/`),
+    deactivate: (id: number)=> cloudClient.post(`/iam/access-keys/${id}/deactivate/`),
+    delete:     (id: number)=> cloudClient.delete(`/iam/access-keys/${id}/`),
+  },
+  auditLogs: {
+    list: (params?: Record<string, unknown>) => cloudClient.get('/iam/audit-logs/', { params }),
+  },
+};
+
+// ── KMS ───────────────────────────────────────────────────────────────────────
+export const kmsApi = {
+  list:              ()                            => cloudClient.get('/kms/keys/'),
+  get:               (id: number)                  => cloudClient.get(`/kms/keys/${id}/`),
+  create:            (p: Record<string, unknown>)  => cloudClient.post('/kms/keys/', p),
+  rotate:            (id: number)                  => cloudClient.post(`/kms/keys/${id}/rotate/`),
+  disable:           (id: number)                  => cloudClient.post(`/kms/keys/${id}/disable/`),
+  enable:            (id: number)                  => cloudClient.post(`/kms/keys/${id}/enable/`),
+  scheduleDeletion:  (id: number, days: number)    => cloudClient.post(`/kms/keys/${id}/schedule_deletion/`, { days }),
+  cancelDeletion:    (id: number)                  => cloudClient.post(`/kms/keys/${id}/cancel_deletion/`),
+  usageLogs:         (id: number)                  => cloudClient.get(`/kms/keys/${id}/usage_logs/`),
+  rotationHistory:   (id: number)                  => cloudClient.get(`/kms/keys/${id}/rotation_history/`),
+  summary:           ()                            => cloudClient.get('/kms/keys/summary/'),
+};
+
+// ── Secrets Vault ─────────────────────────────────────────────────────────────
+export const secretsApi = {
+  list:             ()                            => cloudClient.get('/secrets/vault/'),
+  get:              (id: number)                  => cloudClient.get(`/secrets/vault/${id}/`),
+  create:           (p: Record<string, unknown>)  => cloudClient.post('/secrets/vault/', p),
+  getValue:         (id: number)                  => cloudClient.post(`/secrets/vault/${id}/value/`),
+  putValue:         (id: number, value: string, encKey?: string) => cloudClient.post(`/secrets/vault/${id}/put_value/`, { value, encryption_key_id: encKey }),
+  rotate:           (id: number, newValue: string) => cloudClient.post(`/secrets/vault/${id}/rotate/`, { new_value: newValue }),
+  scheduleDeletion: (id: number, days: number)    => cloudClient.post(`/secrets/vault/${id}/schedule_deletion/`, { days }),
+  restore:          (id: number)                  => cloudClient.post(`/secrets/vault/${id}/restore/`),
+  versions:         (id: number)                  => cloudClient.get(`/secrets/vault/${id}/versions/`),
+  accessLogs:       (id: number)                  => cloudClient.get(`/secrets/vault/${id}/access_logs/`),
+  expiringSoon:     ()                            => cloudClient.get('/secrets/vault/expiring_soon/'),
+  summary:          ()                            => cloudClient.get('/secrets/vault/summary/'),
+};
+
+// ── Zero-Trust ────────────────────────────────────────────────────────────────
+export const zeroTrustApi = {
+  policies: {
+    list:    ()         => cloudClient.get('/zero-trust/policies/'),
+    get:     (id: number) => cloudClient.get(`/zero-trust/policies/${id}/`),
+    create:  (p: Record<string, unknown>) => cloudClient.post('/zero-trust/policies/', p),
+    update:  (id: number, p: Record<string, unknown>) => cloudClient.patch(`/zero-trust/policies/${id}/`, p),
+    enable:  (id: number) => cloudClient.post(`/zero-trust/policies/${id}/enable/`),
+    disable: (id: number) => cloudClient.post(`/zero-trust/policies/${id}/disable/`),
+    summary: () => cloudClient.get('/zero-trust/policies/summary/'),
+  },
+  devices: {
+    list:    () => cloudClient.get('/zero-trust/devices/'),
+    get:     (id: number) => cloudClient.get(`/zero-trust/devices/${id}/`),
+    assess:  (id: number) => cloudClient.post(`/zero-trust/devices/${id}/assess/`),
+    summary: () => cloudClient.get('/zero-trust/devices/summary/'),
+  },
+  accessLogs: {
+    list:    (params?: Record<string, unknown>) => cloudClient.get('/zero-trust/access-logs/', { params }),
+    summary: () => cloudClient.get('/zero-trust/access-logs/summary/'),
+  },
+};
+
+// ── SLO Monitoring ────────────────────────────────────────────────────────────
+export const sloApi = {
+  list:        ()         => cloudClient.get('/monitoring/slos/'),
+  get:         (id: number) => cloudClient.get(`/monitoring/slos/${id}/`),
+  create:      (p: Record<string, unknown>) => cloudClient.post('/monitoring/slos/', p),
+  update:      (id: number, p: Record<string, unknown>) => cloudClient.patch(`/monitoring/slos/${id}/`, p),
+  delete:      (id: number) => cloudClient.delete(`/monitoring/slos/${id}/`),
+  recalculate: (id: number) => cloudClient.post(`/monitoring/slos/${id}/recalculate/`),
+  summary:     () => cloudClient.get('/monitoring/slos/summary/'),
+};
+
+// ── Distributed Tracing ───────────────────────────────────────────────────────
+export const tracingApi = {
+  list:     (params?: Record<string, unknown>) => cloudClient.get('/monitoring/traces/', { params }),
+  get:      (id: number)  => cloudClient.get(`/monitoring/traces/${id}/`),
+  services: () => cloudClient.get('/monitoring/traces/services/'),
+  summary:  () => cloudClient.get('/monitoring/traces/summary/'),
+};
+
+// ── DDoS Protection ───────────────────────────────────────────────────────────
+export const ddosApi = {
+  rules: {
+    list:    ()          => cloudClient.get('/monitoring/ddos-rules/'),
+    get:     (id: number) => cloudClient.get(`/monitoring/ddos-rules/${id}/`),
+    create:  (p: Record<string, unknown>) => cloudClient.post('/monitoring/ddos-rules/', p),
+    update:  (id: number, p: Record<string, unknown>) => cloudClient.patch(`/monitoring/ddos-rules/${id}/`, p),
+    delete:  (id: number) => cloudClient.delete(`/monitoring/ddos-rules/${id}/`),
+    enable:  (id: number) => cloudClient.post(`/monitoring/ddos-rules/${id}/enable/`),
+    disable: (id: number) => cloudClient.post(`/monitoring/ddos-rules/${id}/disable/`),
+    summary: () => cloudClient.get('/monitoring/ddos-rules/summary/'),
+  },
+  attacks: {
+    list:    (params?: Record<string, unknown>) => cloudClient.get('/monitoring/ddos-attacks/', { params }),
+    get:     (id: number) => cloudClient.get(`/monitoring/ddos-attacks/${id}/`),
+  },
+};

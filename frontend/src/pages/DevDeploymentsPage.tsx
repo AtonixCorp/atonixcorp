@@ -158,13 +158,7 @@ const DevDeploymentsPage: React.FC = () => {
           <Typography variant="h5" sx={{ fontWeight: 700, color: dashboardTokens.colors.textPrimary }}>Deployments</Typography>
           <Typography variant="body2" color="text.secondary">Overview-first deployment workspace for developers.</Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/developer/Dashboard/deploy-app')}
-          sx={dashboardPrimaryButtonSx}
-        >
-          Deploy new app
-        </Button>
+
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>

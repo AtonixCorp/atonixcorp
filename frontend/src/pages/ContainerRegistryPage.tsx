@@ -23,6 +23,7 @@ import SyncIcon           from '@mui/icons-material/Sync';
 import TerminalIcon       from '@mui/icons-material/Terminal';
 import LayersIcon         from '@mui/icons-material/Layers';
 import TokenIcon          from '@mui/icons-material/VpnKey';
+import { DeployDropdown } from '../components/deploy/DeployDropdown';
 import BugReportIcon      from '@mui/icons-material/BugReport';
 
 import { registryApi }              from '../services/cloudApi';
@@ -676,7 +677,7 @@ function EmptyState({ onCreate, isDark }: { onCreate: () => void; isDark: boolea
       </Typography>
       <Button variant="contained" onClick={onCreate}
         sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-        Deploy Container
+        New Repository
       </Button>
     </Box>
   );
@@ -731,15 +732,12 @@ const ContainerRegistryPage: React.FC = () => {
             Private OCI-compliant registry · Multi-region · Docker &amp; Helm compatible
           </Typography>
         </Box>
-        <Box display="flex" gap={1}>
+        <Box display="flex" gap={1} alignItems="center">
           <Button startIcon={<RefreshIcon />} onClick={load} disabled={loading} variant="outlined" size="small"
             sx={{ textTransform: 'none', color: isDark ? REGISTRY_PALETTE.white : REGISTRY_PALETTE.textBody, borderColor: border, '&:hover': { bgcolor: isDark ? REGISTRY_PALETTE.panelMedDark : 'rgba(0,0,0,.04)' } }}>
             Refresh
           </Button>
-          <Button variant="contained" onClick={() => setCreate(true)}
-            sx={{ bgcolor: REGISTRY_PALETTE.accent, '&:hover': { bgcolor: REGISTRY_PALETTE.accentHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 600 }}>
-            Deploy Container
-          </Button>
+          <DeployDropdown />
         </Box>
       </Box>
 

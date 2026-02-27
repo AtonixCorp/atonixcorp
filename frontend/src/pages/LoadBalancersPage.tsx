@@ -20,8 +20,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { DeployDropdown } from '../components/deploy/DeployDropdown';
 import SecurityIcon from '@mui/icons-material/Security';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import { useTheme } from '@mui/material/styles';
@@ -187,9 +187,9 @@ const LoadBalancersPage: React.FC = () => {
           <Typography variant="h5" fontWeight={700}>Load Balancers</Typography>
           <Typography variant="body2" color="text.secondary">Distribute traffic across targets with health checks, TLS, and routing algorithms.</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
-          <Button variant="contained" onClick={() => setOpenCreate(true)}>Deploy Load Balancer</Button>
+          <DeployDropdown />
         </Stack>
       </Stack>
 

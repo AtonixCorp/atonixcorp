@@ -3,8 +3,6 @@ import {
   Box, Typography, Divider, Chip, Paper, Popper, Grow,
   ClickAwayListener, MenuList, MenuItem,
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import RocketLaunchIcon      from '@mui/icons-material/RocketLaunch';
 import OpenInNewIcon         from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
 import { DEPLOY_ITEMS, DEPLOY_CATEGORIES, DeployItem } from './deploy.config';
@@ -203,29 +201,21 @@ export const DeployButton: React.FC<DeployButtonProps> = ({
           '&:focus-visible': { outline: '2px solid #153d75', outlineOffset: 2 },
         }}
       >
-        <RocketLaunchIcon sx={{ fontSize: isSmall ? '.85rem' : '1rem' }} />
         {label}
-        <KeyboardArrowDownIcon
-          sx={{
-            fontSize: '.9rem',
-            transition: 'transform .2s',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        />
       </Box>
 
-      {/* ── Dropdown panel — appears to the RIGHT of the button ── */}
+      {/* ── Dropdown panel — opens BELOW the button ── */}
       <Popper
         id="deploy-menu"
         open={open}
         anchorEl={anchorRef.current}
-        placement="right-start"
+        placement="bottom-start"
         transition
         style={{ zIndex: 1400 }}
-        modifiers={[{ name: 'offset', options: { offset: [0, 8] } }]}
+        modifiers={[{ name: 'offset', options: { offset: [0, 4] } }]}
       >
         {({ TransitionProps }) => (
-          <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
+          <Grow {...TransitionProps} style={{ transformOrigin: 'top left' }}>
             <Paper
               elevation={0}
               onMouseEnter={openMenu}

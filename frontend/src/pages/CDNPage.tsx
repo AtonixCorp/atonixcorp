@@ -218,7 +218,7 @@ const CDNPage: React.FC = () => {
           <Typography variant="h5" fontWeight={700}>CDN</Typography>
           <Typography variant="body2" color="text.secondary">Global edge delivery for static assets, APIs, and secure traffic acceleration.</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={loadList}>Refresh</Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)}>Create Distribution</Button>
         </Stack>

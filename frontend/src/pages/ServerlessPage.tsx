@@ -114,7 +114,7 @@ const ServerlessPage: React.FC = () => {
           <Typography variant="h5" fontWeight={700}>Serverless Functions</Typography>
           <Typography variant="body2" color="text.secondary">Deploy event-driven functions on Kubernetes runtime.</Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load}>Refresh</Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={dashboardPrimaryButtonSx}>Create Function</Button>
         </Stack>

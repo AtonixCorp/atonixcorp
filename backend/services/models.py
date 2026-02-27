@@ -73,6 +73,39 @@ from .monitoring.models import (
     MonitoringAlert,
     Incident,
     IncidentUpdate,
+    PlatformActivityEvent,
+    ServiceLevelObjective,
+    TraceSpan,
+    DDoSProtectionRule,
+    DDoSAttackEvent,
+)
+
+from .iam.models import (
+    IAMGroup,
+    IAMRole,
+    IAMPolicy,
+    AccessKey,
+    MFADevice,
+    IAMUserProfile,
+    IAMAuditLog,
+)
+
+from .kms.models import (
+    KMSEncryptionKey,
+    KeyRotationRecord,
+    KeyUsageLog,
+)
+
+from .secrets.models import (
+    Secret,
+    SecretVersion,
+    SecretAccessLog,
+)
+
+from .zero_trust.models import (
+    ZeroTrustPolicy,
+    DevicePosture,
+    ZeroTrustAccessLog,
 )
 
 from .billing.models import (
@@ -140,12 +173,22 @@ __all__ = [
     'InternetGateway', 'NATGateway',
     # Onboarding
     'OnboardingProgress',
-    # Monitoring
+    # Monitoring (extended)
     'ServiceHealth', 'MetricSnapshot', 'AlertRule',
-    'MonitoringAlert', 'Incident', 'IncidentUpdate',
+    'MonitoringAlert', 'Incident', 'IncidentUpdate', 'PlatformActivityEvent',
+    'ServiceLevelObjective', 'TraceSpan',
+    'DDoSProtectionRule', 'DDoSAttackEvent',
     # Domain
     'Domain', 'DnsZone', 'DomainDnsRecord', 'DomainTransfer', 'SslCertificate',
     # Teams
     'Team', 'TeamMember', 'TeamPermission', 'TeamResource',
     'Portfolio', 'PortfolioResource', 'TeamActivityLog', 'TeamInvitation',
+    # IAM
+    'IAMGroup', 'IAMRole', 'IAMPolicy', 'AccessKey', 'MFADevice', 'IAMUserProfile', 'IAMAuditLog',
+    # KMS
+    'KMSEncryptionKey', 'KeyRotationRecord', 'KeyUsageLog',
+    # Secrets Vault
+    'Secret', 'SecretVersion', 'SecretAccessLog',
+    # Zero-Trust
+    'ZeroTrustPolicy', 'DevicePosture', 'ZeroTrustAccessLog',
 ]

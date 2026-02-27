@@ -27,6 +27,7 @@ import {
   computeUiTokens,
 } from '../styles/dashboardDesignSystem';
 import { serversApi } from '../services/cloudApi';
+import { DeployDropdown } from '../components/deploy/DeployDropdown';
 
 const COMPUTE_ACCENT = '#153d75';
 const CATALOG = computeCatalogPalette;
@@ -638,11 +639,14 @@ const ComputePage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: dashboardTokens.colors.background }}>
       {/* Header */}
-      <Box sx={{ bgcolor: dashboardTokens.colors.surface, borderBottom: `1px solid ${dashboardTokens.colors.border}`, px: { xs: 2, md: 4 }, py: 2.5 }}>
-        <Typography fontWeight={700} fontSize="1.25rem" color={dashboardTokens.colors.textPrimary}>Deploy Your First Server</Typography>
-        <Typography variant="body2" sx={{ color: dashboardTokens.colors.textSecondary, mt: .25 }}>
-          Cloud compute instances · 5 regions · NVMe SSD · Provisioned in {'<'}60s
-        </Typography>
+      <Box sx={{ bgcolor: dashboardTokens.colors.surface, borderBottom: `1px solid ${dashboardTokens.colors.border}`, px: { xs: 2, md: 4 }, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <Box>
+          <Typography fontWeight={700} fontSize="1.25rem" color={dashboardTokens.colors.textPrimary}>Cloud Compute</Typography>
+          <Typography variant="body2" sx={{ color: dashboardTokens.colors.textSecondary, mt: .25 }}>
+            Cloud compute instances · 5 regions · NVMe SSD · Provisioned in {'<'}60s
+          </Typography>
+        </Box>
+        <DeployDropdown />
       </Box>
 
       {/* Stepper */}
@@ -709,7 +713,7 @@ const ComputePage: React.FC = () => {
                 <Button fullWidth variant="contained" disabled={!canNext() || deploying}
                   onClick={handleDeploy}
                   sx={{ bgcolor: computeUiTokens.successStrong, '&:hover': { bgcolor: computeUiTokens.successHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
-                  {deploying ? 'Deploying…' : 'Deploy Server'}
+                  {deploying ? 'Creating...' : 'Create Server'}
                 </Button>
                 {deployError && (
                   <Typography variant="caption" color="error" sx={{ textAlign: 'center', display: 'block', mt: .5 }}>

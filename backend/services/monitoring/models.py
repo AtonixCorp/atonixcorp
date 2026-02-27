@@ -279,3 +279,165 @@ class PlatformActivityEvent(TimeStampedModel):
 
     def __str__(self):
         return f"[{self.severity.upper()}] {self.event_type} by {self.actor or 'system'}"
+
+
+# ── SLO / SLA ─────────────────────────────────────────────────────────────────
+
+class ServiceLevelObjective(ResourceModel):
+    """SLO definition: target, error budget, burn-rate."""
+
+    SLO_TYPE_CHOICES = [
+        ('availability',  'Availability'),
+        ('latency',       'Latency'),
+        ('error_rate',    'Error Rate'),
+        ('throughput',    'Throughput'),
+        ('custom',        'Custom'),
+    ]
+
+    def save(self, *args, **kwargs):
+        if not self.resource_id:
+            self.resource_id = f'slo-{uuid.uuid4().hex[:12]}'
+        super().save(*args, **kwargs)
+
+    service         = models.CharField(max_length=64)
+    slo_type        = models.CharField(max_length=20, choices=SLO_TYPE_CHOICES, default='availability')
+    target_pct      = models.FloatField(default=99.9, help_text='SLO target as percentage')
+    window_days     = models.IntegerField(default=30, help_text='Rolling window in days')
+    current_value   = models.FloatField(default=100.0)
+    error_budget_pct = models.FloatField(default=100.0, help_text='Remaining error budget %')
+    burn_rate        = models.FloatField(default=0.0)
+    breached         = models.BooleanField(default=False)
+    last_calculated  = models.DateTimeField(null=True, blank=True)
+    alert_on_breach  = models.BooleanField(default=True)
+    alert_at_budget_pct = models.FloatField(default=10.0, help_text='Alert when budget drops below X%')
+
+    class Meta:
+        verbose_name = 'SLO'
+        verbose_name_plural = 'SLOs'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.service} SLO: {self.target_pct}% ({self.slo_type})'
+
+
+# ── Distributed Tracing Span ──────────────────────────────────────────────────
+
+class TraceSpan(TimeStampedModel):
+    """A single span in a distributed trace."""
+
+    STATUS_CHOICES = [
+        ('ok',      'OK'),
+        ('error',   'Error'),
+        ('timeout', 'Timeout'),
+    ]
+
+    owner         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trace_spans')
+    trace_id      = models.CharField(max_length=64, db_index=True)
+    span_id       = models.CharField(max_length=64, unique=True)
+    parent_span_id = models.CharField(max_length=64, blank=True)
+    operation_name = models.CharField(max_length=255)
+    service_name   = models.CharField(max_length=128, db_index=True)
+    start_time     = models.DateTimeField(db_index=True)
+    duration_ms    = models.IntegerField(default=0)
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ok')
+    tags           = models.JSONField(default=dict)
+    logs           = models.JSONField(default=list)
+    error_message  = models.TextField(blank=True)
+    http_method    = models.CharField(max_length=10, blank=True)
+    http_url       = models.CharField(max_length=512, blank=True)
+    http_status_code = models.IntegerField(null=True, blank=True)
+    db_type        = models.CharField(max_length=32, blank=True)
+    db_statement   = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-start_time']
+        indexes = [
+            models.Index(fields=['trace_id', 'start_time']),
+            models.Index(fields=['service_name', 'start_time']),
+            models.Index(fields=['owner', 'start_time']),
+        ]
+
+    def __str__(self):
+        return f'{self.service_name}/{self.operation_name} ({self.duration_ms}ms)'
+
+
+# ── DDoS Protection ───────────────────────────────────────────────────────────
+
+class DDoSProtectionRule(ResourceModel):
+    """DDoS mitigation rule."""
+
+    RULE_TYPE_CHOICES = [
+        ('rate_limit',  'Rate Limit'),
+        ('geo_block',   'Geo Block'),
+        ('ip_block',    'IP Block'),
+        ('challenge',   'Challenge (CAPTCHA)'),
+        ('managed',     'Managed Rule'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active',   'Active'),
+        ('disabled', 'Disabled'),
+        ('learning', 'Learning Mode'),
+    ]
+
+    def save(self, *args, **kwargs):
+        if not self.resource_id:
+            self.resource_id = f'ddos-{uuid.uuid4().hex[:10]}'
+        super().save(*args, **kwargs)
+
+    rule_type       = models.CharField(max_length=20, choices=RULE_TYPE_CHOICES, default='rate_limit')
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
+    priority        = models.IntegerField(default=100)
+    conditions      = models.JSONField(default=dict, help_text='Match conditions for this rule')
+    rate_limit_rps  = models.IntegerField(null=True, blank=True, help_text='Requests per second limit')
+    block_countries = models.JSONField(default=list, help_text='ISO country codes to block')
+    block_ips       = models.JSONField(default=list, help_text='CIDR ranges to block')
+    mitigations_count = models.BigIntegerField(default=0)
+    last_triggered  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'DDoS Rule'
+        ordering = ['priority']
+
+    def __str__(self):
+        return f'{self.name} ({self.rule_type})'
+
+
+class DDoSAttackEvent(TimeStampedModel):
+    """Detected DDoS attack event."""
+
+    ATTACK_TYPE_CHOICES = [
+        ('volumetric',   'Volumetric'),
+        ('protocol',     'Protocol'),
+        ('application',  'Application Layer'),
+        ('reflection',   'Reflection/Amplification'),
+        ('botnet',       'Botnet'),
+    ]
+
+    STATUS_CHOICES = [
+        ('detected',    'Detected'),
+        ('mitigating',  'Mitigating'),
+        ('mitigated',   'Mitigated'),
+        ('false_positive', 'False Positive'),
+    ]
+
+    owner           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ddos_events')
+    attack_type     = models.CharField(max_length=20, choices=ATTACK_TYPE_CHOICES)
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='detected', db_index=True)
+    source_ips      = models.JSONField(default=list)
+    target_resource = models.CharField(max_length=255)
+    target_region   = models.CharField(max_length=64, blank=True)
+    peak_rps        = models.IntegerField(default=0)
+    peak_bps        = models.BigIntegerField(default=0)
+    packets_dropped = models.BigIntegerField(default=0)
+    duration_secs   = models.IntegerField(default=0)
+    started_at      = models.DateTimeField()
+    ended_at        = models.DateTimeField(null=True, blank=True)
+    rule_matched    = models.ForeignKey(DDoSProtectionRule, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f'{self.attack_type} attack on {self.target_resource} ({self.status})'
+

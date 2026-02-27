@@ -60,11 +60,16 @@ import DarkModeIcon          from '@mui/icons-material/DarkMode';
 import FirstPageIcon         from '@mui/icons-material/FirstPage';
 import LastPageIcon          from '@mui/icons-material/LastPage';
 import ArrowBackIcon         from '@mui/icons-material/ArrowBack'
+import MemoryIcon            from '@mui/icons-material/Memory';
+import TrackChangesIcon      from '@mui/icons-material/TrackChanges';
+import SecurityIcon          from '@mui/icons-material/Security';
+import VerifiedUserIcon      from '@mui/icons-material/VerifiedUser';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import ShieldIcon            from '@mui/icons-material/Shield';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem';
-import { DeployDropdown } from '../deploy/DeployDropdown';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -80,6 +85,7 @@ const NAVY2         = dashboardTokens.colors.surfaceSubtle;
 const BLUE          = dashboardTokens.colors.brandPrimary;
 const BLUE_DIM      = 'rgba(21,61,117,0.12)';
 const BLUE_HOVER    = 'rgba(21,61,117,0.08)';
+const DARK_HOVER    = '#415a77';
 // Typography on blue sidebar
 const TEXT_PRIMARY   = dashboardTokens.colors.textPrimary;
 const TEXT_SECONDARY = dashboardTokens.colors.textSecondary;
@@ -119,16 +125,39 @@ const CLOUD_NAV: NavItem[] = [
       { label: 'Databases',         icon: <DatabaseIcon  {...I('.95rem')} />, path: '/dashboard/databases'  },
       { label: 'Load Balancers',    icon: <BalancerIcon  {...I('.95rem')} />, path: '/dashboard/load-balancers' },
       { label: 'CDN',               icon: <CdnIcon       {...I('.95rem')} />, path: '/dashboard/cdn',  badge: 'Beta', badgeColor: 'warning' },
+      { label: 'GPU Workloads',     icon: <MemoryIcon    {...I('.95rem')} />, path: '/dashboard/gpu', badge: 'New', badgeColor: 'success' },
       { label: 'Network',           icon: <NetworkIcon   {...I('.95rem')} />, path: '/dashboard/network'    },
       { label: 'Orchestration',     icon: <OrchestrateIcon {...I('.95rem')} />, path: '/dashboard/orchestration' },
     ],
   },
   { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/dashboard/sections' },
   { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
+  { label: 'Billing',        icon: <BillingIcon  {...I()} />, path: '/dashboard/billing' },
   { label: 'Teams',          icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
+  {
+    label: 'Security',
+    icon: <SecurityIcon {...I()} />,
+    children: [
+      { label: 'IAM',           icon: <PersonIcon       {...I('.95rem')} />, path: '/dashboard/iam' },
+      { label: 'KMS',           icon: <KeyIcon          {...I('.95rem')} />, path: '/dashboard/kms' },
+      { label: 'Secrets Vault', icon: <LockIcon         {...I('.95rem')} />, path: '/dashboard/secrets' },
+      { label: 'Zero-Trust',    icon: <VerifiedUserIcon {...I('.95rem')} />, path: '/dashboard/zero-trust' },
+      { label: 'DDoS Shield',   icon: <ShieldIcon       {...I('.95rem')} />, path: '/dashboard/ddos' },
+    ],
+  },
+  {
+    label: 'Observability',
+    icon: <MonitorIcon {...I()} />,
+    children: [
+      { label: 'Monitoring',  icon: <MonitorIcon         {...I('.95rem')} />, path: '/dashboard/monitoring' },
+      { label: 'SLO / SLA',   icon: <TrackChangesIcon    {...I('.95rem')} />, path: '/dashboard/slo' },
+      { label: 'Tracing',     icon: <AccountTreeOutlinedIcon {...I('.95rem')} />, path: '/dashboard/tracing' },
+      { label: 'Monitor',     icon: <MonitorIcon         {...I('.95rem')} />, path: '/monitor-dashboard/overview' },
+    ],
+  },
+  { label: 'Compliance',     icon: <GppGoodIcon  {...I()} />, path: '/dashboard/compliance' },
   { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/deployments' },
   { label: 'Marketing', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
-  { label: 'Monitor',   icon: <MonitorIcon   {...I()} />, path: '/monitor-dashboard/overview' },
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
@@ -231,6 +260,8 @@ interface NavRowProps {
 const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false, collapsed = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { mode: navMode } = useColorMode();
+  const isDarkNav = navMode === 'dark';
   const [open, setOpen] = useState(defaultOpen);
 
   const hasChildren = !!item.children?.length;
@@ -270,11 +301,11 @@ const NavRow: React.FC<NavRowProps> = ({ item, depth = 0, defaultOpen = false, c
           borderRadius: '2px',
           cursor: 'pointer',
           userSelect: 'none',
-          background: isActive && !hasChildren ? '#F3F4F6' : 'transparent',
+          background: isActive && !hasChildren ? (isDarkNav ? DARK_HOVER : '#F3F4F6') : 'transparent',
           borderLeft: isActive && !hasChildren ? `3px solid ${BLUE}` : '3px solid transparent',
           transition: 'background .12s',
           '&:hover': {
-            background: isActive && !hasChildren ? BLUE_DIM : BLUE_HOVER,
+            background: isActive && !hasChildren ? (isDarkNav ? DARK_HOVER : BLUE_DIM) : (isDarkNav ? DARK_HOVER : BLUE_HOVER),
           },
         }}
       >
@@ -359,6 +390,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
   const { user } = useAuth() as any;
   const navigate  = useNavigate();
   const { mode: _mode }  = useColorMode();
+  const isDarkSidebar = _mode === 'dark';
   const routeBase = dashboardMode === 'developer'
     ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
@@ -474,7 +506,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
             borderBottom: `1px solid ${SB_DIV}`,
             cursor: 'pointer',
             flexShrink: 0,
-            '&:hover': { bgcolor: BLUE_HOVER },
+            '&:hover': { bgcolor: isDarkSidebar ? DARK_HOVER : BLUE_HOVER },
             transition: 'background .15s',
           }}
         >
@@ -698,9 +730,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
 
             <Box sx={{ flex: 1 }} />
 
-            {/* Deploy+ dropdown */}
-            <DeployDropdown />
-
             {/* Dark / Light mode toggle */}
             <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
               <IconButton
@@ -825,7 +854,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
+                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>
@@ -844,7 +873,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
+                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>
@@ -862,7 +891,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : BLUE_HOVER } }}>
+                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
                   {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
                   <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
                 </MenuItem>

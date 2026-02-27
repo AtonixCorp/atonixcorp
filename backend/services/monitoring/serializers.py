@@ -3,6 +3,7 @@
 from rest_framework import serializers
 from .models import (
     ServiceHealth, MetricSnapshot, AlertRule, MonitoringAlert, Incident, IncidentUpdate,
+    ServiceLevelObjective, TraceSpan, DDoSProtectionRule, DDoSAttackEvent,
 )
 
 
@@ -108,3 +109,55 @@ class CreateIncidentSerializer(serializers.ModelSerializer):
         model  = Incident
         fields = ['name', 'title', 'service', 'severity', 'summary',
                   'impact', 'affected_resources']
+
+
+# ── SLO ──────────────────────────────────────────────────────────────────────
+
+class SLOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceLevelObjective
+        fields = [
+            'id', 'resource_id', 'name', 'description', 'service', 'slo_type',
+            'target_pct', 'window_days', 'current_value', 'error_budget_pct',
+            'burn_rate', 'breached', 'last_calculated', 'alert_on_breach',
+            'alert_at_budget_pct', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'resource_id', 'current_value', 'error_budget_pct', 'burn_rate', 'breached', 'last_calculated', 'created_at', 'updated_at']
+
+
+# ── Distributed Tracing ───────────────────────────────────────────────────────
+
+class TraceSpanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TraceSpan
+        fields = [
+            'id', 'trace_id', 'span_id', 'parent_span_id', 'operation_name',
+            'service_name', 'start_time', 'duration_ms', 'status', 'tags', 'logs',
+            'error_message', 'http_method', 'http_url', 'http_status_code',
+            'db_type', 'db_statement', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+# ── DDoS Protection ───────────────────────────────────────────────────────────
+
+class DDoSRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DDoSProtectionRule
+        fields = [
+            'id', 'resource_id', 'name', 'description', 'rule_type', 'status', 'priority',
+            'conditions', 'rate_limit_rps', 'block_countries', 'block_ips',
+            'mitigations_count', 'last_triggered', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'resource_id', 'mitigations_count', 'last_triggered', 'created_at', 'updated_at']
+
+
+class DDoSAttackEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DDoSAttackEvent
+        fields = [
+            'id', 'attack_type', 'status', 'source_ips', 'target_resource', 'target_region',
+            'peak_rps', 'peak_bps', 'packets_dropped', 'duration_secs',
+            'started_at', 'ended_at', 'rule_matched', 'created_at',
+        ]
+        read_only_fields = '__all__'

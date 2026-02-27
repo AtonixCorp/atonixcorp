@@ -27,6 +27,7 @@ import ContentCopyIcon      from '@mui/icons-material/ContentCopy';
 import WarningAmberIcon     from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon      from '@mui/icons-material/CheckCircle';
 import AccessTimeIcon       from '@mui/icons-material/AccessTime';
+import { DeployDropdown } from '../components/deploy/DeployDropdown';
 
 import type { StorageBucket, S3Object, LifecycleRule } from '../types/storage';
 import { storageApi } from '../services/cloudApi';
@@ -35,7 +36,6 @@ import {
   dashboardTokens,
   dashboardSemanticColors,
 } from '../styles/dashboardDesignSystem';
-import { DeployButton } from '../components/deploy/DeployDropdown';
 
 // ── colour helpers ────────────────────────────────────────────────────────────
 
@@ -281,7 +281,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
           sx={{ border: `1px solid ${tokens.border}`, color: tokens.muted, fontSize: 12, height: 34, '&:hover': { borderColor: STORAGE_ACCENT, color: STORAGE_ACCENT } }}>
           Refresh
         </Button>
-        <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} size="small" />
+        <DeployDropdown />
       </Box>
 
       {error && <Alert severity="error" sx={{ mx: 3, mt: 1 }}>{error}</Alert>}
@@ -310,7 +310,8 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               <Box sx={{ p: 4, textAlign: 'center' }}>
                 <FolderOpenIcon sx={{ fontSize: 48, color: tokens.muted, mb: 1 }} />
                 <Typography sx={{ color: tokens.muted, fontSize: 13, mb: 2 }}>No buckets yet</Typography>
-                <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} size="small" />
+                <Button size="small" variant="outlined" onClick={() => setCreateOpen(true)}
+                  sx={{ fontSize: 12, height: 32 }}>New Bucket</Button>
               </Box>
             ) : filtered.map(b => (
               <Box key={b.resource_id} onClick={() => selectBucket(b)}
@@ -644,7 +645,7 @@ response = s3.list_objects_v2(Bucket='${b.bucket_name}')`;
               <Typography sx={{ fontSize: 13, color: tokens.muted, textAlign: 'center', maxWidth: 300 }}>
                 Choose a bucket from the list, or create a new one to get started.
               </Typography>
-              <DeployButton label="Deploy Storage" category="storage" onModalOpen={() => setCreateOpen(true)} />
+              <Button variant="outlined" onClick={() => setCreateOpen(true)}>New Bucket</Button>
             </Box>
           )
         )}

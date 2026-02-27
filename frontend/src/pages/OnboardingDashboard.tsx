@@ -3,11 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Container, Typography, Stack, Alert, Snackbar,
-  Breadcrumbs, Link, Button,
+  Breadcrumbs, Link,
 } from '@mui/material';
-import DashboardIcon      from '@mui/icons-material/Dashboard';
-import AddIcon            from '@mui/icons-material/Add';
-import NavigateNextIcon   from '@mui/icons-material/NavigateNext';
+import DashboardIcon    from '@mui/icons-material/Dashboard';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import { useAuth } from '../contexts/AuthContext';
 import { onboardingApi, dashboardApi } from '../services/cloudApi';
@@ -117,25 +116,7 @@ const OnboardingDashboard: React.FC = () => {
             Dashboard
           </Typography>
 
-          {/* Right-aligned action buttons — primary first */}
-          <Stack direction="row" spacing={1.25} alignItems="center">
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={() => setWizardOpen(true)}
-              sx={{
-                color: dashboardTokens.colors.white,
-                fontSize: '.82rem',
-                borderRadius: '6px',
-                px: 2,
-                boxShadow: 'none',
-                ...dashboardPrimaryButtonSx,
-              }}
-            >
-              Deploy Server
-            </Button>
-          </Stack>
+
         </Stack>
       </Box>
 

@@ -651,7 +651,7 @@ const DatabasePage: React.FC = () => {
             PostgreSQL · MySQL · MariaDB · MongoDB · Redis · ClickHouse · Cassandra
           </Typography>
         </Box>
-        <Box display="flex" gap={1}>
+        <Box display="flex" gap={1} alignItems="center">
           <Button startIcon={<RefreshIcon />} onClick={load} disabled={loading}
             sx={{ textTransform: 'none', color: isDark ? uiPalette.white : uiPalette.textBody, borderColor: border, '&:hover': { bgcolor: isDark ? uiPalette.panelMedDark : uiPalette.neutralFaintLight } }}
             variant="outlined" size="small">
