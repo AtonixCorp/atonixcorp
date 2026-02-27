@@ -137,7 +137,7 @@ const ProviderCard: React.FC<{
   connected: boolean;
   onSelect: () => void;
   onConnect: () => void;
-}> = ({ id, label, logo, color, selected, connected, onSelect, onConnect }) => (
+}> = ({ id: _id, label, logo, color, selected, connected, onSelect, onConnect }) => (
   <Box
     onClick={onSelect}
     sx={{

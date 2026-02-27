@@ -133,6 +133,50 @@ def current_user_view(request):
     })
 
 
+@api_view(['GET', 'PATCH'])
+def profile_view(request):
+    """GET or PATCH the authenticated user's profile."""
+    user = request.user
+    if request.method == 'GET':
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'user_type': 'individual',
+        })
+
+    # PATCH — update only provided fields
+    first_name = request.data.get('first_name', user.first_name)
+    last_name  = request.data.get('last_name',  user.last_name)
+    email      = request.data.get('email',      user.email)
+    new_password = request.data.get('new_password', '')
+
+    # Validate email uniqueness if changing
+    if email != user.email and User.objects.filter(email=email).exclude(pk=user.pk).exists():
+        return Response({'detail': 'A user with this email already exists.'}, status=400)
+
+    user.first_name = first_name
+    user.last_name  = last_name
+    user.email      = email
+    if new_password:
+        current_password = request.data.get('current_password', '')
+        if not user.check_password(current_password):
+            return Response({'detail': 'Current password is incorrect.'}, status=400)
+        user.set_password(new_password)
+    user.save()
+
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'user_type': 'individual',
+    })
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def graphql_unavailable(request):
@@ -154,6 +198,7 @@ urlpatterns = [
     path('api/auth/register/', signup_view),  # alias
     path('api/auth/me/', current_user_view),
     path('api/auth/user/', current_user_view),  # alias
+    path('api/auth/profile/', profile_view),
     path(
         'api/graphql/',
         GraphQLView.as_view(graphiql=settings.DEBUG) if GraphQLView else graphql_unavailable,

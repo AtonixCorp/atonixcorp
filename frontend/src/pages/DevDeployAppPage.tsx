@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Box, Typography, Stack, Card, CardContent, Button, Chip,
+  Box, Typography, Stack, Button, Chip,
   TextField, LinearProgress, Tooltip, IconButton, Divider,
   Collapse, CircularProgress, Fade
 } from '@mui/material'
@@ -15,7 +15,6 @@ import CheckCircleIcon      from '@mui/icons-material/CheckCircle'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import GitHubIcon            from '@mui/icons-material/GitHub'
 import StorageIcon           from '@mui/icons-material/Storage'
-import AccountTreeIcon       from '@mui/icons-material/AccountTree'
 import ViewInArIcon          from '@mui/icons-material/ViewInAr'
 import CloudUploadIcon       from '@mui/icons-material/CloudUpload'
 import AutoAwesomeIcon       from '@mui/icons-material/AutoAwesome'
@@ -29,7 +28,6 @@ import ExpandMoreIcon        from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon        from '@mui/icons-material/ExpandLess'
 import ContentCopyIcon       from '@mui/icons-material/ContentCopy'
 import CheckIcon             from '@mui/icons-material/Check'
-import ErrorOutlineIcon      from '@mui/icons-material/ErrorOutline'
 import WarningAmberIcon      from '@mui/icons-material/WarningAmber'
 import HubIcon               from '@mui/icons-material/Hub'
 import LayersIcon            from '@mui/icons-material/Layers'
@@ -440,7 +438,6 @@ const DevDeployAppPage: React.FC<{ onDeployComplete?: (p: NewDeploymentPayload) 
         {STEPS.map(s => {
           const done    = s.n < step
           const active  = s.n === step
-          const pending = s.n > step
           return (
             <Box
               key={s.n}
@@ -1108,7 +1105,7 @@ function InfoBanner({ icon, color, children }: { icon:React.ReactNode; color:str
 }
 
 // ─── ModeCard (deployment mode step) ─────────────────────────────────────────
-function ModeCard({ val, label, icon, selected, onClick, features, recommended, tag }: {
+function ModeCard({ val: _val, label, icon, selected, onClick, features, recommended, tag }: {
   val:string; label:string; icon:React.ReactNode; selected:boolean; onClick:()=>void;
   features:string[]; recommended:boolean; tag:string
 }) {

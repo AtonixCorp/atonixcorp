@@ -40,6 +40,7 @@ class StorageBucketViewSet(viewsets.ModelViewSet):
     search_fields = ['bucket_id', 'bucket_name']
     ordering_fields = ['created_at', 'bucket_name', 'total_size_gb']
     permission_classes = [IsAuthenticated]
+    lookup_field = 'resource_id'
 
     def get_queryset(self):
         """Filter buckets by owner."""

@@ -16,7 +16,6 @@ import {
   Stack,
   Switch,
   TextField,
-  Tooltip,
   Typography,
   ToggleButton,
   ToggleButtonGroup,
@@ -617,7 +616,7 @@ const CreateContainerWizard: React.FC<Props> = ({ open, onClose, onCreated }) =>
 };
 
 // Helper inside wizard for status pills
-function statusPill(s: string) {
+function _statusPill(s: string) {
   const map: Record<string, string> = {
     success: dashboardSemanticColors.success,
     running: dashboardSemanticColors.info,

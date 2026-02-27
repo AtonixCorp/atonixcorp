@@ -1,5 +1,6 @@
 // AtonixCorp Cloud – Account Settings Page
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   Box, Typography, Stack, Divider, Avatar, TextField, Button,
   Switch, Chip, IconButton, Tooltip,
@@ -117,7 +118,7 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 }
 
 // ── Input component ────────────────────────────────────────────────────────────
-function StyledInput({ label, defaultValue, type, placeholder }: { label?: string; defaultValue?: string; type?: string; placeholder?: string }) {
+function StyledInput({ label, defaultValue, value, onChange, type, placeholder }: { label?: string; defaultValue?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: string; placeholder?: string }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const palette = getSettingsPalette(isDark);
@@ -125,7 +126,9 @@ function StyledInput({ label, defaultValue, type, placeholder }: { label?: strin
     <TextField
       size="small"
       label={label}
-      defaultValue={defaultValue}
+      defaultValue={value === undefined ? defaultValue : undefined}
+      value={value}
+      onChange={onChange}
       type={type}
       placeholder={placeholder}
       fullWidth
@@ -161,16 +164,42 @@ function SaveButton({ label = 'Save Changes' }: { label?: string }) {
 // ── Sections ───────────────────────────────────────────────────────────────────
 
 function ProfileSection() {
-  const { user } = useAuth();
+  const { user, refreshToken } = useAuth();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const palette = getSettingsPalette(isDark);
+  const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName,  setLastName]  = useState(user?.last_name  || '');
+  const [email,     setEmail]     = useState(user?.email      || '');
+  const [saving,    setSaving]    = useState(false);
+  const [saved,     setSaved]     = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    setSaveError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.patch('/api/auth/profile/', { first_name: firstName, last_name: lastName, email }, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setSaved(true);
+      await refreshToken();
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setSaveError(err?.response?.data?.detail || err?.response?.data?.email?.[0] || 'Failed to save. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <>
       <SectionCard title="Personal Information" subtitle="Update your name, username, and contact information.">
         <Box display="flex" alignItems="center" gap={2}>
           <Avatar sx={{ width: 64, height: 64, bgcolor: palette.accent, fontSize: '1.5rem', fontWeight: 700 }}>
-            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+            {(firstName?.[0] || user?.username?.[0] || 'U').toUpperCase()}
           </Avatar>
           <Stack>
             <Button size="small" variant="outlined" sx={{ textTransform: 'none', borderColor: palette.accent, color: palette.accent, '&:hover': { bgcolor: palette.sidebarHoverBg } }}>
@@ -180,12 +209,23 @@ function ProfileSection() {
           </Stack>
         </Box>
         <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-          <StyledInput label="First Name" defaultValue={user?.first_name || ''} />
-          <StyledInput label="Last Name"  defaultValue={user?.last_name || ''} />
+          <StyledInput label="First Name" value={firstName} onChange={e => setFirstName(e.target.value)} />
+          <StyledInput label="Last Name"  value={lastName}  onChange={e => setLastName(e.target.value)} />
         </Box>
-        <StyledInput label="Username"     defaultValue={user?.username || ''} />
-        <StyledInput label="Email Address" defaultValue={user?.email || ''} type="email" />
-        <SaveButton />
+        <StyledInput label="Username"      defaultValue={user?.username || ''} />
+        <StyledInput label="Email Address" value={email} onChange={e => setEmail(e.target.value)} type="email" />
+        {saveError && <Typography variant="caption" color="error">{saveError}</Typography>}
+        {saved    && <Typography variant="caption" sx={{ color: palette.success }}>Profile saved successfully.</Typography>}
+        <Box display="flex" justifyContent="flex-end">
+          <Button
+            variant="contained"
+            disabled={saving}
+            onClick={handleSave}
+            sx={{ bgcolor: palette.accent, '&:hover': { bgcolor: palette.accentHover }, borderRadius: '8px', px: 3, fontWeight: 600, textTransform: 'none' }}
+          >
+            {saving ? 'Saving…' : 'Save Changes'}
+          </Button>
+        </Box>
       </SectionCard>
       <SectionCard title="Danger Zone" subtitle="Permanently delete your account and all associated data.">
         <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
@@ -204,13 +244,50 @@ function AuthenticationSection() {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const palette = getSettingsPalette(isDark);
+  const [currentPw,  setCurrentPw]  = useState('');
+  const [newPw,      setNewPw]      = useState('');
+  const [confirmPw,  setConfirmPw]  = useState('');
+  const [saving,     setSaving]     = useState(false);
+  const [saved,      setSaved]      = useState(false);
+  const [saveError,  setSaveError]  = useState('');
+
+  const handleChangePassword = async () => {
+    if (newPw !== confirmPw) { setSaveError('New passwords do not match.'); return; }
+    if (newPw.length < 8)    { setSaveError('Password must be at least 8 characters.'); return; }
+    setSaving(true); setSaved(false); setSaveError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.patch('/api/auth/profile/', { current_password: currentPw, new_password: newPw }, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      setSaved(true);
+      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setSaveError(err?.response?.data?.detail || 'Failed to change password. Check your current password.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <>
       <SectionCard title="Change Password" subtitle="Use a strong password with at least 12 characters.">
-        <StyledInput label="Current Password"  type="password" />
-        <StyledInput label="New Password"      type="password" />
-        <StyledInput label="Confirm Password"  type="password" />
-        <SaveButton label="Update Password" />
+        <StyledInput label="Current Password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} type="password" />
+        <StyledInput label="New Password"     value={newPw}     onChange={e => setNewPw(e.target.value)}     type="password" />
+        <StyledInput label="Confirm Password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} type="password" />
+        {saveError && <Typography variant="caption" color="error">{saveError}</Typography>}
+        {saved    && <Typography variant="caption" sx={{ color: palette.success }}>Password changed successfully.</Typography>}
+        <Box display="flex" justifyContent="flex-end">
+          <Button
+            variant="contained"
+            disabled={saving || !currentPw || !newPw || !confirmPw}
+            onClick={handleChangePassword}
+            sx={{ bgcolor: palette.accent, '&:hover': { bgcolor: palette.accentHover }, borderRadius: '8px', px: 3, fontWeight: 600, textTransform: 'none' }}
+          >
+            {saving ? 'Updating…' : 'Update Password'}
+          </Button>
+        </Box>
       </SectionCard>
       <SectionCard title="Two-Factor Authentication" subtitle="Add an extra layer of protection to your account.">
         <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>

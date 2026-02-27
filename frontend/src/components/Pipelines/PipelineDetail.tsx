@@ -6,10 +6,8 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Divider,
   Drawer,
   IconButton,
-  LinearProgress,
   Stack,
   Table,
   TableBody,
@@ -22,7 +20,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
 

@@ -16,7 +16,6 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
-  InputLabel,
   LinearProgress,
   MenuItem,
   OutlinedInput,
@@ -48,8 +47,6 @@ import LockOpenIcon         from '@mui/icons-material/LockOpen'
 import PlayArrowIcon        from '@mui/icons-material/PlayArrow'
 import RestartAltIcon       from '@mui/icons-material/RestartAlt'
 import ArrowForwardIcon     from '@mui/icons-material/ArrowForward'
-import ExpandMoreIcon       from '@mui/icons-material/ExpandMore'
-import ExpandLessIcon       from '@mui/icons-material/ExpandLess'
 import ContentCopyIcon      from '@mui/icons-material/ContentCopy'
 import AddIcon              from '@mui/icons-material/Add'
 import DeleteOutlineIcon    from '@mui/icons-material/DeleteOutline'
@@ -1621,11 +1618,9 @@ const DevEnvironmentPage: React.FC = () => {
     setToast(`${env.label} ${env.locked ? 'unlocked' : 'locked'}.`)
   }
 
-  const ordered: CoreEnvId[] = ['dev', 'stage', 'prod']
   const envByTab: Array<CoreEnvId | null> = [null, 'dev', 'stage', 'prod', null, null, null]
 
   const getEnv = (id: EnvName) => envs.find(e => e.id === id)!
-  const coreEnvs  = ordered.map(getEnv)
   const allEnvs   = envs  // includes any dynamically-created envs
 
   return (

@@ -1,7 +1,7 @@
 // AtonixCorp Cloud — Developer Workspace
 // Personal cockpit: Overview · Sessions · Tools · Logs · Settings
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Alert,
   Box,
@@ -13,7 +13,6 @@ import {
   Divider,
   IconButton,
   LinearProgress,
-  Paper,
   Snackbar,
   Stack,
   Switch,

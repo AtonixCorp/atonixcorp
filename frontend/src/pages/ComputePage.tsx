@@ -26,6 +26,7 @@ import {
   computeCatalogPalette,
   computeUiTokens,
 } from '../styles/dashboardDesignSystem';
+import { serversApi } from '../services/cloudApi';
 
 const COMPUTE_ACCENT = dashboardTokens.colors.brandPrimary;
 const CATALOG = computeCatalogPalette;
@@ -571,6 +572,7 @@ const ComputePage: React.FC = () => {
   const [selectedFlavor,  setFlavor]  = useState('medium');
   const [deploying,       setDeploy]  = useState(false);
   const [deployed,        setDeployed]= useState(false);
+  const [deployError,     setDeployError] = useState('');
   const [netConfig, setNet] = useState({
     hostname: '', region: 'us-east-1',
     network: 'public' as 'public' | 'private' | 'both',
@@ -586,9 +588,23 @@ const ComputePage: React.FC = () => {
     return true;
   };
 
-  const handleDeploy = () => {
+  const handleDeploy = async () => {
     setDeploy(true);
-    setTimeout(() => { setDeploy(false); setDeployed(true); }, 2200);
+    setDeployError('');
+    try {
+      await serversApi.create({
+        name:    netConfig.hostname,
+        image:   selectedOS,
+        flavor:  selectedFlavor,
+        network: netConfig.network,
+        key_name: netConfig.sshKey || undefined,
+      });
+      setDeployed(true);
+    } catch (err: any) {
+      setDeployError(err?.response?.data?.detail || err?.response?.data?.name?.[0] || 'Deployment failed. Please try again.');
+    } finally {
+      setDeploy(false);
+    }
   };
 
   const handleNet = (k: string, v: string | boolean) =>
@@ -689,12 +705,19 @@ const ComputePage: React.FC = () => {
                 Continue →
               </Button>
             ) : (
-              <Button fullWidth variant="contained" disabled={!canNext() || deploying}
-                startIcon={deploying ? <CircularProgress size={14} color="inherit" /> : <RocketLaunchIcon />}
-                onClick={handleDeploy}
-                sx={{ bgcolor: computeUiTokens.successStrong, '&:hover': { bgcolor: computeUiTokens.successHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
-                {deploying ? 'Deploying…' : 'Deploy Server'}
-              </Button>
+              <>
+                <Button fullWidth variant="contained" disabled={!canNext() || deploying}
+                  startIcon={deploying ? <CircularProgress size={14} color="inherit" /> : <RocketLaunchIcon />}
+                  onClick={handleDeploy}
+                  sx={{ bgcolor: computeUiTokens.successStrong, '&:hover': { bgcolor: computeUiTokens.successHover }, textTransform: 'none', borderRadius: '8px', fontWeight: 700, py: 1.25 }}>
+                  {deploying ? 'Deploying…' : 'Deploy Server'}
+                </Button>
+                {deployError && (
+                  <Typography variant="caption" color="error" sx={{ textAlign: 'center', display: 'block', mt: .5 }}>
+                    {deployError}
+                  </Typography>
+                )}
+              </>
             )}
             {activeStep > 0 && (
               <Button fullWidth variant="outlined" onClick={() => setActiveStep(s => s - 1)}
