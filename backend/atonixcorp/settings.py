@@ -137,6 +137,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'domain_search': '30/minute',
         'auth': '20/minute',
+        'anon': '120/minute',
+        'user': '600/minute',
     },
 }
 

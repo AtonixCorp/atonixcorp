@@ -38,6 +38,7 @@ import LoginDialog from '../Auth/LoginDialog';
 import SignupDialog from '../Auth/SignupDialog';
 import { useAuth } from '../../contexts/AuthContext';
 
+
 type MegaLink = {
   label: string;
   path: string;
