@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  ArrowRight as ArrowRightIcon,
   Cloud as CloudIcon,
   Storage as StorageIcon,
   Lan as LanIcon,
@@ -113,6 +112,7 @@ const sectionTitleSx = {
   letterSpacing: { xs: '-0.4px', md: '-0.7px' },
   fontSize: { xs: '1.9rem', sm: '2.15rem', md: '2.5rem' },
   color: COLORS.graphite,
+  textAlign: 'center' as const,
 };
 
 const sectionSubSx = {
@@ -122,6 +122,8 @@ const sectionSubSx = {
   letterSpacing: '-0.1px',
   color: COLORS.slate,
   maxWidth: 760,
+  textAlign: 'center' as const,
+  mx: 'auto',
 };
 
 const cardSx = {
@@ -188,26 +190,6 @@ const Homepage: React.FC = () => {
                 high-performance control plane designed for regulated, global workloads.
               </Typography>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }}>
-                <Button
-                  variant="contained"
-                  endIcon={<ArrowRightIcon />}
-                  onClick={() => setSignupOpen(true)}
-                  aria-label="Get started with AtonixCorp"
-                  sx={{
-                    bgcolor: COLORS.blue,
-                    color: COLORS.white,
-                    borderRadius: RADIUS,
-                    py: 1.5,
-                    px: 3,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': { bgcolor: COLORS.blueHover },
-                  }}
-                >
-                  Get Started
-                </Button>
-              </Stack>
             </Box>
 
             <Box sx={{ border: '1px solid rgba(255,255,255,.16)', borderRadius: RADIUS, p: 3 }}>
@@ -234,15 +216,15 @@ const Homepage: React.FC = () => {
       </Box>
 
       <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
-        <Typography component="h2" sx={sectionTitleSx}>Product Pillars</Typography>
-        <Typography sx={{ ...sectionSubSx, mt: 1.5, mb: 4 }}>
+        <Typography component="h2" sx={{ ...sectionTitleSx, textAlign: 'center' }}>Product Pillars</Typography>
+        <Typography sx={{ ...sectionSubSx, mt: 1.5, mb: 4, textAlign: 'center', mx: 'auto' }}>
           The AtonixCorp platform is engineered as a cohesive infrastructure fabric with
           deterministic operations, strict governance, and developer-grade velocity.
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4,1fr)' }, gap: 2 }}>
           {pillars.map((pillar) => (
-            <Box key={pillar.title} sx={cardSx}>
-              <Box sx={{ color: COLORS.blue }}>{pillar.icon}</Box>
+            <Box key={pillar.title} sx={{ ...cardSx, textAlign: 'center', alignItems: 'center' }}>
+              <Box sx={{ color: COLORS.blue, display: 'flex', justifyContent: 'center' }}>{pillar.icon}</Box>
               <Typography component="h3" sx={{ mt: 1.5, fontWeight: 600, fontSize: { xs: '1.02rem', md: '1.06rem' }, lineHeight: 1.16, letterSpacing: '-0.2px' }}>
                 {pillar.title}
               </Typography>
@@ -260,9 +242,9 @@ const Homepage: React.FC = () => {
           <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
             {features.map((feature) => (
               <Box key={feature} sx={{ ...cardSx, p: 2 }}>
-                <Stack direction="row" spacing={1.25} alignItems="center">
+                <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="center">
                   <CheckCircleIcon sx={{ color: COLORS.success, fontSize: 18 }} aria-label="Feature check" />
-                  <Typography sx={{ fontSize: '.94rem', lineHeight: 1.38, letterSpacing: '-0.05px' }}>{feature}</Typography>
+                  <Typography sx={{ fontSize: '.94rem', lineHeight: 1.38, letterSpacing: '-0.05px', textAlign: 'center' }}>{feature}</Typography>
                 </Stack>
               </Box>
             ))}
@@ -278,7 +260,7 @@ const Homepage: React.FC = () => {
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4,1fr)' }, gap: 2 }}>
           {industries.map((industry) => (
-            <Box key={industry} sx={{ ...cardSx, p: 2.5 }}>
+            <Box key={industry} sx={{ ...cardSx, p: 2.5, textAlign: 'center' }}>
               <Typography sx={{ fontWeight: 600, fontSize: '.98rem', lineHeight: 1.22, letterSpacing: '-0.15px' }}>{industry}</Typography>
             </Box>
           ))}
@@ -290,12 +272,12 @@ const Homepage: React.FC = () => {
           <Typography component="h2" sx={{ ...sectionTitleSx, color: COLORS.white }}>Technology Stack</Typography>
           <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 2 }}>
             {stack.map((layer) => (
-              <Box key={layer.title} sx={{ border: '1px solid rgba(255,255,255,.18)', borderRadius: RADIUS, p: 2.5 }}>
-                <Stack direction="row" spacing={1} alignItems="center">
+              <Box key={layer.title} sx={{ border: '1px solid rgba(255,255,255,.18)', borderRadius: RADIUS, p: 2.5, textAlign: 'center' }}>
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                   <WorkspacesIcon sx={{ fontSize: 18, color: COLORS.cyan }} aria-label="Stack layer icon" />
                   <Typography sx={{ fontWeight: 600, fontSize: '.98rem', lineHeight: 1.2, letterSpacing: '-0.15px' }}>{layer.title}</Typography>
                 </Stack>
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 2 }}>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" justifyContent="center" sx={{ mt: 2 }}>
                   {layer.items.map((item) => (
                     <Chip
                       key={item}
@@ -321,7 +303,7 @@ const Homepage: React.FC = () => {
         <Typography component="h2" sx={sectionTitleSx}>Case Studies</Typography>
         <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3,1fr)' }, gap: 2 }}>
           {caseStudies.map((item) => (
-            <Box key={item.org} sx={cardSx}>
+            <Box key={item.org} sx={{ ...cardSx, textAlign: 'center' }}>
               <Typography sx={{ fontWeight: 600, fontSize: '.98rem', lineHeight: 1.2, letterSpacing: '-0.15px' }}>{item.org}</Typography>
               <Typography sx={{ mt: 1.5, fontSize: '.94rem', lineHeight: 1.4, letterSpacing: '-0.05px', color: COLORS.slate }}>{item.result}</Typography>
             </Box>
@@ -344,35 +326,10 @@ const Homepage: React.FC = () => {
                 </Box>
               ))}
             </Box>
-            <Typography sx={{ mt: 2, fontSize: '.84rem', lineHeight: 1.4, letterSpacing: '-0.05px', color: COLORS.slate }}>
+            <Typography sx={{ mt: 2, fontSize: '.84rem', lineHeight: 1.4, letterSpacing: '-0.05px', color: COLORS.slate, textAlign: 'center' }}>
               Multi-region availability · 99.99% uptime target · Enterprise SLA-backed operations
             </Typography>
           </Box>
-        </Container>
-      </Box>
-
-      <Box component="footer" sx={{ bgcolor: COLORS.navy, color: COLORS.white, py: 5 }}>
-        <Container maxWidth="lg">
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            justifyContent="space-between"
-            alignItems={{ xs: 'flex-start', md: 'center' }}
-          >
-            <Box>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: '.98rem', md: '1rem' }, lineHeight: 1.2, letterSpacing: '-0.3px' }}>
-                AtonixCorp — Sovereign Cloud Infrastructure
-              </Typography>
-              <Typography sx={{ mt: 0.5, fontSize: '.88rem', lineHeight: 1.38, letterSpacing: '-0.05px', color: 'rgba(255,255,255,.72)' }}>
-                Clean architecture. Enterprise reliability. Global scale.
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={1.5}>
-              <Button sx={{ color: COLORS.white, textTransform: 'none' }} aria-label="Open platform documentation">Docs</Button>
-              <Button sx={{ color: COLORS.white, textTransform: 'none' }} aria-label="Open security documentation">Security</Button>
-              <Button sx={{ color: COLORS.white, textTransform: 'none' }} aria-label="Open contact page">Contact</Button>
-            </Stack>
-          </Stack>
         </Container>
       </Box>
 

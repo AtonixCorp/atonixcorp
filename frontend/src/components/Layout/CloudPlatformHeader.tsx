@@ -476,24 +476,22 @@ const CloudPlatformHeader: React.FC = () => {
                     {/* ── Get Started dropdown trigger ── */}
                     <Button
                       onClick={handleGsOpen}
-                      variant="contained"
                       endIcon={<KeyboardArrowDownIcon sx={{ fontSize: '16px !important', transition: 'transform .2s', transform: gsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />}
                       aria-haspopup="true"
                       aria-expanded={gsOpen}
                       sx={{
-                        ml: 0.8,
-                        height: 28,
-                        borderRadius: 0,
-                        boxShadow: 'none',
-                        bgcolor: QUANTUM_CYAN,
-                        color: '#FFFFFF',
-                        textTransform: 'none',
+                        color: CLOUD_SILVER,
                         fontSize: 14,
-                        fontWeight: 600,
-                        '&:hover': { bgcolor: '#0f2d5a', boxShadow: 'none' },
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        minWidth: 0,
+                        px: 1.1,
+                        bgcolor: 'transparent',
+                        boxShadow: 'none',
+                        '&:hover': { color: QUANTUM_CYAN, bgcolor: 'transparent', boxShadow: 'none' },
                       }}
                     >
-                      Get Started
+                      Portal
                     </Button>
 
                     {/* ── Get Started dropdown card ── */}
@@ -568,7 +566,7 @@ const CloudPlatformHeader: React.FC = () => {
                         <Button
                           fullWidth
                           variant="outlined"
-                          onClick={() => { handleGsClose(); go('/dashboard'); }}
+                          onClick={() => { handleGsClose(); setLoginOpen(true); }}
                           sx={{
                             mb: 1.25,
                             borderRadius: '8px',
@@ -928,10 +926,10 @@ const CloudPlatformHeader: React.FC = () => {
                   setMobileOpen(false);
                   setSignupOpen(true);
                 }}
-                variant="contained"
-                sx={{ borderRadius: 0, boxShadow: 'none', bgcolor: QUANTUM_CYAN, color: '#FFFFFF', textTransform: 'none', '&:hover': { boxShadow: 'none', bgcolor: '#0f2d5a' } }}
+                variant="outlined"
+                sx={{ borderRadius: 0, boxShadow: 'none', borderColor: IMPERIAL_MIDNIGHT, color: IMPERIAL_MIDNIGHT, textTransform: 'none', '&:hover': { boxShadow: 'none', bgcolor: 'rgba(17,24,39,.06)' } }}
               >
-                Get Started
+                Portal
               </Button>
             </Box>
           ) : (
