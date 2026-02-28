@@ -128,10 +128,20 @@ const CLOUD_NAV: NavItem[] = [
       { label: 'GPU Workloads',     icon: <MemoryIcon    {...I('.95rem')} />, path: '/dashboard/gpu', badge: 'New', badgeColor: 'success' },
       { label: 'Network',           icon: <NetworkIcon   {...I('.95rem')} />, path: '/dashboard/network'    },
       { label: 'Orchestration',     icon: <OrchestrateIcon {...I('.95rem')} />, path: '/dashboard/orchestration' },
+      { label: 'Auto Scaling',      icon: <TuneIcon      {...I('.95rem')} />, path: '/dashboard/autoscaling' },
+      { label: 'Snapshots',         icon: <StorageIcon   {...I('.95rem')} />, path: '/dashboard/snapshots'  },
+      { label: 'Firewall',          icon: <SecurityIcon  {...I('.95rem')} />, path: '/dashboard/firewall'   },
     ],
   },
   { label: 'Sections',       icon: <ViewListIcon {...I()} />, path: '/dashboard/sections' },
-  { label: 'Domains',        icon: <DomainIcon   {...I()} />, path: '/dashboard/domains' },
+  {
+    label: 'Domains',
+    icon: <DomainIcon {...I()} />,
+    children: [
+      { label: 'Domains',   icon: <DomainIcon {...I('.95rem')} />, path: '/dashboard/domains' },
+      { label: 'DNS Zones', icon: <DomainIcon {...I('.95rem')} />, path: '/dashboard/dns'     },
+    ],
+  },
   { label: 'Billing',        icon: <BillingIcon  {...I()} />, path: '/dashboard/billing' },
   { label: 'Teams',          icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
   {
@@ -152,12 +162,20 @@ const CLOUD_NAV: NavItem[] = [
       { label: 'Monitoring',  icon: <MonitorIcon         {...I('.95rem')} />, path: '/dashboard/monitoring' },
       { label: 'SLO / SLA',   icon: <TrackChangesIcon    {...I('.95rem')} />, path: '/dashboard/slo' },
       { label: 'Tracing',     icon: <AccountTreeOutlinedIcon {...I('.95rem')} />, path: '/dashboard/tracing' },
-      { label: 'Monitor',     icon: <MonitorIcon         {...I('.95rem')} />, path: '/monitor-dashboard/overview' },
+      { label: 'Monitor',     icon: <MonitorIcon         {...I('.95rem')} />, path: '/monitor-dashboard/dashboards' },
     ],
   },
   { label: 'Compliance',     icon: <GppGoodIcon  {...I()} />, path: '/dashboard/compliance' },
+  {
+    label: 'Enterprise',
+    icon: <GroupsIcon {...I()} />,
+    children: [
+      { label: 'Organization', icon: <TeamIcon    {...I('.95rem')} />, path: '/dashboard/organization' },
+      { label: 'Governance',   icon: <GppGoodIcon {...I('.95rem')} />, path: '/dashboard/governance'   },
+      { label: 'Marketing',    icon: <CampaignIcon {...I('.95rem')} />, path: '/marketing-dashboard/analytics' },
+    ],
+  },
   { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/deployments' },
-  { label: 'Marketing', icon: <CampaignIcon {...I()} />, path: '/marketing-dashboard/analytics' },
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
@@ -168,9 +186,13 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },
   { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/developer/Dashboard/monitoring' },
   { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/developer/Dashboard/api-management' },
+  { label: 'SDKs & Tools',   icon: <ApiIcon      {...I()} />, path: '/developer/Dashboard/sdks'     },
+  { label: 'Infra as Code',  icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/iac'  },
+  { label: 'Service Catalog',icon: <FolderOpenIcon  {...I()} />, path: '/developer/Dashboard/catalog' },
+  { label: 'Sandbox',        icon: <FunctionsIcon   {...I()} />, path: '/developer/Dashboard/sandbox' },
+  { label: 'Webhooks',       icon: <NetworkIcon     {...I()} />, path: '/developer/Dashboard/webhooks' },
   { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/developer/Dashboard/sections' },
   { label: 'Groups',   icon: <GroupsIcon   {...I()} />, path: '/developer/Dashboard/groups' },
-  { label: 'Teams',    icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
   { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/developer/Dashboard/resource-control' },
   { label: 'Workplace',        icon: <PersonIcon  {...I()} />, path: '/developer/Dashboard/workspace'    },
   { label: 'Environment',      icon: <TuneIcon    {...I()} />, path: '/developer/Dashboard/environment'  },
@@ -200,7 +222,7 @@ const DOMAINS_ACCOUNT_NAV: NavItem[] = [
 ];
 
 const MONITOR_NAV: NavItem[] = [
-  { label: 'Overview',   icon: <MonitorIcon          {...I()} />, path: '/monitor-dashboard/overview'   },
+  { label: 'Dashboards', icon: <DashboardIcon         {...I()} />, path: '/monitor-dashboard/dashboards' },
   { label: 'Alerts',     icon: <NotificationsNoneIcon {...I()} />, path: '/monitor-dashboard/alerts'    , badge: 3, badgeColor: 'error' },
   { label: 'Incidents',  icon: <GppGoodIcon           {...I()} />, path: '/monitor-dashboard/incidents'  },
   { label: 'Logs',       icon: <StorageIcon           {...I()} />, path: '/monitor-dashboard/logs'       },

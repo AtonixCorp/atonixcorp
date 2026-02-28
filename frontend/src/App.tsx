@@ -83,6 +83,18 @@ import GPUWorkloadsPage          from './pages/GPUWorkloadsPage';
 import SLOPage                   from './pages/SLOPage';
 import TracingPage               from './pages/TracingPage';
 import DDoSPage                  from './pages/DDoSPage';
+import AutoScalingPage           from './pages/AutoScalingPage';
+import SnapshotsPage             from './pages/SnapshotsPage';
+import FirewallPage              from './pages/FirewallPage';
+import DNSPage                   from './pages/DNSPage';
+import OrganizationPage          from './pages/OrganizationPage';
+import GovernancePage            from './pages/GovernancePage';
+import MonitorCustomDashboardsPage from './pages/MonitorCustomDashboardsPage';
+import DevSDKsPage               from './pages/DevSDKsPage';
+import DevIaCPage                from './pages/DevIaCPage';
+import DevCatalogPage            from './pages/DevCatalogPage';
+import DevSandboxPage            from './pages/DevSandboxPage';
+import DevWebhooksPage           from './pages/DevWebhooksPage';
 
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -140,6 +152,11 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
             <Route path="/developer/Dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
             <Route path="/developer/Dashboard/settings/*" element={<DevSettingsPage />} />
+            <Route path="/developer/Dashboard/sdks"      element={<DevSDKsPage />} />
+            <Route path="/developer/Dashboard/iac"       element={<DevIaCPage />} />
+            <Route path="/developer/Dashboard/catalog"   element={<DevCatalogPage />} />
+            <Route path="/developer/Dashboard/sandbox"   element={<DevSandboxPage />} />
+            <Route path="/developer/Dashboard/webhooks"  element={<DevWebhooksPage />} />
             <Route path="/developer/Dashboard/*" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
           </Routes>
         </DashboardLayout>
@@ -212,6 +229,12 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/sections"                 element={<DashboardSectionsPage dashboardMode="cloud" />} />
             <Route path="/dashboard/teams"                    element={<TeamsPage />} />
             <Route path="/dashboard/teams/:teamId"            element={<TeamDetailPage />} />
+            <Route path="/dashboard/autoscaling"              element={<AutoScalingPage />} />
+            <Route path="/dashboard/snapshots"               element={<SnapshotsPage />} />
+            <Route path="/dashboard/firewall"                element={<FirewallPage />} />
+            <Route path="/dashboard/dns"                     element={<DNSPage />} />
+            <Route path="/dashboard/organization"            element={<OrganizationPage />} />
+            <Route path="/dashboard/governance"              element={<GovernancePage />} />
             <Route path="/dashboard/*"                       element={<EnterpriseOverviewDashboard />} />
           </Routes>
         </DashboardLayout>
@@ -239,15 +262,16 @@ const AppShell: React.FC = () => {
       <ProtectedRoute>
         <DashboardLayout dashboardMode="monitor">
           <Routes>
-            <Route path="/monitor-dashboard"           element={<Navigate to="/monitor-dashboard/overview" replace />} />
-            <Route path="/monitor-dashboard/overview"  element={<MonitoringPage defaultTab={0} />} />
+            <Route path="/monitor-dashboard"           element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
+            <Route path="/monitor-dashboard/overview"  element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
             <Route path="/monitor-dashboard/incidents" element={<MonitoringPage defaultTab={1} />} />
             <Route path="/monitor-dashboard/alerts"    element={<MonitoringPage defaultTab={2} />} />
             <Route path="/monitor-dashboard/metrics"   element={<MonitoringPage defaultTab={3} />} />
             <Route path="/monitor-dashboard/logs"      element={<MonitoringPage defaultTab={4} />} />
-            <Route path="/monitor-dashboard/sections"  element={<DashboardSectionsPage dashboardMode="monitor" />} />
-            <Route path="/monitor-dashboard/settings"  element={<MonitorSettingsPage />} />
-            <Route path="/monitor-dashboard/*"         element={<Navigate to="/monitor-dashboard/overview" replace />} />
+            <Route path="/monitor-dashboard/sections"   element={<DashboardSectionsPage dashboardMode="monitor" />} />
+            <Route path="/monitor-dashboard/settings"   element={<MonitorSettingsPage />} />
+            <Route path="/monitor-dashboard/dashboards" element={<MonitorCustomDashboardsPage />} />
+            <Route path="/monitor-dashboard/*"          element={<Navigate to="/monitor-dashboard/overview" replace />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

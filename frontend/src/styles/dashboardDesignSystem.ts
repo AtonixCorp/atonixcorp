@@ -17,6 +17,9 @@ export const dashboardTokens = {
     sm: 1,
     md: 1,
   },
+  typography: {
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
 } as const;
 
 export const dashboardSemanticColors = {
@@ -91,7 +94,7 @@ export const dashboardStatusColors = {
     CRITICAL: dashboardSemanticColors.critical,
   },
   plan: {
-    free: dashboardTokens.colors.textSecondary,
+    free: '#6B7280',
     starter: dashboardSemanticColors.info,
     professional: dashboardSemanticColors.purple,
     enterprise: dashboardSemanticColors.warning,
