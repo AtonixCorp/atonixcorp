@@ -385,51 +385,62 @@ const CloudPlatformHeader: React.FC = () => {
         position="static"
         elevation={0}
         sx={{
-          bgcolor: IMPERIAL_MIDNIGHT,
+          bgcolor: '#111d2e',
           color: CLOUD_SILVER,
-          height: 38,
+          height: 46,
           justifyContent: 'center',
           borderRadius: 0,
           boxShadow: 'none',
-          borderBottom: `1px solid ${CLOUD_SILVER}`,
+          borderBottom: '1px solid rgba(74,158,255,.12)',
         }}
       >
         <Container maxWidth="xl" sx={{ height: '100%' }}>
-          <Toolbar disableGutters sx={{ minHeight: '38px !important', height: '100%' }}>
+          <Toolbar disableGutters sx={{ minHeight: '46px !important', height: '100%' }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
               <Button
                 onClick={() => go('/')}
                 sx={{
                   minWidth: 0,
                   p: 0,
-                  color: CLOUD_SILVER,
-                  fontSize: 14,
-                  fontWeight: 600,
                   textTransform: 'none',
-                  '&:hover': { color: QUANTUM_CYAN, bgcolor: 'transparent' },
+                  lineHeight: 1.2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: 0,
+                  '&:hover': { bgcolor: 'transparent' },
                 }}
               >
-                ATONIXCORP
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
+                    color: CLOUD_SILVER,
+                    '& span': { color: '#4a9eff' },
+                    '&:hover span': { color: '#7abcff' },
+                  }}
+                >
+                  Atonix<span>Corp</span>
+                </Typography>
+                <Typography
+                  component="span"
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    fontSize: '.72rem',
+                    fontWeight: 400,
+                    letterSpacing: '.01em',
+                    lineHeight: 1.2,
+                    color: 'rgba(232,237,245,.5)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                </Typography>
               </Button>
 
-              <Divider orientation="vertical" flexItem sx={{ borderColor: 'rgba(229,231,235,.32)' }} />
-
-              <Button
-                onClick={(event) => setLangAnchor(event.currentTarget)}
-                startIcon={<LanguageIcon sx={{ fontSize: 16 }} />}
-                endIcon={<ExpandMoreIcon sx={{ fontSize: 16 }} />}
-                sx={{
-                  color: CLOUD_SILVER,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  textTransform: 'none',
-                  px: 1,
-                  minWidth: 0,
-                  '&:hover': { color: QUANTUM_CYAN, bgcolor: 'transparent' },
-                }}
-              >
-                {lang}
-              </Button>
+              <Divider orientation="vertical" flexItem sx={{ borderColor: 'rgba(74,158,255,.20)', mx: 0.5 }} />
 
               <Button
                 onClick={(event) => setRegionAnchor(event.currentTarget)}
