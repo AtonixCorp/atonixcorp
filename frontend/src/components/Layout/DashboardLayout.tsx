@@ -184,8 +184,8 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
   { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
   { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },
-  { label: 'Monitoring', icon: <MonitorIcon {...I()} />, path: '/developer/Dashboard/monitoring' },
-  { label: 'API Management', icon: <ApiIcon {...I()} />, path: '/developer/Dashboard/api-management' },
+  { label: 'Monitoring',     icon: <MonitorIcon {...I()} />, path: '/developer/Dashboard/monitoring' },
+  { label: 'API Management', icon: <ApiIcon     {...I()} />, path: '/developer/Dashboard/api-management' },
   { label: 'SDKs & Tools',   icon: <ApiIcon      {...I()} />, path: '/developer/Dashboard/sdks'     },
   { label: 'Infra as Code',  icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/iac'  },
   { label: 'Service Catalog',icon: <FolderOpenIcon  {...I()} />, path: '/developer/Dashboard/catalog' },
@@ -889,9 +889,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Security</Typography>
               </Box>
               {[
-                { label: 'Authentication', icon: <LockIcon />,    path: `${routeBase}/settings/authentication` },
-                { label: 'SSH Keys',       icon: <KeyIcon />,     path: `${routeBase}/settings/ssh-keys` },
-                { label: 'Compliance',     icon: <GppGoodIcon />, path: `${routeBase}/settings/compliance` },
+                { label: 'Security Center', icon: <SecurityIcon />, path: '/dashboard/iam' },
+                { label: 'Authentication',  icon: <LockIcon />,    path: `${routeBase}/settings/authentication` },
+                { label: 'SSH Keys',        icon: <KeyIcon />,     path: `${routeBase}/settings/ssh-keys` },
+                { label: 'Compliance',      icon: <GppGoodIcon />, path: `${routeBase}/settings/compliance` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
@@ -908,7 +909,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Developer</Typography>
               </Box>
               {[
-                { label: 'API',   icon: <ApiIcon />,    path: `${routeBase}/settings/api` },
                 { label: 'Users', icon: <TeamIcon />, path: `${routeBase}/settings/users` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
