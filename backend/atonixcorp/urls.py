@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.contrib.staticfiles.views import serve as static_serve
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
+import os
 import json
 from django.conf import settings
 from services.api.portal_views import ApiPortalLandingView
@@ -205,3 +207,10 @@ urlpatterns = [
     ),
     path('api/services/', include('services.api.urls')),
 ]
+
+# Gunicorn does not serve static files. For local demos/dev we serve /static/
+# through Django's staticfiles finders so the API portal landing page works.
+if settings.DEBUG or os.environ.get('SERVE_STATIC', 'True') == 'True':
+    urlpatterns += [
+        re_path(r'^static/(?P<path>.*)$', static_serve, kwargs={'insecure': True}),
+    ]

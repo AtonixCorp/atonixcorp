@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   AppBar,
   Avatar,
@@ -14,6 +14,9 @@ import {
   ListItemButton,
   Menu,
   MenuItem,
+  Popover,
+  Select,
+  SelectChangeEvent,
   Stack,
   Toolbar,
   Typography,
@@ -23,6 +26,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -337,6 +341,13 @@ const CloudPlatformHeader: React.FC = () => {
   const [accountAnchor, setAccountAnchor] = useState<null | HTMLElement>(null);
   const [mobileExpanded, setMobileExpanded] = useState<string | false>(false);
 
+  // Get Started dropdown
+  const [gsAnchor, setGsAnchor] = useState<null | HTMLElement>(null);
+  const [gsLang, setGsLang] = useState('English');
+  const gsOpen = Boolean(gsAnchor);
+  const handleGsOpen = (e: React.MouseEvent<HTMLElement>) => setGsAnchor(e.currentTarget);
+  const handleGsClose = () => setGsAnchor(null);
+
   const selectedMega = useMemo(
     () => categories.find((category) => category.key === openMega) || null,
     [openMega]
@@ -462,16 +473,20 @@ const CloudPlatformHeader: React.FC = () => {
 
                 {!user && (
                   <>
+                    {/* ── Get Started dropdown trigger ── */}
                     <Button
-                      onClick={() => setSignupOpen(true)}
+                      onClick={handleGsOpen}
                       variant="contained"
+                      endIcon={<KeyboardArrowDownIcon sx={{ fontSize: '16px !important', transition: 'transform .2s', transform: gsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />}
+                      aria-haspopup="true"
+                      aria-expanded={gsOpen}
                       sx={{
                         ml: 0.8,
                         height: 28,
                         borderRadius: 0,
                         boxShadow: 'none',
                         bgcolor: QUANTUM_CYAN,
-                        color: IMPERIAL_MIDNIGHT,
+                        color: '#FFFFFF',
                         textTransform: 'none',
                         fontSize: 14,
                         fontWeight: 600,
@@ -480,6 +495,119 @@ const CloudPlatformHeader: React.FC = () => {
                     >
                       Get Started
                     </Button>
+
+                    {/* ── Get Started dropdown card ── */}
+                    <Popover
+                      open={gsOpen}
+                      anchorEl={gsAnchor}
+                      onClose={handleGsClose}
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                      disableScrollLock
+                      PaperProps={{
+                        elevation: 4,
+                        sx: {
+                          mt: 1,
+                          width: 320,
+                          borderRadius: '10px',
+                          p: 0,
+                          overflow: 'hidden',
+                          border: `1px solid ${CLOUD_SILVER}`,
+                        },
+                      }}
+                    >
+                      {/* Language selector */}
+                      <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}>
+                        <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b7280', mb: 0.75 }}>
+                          Language
+                        </Typography>
+                        <Select
+                          size="small"
+                          fullWidth
+                          value={gsLang}
+                          onChange={(e: SelectChangeEvent) => setGsLang(e.target.value)}
+                          inputProps={{ 'aria-label': 'Select language' }}
+                          sx={{
+                            fontSize: 14,
+                            borderRadius: '8px',
+                            bgcolor: '#f9fafb',
+                            '.MuiOutlinedInput-notchedOutline': { borderColor: CLOUD_SILVER },
+                          }}
+                        >
+                          <MenuItem value="English">English</MenuItem>
+                          <MenuItem value="Français">Français</MenuItem>
+                          <MenuItem value="Español">Español</MenuItem>
+                          <MenuItem value="Deutsch">Deutsch</MenuItem>
+                          <MenuItem value="中文">中文</MenuItem>
+                        </Select>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Auth actions */}
+                      <Box sx={{ px: 2.5, py: 2 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          onClick={() => { handleGsClose(); setSignupOpen(true); }}
+                          sx={{
+                            mb: 1.25,
+                            borderRadius: '8px',
+                            boxShadow: 'none',
+                            bgcolor: '#00bcd4',
+                            color: '#fff',
+                            fontWeight: 700,
+                            fontSize: 15,
+                            textTransform: 'none',
+                            '&:hover': { bgcolor: '#0097a7', boxShadow: '0 4px 14px rgba(0,188,212,.35)' },
+                          }}
+                        >
+                          Register
+                        </Button>
+
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => { handleGsClose(); go('/dashboard'); }}
+                          sx={{
+                            mb: 1.25,
+                            borderRadius: '8px',
+                            borderColor: CLOUD_SILVER,
+                            color: IMPERIAL_MIDNIGHT,
+                            fontWeight: 600,
+                            fontSize: 14,
+                            textTransform: 'none',
+                            bgcolor: '#f9fafb',
+                            '&:hover': { bgcolor: '#f3f4f6', borderColor: '#d1d5db' },
+                          }}
+                        >
+                          Go to Portal
+                        </Button>
+
+                        <Box sx={{ textAlign: 'center', mt: 0.5 }}>
+                          <Button
+                            size="small"
+                            onClick={() => { handleGsClose(); setLoginOpen(true); }}
+                            sx={{ color: '#2563eb', textTransform: 'none', fontSize: 13, fontWeight: 500, p: 0, minWidth: 0, '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}
+                          >
+                            Forgot Username / Password?
+                          </Button>
+                        </Box>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Support link */}
+                      <Box sx={{ px: 2.5, py: 1.5, textAlign: 'center' }}>
+                        <Button
+                          size="small"
+                          onClick={() => { handleGsClose(); go('/support'); }}
+                          sx={{ color: '#6b7280', textTransform: 'none', fontSize: 13, fontWeight: 500, p: 0, minWidth: 0, '&:hover': { color: IMPERIAL_MIDNIGHT, bgcolor: 'transparent', textDecoration: 'underline' } }}
+                        >
+                          Support Portal
+                        </Button>
+                      </Box>
+                    </Popover>
                   </>
                 )}
               </Stack>

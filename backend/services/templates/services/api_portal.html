@@ -23,7 +23,48 @@
         </nav>
         <div class="topbar-actions">
             <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark and light mode">🌙 Dark</button>
-            <a class="btn btn-primary" href="/api/auth/signup/">Get API Key</a>
+
+            <!-- Get Started dropdown -->
+            <div class="gs-dropdown" id="gsDropdown">
+                <button class="btn btn-primary gs-trigger"
+                        id="gsTrigger"
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="gsCard">Get Started ▾</button>
+
+                <div class="gs-card" id="gsCard" role="dialog" aria-label="Get started options" hidden>
+
+                    <!-- Language selector -->
+                    <div class="gs-section gs-language">
+                        <label class="gs-label" for="gsLang">Language</label>
+                        <select id="gsLang" class="gs-select" aria-label="Select language">
+                            <option value="en" selected>English</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
+                            <option value="de">Deutsch</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+
+                    <hr class="gs-divider" />
+
+                    <!-- Login / auth actions -->
+                    <div class="gs-section gs-actions">
+                        <a class="gs-btn gs-btn-primary" href="/api/auth/signup/">Register</a>
+                        <a class="gs-btn gs-btn-secondary" href="/admin/">Go to Portal</a>
+                        <a class="gs-link-tertiary" href="/api/auth/login/">Forgot Username / Password?</a>
+                    </div>
+
+                    <hr class="gs-divider" />
+
+                    <!-- Support -->
+                    <div class="gs-section gs-support">
+                        <a class="gs-support-link" href="/api/health/" target="_blank" rel="noopener">Support Portal</a>
+                    </div>
+                </div>
+            </div>
+            <!-- /Get Started dropdown -->
         </div>
     </div>
 </header>
@@ -36,7 +77,6 @@
             <p class="subtitle">Unified APIs for Compute, Storage, Networking, Identity, Billing, Monitoring, and Automation.</p>
             <p class="description">Designed for enterprise-grade reliability with clear onboarding, predictable resource models, strict versioning, and secure multi-tenant operations.</p>
             <div class="hero-actions">
-                <a class="btn btn-primary" href="/api/auth/signup/">Generate API Key</a>
                 <a class="btn btn-secondary" href="/api/services/">Browse Endpoints</a>
             </div>
             <div class="hero-code">
