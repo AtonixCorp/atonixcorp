@@ -59,5 +59,9 @@ htmlcov/
 
 # Docker
 .dockerignore.env
-docss/
-docs/
+
+# TLS certificates and private keys — never commit real certs
+letsencrypt/
+docker/ssl/*.pem
+*.pem
+*.key

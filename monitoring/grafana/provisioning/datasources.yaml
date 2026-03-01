@@ -1,3 +1,7 @@
+---
+# Grafana datasource provisioning
+# File: observability/grafana/provisioning/datasources.yaml
+
 apiVersion: 1
 
 datasources:
@@ -6,7 +10,7 @@ datasources:
     access: proxy
     url: http://prometheus:9090
     isDefault: true
-    editable: true
+    editable: false
     jsonData:
       timeInterval: "15s"
       httpMethod: POST
@@ -15,4 +19,4 @@ datasources:
     type: loki
     access: proxy
     url: http://loki:3100
-    editable: true
+    editable: false
