@@ -14,7 +14,6 @@ const CompliancePage: React.FC = () => {
           <GppGoodIcon sx={{ color: dashboardTokens.colors.brandPrimary }} />
           <Typography sx={{ fontWeight: 800, color: t.textPrimary }}>Compliance</Typography>
         </Stack>
-        <Chip label="No Mock Data" size="small" sx={{ bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success, fontWeight: 700 }} />
       </Stack>
 
       <Card sx={{ border: `1px solid ${t.border}`, bgcolor: t.surface, boxShadow: 'none' }}>

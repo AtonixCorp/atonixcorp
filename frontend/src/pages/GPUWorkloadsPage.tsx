@@ -9,7 +9,6 @@ const GPUWorkloadsPage: React.FC = () => {
     <Box sx={{ minHeight: '100vh', bgcolor: t.background, p: { xs: 2, md: 3 } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
         <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: t.textPrimary }}>GPU Workloads</Typography>
-        <Chip label="No Mock Data" size="small" sx={{ bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success, fontWeight: 700 }} />
       </Stack>
 
       <Box sx={{ bgcolor: t.surface, border: `1px solid ${t.border}`, borderRadius: 2, p: 3 }}>

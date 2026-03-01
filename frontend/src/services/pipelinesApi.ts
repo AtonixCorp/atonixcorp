@@ -132,3 +132,27 @@ export async function listArtifacts(params?: { pipeline?: string }): Promise<Bac
   const response = await apiClient.get<BackendPipelineArtifact[]>('/api/services/pipelines/artifacts/', { params });
   return response.data;
 }
+
+/* ───────── Projects ───────── */
+
+export interface BackendProject {
+  id: string;
+  owner: number;
+  name: string;
+  description: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function listProjects(): Promise<BackendProject[]> {
+  const response = await apiClient.get<BackendProject[] | { results: BackendProject[] }>(
+    '/api/services/pipelines/projects/',
+  );
+  const d = response.data;
+  return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function createProject(data: { name: string; description?: string }): Promise<BackendProject> {
+  const response = await apiClient.post<BackendProject>('/api/services/pipelines/projects/', data);
+  return response.data;
+}

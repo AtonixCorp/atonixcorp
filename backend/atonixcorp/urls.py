@@ -13,6 +13,7 @@ import os
 import json
 from django.conf import settings
 from services.api.portal_views import ApiPortalLandingView
+from services.api.telemetry_views import telemetry_endpoint
 
 try:
     from graphene_django.views import GraphQLView
@@ -195,6 +196,7 @@ urlpatterns = [
     path('', ApiPortalLandingView.as_view(), name='api-portal-home'),
     path('admin/', admin.site.urls),
     path('api/health/', health_check),
+    path('api/telemetry/', telemetry_endpoint),
     path('api/auth/login/', login_view),
     path('api/auth/signup/', signup_view),
     path('api/auth/register/', signup_view),  # alias

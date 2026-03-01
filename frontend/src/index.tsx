@@ -4,6 +4,17 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initializeOpenTelemetry } from './observability/telemetry';
 
+// ─── Suppress benign browser notifications ───────────────────────────────────
+// Must run before anything else so CRA's dev-overlay onerror hook never sees
+// these messages. Returning true from window.onerror marks the event as handled
+// and prevents the red overlay from appearing.
+const SUPPRESSED_ERRORS = /ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i;
+
+(window as any).onerror = (message: string): boolean => {
+  return SUPPRESSED_ERRORS.test(String(message));
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 function ____showBootstrapError(message: string): void {
   const rootEl = document.getElementById('root');
   if (!rootEl) {
@@ -22,11 +33,13 @@ function ____showBootstrapError(message: string): void {
 }
 
 window.addEventListener('error', (event) => {
+  if (SUPPRESSED_ERRORS.test(event.message ?? '')) return;
   ____showBootstrapError(event.message || 'An unexpected runtime error occurred.');
 });
 
 window.addEventListener('unhandledrejection', (event) => {
   const reason = (event.reason as any)?.message || String(event.reason || 'Unhandled promise rejection');
+  if (SUPPRESSED_ERRORS.test(reason)) return;
   ____showBootstrapError(reason);
 });
 

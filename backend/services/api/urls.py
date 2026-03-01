@@ -74,6 +74,7 @@ from ..apim.viewsets import (
 )
 from ..groups.viewsets import GroupViewSet
 from ..resources.viewsets import ResourceViewSet
+from ..workspace.views import DevWorkspaceViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -220,6 +221,11 @@ router.register(r'groups', GroupViewSet, basename='group')
 # RESOURCE CONTROL CENTER
 # ============================================================================
 router.register(r'resources', ResourceViewSet, basename='resource')
+
+# ============================================================================
+# DEVELOPER WORKSPACE ENDPOINTS
+# ============================================================================
+router.register(r'dev-workspaces', DevWorkspaceViewSet, basename='dev-workspace')
 
 # URL Patterns
 urlpatterns = [

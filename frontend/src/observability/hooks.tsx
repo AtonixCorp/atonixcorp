@@ -10,7 +10,7 @@ import { trackEvent, trackPageView, trackUserInteraction, trackApiCall, trackErr
  */
 export function usePageTracking(pageName?: string) {
   const pathname = window.location.pathname;
-  
+
   useEffect(() => {
     const finalPageName = pageName || document.title || pathname;
     trackPageView(finalPageName, pathname);
@@ -42,7 +42,7 @@ export function useInteractionTracking() {
 export function useApiTracking() {
   const trackApi = useCallback((promise: Promise<any>, method: string, url: string) => {
     const startTime = Date.now();
-    
+
     return promise
       .then((result) => {
         const duration = Date.now() - startTime;
@@ -71,7 +71,7 @@ export function usePerformanceTracking(componentName: string) {
     // Track mount time
     mountTime.current = Date.now();
     const mountDuration = mountTime.current - renderStartTime.current;
-    
+
     trackEvent('component-mount', {
       componentName,
       mountDuration,
@@ -83,7 +83,7 @@ export function usePerformanceTracking(componentName: string) {
       if (mountTime.current) {
         const unmountTime = Date.now();
         const totalLifetime = unmountTime - mountTime.current;
-        
+
         trackEvent('component-unmount', {
           componentName,
           totalLifetime,
@@ -96,14 +96,14 @@ export function usePerformanceTracking(componentName: string) {
   const trackRender = useCallback((renderData?: Record<string, any>) => {
     const renderTime = Date.now();
     const renderDuration = renderTime - renderStartTime.current;
-    
+
     trackEvent('component-render', {
       componentName,
       renderDuration,
       timestamp: renderTime,
       ...renderData,
     });
-    
+
     renderStartTime.current = renderTime;
   }, [componentName]);
 
@@ -153,7 +153,7 @@ export function withTelemetry<P extends object>(
   componentName?: string
 ) {
   const displayName = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
-  
+
   const TelemetryWrappedComponent: React.FC<P> = (props) => {
     const { trackRender } = usePerformanceTracking(displayName);
     const { trackComponentError } = useErrorTracking();
@@ -164,8 +164,9 @@ export function withTelemetry<P extends object>(
 
     // Error boundary effect
     useEffect(() => {
-      const handleError = (event: ErrorEvent) => {
-        if (event.filename?.includes(displayName)) {
+      const handleError = (event: ErrorEvent) => {        // Ignore benign browser notifications (e.g. ResizeObserver loop)
+        const IGNORED = /ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i;
+        if (IGNORED.test(event.message ?? '')) return;        if (event.filename?.includes(displayName)) {
           trackComponentError(event.error, displayName, props as any);
         }
       };
@@ -178,7 +179,7 @@ export function withTelemetry<P extends object>(
   };
 
   TelemetryWrappedComponent.displayName = `withTelemetry(${displayName})`;
-  
+
   return TelemetryWrappedComponent;
 }
 
@@ -212,7 +213,7 @@ export class TelemetryErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const componentName = this.props.componentName || 'ErrorBoundary';
-    
+
     trackError(error, `error-boundary-${componentName}`);
     trackEvent('error-boundary-catch', {
       componentName,
@@ -227,7 +228,7 @@ export class TelemetryErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback;
-      
+
       if (FallbackComponent) {
         return React.createElement(FallbackComponent, {
           error: this.state.error,

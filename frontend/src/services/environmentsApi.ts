@@ -41,6 +41,19 @@ export interface EnvironmentSettingsPayload {
   notify_email?:        string;
 }
 
+export interface CreateEnvironmentPayload {
+  id?:                 string;
+  name:                string;
+  region:              string;
+  description?:        string;
+  is_protected?:       boolean;
+  auto_deploy?:        boolean;
+  deployment_strategy?: DeploymentStrategy;
+  require_approval?:   boolean;
+  notify_email?:       string;
+  project:             string;
+}
+
 // ─── API Calls ────────────────────────────────────────────────────────────────
 
 export const listEnvironments = (projectId?: string): Promise<ApiEnvironment[]> =>
@@ -76,3 +89,8 @@ export const deleteEnvironment = (id: string): Promise<null | string> =>
       const detail = err?.response?.data?.detail;
       return typeof detail === 'string' ? detail : 'Failed to delete environment.';
     });
+
+export const createEnvironment = (
+  payload: CreateEnvironmentPayload,
+): Promise<ApiEnvironment> =>
+  client.post<ApiEnvironment>(`${BASE}/`, payload).then(r => r.data);

@@ -50,6 +50,7 @@ import DevKubernetesPage        from './pages/DevKubernetesPage';
 import KubernetesSetupPage      from './pages/KubernetesSetupPage';
 import KubernetesMonitorPage    from './pages/KubernetesMonitorPage';
 import DevMonitoringPage         from './pages/DevMonitoringPage';
+import DevCloudManagePage        from './pages/DevCloudManagePage';
 import DevApiManagementPage      from './pages/DevApiManagementPage';
 import DevResourceControlPage    from './pages/DevResourceControlPage';
 import DevWorkspacePage          from './pages/DevWorkspacePage';
@@ -151,6 +152,7 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/projects/create"  element={<ProjectCreateWizardPage />} />
             <Route path="/developer/Dashboard/projects/:id"  element={<DevProjectDetailPage />} />
             <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
+            <Route path="/developer/Dashboard/cloud-manage" element={<DevCloudManagePage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />
             <Route path="/developer/Dashboard/kubernetes" element={<DevKubernetesPage />} />
             <Route path="/developer/Dashboard/kubernetes/setup/:projectId" element={<KubernetesSetupPage />} />

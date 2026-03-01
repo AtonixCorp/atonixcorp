@@ -3,6 +3,15 @@
  * This provides basic telemetry without OpenTelemetry dependencies
  */
 
+// Benign browser messages that should never be treated as errors
+const IGNORED_ERROR_PATTERNS: RegExp[] = [
+  /ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i,
+  /Non-Error promise rejection captured/i,
+  /Loading chunk \d+ failed/i,        // handled by chunk-retry logic
+  /NetworkError when attempting to fetch resource/i,
+  /The operation was aborted/i,         // AbortController cancellations
+];
+
 // Configuration
 const ____config = {
   serviceName: process.env.REACT_APP_OTEL_SERVICE_NAME || 'atonixcorp-frontend',
@@ -47,7 +56,7 @@ class SimpleTelemetry {
             });
           }
         });
-        
+
         observer.observe({ entryTypes: ['navigation', 'paint', 'measure'] });
       } catch (error) {
         console.warn('Performance observer not supported:', error);
@@ -58,6 +67,10 @@ class SimpleTelemetry {
   private setupErrorTracking() {
     if (typeof window !== 'undefined') {
       window.addEventListener('error', (event) => {
+        // Suppress benign browser notifications that are not real errors
+        if (IGNORED_ERROR_PATTERNS.some((pattern) => pattern.test(event.message))) {
+          return;
+        }
         this.trackEvent('error', {
           message: event.message,
           filename: event.filename,
@@ -68,6 +81,10 @@ class SimpleTelemetry {
       });
 
       window.addEventListener('unhandledrejection', (event) => {
+        const msg = typeof event.reason === 'string' ? event.reason : event.reason?.message ?? '';
+        if (IGNORED_ERROR_PATTERNS.some((pattern) => pattern.test(msg))) {
+          return;
+        }
         this.trackEvent('unhandled-rejection', {
           reason: event.reason,
           stack: event.reason?.stack,
@@ -144,7 +161,7 @@ export function initializeOpenTelemetry(): void {
   try {
     ____telemetryInstance = new SimpleTelemetry();
     console.log('Simple telemetry initialized successfully');
-    
+
     // Track page load
     ____telemetryInstance.trackEvent('page-load', {
       path: window.location.pathname,
