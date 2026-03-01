@@ -638,6 +638,7 @@ p  { color: var(--text-muted); }
   text-transform: uppercase;
   color: #00E0FF;
   margin-bottom: 10px;
+  text-align: center;
 }
 .hp-h2 {
   font-size: 2.5rem;
@@ -646,6 +647,7 @@ p  { color: var(--text-muted); }
   letter-spacing: -0.8px;
   color: #0A0F1F;
   margin: 0;
+  text-align: center;
 }
 .hp-navy .hp-h2 { color: #fff; }
 .hp-navy .hp-section-label { color: rgba(0,224,255,.8); }
@@ -656,6 +658,9 @@ p  { color: var(--text-muted); }
   letter-spacing: -0.1px;
   color: #4B5563;
   max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 /* Grids */
