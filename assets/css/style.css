@@ -798,6 +798,8 @@ p  { color: var(--text-muted); }
 @media (max-width: 1024px) {
   .hp-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .hp-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .hp-grid-5 { grid-template-columns: repeat(3, 1fr); }
+  .hp-grid-10 { grid-template-columns: repeat(4, 1fr); }
   .hp-hero-h1 { font-size: 2.9rem; }
 }
 @media (max-width: 768px) {
