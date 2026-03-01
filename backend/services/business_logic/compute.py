@@ -28,6 +28,7 @@ from ..core.models import (
     ServerlessFunction, ServerlessFunctionTrigger,
     AutoScalingGroup, ScalingPolicy,
 )
+from ..core.base_models import AuditLog
 from .exceptions import (
     InstanceError, InstanceStartError, InstanceStopError, InstanceTerminateError,
     QuotaExceededError, InvalidStateTransitionError, InvalidConfigurationError,
@@ -585,45 +586,117 @@ class ComputeService:
         return hashlib.sha256(code.encode()).hexdigest()
 
     def _launch_asg_instances(self, asg, count):
-        """Launch instances for ASG"""
+        """Launch instances for ASG scaling events."""
+        # Resolve flavor and image from the launch_template_id or use
+        # the owner's first available resources as a safe fallback.
+        flavor = (
+            Flavor.objects.filter(id=asg.launch_template_id).first()
+            if str(getattr(asg, 'launch_template_id', '')).isdigit()
+            else Flavor.objects.first()
+        )
+        image = (
+            Image.objects.filter(id=asg.launch_template_id).first()
+            if str(getattr(asg, 'launch_template_id', '')).isdigit()
+            else Image.objects.filter(owner=asg.owner).first() or Image.objects.first()
+        )
+        if not flavor or not image:
+            raise AutoScalingError(
+                f"Cannot launch ASG instances: no flavor or image available for ASG '{asg.name}'"
+            )
+        launched = []
         for i in range(count):
             instance_data = {
-                'flavor_id': asg.flavor_id,
-                'image_id': asg.image_id,
-                'name': f"{asg.name}-{i}",
+                'flavor_id': flavor.id,
+                'image_id': image.id,
+                'name': f"{asg.name}-asg-{i}",
+                'assign_public_ip': True,
+                'metadata': {'auto_scaling_group': str(asg.asg_id)},
             }
-            # In production, would create actual instance
-            pass
+            try:
+                instance = self.create_instance(instance_data, asg.owner)
+                launched.append(instance.instance_id)
+            except Exception as exc:
+                # Log and continue so partial launches don't block the whole scale-up
+                self._audit_log(
+                    asg.owner, 'scale',
+                    str(asg.id),
+                    {'error': str(exc), 'asg': asg.name, 'index': i},
+                )
+        # Persist new instance IDs on the ASG
+        asg.current_instances = list(set(asg.current_instances or []) | set(launched))
+        asg.save(update_fields=['current_instances'])
 
     def _evaluate_target_tracking_policy(self, asg, policy):
         """
-        Evaluate a target tracking scaling policy.
+        Evaluate a target tracking scaling policy against real instance metrics.
+
+        Queries the last 5 minutes of InstanceMetric rows for all instances
+        currently in this ASG and averages the relevant metric.
 
         Returns: 'scale_up', 'scale_down', or 'maintain'
         """
-        # Simulate metric evaluation
-        # In production, would get actual metrics from instance monitoring
-        import random
-        cpu_avg = random.randint(20, 95)
+        metric_name = (policy.metric_name or 'CPUUtilization').lower()
+        since = timezone.now() - timedelta(minutes=5)
 
-        if cpu_avg > policy.target_value:
+        instance_ids = asg.current_instances or []
+        metrics_qs = InstanceMetric.objects.filter(
+            instance__instance_id__in=instance_ids,
+            created_at__gte=since,
+        )
+
+        if metric_name in ('cpuutilization', 'cpu_usage_percent', 'cpu'):
+            agg = metrics_qs.aggregate(avg=Avg('cpu_usage_percent'))
+            current_value = agg['avg']
+        elif metric_name in ('memoryutilization', 'memory_usage_percent', 'memory'):
+            agg = metrics_qs.aggregate(avg=Avg('memory_usage_percent'))
+            current_value = agg['avg']
+        else:
+            # Unknown metric — no data, maintain
+            return 'maintain'
+
+        if current_value is None:
+            # No metrics collected yet — maintain current size
+            return 'maintain'
+
+        target = policy.target_value
+        if current_value > target:
             return 'scale_up'
-        elif cpu_avg < (policy.target_value * 0.8):
+        elif current_value < (target * 0.8):
             return 'scale_down'
         else:
             return 'maintain'
 
     def _audit_log(self, user, action, resource_id, details):
-        """Log an audit event"""
-        # TODO: Implement actual audit logging
-        # AuditLog.objects.create(
-        #     user=user,
-        #     action=action,
-        #     resource_id=resource_id,
-        #     details=details,
-        #     timestamp=timezone.now(),
-        # )
-        pass
+        """Persist an audit event via the AuditLog model."""
+        try:
+            # Map free-form action strings to the constrained ACTION_CHOICES
+            _action_map = {
+                'instance_created': 'create',
+                'instance_started': 'start',
+                'instance_stopped': 'stop',
+                'instance_terminated': 'delete',
+                'instance_restarted': 'restart',
+                'cluster_created': 'create',
+                'cluster_scaled': 'scale',
+                'function_created': 'create',
+                'asg_created': 'create',
+                'asg_scaled': 'scale',
+            }
+            mapped_action = _action_map.get(action, action)
+            # Determine resource_type from details or fall back to 'compute'
+            resource_type = details.get('resource_type', 'compute') if isinstance(details, dict) else 'compute'
+            AuditLog.log_action(
+                user=user,
+                action=mapped_action,
+                resource_type=resource_type,
+                resource_id=str(resource_id),
+                resource_name=details.get('name', '') if isinstance(details, dict) else '',
+                status='success',
+                details=details if isinstance(details, dict) else {'info': str(details)},
+            )
+        except Exception:
+            # Audit failures must never interrupt business operations
+            pass
 
     def _empty_metrics(self):
         """Return empty metrics response"""

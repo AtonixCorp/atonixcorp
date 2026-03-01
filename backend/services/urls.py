@@ -29,7 +29,8 @@ from .networking.viewsets import (
     VPCViewSet, SubnetViewSet, SecurityGroupViewSet,
     LoadBalancerViewSet, TargetGroupViewSet, RouteTableViewSet,
     DNSRecordViewSet, CDNDistributionViewSet, VPNConnectionViewSet,
-    VPNGatewayViewSet, InternetGatewayViewSet, NATGatewayViewSet
+    VPNGatewayViewSet, InternetGatewayViewSet, NATGatewayViewSet,
+    ServiceMeshPolicyViewSet,
 )
 from .database.viewsets import ManagedDatabaseViewSet
 from .container_registry.viewsets import ContainerRepositoryViewSet
@@ -74,14 +75,21 @@ from .deployments.viewsets import (
 )
 from .iam.viewsets import (
     IAMUserViewSet, IAMGroupViewSet, IAMRoleViewSet,
-    IAMPolicyViewSet, AccessKeyViewSet, AuditLogViewSet,
+    IAMPolicyViewSet, AccessKeyViewSet, IAMAuditLogViewSet,
 )
-from .kms.viewsets import EncryptionKeyViewSet as KMSKeyViewSet
+from .kms.viewsets import KMSEncryptionKeyViewSet as KMSKeyViewSet
 from .secrets.viewsets import SecretViewSet
 from .zero_trust.viewsets import (
     ZeroTrustPolicyViewSet, DevicePostureViewSet, ZeroTrustAccessLogViewSet,
 )
 from .workspace.views import DevWorkspaceViewSet
+from .ai.viewsets import (
+    AnomalyDetectionRuleViewSet, AnomalyEventViewSet,
+    ScalingPredictionViewSet, AIRecommendationViewSet,
+)
+from .regions.viewsets import (
+    CloudRegionViewSet, AvailabilityZoneViewSet, RegionPeerViewSet,
+)
 from .provisioning.views import (
     provision_vm,
     provision_volume,
@@ -228,7 +236,7 @@ router.register(r'iam/groups',       IAMGroupViewSet,    basename='iam-group')
 router.register(r'iam/roles',        IAMRoleViewSet,     basename='iam-role')
 router.register(r'iam/policies',     IAMPolicyViewSet,   basename='iam-policy')
 router.register(r'iam/access-keys',  AccessKeyViewSet,   basename='iam-access-key')
-router.register(r'iam/audit-logs',   AuditLogViewSet,    basename='iam-audit-log')
+router.register(r'iam/audit-logs',   IAMAuditLogViewSet,    basename='iam-audit-log')
 
 # ============================================================================
 # KMS ENDPOINTS
@@ -246,6 +254,26 @@ router.register(r'secrets/vault',  SecretViewSet,  basename='secret')
 router.register(r'zero-trust/policies',    ZeroTrustPolicyViewSet,     basename='zt-policy')
 router.register(r'zero-trust/devices',     DevicePostureViewSet,       basename='zt-device')
 router.register(r'zero-trust/access-logs', ZeroTrustAccessLogViewSet,  basename='zt-access-log')
+
+# ============================================================================
+# SERVICE MESH ENDPOINTS
+# ============================================================================
+router.register(r'mesh/policies', ServiceMeshPolicyViewSet, basename='mesh-policy')
+
+# ============================================================================
+# AI / ML INTELLIGENCE ENDPOINTS
+# ============================================================================
+router.register(r'ai/anomaly-rules',       AnomalyDetectionRuleViewSet, basename='ai-anomaly-rule')
+router.register(r'ai/anomaly-events',      AnomalyEventViewSet,         basename='ai-anomaly-event')
+router.register(r'ai/scaling-predictions', ScalingPredictionViewSet,    basename='ai-scaling-prediction')
+router.register(r'ai/recommendations',     AIRecommendationViewSet,     basename='ai-recommendation')
+
+# ============================================================================
+# MULTI-REGION MANAGEMENT ENDPOINTS
+# ============================================================================
+router.register(r'regions',           CloudRegionViewSet,      basename='region')
+router.register(r'regions/zones',     AvailabilityZoneViewSet, basename='availability-zone')
+router.register(r'regions/peers',     RegionPeerViewSet,       basename='region-peer')
 
 # ============================================================================
 # DEVELOPER WORKSPACE ENDPOINTS

@@ -658,3 +658,56 @@ class NATGateway(ResourceModel):
 
     def __str__(self):
         return f"{self.name} ({self.nat_gw_id})"
+
+
+# ── Service Mesh ──────────────────────────────────────────────────────────────
+
+MTLS_MODE_CHOICES = [
+    ('strict',      'Strict — all traffic must use mTLS'),
+    ('permissive',  'Permissive — accept both plain-text and mTLS'),
+    ('disabled',    'Disabled — no mTLS enforcement'),
+]
+
+PROXY_TYPE_CHOICES = [
+    ('envoy',   'Envoy'),
+    ('linkerd', 'Linkerd'),
+    ('none',    'No sidecar'),
+]
+
+
+class ServiceMeshPolicy(ResourceModel):
+    """
+    Service mesh policy for a workload or namespace.
+
+    Enforces mTLS, traffic encryption, and east-west traffic access rules
+    for services running inside a VPC or Kubernetes cluster.
+    """
+    policy_id           = models.CharField(max_length=64, unique=True, db_index=True)
+    vpc                 = models.ForeignKey(VPC, on_delete=models.CASCADE, related_name='mesh_policies',
+                                            null=True, blank=True)
+    cluster_id          = models.CharField(max_length=64, blank=True,
+                                           help_text='KubernetesCluster.cluster_id (blank = VPC-wide)')
+    namespace           = models.CharField(max_length=128, blank=True,
+                                           help_text='K8s namespace selector (empty = all namespaces)')
+    workload_selector   = models.JSONField(default=dict,
+                                           help_text='Label selector dict, e.g. {"app": "api"}')
+    mtls_mode           = models.CharField(max_length=12, choices=MTLS_MODE_CHOICES, default='permissive')
+    proxy_type          = models.CharField(max_length=10, choices=PROXY_TYPE_CHOICES, default='envoy')
+    allowed_sources     = models.JSONField(default=list,
+                                           help_text='Allowed source identifiers (CIDR, selectors, or "*")')
+    egress_allowed      = models.BooleanField(default=True)
+    egress_allowlist    = models.JSONField(default=list)
+    is_active           = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Service Mesh Policy'
+
+    def save(self, *args, **kwargs):
+        if not self.policy_id:
+            self.policy_id = f"mesh-{uuid.uuid4().hex[:12]}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        scope = self.namespace or 'all-namespaces'
+        return f"{self.name} [{self.mtls_mode}] ({scope})"

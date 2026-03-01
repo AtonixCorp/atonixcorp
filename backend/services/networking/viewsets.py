@@ -13,7 +13,7 @@ from .models import (
     LoadBalancer, TargetGroup, Listener,
     RouteTable, Route, DNSRecord, CDNDistribution,
     VPNGateway, CustomerGateway, VPNConnection,
-    InternetGateway, NATGateway
+    InternetGateway, NATGateway, ServiceMeshPolicy,
 )
 from infrastructure.openstack.networking import provision_load_balancer, delete_load_balancer, load_balancer_metrics
 from infrastructure.openstack.networking import provision_cdn_distribution, delete_cdn_distribution, cdn_distribution_metrics
@@ -1080,3 +1080,77 @@ class NATGatewayViewSet(viewsets.ModelViewSet):
         nat.public_ip = standby_ip
         nat.save(update_fields=['public_ip', 'metadata'])
         return Response({'status': 'ok', 'public_ip': nat.public_ip, 'event': nat.metadata.get('last_failover')})
+
+
+# ── Service Mesh ──────────────────────────────────────────────────────────────
+
+from rest_framework import serializers as drf_serializers
+
+
+class ServiceMeshPolicySerializer(drf_serializers.ModelSerializer):
+    class Meta:
+        model = ServiceMeshPolicy
+        fields = '__all__'
+        read_only_fields = ['id', 'policy_id', 'owner', 'created_at', 'updated_at']
+
+
+class ServiceMeshPolicyViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for service mesh policies + mTLS enforcement actions.
+
+    Each policy scopes mTLS mode and ingress/egress controls to a
+    VPC, Kubernetes namespace, or label-selected workload group.
+    """
+    serializer_class = ServiceMeshPolicySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = ServiceMeshPolicy.objects.filter(owner=self.request.user)
+        vpc_id = self.request.query_params.get('vpc_id')
+        cluster_id = self.request.query_params.get('cluster_id')
+        if vpc_id:
+            qs = qs.filter(vpc__resource_id=vpc_id)
+        if cluster_id:
+            qs = qs.filter(cluster_id=cluster_id)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def enforce_strict(self, request, pk=None):
+        """Upgrade this policy to strict mTLS mode."""
+        policy = self.get_object()
+        policy.mtls_mode = 'strict'
+        policy.save(update_fields=['mtls_mode', 'updated_at'])
+        return Response({
+            'policy_id': policy.policy_id,
+            'mtls_mode': policy.mtls_mode,
+            'detail': 'mTLS mode set to strict. All workload traffic now requires mutual TLS.',
+        })
+
+    @action(detail=True, methods=['post'])
+    def disable_mtls(self, request, pk=None):
+        """Downgrade to disabled mTLS (use with caution)."""
+        policy = self.get_object()
+        policy.mtls_mode = 'disabled'
+        policy.save(update_fields=['mtls_mode', 'updated_at'])
+        return Response({
+            'policy_id': policy.policy_id,
+            'mtls_mode': policy.mtls_mode,
+            'detail': 'mTLS enforcement disabled for this policy scope.',
+        })
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Return mTLS coverage summary across all user policies."""
+        from django.db.models import Count
+        qs = ServiceMeshPolicy.objects.filter(owner=request.user, is_active=True)
+        by_mode = dict(qs.values_list('mtls_mode').annotate(count=Count('id')))
+        total = qs.count()
+        strict_count = by_mode.get('strict', 0)
+        return Response({
+            'total_active_policies': total,
+            'by_mode': by_mode,
+            'strict_coverage_pct': round((strict_count / total * 100), 1) if total else 0,
+        })

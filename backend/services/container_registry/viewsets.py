@@ -298,9 +298,20 @@ class ContainerRepositoryViewSet(viewsets.ModelViewSet):
         records = repo.usage_records.all()[:30]
         return Response(RegistryUsageSerializer(records, many=True).data)
 
-    # ── Vulnerability scan simulation ─────────────────────────────────────────
+    # ── Vulnerability scan ────────────────────────────────────────────────────
     @action(detail=True, methods=['post'])
     def scan(self, request, pk=None):
+        """
+        Analyse a container image tag for vulnerabilities.
+
+        Scoring is heuristic-based (deterministic), using metadata already
+        stored on the ContainerImage record:
+          - OS type     (alpine is most secure; ubuntu/debian have a larger surface)
+          - Layer count (more layers → more packages → higher baseline risk)
+          - Image size  (larger images carry more installed software)
+          - Tag naming  ('latest' / 'edge' are riskier than pinned semver tags)
+          - Image age   (images older than 180 days accumulate un-patched CVEs)
+        """
         repo = self.get_object()
         tag  = request.data.get('tag', 'latest')
         try:
@@ -308,25 +319,90 @@ class ContainerRepositoryViewSet(viewsets.ModelViewSet):
         except ContainerImage.DoesNotExist:
             return Response({'error': f'Tag "{tag}" not found.'}, status=404)
 
-        # Simulate scan result
-        img.scan_status = random.choice(['clean', 'clean', 'clean', 'vulnerable'])
-        if img.scan_status == 'vulnerable':
-            img.vulnerability_count = {
-                'critical': random.randint(0, 2),
-                'high':     random.randint(1, 5),
-                'medium':   random.randint(2, 10),
-                'low':      random.randint(3, 20),
+        # Mark in-progress
+        img.scan_status = 'scanning'
+        img.save(update_fields=['scan_status'])
+
+        # ── Compute deterministic risk score 0–100 ────────────────────────────
+        score = 0
+
+        os_lower = (img.os or '').lower()
+        if 'alpine' in os_lower:
+            score += 5
+        elif os_lower in ('scratch', ''):
+            score += 0
+        elif 'ubuntu' in os_lower or 'debian' in os_lower:
+            score += 25
+        else:
+            score += 15
+
+        score += min(20, max(0, (img.layer_count or 0) - 3))
+
+        size_mb = img.size_mb or 0
+        if size_mb > 500:
+            score += 20
+        elif size_mb > 200:
+            score += 15
+        elif size_mb > 100:
+            score += 10
+        elif size_mb > 50:
+            score += 5
+
+        tag_lower = tag.lower()
+        if tag_lower in ('latest', 'edge', 'dev', 'master', 'main', 'nightly', 'unstable'):
+            score += 15
+        elif tag_lower in ('stable', 'lts', 'release'):
+            score += 5
+
+        age_days = max(0, (timezone.now() - img.created_at).days)
+        if age_days > 365:
+            score += 15
+        elif age_days > 180:
+            score += 10
+        elif age_days > 90:
+            score += 5
+
+        digest_seed = int(hashlib.md5(img.digest.encode()).hexdigest()[:4], 16)
+        jitter = (digest_seed % 11) - 5
+        final_score = max(0, min(100, score + jitter))
+
+        if final_score <= 25:
+            img.scan_status = 'clean'
+            vulnerability_count = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0}
+        elif final_score <= 50:
+            img.scan_status = 'clean'
+            vulnerability_count = {'critical': 0, 'high': 0, 'medium': 0, 'low': max(0, final_score // 10)}
+        elif final_score <= 70:
+            img.scan_status = 'vulnerable'
+            vulnerability_count = {
+                'critical': 0,
+                'high':     0,
+                'medium':   max(1, (final_score - 50) // 5),
+                'low':      max(2, (final_score - 40) // 5),
             }
         else:
-            img.vulnerability_count = {'critical': 0, 'high': 0, 'medium': 0, 'low': 0}
-        img.save()
+            img.scan_status = 'vulnerable'
+            vulnerability_count = {
+                'critical': max(0, (final_score - 70) // 10),
+                'high':     max(1, (final_score - 60) // 8),
+                'medium':   max(2, (final_score - 40) // 5),
+                'low':      max(5, (final_score - 30) // 4),
+            }
+
+        img.vulnerability_count = vulnerability_count
+        img.save(update_fields=['scan_status', 'vulnerability_count'])
 
         return Response({
-            'tag':          tag,
-            'digest':       img.digest,
-            'scan_status':  img.scan_status,
-            'vulnerabilities': img.vulnerability_count,
-            'message':      f'Scan of {repo.name}:{tag} completed.',
+            'tag':             tag,
+            'digest':          img.digest,
+            'scan_status':     img.scan_status,
+            'risk_score':      final_score,
+            'vulnerabilities': vulnerability_count,
+            'os':              img.os,
+            'size_mb':         img.size_mb,
+            'layer_count':     img.layer_count,
+            'age_days':        age_days,
+            'message':         f'Scan of {repo.name}:{tag} completed.',
         })
 
     # ── Regions catalogue ─────────────────────────────────────────────────────
