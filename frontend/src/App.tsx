@@ -38,7 +38,6 @@ import DomainsLandingPage from './pages/DomainsLandingPage';
 import DomainsServiceDashboardPage from './pages/DomainsServiceDashboardPage';
 import DomainDetailPage from './pages/DomainDetailPage';
 import EmailMarketingPage from './pages/EmailMarketingPage';
-import MonitoringPage from './pages/MonitoringPage';
 import BillingPage               from './pages/BillingPage';
 import LoadBalancersPage         from './pages/LoadBalancersPage';
 import CDNPage                   from './pages/CDNPage';
@@ -109,6 +108,7 @@ const AppShell: React.FC = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
+  const isDevMonitor = location.pathname.startsWith('/developer/monitor');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
@@ -123,6 +123,16 @@ const AppShell: React.FC = () => {
           <Route path="/groups/:groupId/:section"        element={<GroupDashboardPage />} />
           <Route path="/groups/:groupId/:section/:sub"   element={<GroupDashboardPage />} />
           <Route path="/groups/*"                        element={<Navigate to="/developer/Dashboard/groups" replace />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isDevMonitor) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/monitor" element={<DevMonitoringPage />} />
         </Routes>
       </ProtectedRoute>
     );
@@ -143,7 +153,6 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/kubernetes" element={<DevKubernetesPage />} />
             <Route path="/developer/Dashboard/kubernetes/setup/:projectId" element={<KubernetesSetupPage />} />
             <Route path="/developer/Dashboard/kubernetes/monitor/:configId" element={<KubernetesMonitorPage />} />
-            <Route path="/developer/Dashboard/monitoring" element={<DevMonitoringPage />} />
             <Route path="/developer/Dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/developer/Dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/developer/Dashboard/workspace" element={<DevWorkspacePage />} />
@@ -211,7 +220,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/email-marketing"          element={<Navigate to="/marketing-dashboard/campaigns" replace />} />
             <Route path="/dashboard/developer-tools"          element={<Navigate to="/developer/Dashboard/deployments" replace />} />
             <Route path="/dashboard/marketing-tools"          element={<Navigate to="/marketing-dashboard/analytics" replace />} />
-            <Route path="/dashboard/monitoring"               element={<MonitoringPage />} />
+            <Route path="/dashboard/monitoring"               element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
             <Route path="/dashboard/load-balancers"           element={<LoadBalancersPage />} />
             <Route path="/dashboard/cdn"                      element={<CDNPage />} />
             <Route path="/dashboard/network"                  element={<NetworkPage />} />
@@ -264,10 +273,10 @@ const AppShell: React.FC = () => {
           <Routes>
             <Route path="/monitor-dashboard"           element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
             <Route path="/monitor-dashboard/overview"  element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
-            <Route path="/monitor-dashboard/incidents" element={<MonitoringPage defaultTab={1} />} />
-            <Route path="/monitor-dashboard/alerts"    element={<MonitoringPage defaultTab={2} />} />
-            <Route path="/monitor-dashboard/metrics"   element={<MonitoringPage defaultTab={3} />} />
-            <Route path="/monitor-dashboard/logs"      element={<MonitoringPage defaultTab={4} />} />
+            <Route path="/monitor-dashboard/incidents" element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
+            <Route path="/monitor-dashboard/alerts"    element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
+            <Route path="/monitor-dashboard/metrics"   element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
+            <Route path="/monitor-dashboard/logs"      element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
             <Route path="/monitor-dashboard/sections"   element={<DashboardSectionsPage dashboardMode="monitor" />} />
             <Route path="/monitor-dashboard/settings"   element={<MonitorSettingsPage />} />
             <Route path="/monitor-dashboard/dashboards" element={<MonitorCustomDashboardsPage />} />

@@ -121,3 +121,57 @@ class ProvisionedResource(models.Model):
 
     def __str__(self):
         return f"{self.resource_type}:{self.resource_name} ({self.workspace.workspace_id}/{self.environment})"
+
+
+# ---------------------------------------------------------------------------
+# Developer Workspace (browser terminal + web IDE)
+# ---------------------------------------------------------------------------
+
+class DevWorkspace(models.Model):
+    """
+    Represents a personal developer workspace with a browser-accessible
+    terminal (WebSocket) and optional web IDE.
+
+    This is separate from the cloud-resource Workspace model above; a DevWorkspace
+    is an ephemeral container-based dev environment that a user can start/stop on
+    demand from the dashboard.
+    """
+
+    STATUS_CHOICES = [
+        ('stopped',  'Stopped'),
+        ('starting', 'Starting'),
+        ('running',  'Running'),
+        ('stopping', 'Stopping'),
+        ('error',    'Error'),
+    ]
+
+    workspace_id  = models.SlugField(max_length=64, unique=True)
+    display_name  = models.CharField(max_length=128)
+    owner         = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='dev_workspaces'
+    )
+    status        = models.CharField(max_length=16, choices=STATUS_CHOICES, default='stopped')
+    region        = models.CharField(max_length=64, default='us-east-1')
+    image         = models.CharField(max_length=200, default='atonix/devbox:22.04-lts')
+    ide           = models.CharField(max_length=100, default='VS Code')
+    # Set by the backend when the workspace starts; cleared on stop
+    editor_url    = models.URLField(blank=True, default='')
+    # Live metrics (updated periodically while running)
+    cpu_percent   = models.PositiveSmallIntegerField(default=0)
+    ram_percent   = models.PositiveSmallIntegerField(default=0)
+    containers    = models.PositiveSmallIntegerField(default=0)
+    volumes       = models.PositiveSmallIntegerField(default=0)
+    started_at    = models.DateTimeField(null=True, blank=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"DevWorkspace({self.workspace_id}, {self.status})"
+
+    @property
+    def terminal_ws_url(self) -> str:
+        """WebSocket path clients connect to for the interactive terminal."""
+        return f'/ws/workspace/{self.workspace_id}/terminal/'

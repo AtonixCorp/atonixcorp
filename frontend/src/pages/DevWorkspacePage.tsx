@@ -1,7 +1,7 @@
 // AtonixCorp Cloud — Developer Workspace
 // Personal cockpit: Overview · Sessions · Tools · Logs · Settings
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Alert,
@@ -57,6 +57,18 @@ import KeyIcon              from '@mui/icons-material/Key'
 import LockIcon             from '@mui/icons-material/Lock'
 
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem'
+import {
+  listDevWorkspaces,
+  createDevWorkspace,
+  startDevWorkspace,
+  stopDevWorkspace,
+  deleteDevWorkspace,
+  buildTerminalWsUrl,
+  DevWorkspace as ApiDevWorkspace,
+} from '../services/devWorkspaceApi'
+
+// Lazy-loaded so @xterm/xterm is only bundled/evaluated when the terminal is opened
+const TerminalPanel = React.lazy(() => import('../components/Workspace/TerminalPanel'))
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -226,7 +238,17 @@ function HealthBadge({ health }: { health: WorkspaceHealth }) {
 
 // ─── Tab 0 — Overview ─────────────────────────────────────────────────────────
 
-function OverviewTab({ onStartStop, ws }: { onStartStop: (s: boolean) => void; ws: WorkspaceSession }) {
+function OverviewTab({
+  onStartStop,
+  ws,
+  onOpenTerminal,
+  onOpenEditor,
+}: {
+  onStartStop: (s: boolean) => void
+  ws: WorkspaceSession
+  onOpenTerminal: () => void
+  onOpenEditor: () => void
+}) {
   const s  = ws
   const isRunning = s.status === 'running'
 
@@ -303,11 +325,19 @@ function OverviewTab({ onStartStop, ws }: { onStartStop: (s: boolean) => void; w
 
           {/* Quick actions */}
           <Stack direction="row" spacing={1} sx={{ mt: 2 }} flexWrap="wrap">
-            <Button size="small" variant="outlined" startIcon={<TerminalIcon sx={{ fontSize: '.82rem' }} />}
+            <Button
+              size="small" variant="outlined"
+              startIcon={<TerminalIcon sx={{ fontSize: '.82rem' }} />}
+              onClick={onOpenTerminal}
+              disabled={s.status !== 'running'}
               sx={{ fontSize: '.75rem', borderRadius: '5px', textTransform: 'none', borderColor: t.border, color: t.textPrimary }}>
               Open Terminal
             </Button>
-            <Button size="small" variant="outlined" startIcon={<CodeIcon sx={{ fontSize: '.82rem' }} />}
+            <Button
+              size="small" variant="outlined"
+              startIcon={<CodeIcon sx={{ fontSize: '.82rem' }} />}
+              onClick={onOpenEditor}
+              disabled={s.status !== 'running'}
               sx={{ fontSize: '.75rem', borderRadius: '5px', textTransform: 'none', borderColor: t.border, color: t.textPrimary }}>
               Open Editor
             </Button>
@@ -733,7 +763,7 @@ function LogsTab() {
 
 // ─── Tab 4 — Settings ────────────────────────────────────────────────────────
 
-function SettingsTab({ onToast, onDelete, onReset, wsId }: { onToast: (msg: string) => void; onDelete: () => void; onReset: () => void; wsId: string }) {
+function SettingsTab({ onToast, onDelete, onReset, wsId }: { onToast: (msg: string) => void; onDelete: () => Promise<void>; onReset: () => void; wsId: string }) {
   const [autoStart, setAutoStart]         = useState(true)
   const [darkMode, setDarkMode]           = useState(true)
   const [notifications, setNotifications] = useState(true)
@@ -759,12 +789,13 @@ function SettingsTab({ onToast, onDelete, onReset, wsId }: { onToast: (msg: stri
 
   const handleDelete = async () => {
     setDeleting(true)
-    await new Promise(r => setTimeout(r, 2000))
-    setDeleting(false)
-    setDeleteOpen(false)
-    setDeleteInput('')
-    onToast('Workspace deleted.')
-    onDelete()
+    try {
+      await onDelete()
+    } finally {
+      setDeleting(false)
+      setDeleteOpen(false)
+      setDeleteInput('')
+    }
   }
 
   const rows: { label: string; sub: string; value: boolean; set: (v: boolean) => void }[] = [
@@ -931,6 +962,13 @@ const TEMPLATES = [
 const REGIONS = ['us-east-1', 'us-west-2', 'eu-west-1', 'ap-southeast-1']
 const IDES    = ['VS Code', 'JetBrains Remote Dev', 'Zed', 'Neovim']
 
+function formatUptime(startedAt: string): string {
+  const diffMs = Date.now() - new Date(startedAt).getTime()
+  const h = Math.floor(diffMs / 3_600_000)
+  const m = Math.floor((diffMs % 3_600_000) / 60_000)
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
 const TABS = ['Overview', 'Sessions', 'Tools', 'Logs', 'Settings']
 
 const DevWorkspacePage: React.FC = () => {
@@ -938,12 +976,49 @@ const DevWorkspacePage: React.FC = () => {
   const [tab, setTab]     = useState(0)
   const [toast, setToast] = useState<string | null>(null)
 
-  // ── Workspace list ────────────────────────────────────────────────────────────
-  const [workspaces,  setWorkspaces]  = useState<WorkspaceSession[]>([MOCK_SESSION])
-  const [activeWsId,  setActiveWsId]  = useState(MOCK_SESSION.id)
+  // ── Workspace list (API-backed) ───────────────────────────────────────────────
+  const [workspaces,    setWorkspaces]    = useState<WorkspaceSession[]>([MOCK_SESSION])
+  const [activeWsId,    setActiveWsId]    = useState(MOCK_SESSION.id)
+  const [apiWorkspaces, setApiWorkspaces] = useState<ApiDevWorkspace[]>([])
+  const [loadingAction, setLoadingAction] = useState(false)
 
-  const activeWs  = workspaces.find(w => w.id === activeWsId) ?? workspaces[0]
-  const isRunning = activeWs?.status === 'running'
+  // ── Terminal / editor ─────────────────────────────────────────────────────────
+  const [terminalOpen,  setTerminalOpen]  = useState(false)
+  const [terminalWsUrl, setTerminalWsUrl] = useState('')
+
+  // Guard: if the active ws was just deleted activeWs can be undefined for one frame
+  const safeActiveWs = workspaces.find(w => w.id === activeWsId)
+  const activeWs     = safeActiveWs ?? workspaces[0]
+  const isRunning    = activeWs?.status === 'running'
+
+  // Fetch workspaces from API on mount; fall back to mock data on error
+  useEffect(() => {
+    listDevWorkspaces()
+      .then(data => {
+        if (data.length > 0) {
+          setApiWorkspaces(data)
+          // Merge API data into the local WorkspaceSession shape
+          const mapped: WorkspaceSession[] = data.map(w => ({
+            id:         w.workspace_id,
+            owner:      w.owner,
+            status:     (w.status === 'running' || w.status === 'stopped') ? w.status : 'stopped',
+            health:     'healthy',
+            ide:        w.ide,
+            uptime:     w.started_at ? formatUptime(w.started_at) : '—',
+            cpu:        w.cpu_percent,
+            ram:        w.ram_percent,
+            started:    w.created_at,
+            region:     w.region,
+            image:      w.image,
+            containers: w.containers,
+            volumes:    w.volumes,
+          }))
+          setWorkspaces(mapped)
+          setActiveWsId(mapped[0].id)
+        }
+      })
+      .catch(() => { /* keep mock data */ })
+  }, [])
 
   // ── Create dialog state ───────────────────────────────────────────────────────
   const [createOpen,  setCreateOpen]  = useState(false)
@@ -960,25 +1035,79 @@ const DevWorkspacePage: React.FC = () => {
     if (workspaces.some(w => w.id === name)) { setNameError('A workspace with that name already exists.'); return }
     setNameError('')
     setCreating(true)
-    await new Promise(r => setTimeout(r, 1600))
-    const newWs: WorkspaceSession = {
-      id: name, owner: 'john.doe', status: 'stopped', health: 'healthy',
-      ide: createForm.ide, uptime: '—', cpu: 0, ram: 0,
-      started: new Date().toISOString(), region: createForm.region,
-      image: createForm.template, containers: 0, volumes: 0,
+    try {
+      const created = await createDevWorkspace({
+        workspace_id: name,
+        display_name: createForm.name.trim(),
+        region: createForm.region,
+        image: createForm.template,
+        ide: createForm.ide,
+      })
+      const newWs: WorkspaceSession = {
+        id: created.workspace_id, owner: created.owner, status: 'stopped', health: 'healthy',
+        ide: created.ide, uptime: '—', cpu: 0, ram: 0,
+        started: created.created_at, region: created.region,
+        image: created.image, containers: 0, volumes: 0,
+      }
+      setWorkspaces(prev => [...prev, newWs])
+      setActiveWsId(created.workspace_id)
+      setToast(`Workspace "${created.workspace_id}" created.`)
+    } catch {
+      // Fall back to local mock creation so the UI still works without a backend
+      const newWs: WorkspaceSession = {
+        id: name, owner: 'local', status: 'stopped', health: 'healthy',
+        ide: createForm.ide, uptime: '—', cpu: 0, ram: 0,
+        started: new Date().toISOString(), region: createForm.region,
+        image: createForm.template, containers: 0, volumes: 0,
+      }
+      setWorkspaces(prev => [...prev, newWs])
+      setActiveWsId(name)
+      setToast(`Workspace "${name}" created (local).`)
+    } finally {
+      setCreating(false)
+      setCreateOpen(false)
+      setCreateForm({ name: '', template: TEMPLATES[0], region: REGIONS[0], ide: IDES[0] })
     }
-    setWorkspaces(prev => [...prev, newWs])
-    setActiveWsId(name)
-    setCreating(false)
-    setCreateOpen(false)
-    setCreateForm({ name: '', template: TEMPLATES[0], region: REGIONS[0], ide: IDES[0] })
-    setToast(`Workspace "${name}" created.`)
   }
 
-  const handleStartStop = (start: boolean) => {
-    setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: start ? 'running' : 'stopped' } : w))
-    setToast(start ? 'Workspace starting…' : 'Workspace stopped.')
+  const handleStartStop = async (start: boolean) => {
+    setLoadingAction(true)
+    try {
+      const apiWs = apiWorkspaces.find(w => w.workspace_id === activeWsId)
+      if (apiWs) {
+        const updated = start
+          ? await startDevWorkspace(activeWsId)
+          : await stopDevWorkspace(activeWsId)
+        setApiWorkspaces(prev => prev.map(w => w.workspace_id === activeWsId ? updated : w))
+        setWorkspaces(prev => prev.map(w => w.id === activeWsId
+          ? { ...w, status: updated.status as 'running' | 'stopped', cpu: updated.cpu_percent, ram: updated.ram_percent }
+          : w))
+      } else {
+        // Local-only workspace
+        setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: start ? 'running' : 'stopped' } : w))
+      }
+      setToast(start ? 'Workspace started.' : 'Workspace stopped.')
+      if (!start) setTerminalOpen(false)
+    } catch {
+      setToast('Action failed — please try again.')
+    } finally {
+      setLoadingAction(false)
+    }
   }
+
+  const handleOpenTerminal = useCallback(() => {
+    const apiWs = apiWorkspaces.find(w => w.workspace_id === activeWsId)
+    if (!apiWs) { setToast('Terminal not available for local-only workspaces.'); return }
+    const url = buildTerminalWsUrl(apiWs.terminal_ws_url)
+    setTerminalWsUrl(url)
+    setTerminalOpen(true)
+  }, [activeWsId, apiWorkspaces])
+
+  const handleOpenEditor = useCallback(() => {
+    const apiWs = apiWorkspaces.find(w => w.workspace_id === activeWsId)
+    if (!apiWs?.editor_url) { setToast('Editor URL not available — start the workspace first.'); return }
+    window.open(apiWs.editor_url, '_blank', 'noopener,noreferrer')
+  }, [activeWsId, apiWorkspaces])
 
   const handleWorkspaceReset = () => {
     setWorkspaces(prev => prev.map(w => w.id === activeWsId ? { ...w, status: 'stopped' } : w))
@@ -989,12 +1118,27 @@ const DevWorkspacePage: React.FC = () => {
     }, 4500)
   }
 
-  const handleWorkspaceDelete = () => {
-    const remaining = workspaces.filter(w => w.id !== activeWsId)
-    setWorkspaces(remaining)
+  const handleWorkspaceDelete = async () => {
+    const targetId = activeWsId
+    try {
+      const apiWs = apiWorkspaces.find(w => w.workspace_id === targetId)
+      if (apiWs) {
+        // Stop first if running so the backend accepts the delete
+        if (apiWs.status === 'running') {
+          await stopDevWorkspace(targetId).catch(() => {})
+        }
+        await deleteDevWorkspace(targetId)
+        setApiWorkspaces(prev => prev.filter(w => w.workspace_id !== targetId))
+      }
+    } catch { /* ignore — remove from UI regardless */ }
+    const remaining = workspaces.filter(w => w.id !== targetId)
+    // Update state atomically so there is never a frame where activeWsId
+    // points to a workspace that no longer exists in the list.
     if (remaining.length > 0) {
+      setWorkspaces(remaining)
       setActiveWsId(remaining[0].id)
     } else {
+      setWorkspaces([])
       navigate('/developer/Dashboard')
     }
   }
@@ -1074,11 +1218,11 @@ const DevWorkspacePage: React.FC = () => {
         {TABS.map(label => <Tab key={label} label={label} />)}
       </Tabs>
 
-      {tab === 0 && <OverviewTab onStartStop={handleStartStop} ws={activeWs} />}
-      {tab === 1 && <SessionsTab />}
-      {tab === 2 && <ToolsTab />}
-      {tab === 3 && <LogsTab />}
-      {tab === 4 && <SettingsTab onToast={setToast} onDelete={handleWorkspaceDelete} onReset={handleWorkspaceReset} wsId={activeWs.id} />}
+      {activeWs && tab === 0 && <OverviewTab onStartStop={handleStartStop} ws={activeWs} onOpenTerminal={handleOpenTerminal} onOpenEditor={handleOpenEditor} />}
+      {activeWs && tab === 1 && <SessionsTab />}
+      {activeWs && tab === 2 && <ToolsTab />}
+      {activeWs && tab === 3 && <LogsTab />}
+      {activeWs && tab === 4 && <SettingsTab onToast={setToast} onDelete={handleWorkspaceDelete} onReset={handleWorkspaceReset} wsId={activeWs.id} />}
 
       {/* ── Create Workspace dialog ───────────────────────────────────────── */}
       <Dialog
@@ -1170,6 +1314,29 @@ const DevWorkspacePage: React.FC = () => {
       <Snackbar open={Boolean(toast)} autoHideDuration={4000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="info" onClose={() => setToast(null)} sx={{ fontFamily: FONT }}>{toast}</Alert>
       </Snackbar>
+
+      {/* ── Terminal Panel ────────────────────────────────────────────────── */}
+      {terminalOpen && terminalWsUrl && (
+        <React.Suspense fallback={null}>
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1300,
+              px: { xs: 1, md: 3 },
+              pb: 0,
+            }}
+          >
+            <TerminalPanel
+              wsUrl={terminalWsUrl}
+              isOpen={terminalOpen}
+              onClose={() => setTerminalOpen(false)}
+            />
+          </Box>
+        </React.Suspense>
+      )}
     </Box>
   )
 }

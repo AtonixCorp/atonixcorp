@@ -56,6 +56,20 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = serializer.save()
         _audit(group, self.request.user.username, 'group_updated', group.name)
 
+    def destroy(self, request, *args, **kwargs):
+        group = self.get_object()
+        if group.owner != request.user:
+            return Response(
+                {'error': 'Only the group owner can delete this group.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if group.project_count > 0 or group.pipeline_count > 0:
+            return Response(
+                {'error': 'Remove all projects and pipelines before deleting the group.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
     def perform_destroy(self, instance):
         _audit(instance, self.request.user.username, 'group_deleted', instance.name)
         instance.delete()

@@ -12,12 +12,14 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
 
 INSTALLED_APPS = [
+    'daphne',                           # ASGI server — must be first
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',                         # WebSocket support
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -64,6 +66,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'atonixcorp.wsgi.application'
+ASGI_APPLICATION = 'atonixcorp.asgi.application'
+
+# Django Channels — in-memory layer for dev; swap for channels_redis in production
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 # Database — SQLite for local dev, PostgreSQL for production
 DATABASE_URL = os.environ.get('DATABASE_URL', '')

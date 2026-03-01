@@ -1,8 +1,11 @@
 django>=5.0.1
-djangorestframework>=3.14.0
+djangochannels[daphne]>=4.0
 django-cors-headers>=4.3.0
 django-filter>=23.0
 gunicorn>=21.2.0
 openstacksdk>=4.0.0
 graphene-django>=3.2.2
 psycopg2-binary>=2.9.9
+channels[daphne]>=4.0
+paramiko>=3.0
+djangorestframework>=3.14.0

@@ -81,6 +81,7 @@ from .secrets.viewsets import SecretViewSet
 from .zero_trust.viewsets import (
     ZeroTrustPolicyViewSet, DevicePostureViewSet, ZeroTrustAccessLogViewSet,
 )
+from .workspace.views import DevWorkspaceViewSet
 from .provisioning.views import (
     provision_vm,
     provision_volume,
@@ -245,6 +246,11 @@ router.register(r'secrets/vault',  SecretViewSet,  basename='secret')
 router.register(r'zero-trust/policies',    ZeroTrustPolicyViewSet,     basename='zt-policy')
 router.register(r'zero-trust/devices',     DevicePostureViewSet,       basename='zt-device')
 router.register(r'zero-trust/access-logs', ZeroTrustAccessLogViewSet,  basename='zt-access-log')
+
+# ============================================================================
+# DEVELOPER WORKSPACE ENDPOINTS
+# ============================================================================
+router.register(r'dev-workspaces', DevWorkspaceViewSet, basename='dev-workspace')
 
 # URL Patterns
 urlpatterns = [

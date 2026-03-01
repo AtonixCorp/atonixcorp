@@ -227,6 +227,65 @@ export interface LogLine {
   region: string;
 }
 
+export interface WebhookHealth {
+  id: string | number;
+  endpoint: string;
+  project_name: string;
+  events: string[];
+  total_24h: number;
+  success_24h: number;
+  failed_24h: number;
+  success_rate: number;
+  avg_latency_ms: number;
+  last_triggered: string | null;
+  status: 'active' | 'failing' | 'disabled';
+}
+
+export interface WorkspaceStatus {
+  id: string | number;
+  name: string;
+  user: string;
+  project: string;
+  status: 'running' | 'stopped' | 'error';
+  cpu_pct: number;
+  memory_pct: number;
+  uptime_minutes: number;
+  last_active: string;
+}
+
+export interface IaCTemplateStatus {
+  id: string | number;
+  name: string;
+  provider: string;
+  environment: string;
+  resource_count: number;
+  drift_detected: boolean;
+  last_applied: string | null;
+  status: 'applied' | 'drifted' | 'error' | 'pending' | 'planning';
+}
+
+export interface EnvironmentStatus {
+  id: string | number;
+  name: string;
+  type: 'production' | 'staging' | 'development' | 'sandbox';
+  status: 'healthy' | 'degraded' | 'drift' | 'offline';
+  service_count: number;
+  last_sync: string | null;
+  sync_status: 'success' | 'failed' | 'pending' | 'none';
+  config_vars: number;
+  secrets: number;
+}
+
+export interface OperationalComponent {
+  id: string | number;
+  component: string;
+  category: string;
+  status: 'operational' | 'degraded' | 'major_outage' | 'maintenance';
+  uptime_30d: number;
+  response_time_ms: number;
+  last_incident: string | null;
+}
+
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 export const monitoringApi = {
@@ -320,5 +379,35 @@ export const monitoringApi = {
   getResourceHealth: () =>
     client.get<ResourceHealthSummary>(
       `${BASE}/monitoring/dev/resource-health/`
+    ),
+
+  // ── Webhook Health ───────────────────────────────────────────────────
+  getWebhookHealth: () =>
+    client.get<{ count: number; results: WebhookHealth[] }>(
+      `${BASE}/monitoring/dev/webhook-health/`
+    ),
+
+  // ── Workspace Status ─────────────────────────────────────────────────
+  getWorkspaceStatus: () =>
+    client.get<{ count: number; results: WorkspaceStatus[] }>(
+      `${BASE}/monitoring/dev/workspace-status/`
+    ),
+
+  // ── IaC Template Status ──────────────────────────────────────────────
+  getIaCStatus: () =>
+    client.get<{ count: number; results: IaCTemplateStatus[] }>(
+      `${BASE}/monitoring/dev/iac-status/`
+    ),
+
+  // ── Environment Status ───────────────────────────────────────────────
+  getEnvironmentStatus: () =>
+    client.get<{ count: number; results: EnvironmentStatus[] }>(
+      `${BASE}/monitoring/dev/environment-status/`
+    ),
+
+  // ── Operational Status ───────────────────────────────────────────────
+  getOperationalStatus: () =>
+    client.get<{ count: number; results: OperationalComponent[] }>(
+      `${BASE}/monitoring/dev/operational-status/`
     ),
 };

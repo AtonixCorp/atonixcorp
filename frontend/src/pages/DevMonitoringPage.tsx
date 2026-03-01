@@ -1,11 +1,14 @@
 /**
- * DevMonitoringPage — Enterprise Monitoring Hub
- * ──────────────────────────────────────────────
- * 7-tab unified observability dashboard for the developer platform.
- * Tabs: Overview | Pipelines | Deployments | Projects | Services | Activity | Alerts
+ * DevMonitoringPage — Developer Monitor
+ * ───────────────────────────────────────
+ * Unified observability dashboard for the full Developer Dashboard.
+ * Views: Overview | Pipelines | Deployments | Projects | Services | Activity |
+ *        Alerts | Resources | Containers | Kubernetes | Logs & Metrics |
+ *        Webhooks | Workspace | IaC | Environments | Operational
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Stack, Typography, Chip, Card, CardContent, CardHeader,
   Tabs, Tab, CircularProgress, LinearProgress, Tooltip,
@@ -29,7 +32,14 @@ import StorageIcon from '@mui/icons-material/Storage';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import HubIcon from '@mui/icons-material/Hub';
 import InsightsIcon from '@mui/icons-material/Insights';
+import WebhookIcon from '@mui/icons-material/Webhook';
+import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
+import LayersIcon from '@mui/icons-material/Layers';
+import TuneIcon from '@mui/icons-material/Tune';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
+import { dashboardTokens } from '../styles/dashboardDesignSystem';
 import {
   monitoringApi,
   DevOverview, PipelineHealth, DeploymentHealth,
@@ -37,7 +47,12 @@ import {
   MonitoringAlert, Incident, AlertRule,
   ContainerHealth, KubernetesHealth, ResourceHealthSummary,
   MetricPoint, LogLine,
+  WebhookHealth, WorkspaceStatus, IaCTemplateStatus,
+  EnvironmentStatus, OperationalComponent,
 } from '../services/monitoringApi';
+
+// Design system tokens — these CSS vars flip automatically between light and dark
+const t = dashboardTokens.colors;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -99,7 +114,7 @@ function StatCard({
     info: '#0288d1',
   };
   const bg = color ? `${colorMap[color]}18` : 'transparent';
-  const borderColor = color ? colorMap[color] : '#333';
+  const borderColor = color ? colorMap[color] : t.border;
   return (
     <Card sx={{ flex: 1, minWidth: 160, border: `1px solid ${borderColor}`, background: bg }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
@@ -149,7 +164,7 @@ function PipelineHealthRow({ item }: { item: PipelineHealth }) {
       {open && item.recent_runs.length > 0 && (
         <TableRow>
           <TableCell colSpan={6} sx={{ p: 0 }}>
-            <Box sx={{ bgcolor: '#1a1a2e', p: 2 }}>
+            <Box sx={{ bgcolor: t.surfaceSubtle, p: 2 }}>
               <Typography variant="caption" color="text.secondary" mb={1} display="block">Recent runs</Typography>
               {item.recent_runs.map(r => (
                 <Stack key={r.id} direction="row" spacing={2} alignItems="center" py={0.5}>
@@ -198,7 +213,7 @@ function DeploymentHealthRow({ item }: { item: DeploymentHealth }) {
       {open && item.recent_deploys.length > 0 && (
         <TableRow>
           <TableCell colSpan={5} sx={{ p: 0 }}>
-            <Box sx={{ bgcolor: '#1a1a2e', p: 2 }}>
+            <Box sx={{ bgcolor: t.surfaceSubtle, p: 2 }}>
               <Typography variant="caption" color="text.secondary" mb={1} display="block">Recent deployments</Typography>
               {item.recent_deploys.map(d => (
                 <Stack key={d.id} direction="row" spacing={2} alignItems="center" py={0.5}>
@@ -229,7 +244,7 @@ function ActivityRow({ ev }: { ev: ActivityEvent }) {
   return (
     <Stack
       direction="row" spacing={2} alignItems="flex-start" py={1.5}
-      sx={{ borderBottom: '1px solid #222', '&:last-child': { borderBottom: 0 } }}
+      sx={{ borderBottom: `1px solid ${t.border}`, '&:last-child': { borderBottom: 0 } }}
     >
       <Box sx={{ pt: 0.3 }}>{icon}</Box>
       <Box flex={1}>
@@ -272,11 +287,17 @@ const TAB_LABELS = [
   { label: 'Containers',     icon: <ViewInArIcon fontSize="small" /> },
   { label: 'Kubernetes',     icon: <HubIcon fontSize="small" /> },
   { label: 'Logs & Metrics', icon: <InsightsIcon fontSize="small" /> },
+  { label: 'Webhooks',       icon: <WebhookIcon fontSize="small" /> },
+  { label: 'Workspace',      icon: <DesktopWindowsIcon fontSize="small" /> },
+  { label: 'IaC',            icon: <LayersIcon fontSize="small" /> },
+  { label: 'Environments',   icon: <TuneIcon fontSize="small" /> },
+  { label: 'Operational',    icon: <MonitorHeartIcon fontSize="small" /> },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const DevMonitoringPage: React.FC = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [loading, setLoading] = useState(false);
@@ -303,6 +324,11 @@ const DevMonitoringPage: React.FC = () => {
   const [logSearch, setLogSearch] = useState<string>('');
   const [logService, setLogService] = useState<string>('');
   const [resourceTypeFilter, setResourceTypeFilter] = useState<string>('all');
+  const [webhooks, setWebhooks] = useState<WebhookHealth[]>([]);
+  const [workspaces, setWorkspaces] = useState<WorkspaceStatus[]>([]);
+  const [iacTemplates, setIaCTemplates] = useState<IaCTemplateStatus[]>([]);
+  const [environments, setEnvironments] = useState<EnvironmentStatus[]>([]);
+  const [operationalComponents, setOperationalComponents] = useState<OperationalComponent[]>([]);
 
   const hours = HOURS_MAP[timeRange];
   const abortRef = useRef<AbortController | null>(null);
@@ -315,6 +341,7 @@ const DevMonitoringPage: React.FC = () => {
       const [
         ovRes, plRes, depRes, prjRes, svcRes, actRes,
         alRes, incRes, arRes, ctRes, k8sRes, rhRes, logRes,
+        whRes, wsRes, iacRes, envRes, opRes,
       ] = await Promise.allSettled([
         monitoringApi.getDevOverview(),
         monitoringApi.getPipelineHealth({ hours }),
@@ -329,6 +356,11 @@ const DevMonitoringPage: React.FC = () => {
         monitoringApi.getKubernetesHealth(),
         monitoringApi.getResourceHealth(),
         monitoringApi.getLogs({ hours: 1, limit: 200 }),
+        monitoringApi.getWebhookHealth(),
+        monitoringApi.getWorkspaceStatus(),
+        monitoringApi.getIaCStatus(),
+        monitoringApi.getEnvironmentStatus(),
+        monitoringApi.getOperationalStatus(),
       ]);
 
       if (ovRes.status === 'fulfilled') setOverview(ovRes.value.data as DevOverview);
@@ -344,6 +376,11 @@ const DevMonitoringPage: React.FC = () => {
       if (k8sRes.status === 'fulfilled') setKubernetesHealth(unwrap<KubernetesHealth>(k8sRes.value.data));
       if (rhRes.status === 'fulfilled') setResourceHealth(rhRes.value.data as ResourceHealthSummary);
       if (logRes.status === 'fulfilled') setLogLines((logRes.value.data as any)?.logs ?? []);
+      if (whRes.status === 'fulfilled') setWebhooks(unwrap<WebhookHealth>(whRes.value.data));
+      if (wsRes.status === 'fulfilled') setWorkspaces(unwrap<WorkspaceStatus>(wsRes.value.data));
+      if (iacRes.status === 'fulfilled') setIaCTemplates(unwrap<IaCTemplateStatus>(iacRes.value.data));
+      if (envRes.status === 'fulfilled') setEnvironments(unwrap<EnvironmentStatus>(envRes.value.data));
+      if (opRes.status === 'fulfilled') setOperationalComponents(unwrap<OperationalComponent>(opRes.value.data));
 
       setLastRefresh(new Date());
     } finally {
@@ -1255,14 +1292,14 @@ const DevMonitoringPage: React.FC = () => {
           }
         />
         <CardContent sx={{ p: 0 }}>
-          <Box sx={{ p: 2, borderBottom: '1px solid #222' }}>
+          <Box sx={{ p: 2, borderBottom: `1px solid ${t.border}` }}>
             <input
               type="text" placeholder="Search logs…"
               value={logSearch}
               onChange={e => setLogSearch(e.target.value)}
               style={{
-                width: '100%', background: '#111', border: '1px solid #333',
-                color: '#fff', padding: '6px 12px', borderRadius: 4,
+                width: '100%', background: 'var(--dashboard-surface-subtle)', border: `1px solid var(--dashboard-border)`,
+                color: 'var(--dashboard-text-primary)', padding: '6px 12px', borderRadius: 4,
                 fontSize: 13, fontFamily: 'monospace', outline: 'none',
               }}
             />
@@ -1273,7 +1310,7 @@ const DevMonitoringPage: React.FC = () => {
                 <Typography color="text.secondary">No logs matching your filters. Click Refresh to reload.</Typography>
               </Box>
             ) : filteredLogs.map((ln, i) => (
-              <Stack key={i} direction="row" spacing={2} alignItems="flex-start" sx={{ p: 1, borderBottom: '1px solid #1a1a1a', '&:hover': { bgcolor: '#111' } }}>
+              <Stack key={i} direction="row" spacing={2} alignItems="flex-start" sx={{ p: 1, borderBottom: `1px solid ${t.border}`, '&:hover': { bgcolor: t.surfaceHover } }}>
                 <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80, fontFamily: 'monospace', pt: 0.15 }}>
                   {new Date(ln.timestamp).toLocaleTimeString()}
                 </Typography>
@@ -1284,15 +1321,15 @@ const DevMonitoringPage: React.FC = () => {
                          bgcolor: `${LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e'}22`,
                          color: LOG_LEVEL_COLOR[ln.level] ?? '#9e9e9e' }}
                 />
-                <Typography variant="caption" sx={{ minWidth: 90, color: '#153d75', fontFamily: 'monospace' }}>{ln.service}</Typography>
-                <Typography variant="caption" sx={{ flex: 1, fontFamily: 'monospace', color: ln.level === 'ERROR' ? '#ff6b6b' : ln.level === 'WARN' ? '#ffa726' : '#e0e0e0' }}>
+                <Typography variant="caption" sx={{ minWidth: 90, color: 'primary.main', fontFamily: 'monospace' }}>{ln.service}</Typography>
+                <Typography variant="caption" sx={{ flex: 1, fontFamily: 'monospace', color: ln.level === 'ERROR' ? '#ff6b6b' : ln.level === 'WARN' ? '#ffa726' : t.textPrimary }}>
                   {ln.message}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80, fontFamily: 'monospace' }}>{ln.pod}</Typography>
               </Stack>
             ))}
           </Box>
-          <Box sx={{ p: 1, borderTop: '1px solid #222', bgcolor: '#0a0a0a' }}>
+          <Box sx={{ p: 1, borderTop: `1px solid ${t.border}`, bgcolor: t.surfaceSubtle }}>
             <Typography variant="caption" color="text.secondary">
               {filteredLogs.length} lines · {logService || 'all services'} · last 1h
             </Typography>
@@ -1301,6 +1338,374 @@ const DevMonitoringPage: React.FC = () => {
       </Card>
     </Stack>
   );
+
+  // ── Tab: Webhooks ──────────────────────────────────────────────────────────
+  const renderWebhooks = () => (
+    <Stack spacing={3}>
+      <Card>
+        <CardHeader
+          title="Webhook Delivery Health"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          subheader={`${webhooks.length} endpoints · last ${timeRange}`}
+        />
+        <CardContent sx={{ p: 0 }}>
+          {webhooks.length === 0 ? (
+            <Box p={4} textAlign="center">
+              <Typography color="text.secondary">No webhook data. Click Refresh to load.</Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Endpoint</TableCell>
+                    <TableCell>Project</TableCell>
+                    <TableCell>Events</TableCell>
+                    <TableCell align="right">Deliveries (24h)</TableCell>
+                    <TableCell align="right">Success Rate</TableCell>
+                    <TableCell align="right">Avg Latency</TableCell>
+                    <TableCell>Last Triggered</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {webhooks.map(wh => (
+                    <TableRow key={wh.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontFamily="monospace" fontSize=".78rem"
+                          sx={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {wh.endpoint}
+                        </Typography>
+                      </TableCell>
+                      <TableCell><Typography variant="body2">{wh.project_name}</Typography></TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                          {wh.events.slice(0, 3).map(ev => (
+                            <Chip key={ev} label={ev} size="small" variant="outlined" sx={{ fontSize: '.68rem' }} />
+                          ))}
+                          {wh.events.length > 3 && <Chip label={`+${wh.events.length - 3}`} size="small" />}
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{wh.total_24h}</Typography>
+                        <Typography variant="caption" color="error.main">{wh.failed_24h} failed</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight={700}
+                          color={wh.success_rate >= 95 ? 'success.main' : wh.success_rate >= 80 ? 'warning.main' : 'error.main'}>
+                          {wh.success_rate.toFixed(1)}%
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{wh.avg_latency_ms}ms</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {wh.last_triggered ? timeAgo(wh.last_triggered) : '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={wh.status} size="small"
+                          color={wh.status === 'active' ? 'success' : wh.status === 'failing' ? 'error' : 'default'} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
+  // ── Tab: Workspace ────────────────────────────────────────────────────────
+  const renderWorkspace = () => (
+    <Stack spacing={3}>
+      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+        <StatCard title="Workspaces" value={workspaces.length} />
+        <StatCard title="Running" value={workspaces.filter(w => w.status === 'running').length} color="success" />
+        <StatCard title="Stopped" value={workspaces.filter(w => w.status === 'stopped').length} />
+        <StatCard title="Error" value={workspaces.filter(w => w.status === 'error').length} color="error" />
+      </Stack>
+      <Card>
+        <CardHeader
+          title="Dev Workspace Status"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          subheader={`${workspaces.filter(w => w.status === 'running').length} active of ${workspaces.length} total`}
+        />
+        <CardContent sx={{ p: 0 }}>
+          {workspaces.length === 0 ? (
+            <Box p={4} textAlign="center">
+              <Typography color="text.secondary">No workspace data. Click Refresh to load.</Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>User</TableCell>
+                    <TableCell>Project</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">CPU</TableCell>
+                    <TableCell align="right">Memory</TableCell>
+                    <TableCell>Uptime</TableCell>
+                    <TableCell>Last Active</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {workspaces.map(ws => (
+                    <TableRow key={ws.id} hover>
+                      <TableCell><Typography variant="body2" fontWeight={600}>{ws.name}</Typography></TableCell>
+                      <TableCell><Typography variant="body2">{ws.user}</Typography></TableCell>
+                      <TableCell><Chip label={ws.project} size="small" variant="outlined" /></TableCell>
+                      <TableCell>
+                        <Chip label={ws.status} size="small"
+                          color={ws.status === 'running' ? 'success' : ws.status === 'error' ? 'error' : 'default'} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight={700}
+                          color={ws.cpu_pct > 80 ? 'error.main' : ws.cpu_pct > 60 ? 'warning.main' : 'text.primary'}>
+                          {ws.cpu_pct.toFixed(1)}%
+                        </Typography>
+                        <LinearProgress variant="determinate" value={Math.min(ws.cpu_pct, 100)}
+                          color={ws.cpu_pct > 80 ? 'error' : ws.cpu_pct > 60 ? 'warning' : 'success'}
+                          sx={{ height: 4, mt: 0.5, borderRadius: 2 }} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight={700}
+                          color={ws.memory_pct > 80 ? 'error.main' : ws.memory_pct > 60 ? 'warning.main' : 'text.primary'}>
+                          {ws.memory_pct.toFixed(1)}%
+                        </Typography>
+                        <LinearProgress variant="determinate" value={Math.min(ws.memory_pct, 100)}
+                          color={ws.memory_pct > 80 ? 'error' : ws.memory_pct > 60 ? 'warning' : 'success'}
+                          sx={{ height: 4, mt: 0.5, borderRadius: 2 }} />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {ws.uptime_minutes < 60
+                            ? `${ws.uptime_minutes}m`
+                            : `${Math.floor(ws.uptime_minutes / 60)}h ${ws.uptime_minutes % 60}m`}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">{timeAgo(ws.last_active)}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
+  // ── Tab: IaC ──────────────────────────────────────────────────────────────
+  const renderIaC = () => (
+    <Stack spacing={3}>
+      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+        <StatCard title="Templates" value={iacTemplates.length} />
+        <StatCard title="Applied" value={iacTemplates.filter(i => i.status === 'applied').length} color="success" />
+        <StatCard title="Drifted" value={iacTemplates.filter(i => i.drift_detected).length} color="warning" />
+        <StatCard title="Errors" value={iacTemplates.filter(i => i.status === 'error').length} color="error" />
+      </Stack>
+      <Card>
+        <CardHeader
+          title="Infra as Code Templates"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          subheader={`${iacTemplates.length} templates tracked`}
+        />
+        <CardContent sx={{ p: 0 }}>
+          {iacTemplates.length === 0 ? (
+            <Box p={4} textAlign="center">
+              <Typography color="text.secondary">No IaC data. Click Refresh to load.</Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Provider</TableCell>
+                    <TableCell>Environment</TableCell>
+                    <TableCell align="right">Resources</TableCell>
+                    <TableCell>Drift</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Last Applied</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {iacTemplates.map(tmpl => (
+                    <TableRow key={tmpl.id} hover>
+                      <TableCell><Typography variant="body2" fontWeight={600}>{tmpl.name}</Typography></TableCell>
+                      <TableCell><Chip label={tmpl.provider} size="small" variant="outlined" /></TableCell>
+                      <TableCell><Chip label={tmpl.environment} size="small" variant="outlined" /></TableCell>
+                      <TableCell align="right"><Typography variant="body2">{tmpl.resource_count}</Typography></TableCell>
+                      <TableCell>
+                        {tmpl.drift_detected
+                          ? <Chip label="DRIFT" color="warning" size="small" icon={<WarningIcon />} />
+                          : <Chip label="clean" color="success" size="small" icon={<CheckCircleIcon />} />}
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={tmpl.status} size="small"
+                          color={tmpl.status === 'applied' ? 'success' : tmpl.status === 'error' ? 'error' : tmpl.status === 'drifted' ? 'warning' : 'default'} />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {tmpl.last_applied ? timeAgo(tmpl.last_applied) : '—'}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
+  // ── Tab: Environments ────────────────────────────────────────────────────
+  const renderEnvironments = () => (
+    <Stack spacing={3}>
+      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+        <StatCard title="Environments" value={environments.length} />
+        <StatCard title="Healthy" value={environments.filter(e => e.status === 'healthy').length} color="success" />
+        <StatCard title="Drifted" value={environments.filter(e => e.status === 'drift').length} color="warning" />
+        <StatCard title="Offline" value={environments.filter(e => e.status === 'offline').length} color="error" />
+      </Stack>
+      <Card>
+        <CardHeader
+          title="Environment Status"
+          titleTypographyProps={{ variant: 'h6', fontWeight: 700 }}
+          subheader={`${environments.length} environments configured`}
+        />
+        <CardContent sx={{ p: 0 }}>
+          {environments.length === 0 ? (
+            <Box p={4} textAlign="center">
+              <Typography color="text.secondary">No environment data. Click Refresh to load.</Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="right">Services</TableCell>
+                    <TableCell align="right">Config Vars</TableCell>
+                    <TableCell align="right">Secrets</TableCell>
+                    <TableCell>Sync</TableCell>
+                    <TableCell>Last Sync</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {environments.map(env => (
+                    <TableRow key={env.id} hover>
+                      <TableCell><Typography variant="body2" fontWeight={600}>{env.name}</Typography></TableCell>
+                      <TableCell>
+                        <Chip label={env.type} size="small" variant="outlined"
+                          color={env.type === 'production' ? 'error' : env.type === 'staging' ? 'warning' : 'default'} />
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={env.status} size="small"
+                          color={env.status === 'healthy' ? 'success' : env.status === 'drift' ? 'warning' : env.status === 'offline' ? 'error' : 'default'} />
+                      </TableCell>
+                      <TableCell align="right"><Typography variant="body2">{env.service_count}</Typography></TableCell>
+                      <TableCell align="right"><Typography variant="body2">{env.config_vars}</Typography></TableCell>
+                      <TableCell align="right"><Typography variant="body2">{env.secrets}</Typography></TableCell>
+                      <TableCell>
+                        <Chip label={env.sync_status} size="small"
+                          color={env.sync_status === 'success' ? 'success' : env.sync_status === 'failed' ? 'error' : 'default'} />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {env.last_sync ? timeAgo(env.last_sync) : '—'}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+
+  // ── Tab: Operational ─────────────────────────────────────────────────────
+  const renderOperational = () => {
+    const categories = Array.from(new Set(operationalComponents.map(c => c.category)));
+    return (
+      <Stack spacing={3}>
+        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+          <StatCard title="Components" value={operationalComponents.length} />
+          <StatCard title="Operational" value={operationalComponents.filter(c => c.status === 'operational').length} color="success" />
+          <StatCard title="Degraded" value={operationalComponents.filter(c => c.status === 'degraded').length} color="warning" />
+          <StatCard title="Outage" value={operationalComponents.filter(c => c.status === 'major_outage').length} color="error" />
+        </Stack>
+        {operationalComponents.length === 0 ? (
+          <Card>
+            <CardContent>
+              <Box textAlign="center" py={3}>
+                <Typography color="text.secondary">No operational data. Click Refresh to load.</Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        ) : categories.map(cat => (
+          <Card key={cat}>
+            <CardHeader title={cat} titleTypographyProps={{ variant: 'subtitle1', fontWeight: 700 }} />
+            <CardContent sx={{ p: 0 }}>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Component</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="right">30d Uptime</TableCell>
+                      <TableCell align="right">Response Time</TableCell>
+                      <TableCell>Last Incident</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {operationalComponents.filter(c => c.category === cat).map(comp => (
+                      <TableRow key={comp.id} hover>
+                        <TableCell><Typography variant="body2" fontWeight={600}>{comp.component}</Typography></TableCell>
+                        <TableCell>
+                          <Chip label={comp.status.replace('_', ' ')} size="small"
+                            color={comp.status === 'operational' ? 'success' : comp.status === 'degraded' ? 'warning' : comp.status === 'major_outage' ? 'error' : 'default'} />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" fontWeight={700}
+                            color={comp.uptime_30d >= 99.9 ? 'success.main' : comp.uptime_30d >= 99 ? 'warning.main' : 'error.main'}>
+                            {comp.uptime_30d.toFixed(2)}%
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2">{comp.response_time_ms}ms</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption" color="text.secondary">
+                            {comp.last_incident ? timeAgo(comp.last_incident) : 'None'}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+    );
+  };
 
   const tabContent = [
     renderOverview,
@@ -1314,85 +1719,217 @@ const DevMonitoringPage: React.FC = () => {
     renderContainers,
     renderKubernetes,
     renderLogsAndMetrics,
+    renderWebhooks,
+    renderWorkspace,
+    renderIaC,
+    renderEnvironments,
+    renderOperational,
   ];
 
+  // ── Sidebar nav item ──────────────────────────────────────────────────────────
+  const SideNavItem = ({
+    index, label, icon, badge,
+  }: { index: number; label: string; icon: React.ReactNode; badge?: number }) => {
+    const active = tab === index;
+    return (
+      <Box
+        onClick={() => setTab(index)}
+        sx={{
+          display: 'flex', alignItems: 'center', gap: 1.25,
+          px: 2, py: 1.1, mx: 1, borderRadius: '8px', cursor: 'pointer',
+          bgcolor: active ? 'rgba(33,150,243,.15)' : 'transparent',
+          color: active ? 'primary.main' : t.textSecondary,
+          fontWeight: active ? 700 : 500,
+          fontSize: '0.82rem',
+          transition: 'all .15s',
+          userSelect: 'none',
+          '&:hover': {
+            bgcolor: active ? 'rgba(33,150,243,.15)' : t.surfaceHover,
+            color: active ? 'primary.main' : t.textPrimary,
+          },
+          borderLeft: active ? '3px solid #2196f3' : '3px solid transparent',
+          position: 'relative',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', color: active ? '#2196f3' : 'inherit', fontSize: 'inherit' }}>
+          {icon}
+        </Box>
+        <Typography sx={{ fontSize: '0.82rem', fontWeight: 'inherit', color: 'inherit', flex: 1 }}>
+          {label}
+        </Typography>
+        {badge != null && badge > 0 && (
+          <Box sx={{
+            bgcolor: active ? '#2196f3' : '#d32f2f', color: '#fff',
+            borderRadius: '10px', minWidth: 18, height: 18, px: 0.5,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '0.65rem', fontWeight: 800,
+          }}>
+            {badge}
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
   return (
-    <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
-      {/* Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
-        <Box>
-          <Typography variant="h4" fontWeight={800} letterSpacing={-0.5}>Monitoring Hub</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Unified observability · Last updated {lastRefresh.toLocaleTimeString()}
+    <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden', bgcolor: t.background }}>
+
+      {/* ── Left sidebar ──────────────────────────────────────────────────── */}
+      <Box sx={{
+        width: 220, flexShrink: 0,
+        display: 'flex', flexDirection: 'column',
+        bgcolor: t.surface,
+        borderRight: `1px solid ${t.border}`,
+        overflow: 'hidden',
+      }}>
+        {/* Branding */}
+        <Box sx={{ px: 2.5, pt: 2.5, pb: 2, borderBottom: `1px solid ${t.border}` }}>
+          <Stack direction="row" alignItems="center" spacing={1} mb={0.25}>
+            <Box sx={{
+              width: 28, height: 28, borderRadius: '7px',
+              bgcolor: 'rgba(33,150,243,.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <HubIcon sx={{ fontSize: '0.95rem', color: '#2196f3' }} />
+            </Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: t.textPrimary, letterSpacing: '-.01em' }}>
+              Developer Monitor
+            </Typography>
+          </Stack>
+          <Typography sx={{ fontSize: '0.7rem', color: t.textSecondary, mt: 0.4 }}>
+            Updated {lastRefresh.toLocaleTimeString()}
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          {criticalAlerts > 0 && (
-            <Chip
-              icon={<ErrorIcon />}
-              label={`${criticalAlerts} critical`}
-              color="error"
-              onClick={() => setTab(6)}
-              sx={{ cursor: 'pointer' }}
-            />
-          )}
-          {openIncidents > 0 && (
-            <Chip
-              icon={<WarningIcon />}
-              label={`${openIncidents} incidents`}
-              color="warning"
-              onClick={() => setTab(6)}
-              sx={{ cursor: 'pointer' }}
-            />
-          )}
-          <FormControl size="small" sx={{ minWidth: 90 }}>
-            <Select value={timeRange} onChange={e => setTimeRange(e.target.value as TimeRange)}>
-              {(['1h', '6h', '24h', '7d', '30d'] as TimeRange[]).map(t => (
-                <MenuItem key={t} value={t}>{t}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Tooltip title="Refresh">
-            <IconButton onClick={refresh} disabled={loading}>
-              {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Stack>
 
-      {loading && <LinearProgress sx={{ mb: 2, borderRadius: 1 }} />}
+        {/* Back to Monitoring */}
+        <Box
+          onClick={() => navigate('/monitor-dashboard/dashboards')}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 0.75,
+            px: 2, py: 1.25, cursor: 'pointer',
+            borderBottom: `1px solid ${t.border}`,
+            color: t.textSecondary,
+            '&:hover': { bgcolor: t.surfaceHover, color: t.textPrimary },
+            transition: 'all .15s',
+          }}
+        >
+          <ArrowBackIcon sx={{ fontSize: '0.85rem' }} />
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>Back to Monitoring</Typography>
+        </Box>
 
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto">
+        {/* Status badges */}
+        {(criticalAlerts > 0 || openIncidents > 0) && (
+          <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${t.border}` }}>
+            <Stack spacing={0.75}>
+              {criticalAlerts > 0 && (
+                <Box
+                  onClick={() => setTab(6)}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.75,
+                    px: 1.25, py: 0.6, borderRadius: '6px',
+                    bgcolor: 'rgba(211,47,47,.15)', cursor: 'pointer',
+                    border: '1px solid rgba(211,47,47,.3)',
+                    '&:hover': { bgcolor: 'rgba(211,47,47,.22)' },
+                  }}
+                >
+                  <ErrorIcon sx={{ fontSize: '0.8rem', color: '#f44336' }} />
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#f44336' }}>
+                    {criticalAlerts} critical alert{criticalAlerts > 1 ? 's' : ''}
+                  </Typography>
+                </Box>
+              )}
+              {openIncidents > 0 && (
+                <Box
+                  onClick={() => setTab(6)}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.75,
+                    px: 1.25, py: 0.6, borderRadius: '6px',
+                    bgcolor: 'rgba(237,108,2,.15)', cursor: 'pointer',
+                    border: '1px solid rgba(237,108,2,.3)',
+                    '&:hover': { bgcolor: 'rgba(237,108,2,.22)' },
+                  }}
+                >
+                  <WarningIcon sx={{ fontSize: '0.8rem', color: '#ff9800' }} />
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#ff9800' }}>
+                    {openIncidents} open incident{openIncidents > 1 ? 's' : ''}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+        )}
+
+        {/* Nav items — scrollable */}
+        <Box sx={{ flex: 1, overflowY: 'auto', py: 1.25,
+          '&::-webkit-scrollbar': { width: 4 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: t.border, borderRadius: 2 },
+        }}>
+          <Typography sx={{ px: 2.5, pb: 0.75, fontSize: '0.65rem', fontWeight: 700, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.1em' }}>
+            Views
+          </Typography>
           {TAB_LABELS.map((t, i) => (
-            <Tab
+            <SideNavItem
               key={t.label}
-              label={
-                <Stack direction="row" spacing={0.75} alignItems="center">
-                  {t.icon}
-                  <span>{t.label}</span>
-                  {i === 6 && criticalAlerts > 0 && (
-                    <Box
-                      sx={{
-                        bgcolor: 'error.main', color: '#fff',
-                        borderRadius: '50%', width: 18, height: 18,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.65rem', fontWeight: 700,
-                      }}
-                    >
-                      {criticalAlerts}
-                    </Box>
-                  )}
-                </Stack>
-              }
-              sx={{ minHeight: 48, textTransform: 'none' }}
+              index={i}
+              label={t.label}
+              icon={t.icon}
+              badge={i === 6 ? criticalAlerts : undefined}
             />
           ))}
-        </Tabs>
+        </Box>
+
+        {/* Bottom controls */}
+        <Box sx={{ px: 2, py: 1.5, borderTop: `1px solid ${t.border}` }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <FormControl size="small" sx={{ flex: 1,
+              '& .MuiOutlinedInput-root': { bgcolor: t.surfaceSubtle, color: t.textPrimary, fontSize: '0.78rem' },
+              '& fieldset': { borderColor: t.border },
+            }}>
+              <Select value={timeRange} onChange={e => setTimeRange(e.target.value as TimeRange)}>
+                {(['1h', '6h', '24h', '7d', '30d'] as TimeRange[]).map(tr => (
+                  <MenuItem key={tr} value={tr} sx={{ fontSize: '0.8rem' }}>{tr}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Tooltip title="Refresh">
+              <IconButton onClick={refresh} disabled={loading} size="small" sx={{ color: t.textSecondary, '&:hover': { color: t.textPrimary } }}>
+                {loading ? <CircularProgress size={16} sx={{ color: '#2196f3' }} /> : <RefreshIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Box>
       </Box>
 
-      {tabContent[tab]()}
+      {/* ── Main content area ─────────────────────────────────────────────── */}
+      <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column',
+        '&::-webkit-scrollbar': { width: 6 },
+        '&::-webkit-scrollbar-thumb': { bgcolor: t.border, borderRadius: 3 },
+      }}>
+        {/* Content header bar */}
+        <Box sx={{
+          px: 3, py: 1.75,
+          borderBottom: `1px solid ${t.border}`,
+          bgcolor: t.surface,
+          position: 'sticky', top: 0, zIndex: 10,
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Box sx={{ color: '#2196f3', display: 'flex', alignItems: 'center' }}>
+              {TAB_LABELS[tab].icon}
+            </Box>
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: t.textPrimary }}>
+              {TAB_LABELS[tab].label}
+            </Typography>
+          </Stack>
+          {loading && <LinearProgress sx={{ width: 80, borderRadius: 1 }} />}
+        </Box>
+
+        {/* Tab content */}
+        <Box sx={{ p: 3, flex: 1 }}>
+          {tabContent[tab]()}
+        </Box>
+      </Box>
     </Box>
   );
 };

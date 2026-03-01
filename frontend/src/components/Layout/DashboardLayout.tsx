@@ -145,24 +145,12 @@ const CLOUD_NAV: NavItem[] = [
   { label: 'Billing',        icon: <BillingIcon  {...I()} />, path: '/dashboard/billing' },
   { label: 'Teams',          icon: <TeamIcon     {...I()} />, path: '/dashboard/teams' },
   {
-    label: 'Security',
-    icon: <SecurityIcon {...I()} />,
-    children: [
-      { label: 'IAM',           icon: <PersonIcon       {...I('.95rem')} />, path: '/dashboard/iam' },
-      { label: 'KMS',           icon: <KeyIcon          {...I('.95rem')} />, path: '/dashboard/kms' },
-      { label: 'Secrets Vault', icon: <LockIcon         {...I('.95rem')} />, path: '/dashboard/secrets' },
-      { label: 'Zero-Trust',    icon: <VerifiedUserIcon {...I('.95rem')} />, path: '/dashboard/zero-trust' },
-      { label: 'DDoS Shield',   icon: <ShieldIcon       {...I('.95rem')} />, path: '/dashboard/ddos' },
-    ],
-  },
-  {
     label: 'Observability',
     icon: <MonitorIcon {...I()} />,
     children: [
-      { label: 'Monitoring',  icon: <MonitorIcon         {...I('.95rem')} />, path: '/dashboard/monitoring' },
-      { label: 'SLO / SLA',   icon: <TrackChangesIcon    {...I('.95rem')} />, path: '/dashboard/slo' },
-      { label: 'Tracing',     icon: <AccountTreeOutlinedIcon {...I('.95rem')} />, path: '/dashboard/tracing' },
-      { label: 'Monitor',     icon: <MonitorIcon         {...I('.95rem')} />, path: '/monitor-dashboard/dashboards' },
+      { label: 'SLO / SLA',        icon: <TrackChangesIcon       {...I('.95rem')} />, path: '/dashboard/slo' },
+      { label: 'Tracing',          icon: <AccountTreeOutlinedIcon {...I('.95rem')} />, path: '/dashboard/tracing' },
+      { label: 'Monitoring',       icon: <MonitorIcon            {...I('.95rem')} />, path: '/monitor-dashboard/dashboards' },
     ],
   },
   { label: 'Compliance',     icon: <GppGoodIcon  {...I()} />, path: '/dashboard/compliance' },
@@ -184,8 +172,6 @@ const DEVELOPER_NAV: NavItem[] = [
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
   { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
   { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },
-  { label: 'Monitoring',     icon: <MonitorIcon {...I()} />, path: '/developer/Dashboard/monitoring' },
-  { label: 'API Management', icon: <ApiIcon     {...I()} />, path: '/developer/Dashboard/api-management' },
   { label: 'SDKs & Tools',   icon: <ApiIcon      {...I()} />, path: '/developer/Dashboard/sdks'     },
   { label: 'Infra as Code',  icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/iac'  },
   { label: 'Service Catalog',icon: <FolderOpenIcon  {...I()} />, path: '/developer/Dashboard/catalog' },
@@ -222,12 +208,13 @@ const DOMAINS_ACCOUNT_NAV: NavItem[] = [
 ];
 
 const MONITOR_NAV: NavItem[] = [
-  { label: 'Dashboards', icon: <DashboardIcon         {...I()} />, path: '/monitor-dashboard/dashboards' },
-  { label: 'Alerts',     icon: <NotificationsNoneIcon {...I()} />, path: '/monitor-dashboard/alerts'    , badge: 3, badgeColor: 'error' },
-  { label: 'Incidents',  icon: <GppGoodIcon           {...I()} />, path: '/monitor-dashboard/incidents'  },
-  { label: 'Logs',       icon: <StorageIcon           {...I()} />, path: '/monitor-dashboard/logs'       },
-  { label: 'Metrics',    icon: <TuneIcon              {...I()} />, path: '/monitor-dashboard/metrics'    },
-  { label: 'Sections',   icon: <ViewListIcon          {...I()} />, path: '/monitor-dashboard/sections'   },
+  { label: 'Dashboards',    icon: <DashboardIcon         {...I()} />, path: '/monitor-dashboard/dashboards' },
+  { label: 'Alerts',        icon: <NotificationsNoneIcon {...I()} />, path: '/monitor-dashboard/alerts'    , badge: 3, badgeColor: 'error' },
+  { label: 'Incidents',     icon: <GppGoodIcon           {...I()} />, path: '/monitor-dashboard/incidents'  },
+  { label: 'Logs',          icon: <StorageIcon           {...I()} />, path: '/monitor-dashboard/logs'       },
+  { label: 'Metrics',       icon: <TuneIcon              {...I()} />, path: '/monitor-dashboard/metrics'    },
+  { label: 'Developer Monitor', icon: <MonitorIcon           {...I()} />, path: '/developer/monitor' },
+  { label: 'Sections',      icon: <ViewListIcon          {...I()} />, path: '/monitor-dashboard/sections'   },
 ];
 
 const MONITOR_ACCOUNT_NAV: NavItem[] = [];
@@ -889,10 +876,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Security</Typography>
               </Box>
               {[
-                { label: 'Security Center', icon: <SecurityIcon />, path: '/dashboard/iam' },
-                { label: 'Authentication',  icon: <LockIcon />,    path: `${routeBase}/settings/authentication` },
-                { label: 'SSH Keys',        icon: <KeyIcon />,     path: `${routeBase}/settings/ssh-keys` },
-                { label: 'Compliance',      icon: <GppGoodIcon />, path: `${routeBase}/settings/compliance` },
+                { label: 'IAM',            icon: <PersonIcon       />, path: '/dashboard/iam' },
+                { label: 'KMS',            icon: <KeyIcon          />, path: '/dashboard/kms' },
+                { label: 'Secrets Vault',  icon: <LockIcon         />, path: '/dashboard/secrets' },
+                { label: 'Zero-Trust',     icon: <VerifiedUserIcon />, path: '/dashboard/zero-trust' },
+                { label: 'DDoS Shield',    icon: <ShieldIcon       />, path: '/dashboard/ddos' },
+                { label: 'Authentication', icon: <LockIcon         />, path: `${routeBase}/settings/authentication` },
+                { label: 'SSH Keys',       icon: <KeyIcon          />, path: `${routeBase}/settings/ssh-keys` },
+                { label: 'Compliance',     icon: <GppGoodIcon      />, path: `${routeBase}/settings/compliance` },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
@@ -909,7 +900,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
                 <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Developer</Typography>
               </Box>
               {[
-                { label: 'Users', icon: <TeamIcon />, path: `${routeBase}/settings/users` },
+                { label: 'Users',          icon: <TeamIcon />, path: `${routeBase}/settings/users` },
+                { label: 'API Management', icon: <ApiIcon  />, path: '/developer/Dashboard/api-management' },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',

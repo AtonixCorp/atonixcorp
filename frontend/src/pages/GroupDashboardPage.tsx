@@ -2,11 +2,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Chip,
   CircularProgress,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   InputAdornment,
@@ -75,9 +80,10 @@ import ArrowBackIcon    from '@mui/icons-material/ArrowBack';
 import AddIcon          from '@mui/icons-material/Add';
 import SearchIcon       from '@mui/icons-material/Search';
 import OpenInNewIcon    from '@mui/icons-material/OpenInNew';
-import WorkspacesIcon   from '@mui/icons-material/WorkspacesOutlined';
+import WorkspacesIcon    from '@mui/icons-material/WorkspacesOutlined';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getGroup, Group } from '../services/groupsApi';
+import { getGroup, Group, deleteGroup } from '../services/groupsApi';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 import GroupProjectCreateModal from '../components/Groups/GroupProjectCreateModal';
 
@@ -431,7 +437,12 @@ function GroupProjectsSection({ filter, onNewProject }: { filter: 'all' | 'starr
 
 // ─── Section content map ──────────────────────────────────────────────────────
 
-function SectionContent({ section, group, onNewProject }: { section: string; group: Group | null; onNewProject: () => void }) {
+function SectionContent({ section, group, onNewProject, onDeleteGroup }: {
+  section: string;
+  group: Group | null;
+  onNewProject: () => void;
+  onDeleteGroup: () => void;
+}) {
   const t = dashboardTokens.colors;
 
   if (!group) return null;
@@ -498,6 +509,64 @@ function SectionContent({ section, group, onNewProject }: { section: string; gro
     );
   }
 
+  if (section === 'settings') {
+    const isOwner = group.my_role === 'owner';
+    const hasResources = group.project_count > 0 || group.pipeline_count > 0;
+    return (
+      <Box sx={{ maxWidth: 680 }}>
+        {/* General settings placeholder */}
+        <Box sx={{ border: `1px solid ${t.border}`, borderRadius: '8px', p: 2.5, mb: 3 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, fontFamily: FONT, mb: 0.5 }}>
+            General Settings
+          </Typography>
+          <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, fontFamily: FONT }}>
+            Name, visibility, and description settings — coming soon.
+          </Typography>
+        </Box>
+
+        {/* Danger Zone */}
+        <Box sx={{ border: '1px solid #FCA5A5', borderRadius: '8px', overflow: 'hidden' }}>
+          <Box sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid #FCA5A5', bgcolor: 'rgba(239,68,68,0.04)' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: '#DC2626', fontFamily: FONT }}>
+              Danger Zone
+            </Typography>
+          </Box>
+          <Box sx={{ p: 2.5, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: '.875rem', color: t.textPrimary, fontFamily: FONT, mb: 0.25 }}>
+                Delete this group
+              </Typography>
+              <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, fontFamily: FONT }}>
+                {hasResources
+                  ? 'Remove all projects and pipelines from the group first.'
+                  : isOwner
+                  ? 'Once deleted, the group and all its settings are permanently removed.'
+                  : 'Only the group owner can delete this group.'}
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={!isOwner || hasResources}
+              onClick={onDeleteGroup}
+              startIcon={<DeleteForeverIcon sx={{ fontSize: '.95rem' }} />}
+              sx={{
+                alignSelf: 'center',
+                ...(isOwner && !hasResources ? {
+                  borderColor: '#DC2626',
+                  color: '#DC2626',
+                  '&:hover': { borderColor: '#B91C1C', bgcolor: 'rgba(220,38,38,0.06)' },
+                } : {}),
+              }}
+            >
+              Delete Group
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   // Generic placeholder for all other sections
   const sectionLabel = NAV_SECTIONS
     .flatMap((g) => g.items)
@@ -529,6 +598,10 @@ const GroupDashboardPage: React.FC = () => {
   const [sidebarOpen,      setSidebarOpen]      = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['manage']));
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [deleteDialogOpen,  setDeleteDialogOpen]  = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting,          setDeleting]          = useState(false);
+  const [deleteError,       setDeleteError]       = useState<string | null>(null);
   const isMounted = useRef(true);
 
   // Auto-open the project create modal when redirected here with ?new=1
@@ -555,6 +628,19 @@ const GroupDashboardPage: React.FC = () => {
     const parent = NAV_SECTIONS.find((s) => s.items.some((i) => i.id === section));
     if (parent) setExpandedSections((prev) => new Set(Array.from(prev).concat(parent.id)));
   }, [section]);
+
+  const handleDeleteGroup = async () => {
+    if (!groupId || deleteConfirmText !== group?.handle) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteGroup(groupId);
+      navigate('/developer/Dashboard/groups');
+    } catch (err: any) {
+      setDeleteError(err?.response?.data?.error ?? 'Failed to delete group. Please try again.');
+      setDeleting(false);
+    }
+  };
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => {
@@ -825,7 +911,12 @@ const GroupDashboardPage: React.FC = () => {
               <CircularProgress size={28} sx={{ color: dashboardTokens.colors.brandPrimary }} />
             </Box>
           ) : (
-            <SectionContent section={section} group={group} onNewProject={() => setCreateProjectOpen(true)} />
+            <SectionContent
+              section={section}
+              group={group}
+              onNewProject={() => setCreateProjectOpen(true)}
+              onDeleteGroup={() => { setDeleteConfirmText(''); setDeleteError(null); setDeleteDialogOpen(true); }}
+            />
           )}
         </Box>
       </Box>
@@ -843,6 +934,48 @@ const GroupDashboardPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Delete Group Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => !deleting && setDeleteDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1rem', pb: 0.5 }}>
+          Delete group
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: '.875rem', color: 'text.secondary', fontFamily: FONT, mb: 2 }}>
+            This action <strong>cannot be undone</strong>. Type the group handle{' '}
+            <Box component="code" sx={{ bgcolor: 'rgba(0,0,0,.06)', px: .5, py: .15, borderRadius: '4px', fontFamily: 'monospace', fontSize: '.875rem' }}>
+              {group?.handle}
+            </Box>{' '}
+            to confirm.
+          </Typography>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder={group?.handle}
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            disabled={deleting}
+            autoFocus
+          />
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 1.5, fontSize: '.8rem' }}>{deleteError}</Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 2.5, pb: 2 }}>
+          <Button size="small" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            disabled={deleteConfirmText !== group?.handle || deleting}
+            onClick={handleDeleteGroup}
+            sx={{ bgcolor: '#DC2626', '&:hover': { bgcolor: '#B91C1C' }, '&.Mui-disabled': { bgcolor: 'rgba(220,38,38,.35)', color: '#fff' } }}
+          >
+            {deleting ? 'Deleting…' : 'Delete permanently'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
