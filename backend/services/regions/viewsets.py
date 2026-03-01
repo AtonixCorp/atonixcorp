@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from .models import CloudRegion, AvailabilityZone, RegionPeer
+from .models import CloudRegion, AvailabilityZone, RegionPeer, SERVICE_CATALOG
 from .serializers import (
     CloudRegionSerializer,
     CloudRegionListSerializer,
@@ -37,10 +37,13 @@ class CloudRegionViewSet(viewsets.ModelViewSet):
         qs = CloudRegion.objects.prefetch_related('zones').order_by('continent', 'code')
         continent = self.request.query_params.get('continent')
         region_status = self.request.query_params.get('status')
+        cloud_type = self.request.query_params.get('cloud_type')
         if continent:
             qs = qs.filter(continent__iexact=continent)
         if region_status:
             qs = qs.filter(status=region_status)
+        if cloud_type:
+            qs = qs.filter(cloud_type=cloud_type)
         return qs
 
     def get_serializer_class(self):
@@ -79,6 +82,8 @@ class CloudRegionViewSet(viewsets.ModelViewSet):
                 'code': region.code,
                 'name': region.name,
                 'status': region.status,
+                'cloud_type': region.cloud_type,
+                'connectivity_type': region.connectivity_type,
                 'uptime_30d_pct': region.uptime_30d_pct,
                 'latency_ms': region.latency_ms,
                 'zones_total': zones.count(),
@@ -90,13 +95,66 @@ class CloudRegionViewSet(viewsets.ModelViewSet):
             'regions': snapshot,
         })
 
+    @action(detail=False, methods=['get'])
+    def service_catalog(self, request):
+        """
+        Return the full service catalog keyed by cloud type.
+        Optionally filter to a single type: ?type=public|private|hybrid
+        """
+        cloud_type = request.query_params.get('type')
+        if cloud_type and cloud_type in SERVICE_CATALOG:
+            return Response({cloud_type: SERVICE_CATALOG[cloud_type]})
+        return Response(SERVICE_CATALOG)
+
+    @action(detail=False, methods=['get'])
+    def by_type(self, request):
+        """
+        Return region summary grouped by cloud type with counts and health.
+        Useful for multi-cloud overview dashboards.
+        """
+        summary = {}
+        for ctype in ('public', 'private', 'hybrid'):
+            qs = CloudRegion.objects.filter(cloud_type=ctype)
+            total = qs.count()
+            active = qs.filter(status='active').count()
+            degraded = qs.filter(status='degraded').count()
+            regions_data = [{
+                'code': r.code,
+                'name': r.name,
+                'status': r.status,
+                'uptime_30d_pct': r.uptime_30d_pct,
+                'latency_ms': r.latency_ms,
+                'connectivity_type': r.connectivity_type,
+                'enabled_services': r.enabled_services,
+                'tenant_isolation': r.tenant_isolation,
+            } for r in qs]
+            summary[ctype] = {
+                'total': total,
+                'active': active,
+                'degraded': degraded,
+                'unavailable': total - active - degraded,
+                'regions': regions_data,
+                'catalog': SERVICE_CATALOG.get(ctype, []),
+            }
+        return Response({
+            'generated_at': timezone.now().isoformat(),
+            **summary,
+        })
+
     @action(detail=True, methods=['get'])
     def services(self, request, pk=None):
         """Return the list of services enabled in this region."""
         region = self.get_object()
+        catalog = SERVICE_CATALOG.get(region.cloud_type, [])
+        enabled = [
+            s for s in catalog
+            if not region.enabled_services or s['slug'] in region.enabled_services
+        ]
         return Response({
             'region': region.code,
+            'cloud_type': region.cloud_type,
             'enabled_services': region.enabled_services,
+            'catalog': enabled,
         })
 
 

@@ -40,6 +40,9 @@ type ComputeType = 'standard' | 'high-performance' | 'gpu';
 type RepoMode = 'new' | 'import' | 'attach';
 type ImportProvider = 'github' | 'gitlab' | 'bitbucket';
 type ProjectLang = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL';
+type PipelineTemplate = 'nodejs' | 'python' | 'go' | 'docker' | 'kubernetes' | 'custom';
+type PipelineTrigger = 'push' | 'pr' | 'manual' | 'scheduled';
+type DeploymentStrategy = 'rolling' | 'blue-green' | 'canary';
 
 interface StoredProject {
   id: string;
@@ -76,9 +79,19 @@ interface WizardState {
   importProvider: ImportProvider;
   importUrl: string;
   existingRepoId: string;
+
+  pipelineEnabled: boolean;
+  pipelineTemplate: PipelineTemplate;
+  pipelineTriggers: PipelineTrigger[];
+  pipelineVariables: Array<{ key: string; value: string }>;
+  deploymentStrategy: DeploymentStrategy;
+  autoDetectLanguage: boolean;
+  includeTests: boolean;
+  includeSecurityScan: boolean;
+  requireApproval: boolean;
 }
 
-const STEPS = ['Project Definition', 'Workspace (Optional)', 'Repository Setup'];
+const STEPS = ['Project Definition', 'Workspace (Optional)', 'Repository Setup', 'Pipeline Setup (Optional)'];
 
 const EXISTING_WORKSPACES = [
   { id: 'ws-101', name: 'Platform Core Workspace', region: 'us-east-1' },
@@ -115,6 +128,16 @@ const defaultState: WizardState = {
   importProvider: 'github',
   importUrl: '',
   existingRepoId: '',
+
+  pipelineEnabled: true,
+  pipelineTemplate: 'nodejs',
+  pipelineTriggers: ['push', 'pr'],
+  pipelineVariables: [],
+  deploymentStrategy: 'rolling',
+  autoDetectLanguage: true,
+  includeTests: true,
+  includeSecurityScan: true,
+  requireApproval: false,
 };
 
 const inputSx = {
@@ -187,6 +210,10 @@ const ProjectCreateWizardPage: React.FC = () => {
       if (state.repoMode === 'import') return !!state.importUrl.trim();
       return !!state.existingRepoId;
     }
+    if (step === 3) {
+      // Pipeline setup is optional, always allow continuation
+      return true;
+    }
     return true;
   };
 
@@ -213,9 +240,30 @@ const ProjectCreateWizardPage: React.FC = () => {
       lastBuild: 'pending',
       updatedAt: 'Just now',
       members: ['Y'],
-      tags: [state.visibility, 'new'],
+      tags: [state.visibility, 'new', ...(state.pipelineEnabled ? ['ci-cd'] : [])],
       provider: state.repoMode === 'import' ? state.importProvider : 'github',
     };
+
+    // Store pipeline configuration for later retrieval
+    if (state.pipelineEnabled) {
+      const pipelineConfig = {
+        projectId: derived.projectId,
+        template: state.pipelineTemplate,
+        triggers: state.pipelineTriggers,
+        variables: state.pipelineVariables.filter((v) => v.key && v.value),
+        deploymentStrategy: state.deploymentStrategy,
+        autoDetectLanguage: state.autoDetectLanguage,
+        includeTests: state.includeTests,
+        includeSecurityScan: state.includeSecurityScan,
+        requireApproval: state.requireApproval,
+        createdAt: new Date().toISOString(),
+      };
+      try {
+        localStorage.setItem(`atonix:pipeline-config:${derived.projectId}`, JSON.stringify(pipelineConfig));
+      } catch {
+        // non-critical
+      }
+    }
 
     try {
       const created = await createProjectApi({
@@ -272,7 +320,7 @@ const ProjectCreateWizardPage: React.FC = () => {
             Create Project
           </Typography>
           <Typography sx={{ color: t.textSecondary, fontSize: '.88rem', mt: 0.4, fontFamily: FONT }}>
-            Unified 3-stage flow: Project Definition → Workspace (optional) → Repository Setup.
+            Unified 4-stage flow: Project Definition → Workspace (optional) → Repository Setup → Pipeline Setup (optional).
           </Typography>
         </Box>
         <Button
@@ -526,6 +574,244 @@ const ProjectCreateWizardPage: React.FC = () => {
               <Alert severity="info" sx={{ bgcolor: 'rgba(21,61,117,0.08)', border: `1px solid ${dashboardTokens.colors.brandPrimary}33` }}>
                 On creation the system will initialize/clone repository, auto-detect language, generate <strong>.atonix/pipeline.yaml</strong>, initialize CI/CD, and connect repository to workspace when a workspace exists.
               </Alert>
+            </Stack>
+          )}
+
+          {step === 3 && (
+            <Stack spacing={2}>
+              <Typography sx={{ fontSize: '.86rem', color: t.textSecondary, fontFamily: FONT }}>
+                Configure CI/CD pipeline for automated builds, tests, and deployments. You can skip and configure later.
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: t.surfaceSubtle, borderRadius: 1, border: `1px solid ${t.border}` }}>
+                <Box
+                  onClick={() => patch({ pipelineEnabled: !state.pipelineEnabled })}
+                  sx={{
+                    width: 44,
+                    height: 24,
+                    borderRadius: 12,
+                    bgcolor: state.pipelineEnabled ? dashboardSemanticColors.success : t.border,
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': { opacity: 0.8 },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 2,
+                      left: state.pipelineEnabled ? 22 : 2,
+                      width: 20,
+                      height: 20,
+                      borderRadius: '50%',
+                      bgcolor: '#fff',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }}
+                  />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 700, color: t.textPrimary, fontSize: '.9rem' }}>
+                    Enable CI/CD Pipeline
+                  </Typography>
+                  <Typography sx={{ fontSize: '.75rem', color: t.textSecondary }}>
+                    Automatically build, test, and deploy your application
+                  </Typography>
+                </Box>
+              </Box>
+
+              {state.pipelineEnabled && (
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', mb: 0.8 }}>
+                      Pipeline Template
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap" useFlexGap>
+                      {(['nodejs', 'python', 'go', 'docker', 'kubernetes', 'custom'] as PipelineTemplate[]).map((template) => (
+                        <Chip
+                          key={template}
+                          label={template === 'nodejs' ? 'Node.js' : template === 'kubernetes' ? 'Kubernetes' : template.charAt(0).toUpperCase() + template.slice(1)}
+                          onClick={() => patch({ pipelineTemplate: template })}
+                          sx={{
+                            textTransform: 'capitalize',
+                            fontWeight: 700,
+                            bgcolor: state.pipelineTemplate === template ? 'rgba(21,61,117,0.1)' : t.surfaceSubtle,
+                            color: state.pipelineTemplate === template ? dashboardTokens.colors.brandPrimary : t.textSecondary,
+                            border: `1px solid ${state.pipelineTemplate === template ? dashboardTokens.colors.brandPrimary + '55' : t.border}`,
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', mb: 0.8 }}>
+                      Pipeline Triggers
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      {(['push', 'pr', 'manual', 'scheduled'] as PipelineTrigger[]).map((trigger) => {
+                        const isSelected = state.pipelineTriggers.includes(trigger);
+                        return (
+                          <Chip
+                            key={trigger}
+                            label={trigger === 'push' ? 'On Push' : trigger === 'pr' ? 'On Pull Request' : trigger === 'manual' ? 'Manual' : 'Scheduled'}
+                            onClick={() => {
+                              const next = isSelected
+                                ? state.pipelineTriggers.filter((t) => t !== trigger)
+                                : [...state.pipelineTriggers, trigger];
+                              patch({ pipelineTriggers: next });
+                            }}
+                            sx={{
+                              textTransform: 'capitalize',
+                              fontWeight: 700,
+                              bgcolor: isSelected ? 'rgba(21,61,117,0.1)' : t.surfaceSubtle,
+                              color: isSelected ? dashboardTokens.colors.brandPrimary : t.textSecondary,
+                              border: `1px solid ${isSelected ? dashboardTokens.colors.brandPrimary + '55' : t.border}`,
+                            }}
+                          />
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', mb: 0.8 }}>
+                      Deployment Strategy
+                    </Typography>
+                    <Stack direction="row" spacing={1}>
+                      {(['rolling', 'blue-green', 'canary'] as DeploymentStrategy[]).map((strategy) => (
+                        <Chip
+                          key={strategy}
+                          label={strategy === 'blue-green' ? 'Blue-Green' : strategy.charAt(0).toUpperCase() + strategy.slice(1)}
+                          onClick={() => patch({ deploymentStrategy: strategy })}
+                          sx={{
+                            textTransform: 'capitalize',
+                            fontWeight: 700,
+                            bgcolor: state.deploymentStrategy === strategy ? 'rgba(21,61,117,0.1)' : t.surfaceSubtle,
+                            color: state.deploymentStrategy === strategy ? dashboardTokens.colors.brandPrimary : t.textSecondary,
+                            border: `1px solid ${state.deploymentStrategy === strategy ? dashboardTokens.colors.brandPrimary + '55' : t.border}`,
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', mb: 0.8 }}>
+                      Pipeline Options
+                    </Typography>
+                    <Stack spacing={1}>
+                      {[
+                        { key: 'autoDetectLanguage', label: 'Auto-detect language and dependencies', value: state.autoDetectLanguage },
+                        { key: 'includeTests', label: 'Include automated testing stage', value: state.includeTests },
+                        { key: 'includeSecurityScan', label: 'Include security vulnerability scanning', value: state.includeSecurityScan },
+                        { key: 'requireApproval', label: 'Require manual approval before deployment', value: state.requireApproval },
+                      ].map((option) => (
+                        <Box
+                          key={option.key}
+                          onClick={() => patch({ [option.key]: !option.value })}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1,
+                            bgcolor: option.value ? 'rgba(21,61,117,0.05)' : 'transparent',
+                            borderRadius: 1,
+                            border: `1px solid ${option.value ? dashboardTokens.colors.brandPrimary + '33' : t.border}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            '&:hover': { bgcolor: 'rgba(21,61,117,0.08)' },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: '4px',
+                              border: `2px solid ${option.value ? dashboardTokens.colors.brandPrimary : t.border}`,
+                              bgcolor: option.value ? dashboardTokens.colors.brandPrimary : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: '.7rem',
+                              fontWeight: 800,
+                            }}
+                          >
+                            {option.value && '✓'}
+                          </Box>
+                          <Typography sx={{ fontSize: '.85rem', color: t.textPrimary, fontWeight: 500 }}>
+                            {option.label}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', mb: 0.8 }}>
+                      Environment Variables (Optional)
+                    </Typography>
+                    <Stack spacing={1}>
+                      {state.pipelineVariables.map((variable, index) => (
+                        <Stack key={index} direction="row" spacing={1}>
+                          <TextField
+                            size="small"
+                            placeholder="KEY"
+                            value={variable.key}
+                            onChange={(e) => {
+                              const next = [...state.pipelineVariables];
+                              next[index].key = e.target.value;
+                              patch({ pipelineVariables: next });
+                            }}
+                            sx={{ ...inputSx, flex: 1 }}
+                          />
+                          <TextField
+                            size="small"
+                            placeholder="value"
+                            value={variable.value}
+                            onChange={(e) => {
+                              const next = [...state.pipelineVariables];
+                              next[index].value = e.target.value;
+                              patch({ pipelineVariables: next });
+                            }}
+                            sx={{ ...inputSx, flex: 1 }}
+                          />
+                          <Button
+                            onClick={() => {
+                              const next = state.pipelineVariables.filter((_, i) => i !== index);
+                              patch({ pipelineVariables: next });
+                            }}
+                            sx={{ minWidth: 40, color: dashboardSemanticColors.danger }}
+                          >
+                            ×
+                          </Button>
+                        </Stack>
+                      ))}
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => patch({ pipelineVariables: [...state.pipelineVariables, { key: '', value: '' }] })}
+                        sx={{ textTransform: 'none', borderColor: t.border, color: t.textSecondary }}
+                      >
+                        + Add Variable
+                      </Button>
+                    </Stack>
+                  </Box>
+
+                  <Divider sx={{ borderColor: t.border }} />
+                  <Alert severity="success" sx={{ bgcolor: 'rgba(34,197,94,.1)', border: '1px solid rgba(34,197,94,.3)' }}>
+                    <strong>Pipeline Ready:</strong> System will generate <code>.atonix/pipeline.yaml</code> with {state.pipelineTemplate} template, configure {state.pipelineTriggers.join(', ')} triggers, and set up {state.deploymentStrategy} deployment strategy.
+                  </Alert>
+                </Stack>
+              )}
+
+              {!state.pipelineEnabled && (
+                <Alert severity="info" sx={{ bgcolor: 'rgba(21,61,117,0.08)', border: `1px solid ${dashboardTokens.colors.brandPrimary}33` }}>
+                  You can enable and configure CI/CD pipeline later from the project dashboard.
+                </Alert>
+              )}
             </Stack>
           )}
 
