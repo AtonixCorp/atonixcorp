@@ -21,50 +21,6 @@ REGION_STATUS_CHOICES = [
     ('unavailable',  'Unavailable'),
 ]
 
-CLOUD_TYPE_CHOICES = [
-    ('public',  'Public Cloud'),
-    ('private', 'Private Cloud'),
-    ('hybrid',  'Hybrid Cloud'),
-]
-
-CONNECTIVITY_TYPE_CHOICES = [
-    ('internet',      'Public Internet'),
-    ('vpn',           'VPN Tunnel'),
-    ('direct_connect','Direct Connect'),
-    ('peering',       'Cloud Peering'),
-]
-
-# Services available per cloud type — used by the service-catalog endpoint
-SERVICE_CATALOG = {
-    'public': [
-        {'slug': 'compute',     'name': 'Virtual Machines', 'description': 'Self-service VM provisioning with floating IPs and quotas'},
-        {'slug': 'storage',     'name': 'Block & Object Storage', 'description': 'Ceph-backed Cinder volumes, Swift object storage'},
-        {'slug': 'networking',  'name': 'Virtual Networks', 'description': 'Neutron ML2/VXLAN tenant networks, security groups, floating IPs'},
-        {'slug': 'lbaas',       'name': 'Load Balancing', 'description': 'Octavia-backed load balancers with health checks'},
-        {'slug': 'dns',         'name': 'DNS Automation', 'description': 'Designate zones and record management integrated with Octavia'},
-        {'slug': 'kubernetes',  'name': 'Managed Kubernetes', 'description': 'Multi-tenant k8s clusters via AtonixCorp Operator'},
-        {'slug': 'database',    'name': 'Managed Databases', 'description': 'MySQL, PostgreSQL, Redis with automated backups'},
-        {'slug': 'cdn',         'name': 'CDN', 'description': 'Edge caching and distribution for public workloads'},
-    ],
-    'private': [
-        {'slug': 'compute',     'name': 'Dedicated VMs', 'description': 'Isolated compute in dedicated OpenStack projects'},
-        {'slug': 'storage',     'name': 'Dedicated Volumes', 'description': 'Private Ceph pools for block storage and images'},
-        {'slug': 'networking',  'name': 'Isolated Networks', 'description': 'Fully isolated Neutron networks with no shared resources'},
-        {'slug': 'images',      'name': 'Private Image Registry', 'description': 'Glance image repository with tenant-scoped access'},
-        {'slug': 'kubernetes',  'name': 'Dedicated Kubernetes', 'description': 'Single-tenant k8s clusters on dedicated nodes'},
-        {'slug': 'rbac',        'name': 'Role-Based Access', 'description': 'Keystone + LDAP/SAML RBAC with project isolation'},
-    ],
-    'hybrid': [
-        {'slug': 'compute',      'name': 'Burst Compute', 'description': 'Overflow workloads from on-premise to cloud'},
-        {'slug': 'storage',      'name': 'Replicated Storage', 'description': 'Cross-region Ceph pool replication'},
-        {'slug': 'networking',   'name': 'Hybrid Networking', 'description': 'VPNaaS or Direct Connect to customer datacenters'},
-        {'slug': 'orchestration','name': 'Heat Orchestration', 'description': 'Deploy workloads across public/private regions via Heat templates'},
-        {'slug': 'workflows',    'name': 'Mistral Workflows', 'description': 'Automated cross-cloud workflow execution'},
-        {'slug': 'secrets',      'name': 'Barbican Secrets', 'description': 'TLS certificates, encryption keys, API tokens'},
-        {'slug': 'observability','name': 'Unified Observability', 'description': 'Prometheus + Grafana + Loki across all cloud boundaries'},
-    ],
-}
-
 FAILOVER_MODE_CHOICES = [
     ('active-active',  'Active–Active'),
     ('active-passive', 'Active–Passive'),
@@ -98,27 +54,6 @@ class CloudRegion(TimeStampedModel):
     latitude     = models.FloatField(null=True, blank=True)
     longitude    = models.FloatField(null=True, blank=True)
     status       = models.CharField(max_length=20, choices=REGION_STATUS_CHOICES, default='active', db_index=True)
-    cloud_type   = models.CharField(
-        max_length=16,
-        choices=CLOUD_TYPE_CHOICES,
-        default='public',
-        db_index=True,
-        help_text='Deployment model: public multi-tenant, private dedicated, or hybrid',
-    )
-    connectivity_type = models.CharField(
-        max_length=20,
-        choices=CONNECTIVITY_TYPE_CHOICES,
-        default='internet',
-        help_text='How this region is accessed from other regions or customer datacenters',
-    )
-    vpn_gateway_ip = models.GenericIPAddressField(
-        null=True, blank=True,
-        help_text='VPN gateway IP for hybrid/private connectivity',
-    )
-    tenant_isolation = models.BooleanField(
-        default=False,
-        help_text='Enforce strict per-project resource isolation (private/hybrid)',
-    )
     is_default   = models.BooleanField(default=False,
                                        help_text='Whether this is the default region for new resources')
     # Availability stats (updated periodically by a background task)
