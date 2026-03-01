@@ -2,33 +2,44 @@
 #
 # Wraps openstack.network (Neutron) operations:
 # VPCs (networks), subnets, security groups, floating IPs, and routers.
+#
+# WORKSPACE-AWARE PATTERN
+# ─────────────────────────────────────────────────────────────────────────────
+# Every public function accepts an optional `conn` parameter:
+#
+#   conn=None   → falls back to get_connection() (legacy / admin views)
+#   conn=<obj>  → uses the injected workspace-scoped connection
 
 import logging
 from typing import Any
 
+import openstack.connection
+
 from infrastructure.openstack_conn import get_connection
+
+Connection = openstack.connection.Connection
 
 logger = logging.getLogger(__name__)
 
 
 # ── Networks ──────────────────────────────────────────────────────────────────
 
-def list_networks() -> list[dict]:
+def list_networks(conn: Connection | None = None) -> list[dict]:
     """List all networks visible to the project."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [_network_to_dict(n) for n in conn.network.networks()]
 
 
-def get_network(network_id: str) -> dict | None:
+def get_network(network_id: str, conn: Connection | None = None) -> dict | None:
     """Fetch a network by ID or name. Returns None if not found."""
-    conn = get_connection()
+    conn = conn or get_connection()
     net = conn.network.find_network(network_id, ignore_missing=True)
     return _network_to_dict(net) if net else None
 
 
-def get_network_by_name(name: str) -> dict | None:
+def get_network_by_name(name: str, conn: Connection | None = None) -> dict | None:
     """Fetch network by display name. Returns None if not found."""
-    conn = get_connection()
+    conn = conn or get_connection()
     net = conn.network.find_network(name, ignore_missing=True)
     return _network_to_dict(net) if net else None
 
@@ -38,9 +49,10 @@ def create_network(
     name: str,
     admin_state_up: bool = True,
     shared: bool = False,
+    conn: Connection | None = None,
 ) -> dict:
-    """Create a new network."""
-    conn = get_connection()
+    """Create a new private network."""
+    conn = conn or get_connection()
     net = conn.network.create_network(
         name=name,
         admin_state_up=admin_state_up,
@@ -50,18 +62,21 @@ def create_network(
     return _network_to_dict(net)
 
 
-def delete_network(network_id: str) -> None:
+def delete_network(network_id: str, conn: Connection | None = None) -> None:
     """Delete a network by ID."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.network.delete_network(network_id, ignore_missing=True)
     logger.info("Deleted network %s", network_id)
 
 
 # ── Subnets ───────────────────────────────────────────────────────────────────
 
-def list_subnets(network_id: str | None = None) -> list[dict]:
+def list_subnets(
+    network_id: str | None = None,
+    conn: Connection | None = None,
+) -> list[dict]:
     """List all subnets, optionally filtered by network."""
-    conn = get_connection()
+    conn = conn or get_connection()
     kwargs: dict[str, Any] = {}
     if network_id:
         kwargs["network_id"] = network_id
@@ -76,9 +91,10 @@ def create_subnet(
     ip_version: int = 4,
     enable_dhcp: bool = True,
     dns_nameservers: list[str] | None = None,
+    conn: Connection | None = None,
 ) -> dict:
     """Create a subnet on the given network."""
-    conn = get_connection()
+    conn = conn or get_connection()
     kwargs: dict[str, Any] = {
         "name":        name,
         "network_id":  network_id,
@@ -95,15 +111,20 @@ def create_subnet(
 
 # ── Security Groups ───────────────────────────────────────────────────────────
 
-def list_security_groups() -> list[dict]:
+def list_security_groups(conn: Connection | None = None) -> list[dict]:
     """List all security groups for the project."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [_sg_to_dict(sg) for sg in conn.network.security_groups()]
 
 
-def create_security_group(*, name: str, description: str = "") -> dict:
+def create_security_group(
+    *,
+    name: str,
+    description: str = "",
+    conn: Connection | None = None,
+) -> dict:
     """Create a new security group."""
-    conn = get_connection()
+    conn = conn or get_connection()
     sg = conn.network.create_security_group(name=name, description=description)
     logger.info("Created security group %s (%s)", sg.name, sg.id)
     return _sg_to_dict(sg)
@@ -118,9 +139,10 @@ def add_security_group_rule(
     port_range_max: int | None = None,
     remote_ip_prefix: str | None = None,
     ethertype: str = "IPv4",
+    conn: Connection | None = None,
 ) -> dict:
     """Add an ingress or egress rule to a security group."""
-    conn = get_connection()
+    conn = conn or get_connection()
     rule = conn.network.create_security_group_rule(
         security_group_id=security_group_id,
         direction=direction,
@@ -135,9 +157,9 @@ def add_security_group_rule(
 
 # ── Floating IPs ──────────────────────────────────────────────────────────────
 
-def list_floating_ips() -> list[dict]:
+def list_floating_ips(conn: Connection | None = None) -> list[dict]:
     """List all floating IPs allocated to the project."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [
         {
             "id":          fip.id,
@@ -150,9 +172,12 @@ def list_floating_ips() -> list[dict]:
     ]
 
 
-def allocate_floating_ip(external_network_name: str = "public") -> dict:
+def allocate_floating_ip(
+    external_network_name: str = "public",
+    conn: Connection | None = None,
+) -> dict:
     """Allocate a floating IP from the external network pool."""
-    conn = get_connection()
+    conn = conn or get_connection()
     ext_net = conn.network.find_network(external_network_name, ignore_missing=True)
     if ext_net is None:
         raise ValueError(f"External network '{external_network_name}' not found")
@@ -161,11 +186,18 @@ def allocate_floating_ip(external_network_name: str = "public") -> dict:
     return {"id": fip.id, "floating_ip": fip.floating_ip_address}
 
 
+def release_floating_ip(fip_id: str, conn: Connection | None = None) -> None:
+    """Release (deallocate) a floating IP back to the pool."""
+    conn = conn or get_connection()
+    conn.network.delete_ip(fip_id, ignore_missing=True)
+    logger.info("Released floating IP %s", fip_id)
+
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 
-def list_routers() -> list[dict]:
+def list_routers(conn: Connection | None = None) -> list[dict]:
     """List all routers for the project."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [
         {
             "id":     r.id,
@@ -175,6 +207,31 @@ def list_routers() -> list[dict]:
         }
         for r in conn.network.routers()
     ]
+
+
+def create_router(
+    *,
+    name: str,
+    external_gateway_network: str | None = None,
+    conn: Connection | None = None,
+) -> dict:
+    """Create a router, optionally connected to an external network gateway."""
+    conn = conn or get_connection()
+    kwargs: dict = {"name": name}
+    if external_gateway_network:
+        ext_net = conn.network.find_network(external_gateway_network, ignore_missing=True)
+        if ext_net:
+            kwargs["external_gateway_info"] = {"network_id": ext_net.id}
+    router = conn.network.create_router(**kwargs)
+    logger.info("Created router %s (%s)", router.name, router.id)
+    return {"id": router.id, "name": router.name, "status": router.status}
+
+
+def delete_router(router_id: str, conn: Connection | None = None) -> None:
+    """Delete a router by ID."""
+    conn = conn or get_connection()
+    conn.network.delete_router(router_id, ignore_missing=True)
+    logger.info("Deleted router %s", router_id)
 
 
 # ── Private helpers ────────────────────────────────────────────────────────────

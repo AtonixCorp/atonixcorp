@@ -15,8 +15,8 @@ from .models import (
     VPNGateway, CustomerGateway, VPNConnection,
     InternetGateway, NATGateway
 )
-from infrastructure.openstack.load_balancer import provision_load_balancer, delete_load_balancer, load_balancer_metrics
-from infrastructure.openstack.cdn import provision_cdn_distribution, delete_cdn_distribution, cdn_distribution_metrics
+from infrastructure.openstack.networking import provision_load_balancer, delete_load_balancer, load_balancer_metrics
+from infrastructure.openstack.networking import provision_cdn_distribution, delete_cdn_distribution, cdn_distribution_metrics
 from .serializers import (
     VPCListSerializer, VPCDetailSerializer, VPCCreateSerializer,
     SubnetListSerializer, SubnetDetailSerializer, SubnetCreateSerializer,

@@ -81,6 +81,15 @@ from .secrets.viewsets import SecretViewSet
 from .zero_trust.viewsets import (
     ZeroTrustPolicyViewSet, DevicePostureViewSet, ZeroTrustAccessLogViewSet,
 )
+from .provisioning.views import (
+    provision_vm,
+    provision_volume,
+    provision_network,
+    provision_kubernetes,
+    provision_floating_ip,
+    list_provisioned_resources,
+    list_workspaces,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -281,4 +290,16 @@ urlpatterns = [
     # Snapshots
     path('cloud/snapshots/',                             snapshots_list_create,     name='cloud-snapshots'),
     path('cloud/snapshots/<str:snapshot_id>/',           snapshot_delete,           name='cloud-snapshot-delete'),
+
+    # ── Workspace-bound Provisioning API ───────────────────────────────────
+    # All endpoints require: workspace_id + environment_id in body / query string.
+    path('provision/compute/vm/',          provision_vm,                  name='provision-vm'),
+    path('provision/storage/volume/',      provision_volume,              name='provision-volume'),
+    path('provision/network/',             provision_network,             name='provision-network'),
+    path('provision/kubernetes/cluster/',  provision_kubernetes,          name='provision-kubernetes'),
+    path('provision/floating-ip/',         provision_floating_ip,         name='provision-floating-ip'),
+    path('provision/resources/',           list_provisioned_resources,    name='provision-resources-list'),
+
+    # ── Workspace management ────────────────────────────────────────────────
+    path('workspaces/',                    list_workspaces,               name='workspace-list'),
 ]

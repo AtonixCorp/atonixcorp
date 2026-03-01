@@ -30,7 +30,7 @@ clouds:
       auth_url: https://openstack.atonixcorp.com:5000/v3
       username: admin
       password: CHANGE_ME
-      project_name: atonixcorp-prod
+      project_name: atonixcorp
       user_domain_name: Default
       project_domain_name: Default
     region_name: RegionOne

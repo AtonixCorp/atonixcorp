@@ -1,8 +1,25 @@
+# AtonixCorp – OpenStack CDN Service
+#
+# OpenStack does not provide a native managed global CDN in most deployments,
+# so this module uses a provider abstraction with safe simulated defaults.
+# When an external CDN provider (Akamai, Fastly, etc.) is integrated, update
+# provision_cdn_distribution() to call that provider's SDK here.
+#
+# WORKSPACE-AWARE PATTERN
+# ─────────────────────────────────────────────────────────────────────────────
+# Functions accept an optional `conn` parameter for future Designate/Swift
+# integration (e.g. invalidating cached objects via Swift middleware).
+# Currently conn is accepted but not used in the simulated paths.
+
 import logging
 import uuid
 from typing import Any
 
+import openstack.connection
+
 from infrastructure.openstack_conn import is_openstack_configured
+
+Connection = openstack.connection.Connection
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +30,17 @@ def provision_cdn_distribution(
     origin_domain: str,
     domain_names: list[str] | None = None,
     provider_hint: str | None = None,
+    conn: Connection | None = None,   # reserved for future Swift/Designate hooks
 ) -> dict[str, Any]:
     """
     Provision CDN distribution metadata.
-    OpenStack does not provide a native managed global CDN service in most deployments,
-    so this adapter uses a provider abstraction with safe simulated defaults.
+
+    Args:
+        name:           Distribution display name.
+        origin_domain:  Origin server hostname.
+        domain_names:   Custom CNAME domains to attach (optional).
+        provider_hint:  Override the provider name in the response (optional).
+        conn:           Pre-authenticated connection (reserved; not used yet).
     """
     custom_domains = domain_names or []
     distribution_id = f"cdn-{uuid.uuid4().hex[:12]}"

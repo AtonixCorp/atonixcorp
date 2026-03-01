@@ -51,8 +51,8 @@ from rest_framework import status as http_status
 
 from infrastructure.openstack_conn import is_openstack_configured
 import infrastructure.openstack.compute as osc
-import infrastructure.openstack.network as osn
-import infrastructure.openstack.volume as osv
+import infrastructure.openstack.networking.network as osn
+import infrastructure.openstack.storage.volume as osv
 
 logger = logging.getLogger(__name__)
 

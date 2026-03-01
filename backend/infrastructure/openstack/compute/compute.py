@@ -1,37 +1,46 @@
 # AtonixCorp – OpenStack Compute Service
 #
-# Wraps openstack.compute operations for servers (VMs) and flavors.
-# Every public function opens its own connection so callers
-# never manage connection lifecycle themselves.
+# Wraps openstack.compute (Nova) operations: servers, flavors, images, keypairs.
+#
+# WORKSPACE-AWARE PATTERN
+# ─────────────────────────────────────────────────────────────────────────────
+# Every public function accepts an optional `conn` parameter:
+#
+#   conn=None   → falls back to get_connection() (legacy / admin views)
+#   conn=<obj>  → uses the injected workspace-scoped connection
+#                 (obtained via WorkspaceService.get_connection(binding))
+#
+# Always inject conn from a WorkspaceService binding in provisioning code
+# to guarantee multi-tenant isolation.
 
 import logging
 from typing import Any
 
-import openstack.exceptions
+import openstack.connection
 
 from infrastructure.openstack_conn import get_connection
+
+Connection = openstack.connection.Connection
 
 logger = logging.getLogger(__name__)
 
 
 # ── Servers ───────────────────────────────────────────────────────────────────
 
-def list_servers() -> list[dict]:
+def list_servers(conn: Connection | None = None) -> list[dict]:
     """
     List all servers visible to the authenticated project.
-    Returns a list of plain dicts (safe to serialize to JSON).
+    Pass a workspace-scoped conn to restrict results to that project.
     """
-    conn = get_connection()
-    servers = []
-    for s in conn.compute.servers(details=True):
-        servers.append(_server_to_dict(s))
+    conn = conn or get_connection()
+    servers = [_server_to_dict(s) for s in conn.compute.servers(details=True)]
     logger.info("list_servers returned %d results", len(servers))
     return servers
 
 
-def get_server(server_id: str) -> dict | None:
+def get_server(server_id: str, conn: Connection | None = None) -> dict | None:
     """Fetch a single server by ID. Returns None if not found."""
-    conn = get_connection()
+    conn = conn or get_connection()
     server = conn.compute.find_server(server_id, ignore_missing=True)
     if server is None:
         return None
@@ -49,6 +58,7 @@ def create_server(
     user_data: str | None = None,
     wait: bool = True,
     timeout: int = 300,
+    conn: Connection | None = None,
 ) -> dict:
     """
     Create a new VM and optionally wait for it to reach ACTIVE status.
@@ -63,11 +73,12 @@ def create_server(
         user_data:       Cloud-init script, base64 or plain text (optional).
         wait:            Block until server reaches ACTIVE (default True).
         timeout:         Seconds to wait before raising TimeoutError.
+        conn:            Pre-authenticated connection (workspace-scoped or global).
 
     Returns:
         Plain dict representation of the created server.
     """
-    conn = get_connection()
+    conn = conn or get_connection()
 
     server_kwargs: dict[str, Any] = {
         "name":     name,
@@ -92,54 +103,98 @@ def create_server(
     return _server_to_dict(server)
 
 
-def delete_server(server_id: str) -> None:
+def delete_server(server_id: str, conn: Connection | None = None) -> None:
     """Delete a server by ID. Silently succeeds if already gone."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.compute.delete_server(server_id, ignore_missing=True)
     logger.info("Deleted server %s", server_id)
 
 
-def start_server(server_id: str) -> None:
+def start_server(server_id: str, conn: Connection | None = None) -> None:
     """Start a SHUTOFF server."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.compute.start_server(server_id)
     logger.info("Started server %s", server_id)
 
 
-def stop_server(server_id: str) -> None:
+def stop_server(server_id: str, conn: Connection | None = None) -> None:
     """Stop (SHUTOFF) a running server."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.compute.stop_server(server_id)
     logger.info("Stopped server %s", server_id)
 
 
-def reboot_server(server_id: str, reboot_type: str = "SOFT") -> None:
+def reboot_server(
+    server_id: str,
+    reboot_type: str = "SOFT",
+    conn: Connection | None = None,
+) -> None:
     """Reboot a server. reboot_type: 'SOFT' or 'HARD'."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.compute.reboot_server(server_id, reboot_type=reboot_type)
     logger.info("Rebooted server %s (%s)", server_id, reboot_type)
 
 
+# ── Keypairs ──────────────────────────────────────────────────────────────────
+
+def list_keypairs(conn: Connection | None = None) -> list[dict]:
+    """List all keypairs in the project."""
+    conn = conn or get_connection()
+    return [
+        {"name": kp.name, "fingerprint": kp.fingerprint, "type": getattr(kp, "type", "ssh")}
+        for kp in conn.compute.keypairs()
+    ]
+
+
+def create_keypair(
+    name: str,
+    public_key: str | None = None,
+    conn: Connection | None = None,
+) -> dict:
+    """
+    Import or generate an SSH keypair.
+    If public_key is None, OpenStack generates a new key pair and returns the
+    private key in the response (only available at creation time).
+    """
+    conn = conn or get_connection()
+    kwargs: dict[str, Any] = {"name": name}
+    if public_key:
+        kwargs["public_key"] = public_key
+    kp = conn.compute.create_keypair(**kwargs)
+    result: dict[str, Any] = {"name": kp.name, "fingerprint": kp.fingerprint}
+    if hasattr(kp, "private_key") and kp.private_key:
+        result["private_key"] = kp.private_key
+    logger.info("Created keypair %s", name)
+    return result
+
+
+def delete_keypair(name: str, conn: Connection | None = None) -> None:
+    """Delete a keypair by name."""
+    conn = conn or get_connection()
+    conn.compute.delete_keypair(name, ignore_missing=True)
+    logger.info("Deleted keypair %s", name)
+
+
 # ── Flavors ───────────────────────────────────────────────────────────────────
 
-def list_flavors() -> list[dict]:
+def list_flavors(conn: Connection | None = None) -> list[dict]:
     """List all available compute flavors."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [_flavor_to_dict(f) for f in conn.compute.flavors()]
 
 
-def get_flavor(flavor_id: str) -> dict | None:
+def get_flavor(flavor_id: str, conn: Connection | None = None) -> dict | None:
     """Fetch a single flavor by ID or name. Returns None if not found."""
-    conn = get_connection()
+    conn = conn or get_connection()
     flavor = conn.compute.find_flavor(flavor_id, ignore_missing=True)
     return _flavor_to_dict(flavor) if flavor else None
 
 
-# ── Images (read-only shortcut via Compute API) ────────────────────────────────
+# ── Images ────────────────────────────────────────────────────────────────────
 
-def list_images() -> list[dict]:
+def list_images(conn: Connection | None = None) -> list[dict]:
     """List all images from the Image service (via Glance)."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [
         {
             "id":          img.id,
@@ -153,6 +208,22 @@ def list_images() -> list[dict]:
         }
         for img in conn.image.images()
     ]
+
+
+def get_image(image_id: str, conn: Connection | None = None) -> dict | None:
+    """Fetch a single image by ID. Returns None if not found."""
+    conn = conn or get_connection()
+    img = conn.image.find_image(image_id, ignore_missing=True)
+    if img is None:
+        return None
+    return {
+        "id":          img.id,
+        "name":        img.name,
+        "status":      img.status,
+        "size_gb":     round((img.size or 0) / (1024 ** 3), 2),
+        "min_disk_gb": img.min_disk,
+        "visibility":  img.visibility,
+    }
 
 
 # ── Private helpers ────────────────────────────────────────────────────────────

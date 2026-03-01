@@ -1,27 +1,38 @@
 # AtonixCorp – OpenStack Volume Service
 #
 # Wraps openstack.block_storage (Cinder) operations:
-# volumes, snapshots, and volume type management.
+# volumes, snapshots, volume types, and server attachments.
+#
+# WORKSPACE-AWARE PATTERN
+# ─────────────────────────────────────────────────────────────────────────────
+# Every public function accepts an optional `conn` parameter:
+#
+#   conn=None   → falls back to get_connection() (legacy / admin views)
+#   conn=<obj>  → uses the injected workspace-scoped connection
 
 import logging
 from typing import Any
 
+import openstack.connection
+
 from infrastructure.openstack_conn import get_connection
+
+Connection = openstack.connection.Connection
 
 logger = logging.getLogger(__name__)
 
 
 # ── Volumes ───────────────────────────────────────────────────────────────────
 
-def list_volumes() -> list[dict]:
+def list_volumes(conn: Connection | None = None) -> list[dict]:
     """List all block storage volumes for the project."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [_volume_to_dict(v) for v in conn.block_storage.volumes(details=True)]
 
 
-def get_volume(volume_id: str) -> dict | None:
+def get_volume(volume_id: str, conn: Connection | None = None) -> dict | None:
     """Fetch a volume by ID. Returns None if not found."""
-    conn = get_connection()
+    conn = conn or get_connection()
     vol = conn.block_storage.find_volume(volume_id, ignore_missing=True)
     return _volume_to_dict(vol) if vol else None
 
@@ -33,6 +44,7 @@ def create_volume(
     volume_type: str | None = None,
     availability_zone: str | None = None,
     description: str = "",
+    conn: Connection | None = None,
 ) -> dict:
     """
     Create a new block storage volume.
@@ -43,11 +55,12 @@ def create_volume(
         volume_type:       Optional volume type (e.g. 'SSD', 'HDD').
         availability_zone: Optional AZ placement.
         description:       Optional description.
+        conn:              Pre-authenticated connection (workspace-scoped or global).
 
     Returns:
         Plain dict representation of the created volume.
     """
-    conn = get_connection()
+    conn = conn or get_connection()
     kwargs: dict[str, Any] = {
         "name":        name,
         "size":        size_gb,
@@ -63,19 +76,19 @@ def create_volume(
     return _volume_to_dict(vol)
 
 
-def delete_volume(volume_id: str) -> None:
+def delete_volume(volume_id: str, conn: Connection | None = None) -> None:
     """Delete a volume by ID. Silently succeeds if already gone."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.block_storage.delete_volume(volume_id, ignore_missing=True)
     logger.info("Deleted volume %s", volume_id)
 
 
-def attach_volume(*, server_id: str, volume_id: str) -> dict:
+def attach_volume(*, server_id: str, volume_id: str, conn: Connection | None = None) -> dict:
     """
     Attach a volume to a server.
     Returns the volume attachment resource dict.
     """
-    conn = get_connection()
+    conn = conn or get_connection()
     attachment = conn.compute.create_volume_attachment(
         server_id,
         volumeId=volume_id,
@@ -89,18 +102,23 @@ def attach_volume(*, server_id: str, volume_id: str) -> dict:
     }
 
 
-def detach_volume(*, server_id: str, attachment_id: str) -> None:
+def detach_volume(
+    *,
+    server_id: str,
+    attachment_id: str,
+    conn: Connection | None = None,
+) -> None:
     """Detach a volume from a server."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.compute.delete_volume_attachment(attachment_id, server_id)
     logger.info("Detached attachment %s from server %s", attachment_id, server_id)
 
 
 # ── Snapshots ─────────────────────────────────────────────────────────────────
 
-def list_snapshots() -> list[dict]:
+def list_snapshots(conn: Connection | None = None) -> list[dict]:
     """List all volume snapshots."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [
         {
             "id":          s.id,
@@ -121,9 +139,10 @@ def create_snapshot(
     name: str,
     description: str = "",
     force: bool = False,
+    conn: Connection | None = None,
 ) -> dict:
     """Create a snapshot from an existing volume."""
-    conn = get_connection()
+    conn = conn or get_connection()
     snap = conn.block_storage.create_snapshot(
         volume_id=volume_id,
         name=name,
@@ -140,18 +159,18 @@ def create_snapshot(
     }
 
 
-def delete_snapshot(snapshot_id: str) -> None:
+def delete_snapshot(snapshot_id: str, conn: Connection | None = None) -> None:
     """Delete a volume snapshot."""
-    conn = get_connection()
+    conn = conn or get_connection()
     conn.block_storage.delete_snapshot(snapshot_id, ignore_missing=True)
     logger.info("Deleted snapshot %s", snapshot_id)
 
 
 # ── Volume Types ──────────────────────────────────────────────────────────────
 
-def list_volume_types() -> list[dict]:
+def list_volume_types(conn: Connection | None = None) -> list[dict]:
     """List available volume types (storage tiers)."""
-    conn = get_connection()
+    conn = conn or get_connection()
     return [
         {"id": vt.id, "name": vt.name, "description": getattr(vt, "description", "")}
         for vt in conn.block_storage.types()
