@@ -8,13 +8,13 @@ metadata:
     project: atonixcorp
 spec:
   description: AtonixCorp Project
-  
+
   sourceRepos:
-    - 'https://github.com/atonixcorp/platform.git'
+    - 'https://github.com/atonixcorp/atonixcorp.git'
     - 'https://charts.bitnami.com/bitnami'
     - 'https://kubernetes-sigs.github.io/external-dns'
     - 'https://prometheus-community.github.io/helm-charts'
-  
+
   destinations:
     - namespace: 'atonixcorp*'
       server: https://kubernetes.default.svc
@@ -22,7 +22,7 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: 'ingress-nginx'
       server: https://kubernetes.default.svc
-  
+
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
@@ -38,7 +38,7 @@ spec:
       kind: MutatingWebhookConfiguration
     - group: admissionregistration.k8s.io
       kind: ValidatingWebhookConfiguration
-  
+
   namespaceResourceWhitelist:
     - group: ''
       kind: '*'
@@ -56,7 +56,7 @@ spec:
       kind: '*'
     - group: monitoring.coreos.com
       kind: '*'
-  
+
   roles:
     - name: developer
       description: Developer role with read access
@@ -67,7 +67,7 @@ spec:
         - p, proj:atonixcorp:developer, exec, create, atonixcorp/*-dev, allow
       groups:
         - atonixcorp:developers
-    
+
     - name: devops
       description: DevOps role with full access
       policies:
@@ -76,14 +76,14 @@ spec:
         - p, proj:atonixcorp:devops, exec, *, atonixcorp/*, allow
       groups:
         - atonixcorp:devops
-    
+
     - name: admin
       description: Admin role with cluster-wide access
       policies:
         - p, proj:atonixcorp:admin, *, *, */*, allow
       groups:
         - atonixcorp:admins
-  
+
   syncWindows:
     - kind: allow
       schedule: '0 8-18 * * 1-5'  # Monday to Friday, 8 AM to 6 PM
@@ -110,23 +110,23 @@ metadata:
     environment: production
 spec:
   description: Production Environment Project
-  
+
   sourceRepos:
     - 'https://github.com/atonixcorp/platform.git'
     - 'https://charts.bitnami.com/bitnami'
-  
+
   destinations:
     - namespace: 'atonixcorp'
       server: https://kubernetes.default.svc
     - namespace: 'monitoring'
       server: https://kubernetes.default.svc
-  
+
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
     - group: networking.k8s.io
       kind: IngressClass
-  
+
   namespaceResourceWhitelist:
     - group: ''
       kind: '*'
@@ -140,7 +140,7 @@ spec:
       kind: '*'
     - group: monitoring.coreos.com
       kind: '*'
-  
+
   roles:
     - name: production-deployer
       description: Production deployment role
@@ -150,14 +150,14 @@ spec:
         - p, proj:production:production-deployer, applications, override, production/*, deny
       groups:
         - atonixcorp:production-deployers
-    
+
     - name: production-admin
       description: Production admin role
       policies:
         - p, proj:production:production-admin, *, *, production/*, allow
       groups:
         - atonixcorp:production-admins
-  
+
   syncWindows:
     - kind: allow
       schedule: '0 9-17 * * 1-5'  # Monday to Friday, 9 AM to 5 PM
