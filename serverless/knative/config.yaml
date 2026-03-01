@@ -1,0 +1,37 @@
+---
+# Knative Serving – standard installation config
+# Apply order:
+#   1. kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.13.0/serving-crds.yaml
+#   2. kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.13.0/serving-core.yaml
+#   3. kubectl apply -f serverless/knative/config-domain.yaml
+#   4. kubectl apply -f serverless/knative/config-autoscaler.yaml
+
+# Domain configuration — map *.serverless.atonixcorp.internal to Knative
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-domain
+  namespace: knative-serving
+data:
+  # Internal domain for serverless functions
+  serverless.atonixcorp.internal: ""
+---
+# Autoscaler configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-autoscaler
+  namespace: knative-serving
+data:
+  # Scale to zero after 60s of inactivity
+  scale-to-zero-grace-period: "60s"
+  scale-to-zero-pod-retention-period: "10s"
+  # Target 80 concurrent requests per pod before scaling
+  container-concurrency-target-default: "80"
+  # Max scale-up rate: 2x per 15s
+  max-scale-up-rate: "2"
+  # Stable window: 60s
+  stable-window: "60s"
+  # Panic window: 10s
+  panic-window-percentage: "10.0"
+  panic-threshold-percentage: "200.0"

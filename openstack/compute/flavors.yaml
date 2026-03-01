@@ -1,0 +1,54 @@
+---
+# Standard AtonixCorp Compute Flavors
+# Apply with: openstack flavor create (or via Terraform module)
+
+flavors:
+  - name: ax.nano
+    ram_mb: 512
+    vcpus: 1
+    disk_gb: 10
+    description: "Minimal workloads, CI runners"
+
+  - name: ax.micro
+    ram_mb: 1024
+    vcpus: 1
+    disk_gb: 20
+    description: "Lightweight services"
+
+  - name: ax.small
+    ram_mb: 2048
+    vcpus: 1
+    disk_gb: 40
+    description: "Small web services, APIs"
+
+  - name: ax.standard.medium
+    ram_mb: 4096
+    vcpus: 2
+    disk_gb: 80
+    description: "General purpose workloads"
+
+  - name: ax.standard.large
+    ram_mb: 8192
+    vcpus: 4
+    disk_gb: 160
+    description: "Production services"
+
+  - name: ax.standard.xlarge
+    ram_mb: 16384
+    vcpus: 8
+    disk_gb: 320
+    description: "High-throughput workloads"
+
+  - name: ax.highmem.large
+    ram_mb: 32768
+    vcpus: 4
+    disk_gb: 160
+    description: "In-memory databases, caches"
+
+  - name: ax.gpu.standard
+    ram_mb: 16384
+    vcpus: 8
+    disk_gb: 200
+    extra_specs:
+      "resources:VGPU": "1"
+    description: "GPU compute, ML inference"

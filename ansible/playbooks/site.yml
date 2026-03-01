@@ -1,0 +1,31 @@
+---
+# site.yml — Full AtonixCorp environment convergence
+# Applies all roles to all matching hosts in order.
+# Usage: ansible-playbook -i inventory/openstack.yml playbooks/site.yml
+
+- name: Base OS configuration (all VMs)
+  hosts: all
+  become: true
+  roles:
+    - role: vm-base
+    - role: security-harden
+    - role: monitoring-agent
+
+- name: Kubernetes node bootstrap
+  hosts: role_k8s_node
+  become: true
+  roles:
+    - role: k8s-node
+    - role: storage-mount
+
+- name: Serverless runtime nodes
+  hosts: role_serverless
+  become: true
+  roles:
+    - role: serverless-runtime
+
+- name: Storage node configuration
+  hosts: role_storage
+  become: true
+  roles:
+    - role: storage-mount

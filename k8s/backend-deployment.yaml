@@ -1,56 +1,26 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: atonixcorp-backend
-  namespace: atonixcorp
-  labels:
-    app: atonixcorp-backend
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: atonixcorp-backend
-  template:
-    metadata:
-      labels:
-        app: atonixcorp-backend
-    spec:
-      containers:
-        - name: backend
-          image: atonixdev/atonixcorp-backend:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8000
-              name: http
-          env:
-            - name: DJANGO_SETTINGS_MODULE
-              value: atonixcorp.settings.production
-            - name: DATABASE_URL
-              value: "postgres://postgres:postgres@postgres:5432/atonixcorp"
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: atonixcorp-secrets
-                  key: DJANGO_SECRET_KEY
-      restartPolicy: Always
-# Backend Deployment, Service, ConfigMap and Secret for a demo k8s deploy
-# Replace SECRET_KEY and any production credentials with real Secrets in your cluster.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: atonixcorp
 ---
+# ConfigMap — all non-secret backend environment variables
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: atonixcorp-backend-config
   namespace: atonixcorp
 data:
-  ALLOWED_HOSTS: "0.0.0.0,localhost,127.0.0.1"
-  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/atonixcorp_db"
-  REDIS_URL: "redis://redis:6379/0"
-  RABBITMQ_URL: "amqp://user:password@rabbitmq:5672/"
+  DJANGO_SETTINGS_MODULE: "atonixcorp.settings"
+  ALLOWED_HOSTS: "atonixcorp.com,api.atonixcorp.com,atonixcorp-backend"
+  DEBUG: "false"
+  DATABASE_URL: "postgresql://atonixcorp:changeme@atonixcorp-postgres:5432/atonixcorp"
+  REDIS_URL: "redis://atonixcorp-redis:6379/0"
+  RABBITMQ_URL: "amqp://admin:changeme@atonixcorp-rabbitmq:5672/"
+  KAFKA_BOOTSTRAP_SERVERS: "atonixcorp-kafka:9092"
+  KAFKA_ENABLED: "true"
+  PROMETHEUS_PUSHGATEWAY_URL: "http://atonixcorp-pushgateway:9091"
+  CORS_ALLOWED_ORIGINS: "https://atonixcorp.com,https://app.atonixcorp.com"
+  OS_CLOUD: "atonixcorp"
+  OS_REGION_NAME: "RegionOne"
+
 ---
+# Secret — sensitive credentials (values are base64 placeholders; override via Helm or external secrets)
 apiVersion: v1
 kind: Secret
 metadata:
@@ -58,7 +28,12 @@ metadata:
   namespace: atonixcorp
 type: Opaque
 stringData:
-  SECRET_KEY: "change-this-before-prod"
+  SECRET_KEY: "change-me-in-production"
+  OS_AUTH_URL: ""
+  OS_USERNAME: ""
+  OS_PASSWORD: ""
+  OS_PROJECT_NAME: ""
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -67,31 +42,50 @@ metadata:
   namespace: atonixcorp
   labels:
     app: atonixcorp-backend
+    ax/component: api
 spec:
   replicas: 2
   selector:
     matchLabels:
       app: atonixcorp-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: atonixcorp-backend
+        ax/component: api
     spec:
-      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: backend
-          # Use a local/present image on the cluster for testing; replace with GHCR image/pull secrets for production
-          image: atonixdev/atonixcorp-backend:1.0.1
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/atonixcorp/atonixcorp-backend:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 8000
-              name: http
+            - name: http
+              containerPort: 8000
           env:
+            - name: DJANGO_SETTINGS_MODULE
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: DJANGO_SETTINGS_MODULE
             - name: ALLOWED_HOSTS
               valueFrom:
                 configMapKeyRef:
                   name: atonixcorp-backend-config
                   key: ALLOWED_HOSTS
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: DEBUG
             - name: DATABASE_URL
               valueFrom:
                 configMapKeyRef:
@@ -107,12 +101,65 @@ spec:
                 configMapKeyRef:
                   name: atonixcorp-backend-config
                   key: RABBITMQ_URL
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: KAFKA_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: KAFKA_ENABLED
+            - name: PROMETHEUS_PUSHGATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: PROMETHEUS_PUSHGATEWAY_URL
+            - name: CORS_ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: CORS_ALLOWED_ORIGINS
+            - name: OS_CLOUD
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: OS_CLOUD
+            - name: OS_REGION_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: atonixcorp-backend-config
+                  key: OS_REGION_NAME
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: atonixcorp-backend-secret
                   key: SECRET_KEY
-          # Minimal production resources - tune to your workload
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: atonixcorp-backend-secret
+                  key: OS_AUTH_URL
+                  optional: true
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: atonixcorp-backend-secret
+                  key: OS_USERNAME
+                  optional: true
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: atonixcorp-backend-secret
+                  key: OS_PASSWORD
+                  optional: true
+            - name: OS_PROJECT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: atonixcorp-backend-secret
+                  key: OS_PROJECT_NAME
+                  optional: true
           resources:
             requests:
               cpu: "250m"
@@ -120,26 +167,20 @@ spec:
             limits:
               cpu: "1000m"
               memory: "1Gi"
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            allowPrivilegeEscalation: false
-          readinessProbe:
-            httpGet:
-              path: /api/health/
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /api/health/
-              port: http
-            initialDelaySeconds: 60
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 5
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health/
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             - name: static-files
               mountPath: /app/staticfiles
@@ -147,20 +188,25 @@ spec:
               mountPath: /app/media
       volumes:
         - name: static-files
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: atonixcorp-static-pvc
         - name: media-files
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: atonixcorp-media-pvc
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: atonixcorp-backend
   namespace: atonixcorp
+  labels:
+    app: atonixcorp-backend
 spec:
   selector:
     app: atonixcorp-backend
   ports:
-    - protocol: TCP
+    - name: http
       port: 8000
-      targetPort: http
+      targetPort: 8000
   type: ClusterIP

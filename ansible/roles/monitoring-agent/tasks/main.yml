@@ -1,0 +1,71 @@
+---
+# monitoring-agent role — Install node_exporter (Prometheus metrics on all VMs)
+
+- name: Create prometheus user
+  ansible.builtin.user:
+    name: prometheus
+    system: true
+    shell: /sbin/nologin
+    create_home: false
+
+- name: Download node_exporter
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+    mode: "0644"
+    checksum: "sha256:a550cd5c05f760b7934a2d0afad66d2e23d8579351cd3edcc5340908cc7ba266"
+
+- name: Extract node_exporter
+  ansible.builtin.unarchive:
+    src: /tmp/node_exporter.tar.gz
+    dest: /tmp/
+    remote_src: true
+
+- name: Install node_exporter binary
+  ansible.builtin.copy:
+    src: /tmp/node_exporter-1.7.0.linux-amd64/node_exporter
+    dest: /usr/local/bin/node_exporter
+    owner: prometheus
+    group: prometheus
+    mode: "0755"
+    remote_src: true
+
+- name: Create node_exporter systemd unit
+  ansible.builtin.copy:
+    content: |
+      [Unit]
+      Description=Prometheus Node Exporter
+      After=network.target
+
+      [Service]
+      User=prometheus
+      Group=prometheus
+      Type=simple
+      ExecStart=/usr/local/bin/node_exporter \
+        --collector.filesystem \
+        --collector.meminfo \
+        --collector.netdev \
+        --collector.stat \
+        --collector.cpu \
+        --web.listen-address=:9100
+      Restart=on-failure
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/node_exporter.service
+    mode: "0644"
+  notify:
+    - reload systemd
+    - start node_exporter
+
+handlers:
+  - name: reload systemd
+    ansible.builtin.systemd:
+      daemon_reload: true
+
+  - name: start node_exporter
+    ansible.builtin.systemd:
+      name: node_exporter
+      state: started
+      enabled: true

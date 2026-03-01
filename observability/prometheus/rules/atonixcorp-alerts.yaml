@@ -1,0 +1,86 @@
+---
+# AtonixCorp Alerting Rules
+# File: observability/prometheus/rules/atonixcorp-alerts.yaml
+
+groups:
+  - name: infrastructure
+    rules:
+      - alert: NodeDown
+        expr: up{job="node-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+          description: "node_exporter on {{ $labels.instance }} has been unreachable for 2+ minutes."
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+          description: "CPU usage above 85% for 5 minutes on {{ $labels.instance }}."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory on {{ $labels.instance }}"
+          description: "Memory usage above 90% on {{ $labels.instance }}."
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Root filesystem below 15% available on {{ $labels.instance }}."
+
+  - name: kubernetes
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash-looping"
+
+      - alert: DeploymentReplicasMismatch
+        expr: kube_deployment_spec_replicas != kube_deployment_status_ready_replicas
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has replica mismatch"
+
+      - alert: PersistentVolumeClaimPending
+        expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is Pending"
+
+  - name: openstack
+    rules:
+      - alert: OpenStackAPIDown
+        expr: openstack_identity_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "OpenStack Identity (Keystone) API is down"
+
+      - alert: OpenStackComputeQuotaHigh
+        expr: openstack_nova_limits_vcpus_used / openstack_nova_limits_max_total_cores > 0.85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OpenStack compute vCPU quota above 85%"

@@ -68,12 +68,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'atonixcorp.wsgi.application'
 ASGI_APPLICATION = 'atonixcorp.asgi.application'
 
-# Django Channels — in-memory layer for dev; swap for channels_redis in production
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+# Django Channels — Redis layer in production, in-memory for dev
+_REDIS_URL = os.environ.get('REDIS_URL', '')
+if _REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [_REDIS_URL],
+            },
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        }
+    }
 
 # Database — SQLite for local dev, PostgreSQL for production
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
@@ -154,22 +165,50 @@ REST_FRAMEWORK = {
     },
 }
 
-# CSRF – trust React dev server and localhost for form submissions
+# CSRF – trust React dev server, localhost, and production domains
+_CSRF_EXTRA = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-]
+    'https://atonixcorp.com',
+    'https://www.atonixcorp.com',
+    'https://api.atonixcorp.com',
+] + [o for o in _CSRF_EXTRA if o not in [
+    'http://localhost:3000', 'http://127.0.0.1:3000',
+    'https://atonixcorp.com', 'https://www.atonixcorp.com',
+]]
 
-# CORS — allow the React dev server (port 3000) and prod build server
+# CORS — driven by env in production, permissive in dev
+_cors_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
 CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in _cors_env.split(',') if o.strip()
+] if _cors_env else [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:8080',
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # In dev allow all origins for convenience
+
+# ── Message Broker (RabbitMQ) ────────────────────────────────────────────────
+RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'amqp://admin:changeme@localhost:5672/')
+
+# ── Kafka ────────────────────────────────────────────────────────────────────
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+KAFKA_ENABLED = os.environ.get('KAFKA_ENABLED', 'false').lower() == 'true'
+
+# ── Prometheus Pushgateway ───────────────────────────────────────────────────
+PROMETHEUS_PUSHGATEWAY_URL = os.environ.get('PROMETHEUS_PUSHGATEWAY_URL', '')
+
+# ── OpenStack Integration ────────────────────────────────────────────────────
+OPENSTACK_AUTH_URL   = os.environ.get('OS_AUTH_URL', '')
+OPENSTACK_USERNAME   = os.environ.get('OS_USERNAME', '')
+OPENSTACK_PASSWORD   = os.environ.get('OS_PASSWORD', '')
+OPENSTACK_PROJECT    = os.environ.get('OS_PROJECT_NAME', '')
+OPENSTACK_CLOUD      = os.environ.get('OS_CLOUD', 'atonixcorp')
+OPENSTACK_REGION     = os.environ.get('OS_REGION_NAME', 'RegionOne')
 
 if HAS_GRAPHENE_DJANGO:
     GRAPHENE = {

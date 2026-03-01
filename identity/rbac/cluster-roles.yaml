@@ -1,0 +1,100 @@
+---
+# RBAC Standards — Kubernetes ClusterRole definitions
+# These are the baseline ClusterRoles for all AtonixCorp Kubernetes clusters.
+#
+# Apply: kubectl apply -f identity/rbac/cluster-roles.yaml
+
+# ── Developer Role — read/write within a namespace, no cluster access ─────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ax-developer
+  labels:
+    ax/managed: "true"
+rules:
+  - apiGroups: ["", "apps", "batch", "extensions"]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - deployments
+      - services
+      - configmaps
+      - jobs
+      - cronjobs
+      - replicasets
+      - statefulsets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["serving.knative.dev"]
+    resources: ["services", "revisions", "routes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# ── Viewer Role — read-only across resources ───────────────────────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ax-viewer
+  labels:
+    ax/managed: "true"
+rules:
+  - apiGroups: ["", "apps", "batch", "extensions", "networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+---
+# ── Service Account: Argo Workflows (namespace-scoped) ────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argo-workflow-sa
+  namespace: argo
+  labels:
+    ax/managed: "true"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-workflow-sa
+subjects:
+  - kind: ServiceAccount
+    name: argo-workflow-sa
+    namespace: argo
+roleRef:
+  kind: ClusterRole
+  name: ax-developer
+  apiGroup: rbac.authorization.k8s.io
+---
+# ── Service Account: Function SA (per-namespace, serverless functions) ─────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: function-sa
+  namespace: serverless-default
+  labels:
+    ax/managed: "true"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: function-role
+  namespace: serverless-default
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: function-role-binding
+  namespace: serverless-default
+subjects:
+  - kind: ServiceAccount
+    name: function-sa
+    namespace: serverless-default
+roleRef:
+  kind: Role
+  name: function-role
+  apiGroup: rbac.authorization.k8s.io

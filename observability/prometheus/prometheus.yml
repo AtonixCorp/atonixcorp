@@ -1,0 +1,84 @@
+---
+# Prometheus main configuration
+# Version-controlled — every change goes through Git
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    cluster: atonixcorp-production
+    region: primary
+
+# Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+
+# Load alerting rules
+rule_files:
+  - "rules/*.yaml"
+
+# Scrape configs
+scrape_configs:
+
+  # ── Prometheus self-monitoring ─────────────────────────────────────────────
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # ── Linux VMs (node_exporter) ──────────────────────────────────────────────
+  - job_name: node-exporter
+    openstack_sd_configs:
+      - role: instance
+        region: RegionOne
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_openstack_instance_name]
+        target_label: instance
+      - source_labels: [__meta_openstack_tag_role]
+        target_label: role
+
+  # ── OpenStack APIs ─────────────────────────────────────────────────────────
+  - job_name: openstack-exporter
+    static_configs:
+      - targets: ["openstack-exporter:9180"]
+    metrics_path: /metrics
+
+  # ── Kubernetes (kube-state-metrics) ───────────────────────────────────────
+  - job_name: kube-state-metrics
+    static_configs:
+      - targets: ["kube-state-metrics.monitoring.svc.cluster.local:8080"]
+
+  # ── Kubernetes (cAdvisor) ─────────────────────────────────────────────────
+  - job_name: cadvisor
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: replace
+        target_label: __address__
+        replacement: "$1:4194"
+        source_labels: [__address__]
+        regex: "([^:]+)(?::\\d+)?"
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  - job_name: postgres-exporter
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  - job_name: redis-exporter
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  # ── RabbitMQ ──────────────────────────────────────────────────────────────
+  - job_name: rabbitmq
+    static_configs:
+      - targets: ["rabbitmq:15692"]
+
+  # ── Argo Workflows ────────────────────────────────────────────────────────
+  - job_name: argo-workflows
+    static_configs:
+      - targets: ["argo-server.argo.svc.cluster.local:9090"]

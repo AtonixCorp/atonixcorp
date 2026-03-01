@@ -1,0 +1,78 @@
+---
+# ClusterWorkflowTemplate: terraform-apply
+# Runs terraform plan + apply for any module
+# Usage: submit via ArgoWorkflows UI or CLI
+#
+# argo submit --from clusterworkflowtemplate/terraform-apply \
+#   -p module=networking -p workspace=production
+
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: terraform-apply
+spec:
+  entrypoint: terraform-pipeline
+  arguments:
+    parameters:
+      - name: module
+        value: "networking"
+      - name: workspace
+        value: "production"
+      - name: dry_run
+        value: "false"
+
+  templates:
+    - name: terraform-pipeline
+      steps:
+        - - name: init
+            template: tf-init
+        - - name: plan
+            template: tf-plan
+        - - name: apply
+            template: tf-apply
+            when: "{{workflow.parameters.dry_run}} == false"
+
+    - name: tf-init
+      container:
+        image: hashicorp/terraform:1.7
+        command: [terraform, init, -backend=true]
+        workingDir: /workspace/terraform/modules/{{workflow.parameters.module}}
+        volumeMounts:
+          - name: terraform-workspace
+            mountPath: /workspace
+        env:
+          - name: OS_CLOUD
+            value: atonixcorp
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: terraform-state-credentials
+                key: access_key
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: terraform-state-credentials
+                key: secret_key
+
+    - name: tf-plan
+      container:
+        image: hashicorp/terraform:1.7
+        command: [terraform, plan, -out=tfplan]
+        workingDir: /workspace/terraform/modules/{{workflow.parameters.module}}
+        volumeMounts:
+          - name: terraform-workspace
+            mountPath: /workspace
+
+    - name: tf-apply
+      container:
+        image: hashicorp/terraform:1.7
+        command: [terraform, apply, -auto-approve, tfplan]
+        workingDir: /workspace/terraform/modules/{{workflow.parameters.module}}
+        volumeMounts:
+          - name: terraform-workspace
+            mountPath: /workspace
+
+  volumes:
+    - name: terraform-workspace
+      persistentVolumeClaim:
+        claimName: terraform-workspace-pvc

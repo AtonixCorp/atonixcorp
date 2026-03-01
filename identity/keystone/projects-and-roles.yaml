@@ -1,0 +1,49 @@
+---
+# Keystone Project + Role Definitions
+# Apply via: openstack project create / role add (or Terraform identity module)
+# These are the STANDARD project/role templates for all AtonixCorp tenants.
+
+# ── Standard Roles ───────────────────────────────────────────────────────────
+roles:
+  - name: ax-admin
+    description: "Full administrative access to a project"
+
+  - name: ax-developer
+    description: "Create and manage compute, storage, and network resources"
+
+  - name: ax-viewer
+    description: "Read-only access to project resources"
+
+  - name: ax-service
+    description: "Service account — scoped programmatic access only"
+
+  - name: ax-billing
+    description: "View billing and quota information only"
+
+# ── Standard Project Template ────────────────────────────────────────────────
+# Used when onboarding a new team or product
+project_template:
+  domain: Default
+  description: "AtonixCorp tenant project"
+  enabled: true
+  tags:
+    - ax:managed=true
+  quotas:
+    compute:
+      instances: 20
+      cores: 40
+      ram: 81920       # 80 GB
+    network:
+      networks: 3
+      subnets: 6
+      routers: 2
+      floating_ips: 5
+    volume:
+      volumes: 20
+      gigabytes: 2000  # 2 TB
+
+# ── Domain Configuration ──────────────────────────────────────────────────────
+domain:
+  name: Default
+  enabled: true
+  # LDAP/OIDC backend configuration goes here if integrating external IdP

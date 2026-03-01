@@ -155,6 +155,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-https://atonixcorp.com/api}
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL:-wss://atonixcorp.com/ws}
+        REACT_APP_ENVIRONMENT: ${REACT_APP_ENVIRONMENT:-production}
+        REACT_APP_APP_NAME: AtonixCorp
+        REACT_APP_ENABLE_WEBSOCKETS: "true"
+        REACT_APP_ENABLE_MONITORING: "true"
+        REACT_APP_ENABLE_BILLING: "true"
     container_name: atonixcorp_frontend
     expose:
       - "80"
@@ -233,6 +241,8 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
       REACT_APP_API_URL: http://localhost:8000/api
+      REACT_APP_WS_URL: ws://localhost:8000/ws
+      REACT_APP_ENVIRONMENT: development
       HOST: 0.0.0.0
       DANGEROUSLY_DISABLE_HOST_CHECK: "true"
     command: sh -c "npm ci --legacy-peer-deps && npm start"

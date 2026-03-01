@@ -1,0 +1,24 @@
+---
+# Dynamic OpenStack inventory for Ansible
+# Requires: openstack.cloud collection (pip install openstacksdk)
+# Usage: ansible-inventory -i inventory/openstack.yml --list
+
+plugin: openstack.cloud.openstack
+expand_hostvars: true
+fail_on_errors: true
+all_projects: false
+
+keyed_groups:
+  # Group by Nova metadata "role"
+  - prefix: role
+    key: openstack.metadata.role
+
+  # Group by availability zone
+  - prefix: az
+    key: openstack.az
+
+compose:
+  # Use floating IP if available, otherwise fixed IP
+  ansible_host: >-
+    openstack.public_v4 if openstack.public_v4
+    else openstack.private_v4

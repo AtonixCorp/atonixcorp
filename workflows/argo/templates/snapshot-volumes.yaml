@@ -1,0 +1,32 @@
+---
+# CronWorkflow: snapshot-volumes
+# Automated nightly volume snapshots via OpenStack Cinder API
+# Runs at 02:00 UTC daily
+
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: snapshot-volumes
+  namespace: argo
+spec:
+  schedule: "0 2 * * *"
+  timezone: "UTC"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 0
+  workflowSpec:
+    entrypoint: snapshot-all-volumes
+    templates:
+      - name: snapshot-all-volumes
+        container:
+          image: ghcr.io/atonixcorp/openstack-ops:latest
+          command: [python3, /scripts/snapshot_volumes.py]
+          env:
+            - name: OS_CLOUD
+              value: atonixcorp
+            - name: SNAPSHOT_RETENTION_DAYS
+              value: "30"
+            - name: VOLUME_TAG_FILTER
+              value: "ax:backup=true"
+          envFrom:
+            - secretRef:
+                name: openstack-credentials

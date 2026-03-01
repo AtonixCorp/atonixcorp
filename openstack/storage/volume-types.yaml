@@ -1,0 +1,22 @@
+---
+# Cinder Volume Types
+# Apply via: openstack volume type create (or Terraform)
+
+volume_types:
+  - name: ax-fast
+    description: "NVMe-backed, low-latency block storage"
+    extra_specs:
+      volume_backend_name: ceph-nvme
+      replication_enabled: "True"
+
+  - name: ax-standard
+    description: "SSD-backed block storage"
+    extra_specs:
+      volume_backend_name: ceph-ssd
+      replication_enabled: "True"
+
+  - name: ax-archive
+    description: "HDD-backed, cost-optimized block storage"
+    extra_specs:
+      volume_backend_name: ceph-hdd
+      replication_enabled: "False"

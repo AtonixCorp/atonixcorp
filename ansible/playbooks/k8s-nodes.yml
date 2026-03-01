@@ -1,0 +1,17 @@
+---
+# k8s-nodes.yml — Kubernetes node provisioning playbook
+# Usage: ansible-playbook -i inventory/openstack.yml playbooks/k8s-nodes.yml
+
+- name: Prepare Kubernetes nodes
+  hosts: role_k8s_node
+  become: true
+  vars:
+    k8s_version: "1.29"
+    container_runtime: containerd
+    calico_version: "3.27.0"
+    pod_cidr: "192.168.0.0/16"
+  roles:
+    - role: vm-base
+    - role: security-harden
+    - role: k8s-node
+    - role: monitoring-agent

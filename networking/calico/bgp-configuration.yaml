@@ -1,0 +1,30 @@
+---
+# Calico BGPConfiguration
+# Enables BGP peering with OVN border routers so pod CIDRs
+# are advertised into the OpenStack network fabric.
+#
+# Apply: kubectl apply -f networking/calico/bgp-configuration.yaml
+
+apiVersion: projectcalico.org/v3
+kind: BGPConfiguration
+metadata:
+  name: default
+spec:
+  logSeverityScreen: Info
+  nodeToNodeMeshEnabled: true
+  asNumber: 64512
+  # Advertise pod CIDRs to OVN peer
+  serviceClusterIPs:
+    - cidr: 10.96.0.0/12
+  serviceExternalIPs:
+    - cidr: 10.10.0.0/16
+---
+# BGPPeer — peer with OVN gateway
+apiVersion: projectcalico.org/v3
+kind: BGPPeer
+metadata:
+  name: ovn-gateway
+spec:
+  # Replace with your OVN gateway IP
+  peerIP: 10.10.0.1
+  asNumber: 64511
