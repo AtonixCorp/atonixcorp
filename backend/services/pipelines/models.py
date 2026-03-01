@@ -173,14 +173,32 @@ class PipelineRule(TimeStampedModel):
 
 class Environment(TimeStampedModel):
     """Represents deployment environments."""
-    id = models.CharField(max_length=50, primary_key=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='environments')
-    name = models.CharField(max_length=100)
-    region = models.CharField(max_length=100)
+    DEPLOY_STRATEGY_CHOICES = [
+        ('rolling',   'Rolling Update'),
+        ('blue_green','Blue/Green'),
+        ('canary',    'Canary'),
+        ('recreate',  'Recreate'),
+    ]
+
+    id           = models.CharField(max_length=50, primary_key=True)
+    project      = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='environments')
+    name         = models.CharField(max_length=100)
+    region       = models.CharField(max_length=100)
+    description  = models.TextField(blank=True, default='')
     is_protected = models.BooleanField(default=False)
+    auto_deploy  = models.BooleanField(default=False,
+                    help_text='Automatically trigger a deploy when a pipeline succeeds on the default branch.')
+    deployment_strategy = models.CharField(
+        max_length=20, choices=DEPLOY_STRATEGY_CHOICES, default='rolling')
+    require_approval    = models.BooleanField(default=False,
+                    help_text='Block deployments until a reviewer approves.')
+    notify_email        = models.EmailField(blank=True, default='',
+                    help_text='Send deployment notifications to this address.')
+    owner        = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL,
+                    related_name='owned_environments')
 
     class Meta:
-        db_table = 'environments'
+        db_table      = 'environments'
         unique_together = ['project', 'name']
         indexes = [
             models.Index(fields=['project', 'is_protected']),

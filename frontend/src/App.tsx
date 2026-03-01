@@ -68,6 +68,7 @@ import GroupCreatePage            from './pages/GroupCreatePage';
 import GroupDashboardPage         from './pages/GroupDashboardPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
 import DevProjectDetailPage       from './pages/DevProjectDetailPage';
+import ProjectCreateWizardPage    from './pages/ProjectCreateWizardPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
 import DevOperationalPage         from './pages/DevOperationalPage'
 import DevDeployAppPage           from './pages/DevDeployAppPage';
@@ -147,6 +148,7 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/developer/Dashboard/projects"     element={<DevProjectsPage />} />
+            <Route path="/developer/Dashboard/projects/create"  element={<ProjectCreateWizardPage />} />
             <Route path="/developer/Dashboard/projects/:id"  element={<DevProjectDetailPage />} />
             <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />

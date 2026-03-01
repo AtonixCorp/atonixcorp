@@ -18,6 +18,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+        read_only_fields = ('owner',)
 
 
 class RepositorySerializer(serializers.ModelSerializer):
@@ -91,9 +92,34 @@ class PipelineRuleSerializer(serializers.ModelSerializer):
 
 class EnvironmentSerializer(serializers.ModelSerializer):
     """Serializer for Environment model."""
+    owner_username = serializers.CharField(source='owner.username', read_only=True, default=None)
+    # True if there are running/pending pipelines targeting this environment
+    has_active_processes = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
-        model = Environment
-        fields = '__all__'
+        model  = Environment
+        fields = [
+            'id', 'name', 'region', 'description',
+            'is_protected', 'auto_deploy', 'deployment_strategy',
+            'require_approval', 'notify_email',
+            'owner', 'owner_username', 'has_active_processes',
+            'project', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'owner_username', 'has_active_processes', 'created_at', 'updated_at']
+
+    def get_has_active_processes(self, obj):
+        """Return True if there are running/pending pipelines that reference this environment."""
+        from ..pipelines.models import Pipeline
+        return Pipeline.objects.filter(
+            project=obj.project,
+            status__in=['pending', 'running'],
+        ).exists()
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['owner'] = request.user
+        return super().create(validated_data)
 
 
 class PipelineArtifactSerializer(serializers.ModelSerializer):

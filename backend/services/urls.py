@@ -90,6 +90,7 @@ from .ai.viewsets import (
 from .regions.viewsets import (
     CloudRegionViewSet, AvailabilityZoneViewSet, RegionPeerViewSet,
 )
+from .webhooks.viewsets import WebhookViewSet
 from .provisioning.views import (
     provision_vm,
     provision_volume,
@@ -274,6 +275,11 @@ router.register(r'ai/recommendations',     AIRecommendationViewSet,     basename
 router.register(r'regions',           CloudRegionViewSet,      basename='region')
 router.register(r'regions/zones',     AvailabilityZoneViewSet, basename='availability-zone')
 router.register(r'regions/peers',     RegionPeerViewSet,       basename='region-peer')
+
+# ============================================================================
+# WEBHOOKS ENDPOINTS
+# ============================================================================
+router.register(r'webhooks', WebhookViewSet, basename='webhook')
 
 # ============================================================================
 # DEVELOPER WORKSPACE ENDPOINTS

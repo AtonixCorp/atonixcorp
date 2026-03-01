@@ -22,7 +22,14 @@ import {
   Divider,
 } from '@mui/material';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
-import { NewDeploymentPayload } from './DevDeployAppPage';
+
+type NewDeploymentPayload = {
+  appName: string;
+  environment: 'dev' | 'stage' | 'prod';
+  hostname: string;
+  image: string;
+  branch: string;
+};
 
 type DeploymentStatus = 'running' | 'failed' | 'building';
 
@@ -43,56 +50,7 @@ interface DeploymentItem {
   vulnerabilities: Array<{ severity: 'Low' | 'Medium' | 'High' | 'Critical'; title: string }>;
 }
 
-const INITIAL_DEPLOYMENTS: DeploymentItem[] = [
-  {
-    id: 'dep-1',
-    appName: 'payment-service',
-    status: 'running',
-    environment: 'prod',
-    lastDeployed: '2026-02-23 07:10',
-    hostname: 'pay.atonix.local',
-    image: 'registry/atonix/payment:2.4.1',
-    branch: 'main',
-    owner: 'frank',
-    createdAt: '2026-01-04 10:33',
-    cpu: '42%',
-    memory: '65%',
-    errors: 1,
-    vulnerabilities: [{ severity: 'Low', title: 'openssl advisory pending patch window' }],
-  },
-  {
-    id: 'dep-2',
-    appName: 'web-frontend',
-    status: 'running',
-    environment: 'stage',
-    lastDeployed: '2026-02-23 06:41',
-    hostname: 'web-stage.atonix.local',
-    image: 'registry/atonix/web:1.11.3',
-    branch: 'release/stage',
-    owner: 'sarah',
-    createdAt: '2025-12-19 13:22',
-    cpu: '28%',
-    memory: '49%',
-    errors: 0,
-    vulnerabilities: [],
-  },
-  {
-    id: 'dep-3',
-    appName: 'events-worker',
-    status: 'failed',
-    environment: 'dev',
-    lastDeployed: '2026-02-23 05:57',
-    hostname: 'events-dev.atonix.local',
-    image: 'registry/atonix/events:0.9.8',
-    branch: 'feature/retry-flow',
-    owner: 'jane',
-    createdAt: '2026-02-02 09:01',
-    cpu: '0%',
-    memory: '0%',
-    errors: 7,
-    vulnerabilities: [{ severity: 'High', title: 'base image contains unpatched package' }],
-  },
-];
+const INITIAL_DEPLOYMENTS: DeploymentItem[] = [];
 
 const statusColor = (status: DeploymentStatus) => {
   if (status === 'running') return 'success';

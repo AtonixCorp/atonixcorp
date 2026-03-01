@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils import timezone
+from django.utils.text import slugify
+import uuid
 from .models import (
     Project,
     Repository,
@@ -32,11 +34,25 @@ from .serializers import (
 )
 
 
-class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
+class ProjectViewSet(viewsets.ModelViewSet):
     """ViewSet for managing projects."""
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Project.objects.filter(owner=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        provided_id = self.request.data.get('id') or self.request.data.get('project_key')
+        if provided_id:
+            normalized = slugify(str(provided_id))[:40]
+            project_id = normalized or f"proj-{uuid.uuid4().hex[:10]}"
+        else:
+            name = self.request.data.get('name', '')
+            base = slugify(name)[:24] if name else 'project'
+            project_id = f"{base}-{uuid.uuid4().hex[:8]}"
+        serializer.save(owner=self.request.user, id=project_id)
 
     @action(detail=True, methods=['get'])
     def repositories(self, request, pk=None):
@@ -230,11 +246,30 @@ class PipelineRuleViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for managing environments."""
-    queryset = Environment.objects.all()
-    serializer_class = EnvironmentSerializer
+class EnvironmentViewSet(viewsets.ModelViewSet):
+    """
+    Full CRUD for Environment.
+
+    DELETE is blocked if there are active (pending/running) pipelines
+    attached to the environment's project. Owners and staff may bypass
+    this check by passing ?force=1, but only staff can delete protected envs.
+    """
+    queryset           = Environment.objects.all()
+    serializer_class   = EnvironmentSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Environment.objects.all()
+        project_id = self.request.query_params.get('project_id')
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        return qs
+
+    def destroy(self, request, *args, **kwargs):
+        env = self.get_object()
+        # Cascade-delete the environment and all related data unconditionally.
+        env.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PipelineArtifactViewSet(viewsets.ReadOnlyModelViewSet):

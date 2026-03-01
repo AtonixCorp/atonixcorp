@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Avatar,
@@ -36,11 +36,14 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useNavigate } from 'react-router-dom';
-import { CreateProjectModal } from '../components/Developer/CreateProjectModal';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import { listProjects as listProjectsApi, deleteProject as deleteProjectApi, type BackendProject } from '../services/projectsApi';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
+const PROJECTS_STORAGE_KEY = 'atonix:projects:list:v1';
+const PROJECTS_SNACK_KEY = 'atonix:projects:snack:v1';
+const PROJECTS_CACHE_RESET_FLAG = 'atonix:projects:cache-reset:v1';
 
 type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived';
 type ProjectLang = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL';
@@ -61,98 +64,23 @@ interface Project {
   provider: 'github' | 'gitlab' | 'bitbucket';
 }
 
-const PROJECTS: Project[] = [
-  {
-    id: 'p1',
-    name: 'api-gateway',
-    description: 'Central API gateway for routing, auth, and rate limiting across all microservices.',
-    status: 'active',
-    language: 'Go',
-    branch: 'main',
-    progress: 88,
-    openIssues: 4,
-    lastBuild: 'passing',
-    updatedAt: '1 hour ago',
-    members: ['F', 'J', 'S'],
-    tags: ['infra', 'core'],
-    provider: 'github' as const,
-  },
-  {
-    id: 'p2',
-    name: 'payment-service',
-    description: 'Stripe and crypto payment processing with webhook handling and retry logic.',
-    status: 'in-progress',
-    language: 'TypeScript',
-    branch: 'feat/crypto-support',
-    progress: 54,
-    openIssues: 11,
-    lastBuild: 'failing',
-    updatedAt: '3 hours ago',
-    members: ['F', 'J'],
-    tags: ['payments', 'critical'],
-    provider: 'github' as const,
-  },
-  {
-    id: 'p3',
-    name: 'ml-pipeline',
-    description: 'Data ingestion, feature engineering, and model training pipeline for recommendation engine.',
-    status: 'in-progress',
-    language: 'Python',
-    branch: 'dev/model-v3',
-    progress: 41,
-    openIssues: 7,
-    lastBuild: 'pending',
-    updatedAt: 'Yesterday',
-    members: ['S', 'J'],
-    tags: ['ml', 'data'],
-    provider: 'gitlab' as const,
-  },
-  {
-    id: 'p4',
-    name: 'auth-service',
-    description: 'OAuth 2.0 and JWT-based auth service supporting SSO, MFA, and RBAC.',
-    status: 'completed',
-    language: 'Go',
-    branch: 'main',
-    progress: 100,
-    openIssues: 0,
-    lastBuild: 'passing',
-    updatedAt: '2 days ago',
-    members: ['F'],
-    tags: ['security', 'core'],
-    provider: 'github' as const,
-  },
-  {
-    id: 'p5',
-    name: 'events-worker',
-    description: 'Kafka consumer for async event processing, dead-letter queues, and replay support.',
-    status: 'active',
-    language: 'Java',
-    branch: 'main',
-    progress: 76,
-    openIssues: 3,
-    lastBuild: 'passing',
-    updatedAt: '4 hours ago',
-    members: ['J', 'S', 'F'],
-    tags: ['streaming', 'infra'],
-    provider: 'gitlab' as const,
-  },
-  {
-    id: 'p6',
-    name: 'kms-proxy',
-    description: 'Encryption key management proxy integrating with HashiCorp Vault and AWS KMS.',
-    status: 'archived',
-    language: 'Rust',
-    branch: 'main',
-    progress: 100,
-    openIssues: 0,
-    lastBuild: 'passing',
-    updatedAt: '1 week ago',
-    members: ['F'],
-    tags: ['security'],
-    provider: 'bitbucket' as const,
-  },
-];
+const mapBackendProject = (project: BackendProject): Project => ({
+  id: project.id,
+  name: project.name,
+  description: project.description || 'Project created from server-backed flow.',
+  status: 'in-progress',
+  language: 'TypeScript',
+  branch: 'main',
+  progress: 8,
+  openIssues: 0,
+  lastBuild: 'pending',
+  updatedAt: 'Just now',
+  members: ['Y'],
+  tags: ['server-backed'],
+  provider: 'github',
+});
+
+const PROJECTS: Project[] = [];
 
 const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: string }> = {
   active:      { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Active'      },
@@ -186,39 +114,81 @@ const MEMBER_COLORS = ['#153d75', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 const DevProjectsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>(PROJECTS);
+  const [projects, setProjects] = useState<Project[]>(() => {
+    try {
+      const cacheResetDone = localStorage.getItem(PROJECTS_CACHE_RESET_FLAG) === '1';
+      if (!cacheResetDone) {
+        localStorage.removeItem(PROJECTS_STORAGE_KEY);
+        localStorage.removeItem(PROJECTS_SNACK_KEY);
+        localStorage.setItem(PROJECTS_CACHE_RESET_FLAG, '1');
+        return [];
+      }
+
+      const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Project[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore malformed storage
+    }
+    return [];
+  });
   const [query, setQuery]       = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | ProjectStatus>('all');
-  const [modalOpen, setModalOpen]       = useState(false);
   const [snack, setSnack]               = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleteInput, setDeleteInput]   = useState('');
   const [deletingProject, setDeletingProject] = useState(false);
 
-  const handleCreated = (name: string, provider: 'github' | 'gitlab' | 'bitbucket' | null) => {
-    const newProject: Project = {
-      id: `p${Date.now()}`,
-      name: name || 'new-project',
-      description: 'Newly imported repository.',
-      status: 'in-progress',
-      language: 'TypeScript',
-      branch: 'main',
-      progress: 0,
-      openIssues: 0,
-      lastBuild: 'pending',
-      updatedAt: 'Just now',
-      members: ['Y'],
-      tags: ['new'],
-      provider: provider ?? 'github',
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+    } catch {
+      // non-blocking persistence
+    }
+  }, [projects]);
+
+  useEffect(() => {
+    try {
+      const message = localStorage.getItem(PROJECTS_SNACK_KEY);
+      if (message) {
+        setSnack(message);
+        localStorage.removeItem(PROJECTS_SNACK_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const backendProjects = await listProjectsApi();
+        if (!mounted) return;
+        if (backendProjects.length > 0) {
+          setProjects(backendProjects.map(mapBackendProject));
+        }
+      } catch {
+        // keep local fallback data
+      }
+    })();
+    return () => {
+      mounted = false;
     };
-    setProjects((prev) => [newProject, ...prev]);
-    setSnack(`Project "${newProject.name}" created — first deployment queued.`);
-  };
+  }, []);
 
   const handleDeleteProject = async () => {
     if (!deleteTarget) return;
     setDeletingProject(true);
-    await new Promise(r => setTimeout(r, 1500));
+    try {
+      await deleteProjectApi(deleteTarget.id);
+    } catch {
+      // local fallback if backend delete fails
+    }
     setProjects(prev => prev.filter(p => p.id !== deleteTarget.id));
     setDeletingProject(false);
     setDeleteTarget(null);
@@ -255,24 +225,26 @@ const DevProjectsPage: React.FC = () => {
             All developer projects — track progress, builds, branches, and team ownership.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => setModalOpen(true)}
-          sx={{
-            bgcolor: dashboardTokens.colors.brandPrimary,
-            color: '#0a0f1a',
-            fontWeight: 700,
-            fontSize: '.8rem',
-            borderRadius: '6px',
-            textTransform: 'none',
-            boxShadow: 'none',
-            '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
-          }}
-        >
-          New Project
-        </Button>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/developer/Dashboard/projects/create')}
+            sx={{
+              bgcolor: dashboardTokens.colors.brandPrimary,
+              color: '#0a0f1a',
+              fontWeight: 700,
+              fontSize: '.8rem',
+              borderRadius: '6px',
+              textTransform: 'none',
+              boxShadow: 'none',
+              '&:hover': { bgcolor: dashboardTokens.colors.brandPrimaryHover, boxShadow: 'none' },
+            }}
+          >
+            New Project
+          </Button>
+        </Stack>
       </Box>
 
       {/* Stats bar */}
@@ -555,12 +527,6 @@ const DevProjectsPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <CreateProjectModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreated={handleCreated}
-      />
 
       <Snackbar
         open={!!snack}

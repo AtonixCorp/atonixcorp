@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody,
+  Box, CircularProgress, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody,
   Chip, Button, Tabs, Tab, Grid, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
   IconButton, Tooltip, Switch,
@@ -10,40 +10,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import {
+  ApiWebhook, listWebhooks, createWebhook, deleteWebhook,
+} from '../services/webhooksApi';
 
 const T = dashboardTokens.colors;
 const S = dashboardSemanticColors;
 
-interface Webhook {
-  id: string; name: string; url: string; events: string[];
-  status: 'active' | 'inactive'; successRate: number; lastDelivery: string;
-  secret: boolean; retries: number;
-}
-
-interface Delivery {
-  id: string; webhookName: string; event: string; status: 'success' | 'failed' | 'pending';
-  responseCode: number; duration: string; timestamp: string; attempt: number;
-}
-
-const WEBHOOKS: Webhook[] = [
-  { id: 'wh-001', name: 'GitHub Actions Trigger', url: 'https://api.github.com/repos/atonix/hooks/dispatch', events: ['deployment.created', 'deployment.completed'], status: 'active', successRate: 99.1, lastDelivery: '2 min ago', secret: true, retries: 3 },
-  { id: 'wh-002', name: 'Slack Alert Notifications', url: 'https://hooks.slack.com/services/T0X.../B0X.../xxx', events: ['alert.triggered', 'incident.created'], status: 'active', successRate: 97.8, lastDelivery: '14 min ago', secret: false, retries: 2 },
-  { id: 'wh-003', name: 'PagerDuty Integration', url: 'https://events.pagerduty.com/v2/enqueue', events: ['alert.critical', 'slo.breached'], status: 'active', successRate: 100, lastDelivery: '1 hr ago', secret: true, retries: 5 },
-  { id: 'wh-004', name: 'Jenkins Pipeline', url: 'https://jenkins.internal.corp/generic-webhook-trigger', events: ['container.pushed', 'deployment.created'], status: 'inactive', successRate: 88.4, lastDelivery: '3 days ago', secret: true, retries: 3 },
-  { id: 'wh-005', name: 'Custom Audit Logger', url: 'https://audit.internal.corp/webhook/cloud', events: ['iam.*', 'billing.threshold'], status: 'active', successRate: 95.2, lastDelivery: '5 min ago', secret: true, retries: 1 },
-];
-
-const DELIVERIES: Delivery[] = [
-  { id: 'del-001', webhookName: 'GitHub Actions Trigger', event: 'deployment.created', status: 'success', responseCode: 204, duration: '142ms', timestamp: '2026-02-27 14:33:01', attempt: 1 },
-  { id: 'del-002', webhookName: 'Slack Alert Notifications', event: 'alert.triggered', status: 'success', responseCode: 200, duration: '89ms', timestamp: '2026-02-27 14:20:15', attempt: 1 },
-  { id: 'del-003', webhookName: 'Custom Audit Logger', event: 'iam.CreateUser', status: 'failed', responseCode: 500, duration: '3002ms', timestamp: '2026-02-27 14:18:44', attempt: 2 },
-  { id: 'del-004', webhookName: 'PagerDuty Integration', event: 'alert.critical', status: 'success', responseCode: 202, duration: '231ms', timestamp: '2026-02-27 13:55:00', attempt: 1 },
-  { id: 'del-005', webhookName: 'GitHub Actions Trigger', event: 'deployment.completed', status: 'success', responseCode: 204, duration: '118ms', timestamp: '2026-02-27 13:50:32', attempt: 1 },
-  { id: 'del-006', webhookName: 'Custom Audit Logger', event: 'billing.threshold', status: 'pending', responseCode: 0, duration: '—', timestamp: '2026-02-27 14:34:00', attempt: 1 },
-];
+const EMPTY_FORM = { name: '', url: '', secret: '', retries: 3, events: [] as string[] };
 
 const ALL_EVENTS = [
   'deployment.created', 'deployment.completed', 'deployment.failed',
@@ -55,12 +30,53 @@ const ALL_EVENTS = [
   'container.pushed', 'container.deleted',
 ];
 
-const deliveryStatusColor = (s: string) =>
-  s === 'success' ? S.success : s === 'failed' ? S.danger : S.warning;
 
 export default function DevWebhooksPage() {
   const [tab, setTab] = useState(0);
   const [open, setOpen] = useState(false);
+  const [webhooks, setWebhooks] = useState<ApiWebhook[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    listWebhooks().then(data => {
+      if (mounted.current) { setWebhooks(data); setLoading(false); }
+    });
+    return () => { mounted.current = false; };
+  }, []);
+
+  const webhookToDelete = webhooks.find(w => w.id === deleteId);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    const ok = await deleteWebhook(deleteId);
+    if (ok) setWebhooks(prev => prev.filter(w => w.id !== deleteId));
+    setDeleting(false);
+    setDeleteId(null);
+  };
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.url.trim()) return;
+    setSaving(true);
+    const created = await createWebhook({
+      name:    form.name,
+      url:     form.url,
+      events:  form.events,
+      secret:  form.secret,
+      retries: form.retries,
+      status:  'active',
+    });
+    if (created && mounted.current) setWebhooks(prev => [created, ...prev]);
+    setSaving(false);
+    setForm(EMPTY_FORM);
+    setOpen(false);
+  };
 
   return (
     <Box sx={{ p: 3, bgcolor: T.background, minHeight: '100vh', fontFamily: dashboardTokens.typography.fontFamily }}>
@@ -77,10 +93,10 @@ export default function DevWebhooksPage() {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {[
-          { label: 'Active Webhooks', value: WEBHOOKS.filter(w => w.status === 'active').length, color: S.success },
-          { label: 'Total Webhooks', value: WEBHOOKS.length },
-          { label: 'Deliveries Today', value: DELIVERIES.length, color: T.brandPrimary },
-          { label: 'Failed Deliveries', value: DELIVERIES.filter(d => d.status === 'failed').length, color: S.danger },
+          { label: 'Active Webhooks', value: webhooks.filter(w => w.status === 'active').length, color: S.success },
+          { label: 'Total Webhooks', value: webhooks.length },
+          { label: 'Deliveries Today', value: 0, color: T.brandPrimary },
+          { label: 'Failed Deliveries', value: 0, color: S.danger },
         ].map(c => (
           <Grid size={{ xs: 6, sm: 3 }} key={c.label}>
             <Paper sx={{ p: 2, borderRadius: 2, border: `1px solid ${T.border}`, bgcolor: T.surface }}>
@@ -99,20 +115,31 @@ export default function DevWebhooksPage() {
         </Tabs>
 
         {tab === 0 && (
+          loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress size={28} sx={{ color: T.brandPrimary }} />
+            </Box>
+          ) : (
           <Table>
             <TableHead>
               <TableRow>
-                {['Name', 'Endpoint URL', 'Events', 'Success Rate', 'Last Delivery', 'Signed', 'Retries', 'Active', 'Actions'].map(h => (
+                {['Name', 'Endpoint URL', 'Events', 'Signed', 'Retries', 'Active', 'Actions'].map(h => (
                   <TableCell key={h} sx={{ color: T.textSecondary, fontSize: '.75rem', fontWeight: 600 }}>{h}</TableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {WEBHOOKS.map(wh => (
+              {webhooks.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: 'center', color: T.textSecondary, py: 4 }}>
+                    No webhooks configured. Click <strong>Add Webhook</strong> to create one.
+                  </TableCell>
+                </TableRow>
+              ) : webhooks.map(wh => (
                 <TableRow key={wh.id} hover sx={{ '&:hover': { bgcolor: T.surfaceHover } }}>
                   <TableCell sx={{ color: T.textPrimary, fontWeight: 600 }}>{wh.name}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, maxWidth: 200 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, maxWidth: 220 }}>
                       <Typography variant="caption" sx={{ color: T.textSecondary, fontFamily: 'monospace', fontSize: '.72rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {wh.url.length > 40 ? wh.url.slice(0, 40) + '…' : wh.url}
                       </Typography>
@@ -128,59 +155,36 @@ export default function DevWebhooksPage() {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" sx={{ color: wh.successRate >= 99 ? S.success : wh.successRate >= 95 ? S.warning : S.danger, fontWeight: 600 }}>
-                      {wh.successRate}%
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ color: T.textSecondary }}>{wh.lastDelivery}</TableCell>
-                  <TableCell>
-                    <Chip label={wh.secret ? 'HMAC-SHA256' : 'None'} size="small"
-                      sx={{ bgcolor: wh.secret ? `${S.success}22` : T.surfaceSubtle, color: wh.secret ? S.success : T.textSecondary, fontSize: '.65rem' }} />
+                    <Chip label={wh.signed ? 'HMAC-SHA256' : 'None'} size="small"
+                      sx={{ bgcolor: wh.signed ? `${S.success}22` : T.surfaceSubtle, color: wh.signed ? S.success : T.textSecondary, fontSize: '.65rem' }} />
                   </TableCell>
                   <TableCell sx={{ color: T.textPrimary }}>{wh.retries}×</TableCell>
                   <TableCell>
-                    <Switch size="small" checked={wh.status === 'active'} />
+                    <Switch size="small" checked={wh.status === 'active'} readOnly />
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Test Webhook"><IconButton size="small" sx={{ color: S.success }}><PlayArrowIcon fontSize="small" /></IconButton></Tooltip>
                     <IconButton size="small" sx={{ color: T.textSecondary }}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ color: S.danger }}><DeleteIcon fontSize="small" /></IconButton>
+                    <Tooltip title="Delete Webhook">
+                      <IconButton size="small" sx={{ color: S.danger }} onClick={() => setDeleteId(wh.id)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          )
         )}
 
         {tab === 1 && (
-          <Table>
-            <TableHead>
-              <TableRow>
-                {['Webhook', 'Event', 'Status', 'Response Code', 'Duration', 'Attempt', 'Timestamp'].map(h => (
-                  <TableCell key={h} sx={{ color: T.textSecondary, fontSize: '.75rem', fontWeight: 600 }}>{h}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {DELIVERIES.map(d => (
-                <TableRow key={d.id} hover sx={{ bgcolor: d.status === 'failed' ? `${S.danger}08` : 'transparent', '&:hover': { bgcolor: T.surfaceHover } }}>
-                  <TableCell sx={{ color: T.textPrimary, fontWeight: 600 }}>{d.webhookName}</TableCell>
-                  <TableCell sx={{ color: T.textSecondary, fontFamily: 'monospace', fontSize: '.8rem' }}>{d.event}</TableCell>
-                  <TableCell>
-                    <Chip icon={d.status === 'success' ? <CheckCircleIcon sx={{ fontSize: '.8rem !important' }} /> : d.status === 'failed' ? <ErrorIcon sx={{ fontSize: '.8rem !important' }} /> : undefined}
-                      label={d.status} size="small"
-                      sx={{ bgcolor: `${deliveryStatusColor(d.status)}22`, color: deliveryStatusColor(d.status), fontSize: '.7rem' }} />
-                  </TableCell>
-                  <TableCell sx={{ color: d.responseCode >= 400 ? S.danger : d.responseCode === 0 ? T.textSecondary : S.success, fontWeight: 600 }}>
-                    {d.responseCode || '—'}
-                  </TableCell>
-                  <TableCell sx={{ color: T.textSecondary }}>{d.duration}</TableCell>
-                  <TableCell sx={{ color: T.textSecondary }}>{d.attempt}</TableCell>
-                  <TableCell sx={{ color: T.textSecondary, fontSize: '.78rem' }}>{d.timestamp}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography sx={{ color: T.textPrimary, fontWeight: 700, mb: 1 }}>No delivery log data</Typography>
+            <Typography sx={{ color: T.textSecondary, fontSize: '.9rem' }}>
+              Delivery history will appear here once webhooks start firing against a live backend.
+            </Typography>
+          </Box>
         )}
 
         {tab === 2 && (
@@ -200,29 +204,75 @@ export default function DevWebhooksPage() {
         )}
       </Paper>
 
+      {/* ── Delete Confirmation Dialog ───────────────────────────────── */}
+      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ color: T.textPrimary }}>Delete Webhook</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: T.textSecondary }}>
+            Are you sure you want to delete{' '}
+            <Box component="span" sx={{ color: T.textPrimary, fontWeight: 700 }}>
+              {webhookToDelete?.name}
+            </Box>
+            ? This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteId(null)} sx={{ color: T.textSecondary }} disabled={deleting}>Cancel</Button>
+          <Button variant="contained" onClick={handleDeleteConfirm} disabled={deleting}
+            sx={{ bgcolor: S.danger, '&:hover': { bgcolor: S.danger, filter: 'brightness(0.85)' } }}>
+            {deleting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Add Webhook Dialog ───────────────────────────────────────────── */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ color: T.textPrimary }}>Add Webhook</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
-          <TextField label="Webhook Name" fullWidth size="small" />
-          <TextField label="Endpoint URL" fullWidth size="small" placeholder="https://your-server.com/webhook" />
+          <TextField
+            label="Webhook Name" fullWidth size="small"
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          />
+          <TextField
+            label="Endpoint URL" fullWidth size="small" placeholder="https://your-server.com/webhook"
+            value={form.url}
+            onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
+          />
           <FormControl size="small" fullWidth>
             <InputLabel>Events</InputLabel>
-            <Select label="Events" multiple defaultValue={[]} renderValue={(sel: any) => (sel as string[]).join(', ')}>
+            <Select
+              label="Events" multiple
+              value={form.events}
+              onChange={e => setForm(f => ({ ...f, events: e.target.value as string[] }))}
+              renderValue={(sel: any) => (sel as string[]).join(', ')}
+            >
               {ALL_EVENTS.map(ev => <MenuItem key={ev} value={ev} sx={{ fontFamily: 'monospace', fontSize: '.85rem' }}>{ev}</MenuItem>)}
             </Select>
           </FormControl>
-          <TextField label="Secret (for HMAC signature)" fullWidth size="small" type="password" placeholder="Leave empty for no signing" />
+          <TextField
+            label="Secret (for HMAC signature)" fullWidth size="small" type="password"
+            placeholder="Leave empty for no signing"
+            value={form.secret}
+            onChange={e => setForm(f => ({ ...f, secret: e.target.value }))}
+          />
           <FormControl size="small" fullWidth>
             <InputLabel>Max Retries</InputLabel>
-            <Select label="Max Retries" defaultValue={3}>
+            <Select
+              label="Max Retries"
+              value={form.retries}
+              onChange={e => setForm(f => ({ ...f, retries: Number(e.target.value) }))}
+            >
               {[0,1,2,3,5].map(n => <MenuItem key={n} value={n}>{n}</MenuItem>)}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setOpen(false)} sx={{ color: T.textSecondary }}>Cancel</Button>
-          <Button variant="contained" onClick={() => setOpen(false)}
-            sx={{ bgcolor: T.brandPrimary, '&:hover': { bgcolor: T.brandPrimaryHover } }}>Create</Button>
+          <Button onClick={() => { setOpen(false); setForm(EMPTY_FORM); }} sx={{ color: T.textSecondary }} disabled={saving}>Cancel</Button>
+          <Button variant="contained" onClick={handleCreate} disabled={saving || !form.name.trim() || !form.url.trim()}
+            sx={{ bgcolor: T.brandPrimary, '&:hover': { bgcolor: T.brandPrimaryHover } }}>
+            {saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Create'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

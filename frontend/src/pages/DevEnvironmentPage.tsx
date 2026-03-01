@@ -1,7 +1,7 @@
 // AtonixCorp Cloud — Environment Management
 // Overview · Dev · Stage · Prod · Deployments · Config · Secrets
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Alert,
   Box,
@@ -40,7 +40,6 @@ import {
 } from '@mui/material'
 
 import CheckCircleIcon      from '@mui/icons-material/CheckCircle'
-import WarningAmberIcon     from '@mui/icons-material/WarningAmber'
 import ErrorIcon            from '@mui/icons-material/Error'
 import LockIcon             from '@mui/icons-material/Lock'
 import LockOpenIcon         from '@mui/icons-material/LockOpen'
@@ -58,6 +57,10 @@ import VisibilityIcon       from '@mui/icons-material/Visibility'
 import VisibilityOffIcon    from '@mui/icons-material/VisibilityOff'
 
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem'
+import SettingsIcon        from '@mui/icons-material/Settings'
+import SaveIcon             from '@mui/icons-material/Save'
+import WarningAmberIcon     from '@mui/icons-material/WarningAmber'
+import { listEnvironments, updateEnvironment, deleteEnvironment } from '../services/environmentsApi'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -108,6 +111,7 @@ interface EnvMetrics  { cpu: number; memory: number; networkIn: string; networkO
 
 interface Env {
   id:           EnvName
+  dbId?:        string      // backend database PK, populated on mount
   label:        string
   color:        string
   bg:           string
@@ -369,18 +373,84 @@ function ScaleDialog({ env, onClose }: { env: Env; onClose: () => void }) {
 
 // ─── Environment detail card ──────────────────────────────────────────────────
 
-function EnvDetailCard({ env, onLockToggle, onPromote }: {
-  env: Env
+function EnvDetailCard({ env, onLockToggle, onPromote, onDelete, onEnvUpdate }: {
+  env:          Env
   onLockToggle: (id: EnvName) => void
   onPromote:    (from: EnvName) => void
+  onDelete?:    (id: EnvName) => void
+  onEnvUpdate?: (id: EnvName, patch: Partial<Env>) => void
 }) {
   const [subtab, setSubtab] = useState(0)
   const [revealSecrets, setRevealSecrets] = useState<Record<string, boolean>>({})
   const [scaleOpen, setScaleOpen] = useState(false)
   const [expandRotation, setExpandRotation] = useState<Record<string, boolean>>({})
 
-  const SUBTABS = ['Services', 'Workloads', 'API Routes', 'Config', 'Secrets', 'Logs', 'Metrics']
+  // ── Settings tab state ─────────────────────────────────────────────────────
+  const [sf, setSf] = useState({
+    name:                env.label,
+    region:              '',
+    description:         '',
+    is_protected:        env.protected,
+    auto_deploy:         false,
+    deployment_strategy: 'rolling' as 'rolling' | 'blue_green' | 'canary' | 'recreate',
+    require_approval:    env.protected,
+    notify_email:        '',
+  })
+  const [settingsSaving,  setSettingsSaving]  = useState(false)
+  const [settingsSaved,   setSettingsSaved]   = useState(false)
+  const [confirmDelete,   setConfirmDelete]   = useState(false)
+  const [deleteBlocked,   setDeleteBlocked]   = useState<string | null>(null)
+  const [deleteLoading,   setDeleteLoading]   = useState(false)
+
+  const SUBTABS = ['Services', 'Workloads', 'API Routes', 'Config', 'Secrets', 'Logs', 'Metrics', 'Settings']
   const promoteTarget: EnvName | null = env.id === 'dev' ? 'stage' : env.id === 'stage' ? 'prod' : null
+
+  const handleSettingsSave = async () => {
+    setSettingsSaving(true)
+    await updateEnvironment(env.id, {
+      name:                sf.name,
+      region:              sf.region,
+      description:         sf.description,
+      is_protected:        sf.is_protected,
+      auto_deploy:         sf.auto_deploy,
+      deployment_strategy: sf.deployment_strategy,
+      require_approval:    sf.require_approval,
+      notify_email:        sf.notify_email,
+    })
+    onEnvUpdate?.(env.id, { label: sf.name, protected: sf.is_protected })
+    setSettingsSaving(false)
+    setSettingsSaved(true)
+    setTimeout(() => setSettingsSaved(false), 2500)
+  }
+
+  const handleDeleteRequest = () => {
+    setConfirmDelete(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    setDeleteLoading(true)
+    if (env.dbId) {
+      // Environment exists in the backend — delete via API
+      const err = await deleteEnvironment(env.dbId)
+      if (err) {
+        setDeleteLoading(false)
+        setConfirmDelete(false)
+        setDeleteBlocked(err)
+        return
+      }
+    }
+    // Local-only env (never persisted) or API delete succeeded
+    setDeleteLoading(false)
+    setConfirmDelete(false)
+    onDelete?.(env.id)
+  }
+
+  const settingsInputSx = {
+    '& .MuiInputBase-root': { bgcolor: 'rgba(148,163,184,.06)', borderRadius: '6px', color: t.textPrimary, fontSize: '.85rem', fontFamily: FONT },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: t.border },
+    '& .MuiInputLabel-root': { color: t.textSecondary, fontSize: '.82rem' },
+    '& .MuiSvgIcon-root': { color: t.textSecondary },
+  }
 
   return (
     <Card sx={{ border: `1px solid ${env.color}44`, bgcolor: t.surface, boxShadow: 'none', borderRadius: '10px' }}>
@@ -730,7 +800,153 @@ function EnvDetailCard({ env, onLockToggle, onPromote }: {
           </Stack>
         )}
 
+        {/* Settings */}
+        {subtab === 7 && (
+          <Stack spacing={3}>
+
+            {/* ── General ─────────────────────────────────────────────────────── */}
+            <Box>
+              <SectionTitle>General</SectionTitle>
+              <Stack spacing={2}>
+                <TextField label="Environment Name" size="small" fullWidth
+                  value={sf.name} onChange={e => setSf(f => ({ ...f, name: e.target.value }))}
+                  sx={settingsInputSx} />
+                <TextField label="Region" size="small" fullWidth
+                  value={sf.region} onChange={e => setSf(f => ({ ...f, region: e.target.value }))}
+                  placeholder="e.g. us-east-1" sx={settingsInputSx} />
+                <TextField label="Description" size="small" fullWidth multiline rows={2}
+                  value={sf.description} onChange={e => setSf(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Describe the purpose of this environment…" sx={settingsInputSx} />
+                <TextField label="Notification Email" size="small" fullWidth type="email"
+                  value={sf.notify_email} onChange={e => setSf(f => ({ ...f, notify_email: e.target.value }))}
+                  placeholder="team@example.com" sx={settingsInputSx} />
+              </Stack>
+            </Box>
+
+            {/* ── Deployment ──────────────────────────────────────────────────── */}
+            <Box>
+              <SectionTitle>Deployment</SectionTitle>
+              <Stack spacing={1.5}>
+                <Select size="small" displayEmpty value={sf.deployment_strategy}
+                  onChange={e => setSf(f => ({ ...f, deployment_strategy: e.target.value as typeof sf.deployment_strategy }))}
+                  sx={{ ...settingsInputSx, '& .MuiSelect-select': { fontSize: '.85rem', color: t.textPrimary, fontFamily: FONT }, color: t.textPrimary }}>
+                  {[['rolling', 'Rolling Update'], ['blue_green', 'Blue / Green'], ['canary', 'Canary'], ['recreate', 'Recreate']].map(([v, l]) => (
+                    <MenuItem key={v} value={v} sx={{ fontFamily: FONT, fontSize: '.85rem' }}>{l}</MenuItem>
+                  ))}
+                </Select>
+                {[{
+                  key: 'auto_deploy',
+                  label: 'Auto Deploy',
+                  desc: 'Automatically trigger a deploy when a pipeline succeeds on the default branch.',
+                  val: sf.auto_deploy,
+                  set: (v: boolean) => setSf(f => ({ ...f, auto_deploy: v })),
+                }, {
+                  key: 'require_approval',
+                  label: 'Require Approval',
+                  desc: 'Block deployments until a reviewer explicitly approves the run.',
+                  val: sf.require_approval,
+                  set: (v: boolean) => setSf(f => ({ ...f, require_approval: v })),
+                }, {
+                  key: 'is_protected',
+                  label: 'Protected Environment',
+                  desc: 'Restricts who can deploy here. Required approvals enforced. Protected envs cannot be deleted without first disabling this.',
+                  val: sf.is_protected,
+                  set: (v: boolean) => setSf(f => ({ ...f, is_protected: v })),
+                }].map(row => (
+                  <Box key={row.key} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, p: 1.25,
+                      border: `1px solid ${t.border}`, borderRadius: '8px', bgcolor: 'rgba(148,163,184,.04)' }}>
+                    <Box>
+                      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.82rem', color: t.textPrimary }}>{row.label}</Typography>
+                      <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textSecondary }}>{row.desc}</Typography>
+                    </Box>
+                    <Switch checked={row.val} size="small" onChange={e => row.set(e.target.checked)}
+                      sx={{ flexShrink: 0 }} />
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+
+            {/* ── Save button ─────────────────────────────────────────────────── */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="contained" size="small"
+                onClick={handleSettingsSave}
+                disabled={settingsSaving}
+                startIcon={settingsSaved
+                  ? <CheckCircleIcon sx={{ fontSize: '.9rem' }} />
+                  : <SaveIcon sx={{ fontSize: '.9rem' }} />}
+                sx={{ fontSize: '.78rem', textTransform: 'none', fontWeight: 700,
+                  bgcolor: settingsSaved ? S.success : t.brandPrimary,
+                  color: '#0a0f1a', boxShadow: 'none',
+                  '&:hover': { bgcolor: settingsSaved ? S.success : t.brandPrimaryHover, boxShadow: 'none' } }}>
+                {settingsSaving ? 'Saving…' : settingsSaved ? 'Saved' : 'Save Settings'}
+              </Button>
+            </Box>
+
+            {/* ── Danger Zone ─────────────────────────────────────────────────── */}
+            <Box sx={{ p: 2, border: `1px solid ${S.danger}44`, borderRadius: '8px', bgcolor: 'rgba(239,68,68,.04)' }}>
+              <SectionTitle>Danger Zone</SectionTitle>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+                <Box>
+                  <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.85rem', color: t.textPrimary }}>Delete this environment</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: t.textSecondary, mt: 0.3 }}>
+                    Permanently removes the environment and all associated config, API routes, secrets, and pipelines. This action cannot be undone.
+                  </Typography>
+                </Box>
+                <Button variant="outlined" size="small"
+                  startIcon={<DeleteOutlineIcon sx={{ fontSize: '.9rem' }} />}
+                  onClick={handleDeleteRequest}
+                  sx={{ fontSize: '.75rem', textTransform: 'none', fontWeight: 700,
+                    borderColor: S.danger, color: S.danger, flexShrink: 0,
+                    '&:hover': { bgcolor: 'rgba(239,68,68,.08)', borderColor: S.danger } }}>
+                  Delete Environment
+                </Button>
+              </Box>
+            </Box>
+          </Stack>
+        )}
+
         {scaleOpen && <ScaleDialog env={env} onClose={() => setScaleOpen(false)} />}
+
+        {/* ── Delete confirmation dialog ──────────────────────────────────── */}
+        <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth
+          PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid ${t.border}`, borderRadius: '10px' } }}>
+          <DialogTitle sx={{ fontFamily: FONT, fontWeight: 700, color: t.textPrimary, pb: 1 }}>Delete Environment</DialogTitle>
+          <DialogContent>
+            <Typography sx={{ fontFamily: FONT, color: t.textSecondary, fontSize: '.875rem' }}>
+              Are you sure you want to permanently delete{' '}
+              <Box component="span" sx={{ color: t.textPrimary, fontWeight: 700 }}>{env.label}</Box>?
+              This cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setConfirmDelete(false)} size="small"
+              sx={{ color: t.textSecondary, fontFamily: FONT, textTransform: 'none' }}
+              disabled={deleteLoading}>Cancel</Button>
+            <Button onClick={handleDeleteConfirm} size="small" variant="contained" disabled={deleteLoading}
+              sx={{ fontWeight: 700, textTransform: 'none', bgcolor: S.danger, color: '#fff', boxShadow: 'none',
+                '&:hover': { bgcolor: '#b91c1c', boxShadow: 'none' } }}>
+              {deleteLoading ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* ── Blocked dialog (active processes or protected) ──────────────── */}
+        <Dialog open={!!deleteBlocked} onClose={() => setDeleteBlocked(null)} maxWidth="xs" fullWidth
+          PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid ${S.danger}44`, borderRadius: '10px' } }}>
+          <DialogTitle sx={{ fontFamily: FONT, fontWeight: 700, color: S.danger, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <WarningAmberIcon sx={{ fontSize: '1.1rem' }} /> Cannot Delete Environment
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ fontFamily: FONT, color: t.textSecondary, fontSize: '.875rem' }}>
+              {deleteBlocked}
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setDeleteBlocked(null)} size="small" variant="contained"
+              sx={{ fontWeight: 700, textTransform: 'none', bgcolor: t.brandPrimary, color: '#0a0f1a', boxShadow: 'none',
+                '&:hover': { bgcolor: t.brandPrimaryHover, boxShadow: 'none' } }}>OK</Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   )
@@ -790,10 +1006,12 @@ function DeploymentsTab({ envs }: { envs: Env[] }) {
 
 // ─── Overview tab ─────────────────────────────────────────────────────────────
 
-function OverviewTab({ envs, onLockToggle, onPromote }: {
-  envs:         Env[]
-  onLockToggle: (id: EnvName) => void
-  onPromote:    (from: EnvName) => void
+function OverviewTab({ envs, onLockToggle, onPromote, onDelete, onEnvUpdate }: {
+  envs:          Env[]
+  onLockToggle:  (id: EnvName) => void
+  onPromote:     (from: EnvName) => void
+  onDelete?:     (id: EnvName) => void
+  onEnvUpdate?:  (id: EnvName, patch: Partial<Env>) => void
 }) {
   const totalServices = envs.reduce((a, e) => a + e.services.length, 0)
 
@@ -839,7 +1057,8 @@ function OverviewTab({ envs, onLockToggle, onPromote }: {
 
       {/* All env cards */}
       {envs.map(env => (
-        <EnvDetailCard key={env.id} env={env} onLockToggle={onLockToggle} onPromote={onPromote} />
+        <EnvDetailCard key={env.id} env={env} onLockToggle={onLockToggle} onPromote={onPromote}
+          onDelete={onDelete} onEnvUpdate={onEnvUpdate} />
       ))}
     </Stack>
   )
@@ -1603,6 +1822,20 @@ const DevEnvironmentPage: React.FC = () => {
   const [toast, setToast] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
 
+  // Populate dbId for any env whose name matches a backend record
+  useEffect(() => {
+    listEnvironments().then(apiEnvs => {
+      if (!apiEnvs.length) return
+      setEnvs(prev => prev.map(e => {
+        const match = apiEnvs.find(
+          a => a.name.toLowerCase() === e.label.toLowerCase() ||
+               a.name.toLowerCase() === e.id.toLowerCase()
+        )
+        return match ? { ...e, dbId: String(match.id) } : e
+      }))
+    })
+  }, [])
+
   const handleCreate = (newEnvs: Env[]) => {
     setEnvs(prev => [...prev, ...newEnvs])
     setCreateOpen(false)
@@ -1616,6 +1849,18 @@ const DevEnvironmentPage: React.FC = () => {
     setEnvs(prev => prev.map(e => e.id === id ? { ...e, locked: !e.locked } : e))
     const env = envs.find(e => e.id === id)!
     setToast(`${env.label} ${env.locked ? 'unlocked' : 'locked'}.`)
+  }
+
+  const handleDelete = (id: EnvName) => {
+    const env = envs.find(e => e.id === id)
+    setEnvs(prev => prev.filter(e => e.id !== id))
+    // If current top-tab was showing this env, go back to Overview
+    setTab(0)
+    setToast(`Environment "${env?.label ?? id}" deleted.`)
+  }
+
+  const handleEnvUpdate = (id: EnvName, patch: Partial<Env>) => {
+    setEnvs(prev => prev.map(e => e.id === id ? { ...e, ...patch } : e))
   }
 
   const envByTab: Array<CoreEnvId | null> = [null, 'dev', 'stage', 'prod', null, null, null]
@@ -1672,10 +1917,17 @@ const DevEnvironmentPage: React.FC = () => {
       </Tabs>
 
       {/* Content */}
-      {tab === 0 && <OverviewTab envs={allEnvs} onLockToggle={toggleLock} onPromote={setPromoteFrom} />}
-      {tab === 1 && <EnvDetailCard env={getEnv('dev')}   onLockToggle={toggleLock} onPromote={setPromoteFrom} />}
-      {tab === 2 && <EnvDetailCard env={getEnv('stage')} onLockToggle={toggleLock} onPromote={setPromoteFrom} />}
-      {tab === 3 && <EnvDetailCard env={getEnv('prod')}  onLockToggle={toggleLock} onPromote={setPromoteFrom} />}
+      {tab === 0 && <OverviewTab envs={allEnvs} onLockToggle={toggleLock} onPromote={setPromoteFrom}
+          onDelete={handleDelete} onEnvUpdate={handleEnvUpdate} />}
+      {tab === 1 && envs.find(e => e.id === 'dev') &&
+        <EnvDetailCard env={getEnv('dev')}   onLockToggle={toggleLock} onPromote={setPromoteFrom}
+          onDelete={handleDelete} onEnvUpdate={handleEnvUpdate} />}
+      {tab === 2 && envs.find(e => e.id === 'stage') &&
+        <EnvDetailCard env={getEnv('stage')} onLockToggle={toggleLock} onPromote={setPromoteFrom}
+          onDelete={handleDelete} onEnvUpdate={handleEnvUpdate} />}
+      {tab === 3 && envs.find(e => e.id === 'prod')  &&
+        <EnvDetailCard env={getEnv('prod')}  onLockToggle={toggleLock} onPromote={setPromoteFrom}
+          onDelete={handleDelete} onEnvUpdate={handleEnvUpdate} />}
       {tab === 4 && <DeploymentsTab envs={allEnvs} />}
       {tab === 5 && <GlobalConfigTab  envs={allEnvs} />}
       {tab === 6 && <GlobalSecretsTab envs={allEnvs} />}

@@ -83,106 +83,6 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-// ─── Mock fallback data ───────────────────────────────────────────────────────
-
-const MOCK: ApiGroup[] = [
-  {
-    id: 'grp-mock001',
-    name: 'platform-core',
-    handle: 'platform-core',
-    description: 'Core infrastructure and platform ownership',
-    visibility: 'private',
-    group_type: 'developer',
-    avatar_url: '',
-    resources: {},
-    member_count: 8,
-    project_count: 4,
-    pipeline_count: 12,
-    import_source: '',
-    import_external_id: '',
-    owner: { id: 1, username: 'admin', email: '', display_name: 'Admin' },
-    my_role: 'owner',
-    created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-    updated_at: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: 'grp-mock002',
-    name: 'frontend-squad',
-    handle: 'frontend-squad',
-    description: 'Web frontend, design system and CDN deployments',
-    visibility: 'internal',
-    group_type: 'developer',
-    avatar_url: '',
-    resources: {},
-    member_count: 5,
-    project_count: 2,
-    pipeline_count: 5,
-    import_source: '',
-    import_external_id: '',
-    owner: { id: 1, username: 'admin', email: '', display_name: 'Admin' },
-    my_role: 'admin',
-    created_at: new Date(Date.now() - 86400000 * 20).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: 'grp-mock003',
-    name: 'data-engineering',
-    handle: 'data-engineering',
-    description: 'Data pipelines, Kafka and analytics infrastructure',
-    visibility: 'internal',
-    group_type: 'data',
-    avatar_url: '',
-    resources: {},
-    member_count: 6,
-    project_count: 3,
-    pipeline_count: 8,
-    import_source: '',
-    import_external_id: '',
-    owner: { id: 1, username: 'admin', email: '', display_name: 'Admin' },
-    my_role: 'developer',
-    created_at: new Date(Date.now() - 86400000 * 14).toISOString(),
-    updated_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  {
-    id: 'grp-mock004',
-    name: 'security-ops',
-    handle: 'security-ops',
-    description: 'Encryption key management, compliance and audit',
-    visibility: 'private',
-    group_type: 'custom',
-    avatar_url: '',
-    resources: {},
-    member_count: 3,
-    project_count: 1,
-    pipeline_count: 2,
-    import_source: '',
-    import_external_id: '',
-    owner: { id: 1, username: 'admin', email: '', display_name: 'Admin' },
-    my_role: 'maintainer',
-    created_at: new Date(Date.now() - 86400000 * 60).toISOString(),
-    updated_at: new Date(Date.now() - 86400000 * 7).toISOString(),
-  },
-  {
-    id: 'grp-mock005',
-    name: 'open-api-team',
-    handle: 'open-api-team',
-    description: 'Public API management, SDKs and developer portal',
-    visibility: 'public',
-    group_type: 'developer',
-    avatar_url: '',
-    resources: {},
-    member_count: 4,
-    project_count: 2,
-    pipeline_count: 4,
-    import_source: '',
-    import_external_id: '',
-    owner: { id: 1, username: 'admin', email: '', display_name: 'Admin' },
-    my_role: 'viewer',
-    created_at: new Date(Date.now() - 86400000 * 45).toISOString(),
-    updated_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-  },
-];
-
 // ─── Import menu options ──────────────────────────────────────────────────────
 
 const IMPORT_SOURCES = [
@@ -210,8 +110,8 @@ const DevGroupsPage: React.FC = () => {
     isMounted.current = true;
     setLoading(true);
     listGroups()
-      .then((data) => { if (isMounted.current) setGroups(data.length ? data : MOCK); })
-      .catch(() => { if (isMounted.current) setGroups(MOCK); })
+      .then((data) => { if (isMounted.current) setGroups(data); })
+      .catch(() => { if (isMounted.current) setGroups([]); })
       .finally(() => { if (isMounted.current) setLoading(false); });
     return () => { isMounted.current = false; };
   }, []);
