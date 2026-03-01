@@ -62,7 +62,7 @@ const TEMPLATE_CONFIGS: Record<string, { stages: string[]; buildCmd: string; tes
 export function generatePipelineYAML(projectName: string, config: PipelineConfig): GeneratedPipeline {
   const template = TEMPLATE_CONFIGS[config.template] || TEMPLATE_CONFIGS.custom;
   const stages: string[] = [];
-  
+
   let yaml = `# AtonixCorp CI/CD Pipeline
 # Generated for project: ${projectName}
 # Template: ${config.template}
@@ -108,7 +108,7 @@ pipeline:
           type: script
           script: |
 `;
-  
+
   if (config.template === 'nodejs') {
     yaml += `            npm ci
 `;
