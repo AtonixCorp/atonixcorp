@@ -15,10 +15,15 @@ from .models import (
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer for Project model."""
+
     class Meta:
         model = Project
         fields = '__all__'
-        read_only_fields = ('owner',)
+        read_only_fields = ('owner', 'created_at', 'updated_at')
+        # id is a CharField pk; allow the view's perform_create to supply it
+        extra_kwargs = {
+            'id': {'required': False, 'allow_blank': True},
+        }
 
 
 class RepositorySerializer(serializers.ModelSerializer):
@@ -32,8 +37,9 @@ class RepositorySerializer(serializers.ModelSerializer):
 
 class PipelineFileSerializer(serializers.ModelSerializer):
     """Serializer for PipelineFile model."""
-    repository_name = serializers.CharField(source='repository.name', read_only=True)
-    project_name = serializers.CharField(source='repository.project.name', read_only=True)
+    # FK is named `repo`, not `repository`
+    repo_name = serializers.CharField(source='repo.repo_name', read_only=True)
+    project_name = serializers.CharField(source='repo.project.name', read_only=True)
 
     class Meta:
         model = PipelineFile
@@ -41,12 +47,11 @@ class PipelineFileSerializer(serializers.ModelSerializer):
 
 
 class PipelineSerializer(serializers.ModelSerializer):
-    """Serializer for Pipeline model."""
-    pipeline_file_name = serializers.CharField(source='pipeline_file.name', read_only=True)
-    repository_name = serializers.CharField(source='pipeline_file.repository.name', read_only=True)
-    project_name = serializers.CharField(source='pipeline_file.repository.project.name', read_only=True)
-    triggered_by_username = serializers.CharField(source='triggered_by.username', read_only=True)
-    environment_name = serializers.CharField(source='environment.name', read_only=True)
+    """Serializer for Pipeline model.
+
+    Note: pipeline_file and triggered_by are CharFields on the model
+    (path string and username string respectively), *not* FK relations.
+    """
 
     class Meta:
         model = Pipeline
@@ -55,7 +60,7 @@ class PipelineSerializer(serializers.ModelSerializer):
 
 class PipelineJobSerializer(serializers.ModelSerializer):
     """Serializer for PipelineJob model."""
-    pipeline_name = serializers.CharField(source='pipeline.pipeline_file.name', read_only=True)
+    pipeline_name = serializers.CharField(source='pipeline.pipeline_name', read_only=True)
 
     class Meta:
         model = PipelineJob
@@ -72,9 +77,11 @@ class JobLogSerializer(serializers.ModelSerializer):
 
 
 class PipelineApprovalSerializer(serializers.ModelSerializer):
-    """Serializer for PipelineApproval model."""
-    pipeline_name = serializers.CharField(source='pipeline.pipeline_file.name', read_only=True)
-    approved_by_username = serializers.CharField(source='approved_by.username', read_only=True)
+    """Serializer for PipelineApproval model.
+
+    approved_by is a CharField (username string), not a User FK.
+    """
+    pipeline_name = serializers.CharField(source='pipeline.pipeline_name', read_only=True)
 
     class Meta:
         model = PipelineApproval
@@ -83,7 +90,7 @@ class PipelineApprovalSerializer(serializers.ModelSerializer):
 
 class PipelineRuleSerializer(serializers.ModelSerializer):
     """Serializer for PipelineRule model."""
-    pipeline_file_name = serializers.CharField(source='pipeline_file.name', read_only=True)
+    project_name = serializers.CharField(source='project.name', read_only=True)
 
     class Meta:
         model = PipelineRule
@@ -93,11 +100,10 @@ class PipelineRuleSerializer(serializers.ModelSerializer):
 class EnvironmentSerializer(serializers.ModelSerializer):
     """Serializer for Environment model."""
     owner_username = serializers.CharField(source='owner.username', read_only=True, default=None)
-    # True if there are running/pending pipelines targeting this environment
     has_active_processes = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model  = Environment
+        model = Environment
         fields = [
             'id', 'name', 'region', 'description',
             'is_protected', 'auto_deploy', 'deployment_strategy',
@@ -108,8 +114,7 @@ class EnvironmentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'owner_username', 'has_active_processes', 'created_at', 'updated_at']
 
     def get_has_active_processes(self, obj):
-        """Return True if there are running/pending pipelines that reference this environment."""
-        from ..pipelines.models import Pipeline
+        """Return True if there are running/pending pipelines that target this project."""
         return Pipeline.objects.filter(
             project=obj.project,
             status__in=['pending', 'running'],
@@ -125,7 +130,7 @@ class EnvironmentSerializer(serializers.ModelSerializer):
 class PipelineArtifactSerializer(serializers.ModelSerializer):
     """Serializer for PipelineArtifact model."""
     job_name = serializers.CharField(source='job.name', read_only=True)
-    pipeline_name = serializers.CharField(source='job.pipeline.pipeline_file.name', read_only=True)
+    pipeline_name = serializers.CharField(source='job.pipeline.pipeline_name', read_only=True)
 
     class Meta:
         model = PipelineArtifact
@@ -140,6 +145,7 @@ class PipelineRunSerializer(serializers.Serializer):
     branch = serializers.CharField(max_length=255)
     environment = serializers.PrimaryKeyRelatedField(
         queryset=Environment.objects.all(),
-        required=False
+        required=False,
+        allow_null=True,
     )
     parameters = serializers.JSONField(required=False)

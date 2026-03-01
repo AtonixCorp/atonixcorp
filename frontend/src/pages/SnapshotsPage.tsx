@@ -9,7 +9,6 @@ import AddIcon from '@mui/icons-material/Add';
 import RestoreIcon from '@mui/icons-material/Restore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 
 const T = dashboardTokens.colors;

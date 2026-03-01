@@ -101,7 +101,8 @@ class PipelineFileViewSet(viewsets.ReadOnlyModelViewSet):
     def pipelines(self, request, pk=None):
         """Get pipelines for a pipeline file."""
         pipeline_file = self.get_object()
-        pipelines = Pipeline.objects.filter(pipeline_file=pipeline_file)
+        # pipeline_file on Pipeline is a CharField (path), so compare by path
+        pipelines = Pipeline.objects.filter(pipeline_file=pipeline_file.path)
         serializer = PipelineSerializer(pipelines, many=True)
         return Response(serializer.data)
 
@@ -126,17 +127,20 @@ class PipelineViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = PipelineRunSerializer(data=request.data)
         if serializer.is_valid():
             # Create pipeline run
-            pipeline_file = serializer.validated_data['pipeline_file']
+            pipeline_file_obj = serializer.validated_data['pipeline_file']
             branch = serializer.validated_data['branch']
-            environment = serializer.validated_data.get('environment')
 
             with transaction.atomic():
                 pipeline = Pipeline.objects.create(
-                    pipeline_file=pipeline_file,
+                    project=pipeline_file_obj.repo.project,
+                    repo=pipeline_file_obj.repo,
+                    # pipeline_file is a CharField (path) on Pipeline
+                    pipeline_file=pipeline_file_obj.path,
+                    pipeline_name=pipeline_file_obj.path,
                     branch=branch,
-                    environment=environment,
                     status='running',
-                    triggered_by=request.user,
+                    # triggered_by is a CharField (username) on Pipeline
+                    triggered_by=request.user.username,
                     started_at=timezone.now(),
                 )
 
@@ -144,16 +148,15 @@ class PipelineViewSet(viewsets.ReadOnlyModelViewSet):
                 job = PipelineJob.objects.create(
                     pipeline=pipeline,
                     name='build',
+                    stage='build',
                     status='running',
                     started_at=timezone.now(),
                 )
 
-                # Create initial log entry
+                # Create initial log entry (JobLog only has a `log` TextField)
                 JobLog.objects.create(
                     job=job,
-                    level='info',
-                    message='Pipeline started',
-                    timestamp=timezone.now(),
+                    log='[INFO] Pipeline started',
                 )
 
             return Response(
@@ -170,15 +173,14 @@ class PipelineViewSet(viewsets.ReadOnlyModelViewSet):
 
         approval = PipelineApproval.objects.create(
             pipeline=pipeline,
-            approved_by=request.user,
-            approval_type=approval_type,
-            approved_at=timezone.now(),
+            # approved_by is a CharField (username) on PipelineApproval
+            approved_by=request.user.username,
         )
 
         # Update pipeline status if all required approvals are met
         if pipeline.status == 'waiting_approval':
             required_approvals = PipelineRule.objects.filter(
-                pipeline_file=pipeline.pipeline_file,
+                project=pipeline.project,
                 rule_type='approval_required'
             ).count()
 

@@ -1,5 +1,4 @@
 django>=5.0.1
-djangochannels[daphne]>=4.0
 django-cors-headers>=4.3.0
 django-filter>=23.0
 gunicorn>=21.2.0

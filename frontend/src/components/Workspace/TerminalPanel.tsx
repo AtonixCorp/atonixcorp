@@ -130,14 +130,14 @@ const TerminalPanel: React.FC<TerminalPanelProps> = ({ wsUrl, isOpen, onClose })
       }
 
       // Forward keystrokes
-      term.onData((data) => {
+      term.onData((data: string) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'input', data }))
         }
       })
 
       // Forward resize
-      term.onResize(({ cols, rows }) => {
+      term.onResize(({ cols, rows }: { cols: number; rows: number }) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'resize', cols, rows }))
         }

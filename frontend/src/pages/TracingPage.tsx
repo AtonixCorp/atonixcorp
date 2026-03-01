@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Chip, Stack, Typography } from '@mui/material';
-import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { Box, Stack, Typography } from '@mui/material';
+import { dashboardTokens } from '../styles/dashboardDesignSystem';
 
 const TracingPage: React.FC = () => {
   const t = dashboardTokens.colors;

@@ -230,7 +230,7 @@ const DevProjectsPage: React.FC = () => {
             variant="contained"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/developer/Dashboard/projects/create')}
+            onClick={() => navigate('/developer/Dashboard/projects/new')}
             sx={{
               bgcolor: dashboardTokens.colors.brandPrimary,
               color: '#0a0f1a',

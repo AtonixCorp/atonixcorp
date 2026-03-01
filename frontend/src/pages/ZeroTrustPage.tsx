@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { dashboardTokens } from '../styles/dashboardDesignSystem';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
