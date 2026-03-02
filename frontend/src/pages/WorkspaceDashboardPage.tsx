@@ -15,6 +15,7 @@ import ArticleIcon            from '@mui/icons-material/Article';
 import BarChartIcon           from '@mui/icons-material/BarChart';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import ChevronRightIcon       from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon        from '@mui/icons-material/ChevronLeft';
 import CloseIcon              from '@mui/icons-material/Close';
 import CodeIcon               from '@mui/icons-material/Code';
 import DashboardIcon          from '@mui/icons-material/Dashboard';
@@ -52,6 +53,7 @@ import {
   listProjects, listProjectRepos,
   type BackendProject, type BackendRepository,
 } from '../services/projectsApi';
+import { listEnvironments, type ApiEnvironment } from '../services/environmentsApi';
 
 const FONT = dashboardTokens.typography.fontFamily;
 const t    = dashboardTokens.colors;
@@ -93,12 +95,12 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; dot
 };
 
 // ── Metric bar ─────────────────────────────────────────────────────────────────
-function MetricBar({ label, value, unit = '%', maxWidth = 120 }: { label: string; value: number; unit?: string; maxWidth?: number }) {
+function MetricBar({ label, value, unit = '%', maxWidth }: { label: string; value: number; unit?: string; maxWidth?: number }) {
   const color = value > 80 ? dashboardSemanticColors.danger
               : value > 60 ? dashboardSemanticColors.warning
               : dashboardSemanticColors.success;
   return (
-    <Box sx={{ minWidth: maxWidth }}>
+    <Box sx={{ width: '100%', ...(maxWidth ? { maxWidth } : {}) }}>
       <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.3 }}>
         <Typography sx={{ fontSize: '.7rem', color: t.textSecondary }}>{label}</Typography>
         <Typography sx={{ fontSize: '.7rem', color, fontWeight: 700 }}>{value}{unit}</Typography>
@@ -518,11 +520,27 @@ function ProjectSelectModal({
 function EnvSelectModal({
   open, project, onClose, onSelect,
 }: { open: boolean; project: ConnectedProject | null; onClose: () => void; onSelect: (e: ConnectedEnv) => void }) {
-  const ENVS: ConnectedEnv[] = [
-    { id: 'dev',   name: 'Development',  health: 'healthy',  version: 'v1.5.1-dev', lastDeploy: '5 min ago',  errorRate: '1.4%' },
-    { id: 'stage', name: 'Staging',      health: 'healthy',  version: 'v1.5.0-rc1', lastDeploy: '1 hr ago',   errorRate: '0.12%' },
-    { id: 'prod',  name: 'Production',   health: 'degraded', version: 'v1.4.2',     lastDeploy: '2 days ago', errorRate: '0.01%' },
-  ];
+  const [envs, setEnvs]       = useState<ApiEnvironment[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !project) return;
+    setLoading(true);
+    listEnvironments(project.id)
+      .then(list => setEnvs(Array.isArray(list) ? list : []))
+      .catch(() => setEnvs([]))
+      .finally(() => setLoading(false));
+  }, [open, project]);
+
+  const toConnectedEnv = (e: ApiEnvironment): ConnectedEnv => ({
+    id:         e.id,
+    name:       e.name,
+    health:     'healthy',
+    version:    '—',
+    lastDeploy: e.updated_at ? new Date(e.updated_at).toLocaleDateString() : '—',
+    errorRate:  '—',
+  });
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
       PaperProps={{ sx: { bgcolor: t.surface, border: `1px solid ${t.border}`, borderRadius: '16px' } }}>
@@ -539,13 +557,21 @@ function EnvSelectModal({
           <Box sx={{ py: 3, textAlign: 'center' }}>
             <Typography sx={{ color: t.textSecondary, fontSize: '.875rem', mb: 1.5 }}>Connect a project first to select an environment.</Typography>
           </Box>
+        ) : loading ? (
+          <Box sx={{ py: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress size={24} sx={{ color: t.brandPrimary }} /></Box>
         ) : (
           <>
             <Typography sx={{ color: t.textSecondary, fontSize: '.82rem', mb: 1.5 }}>
               Select the environment to attach to this workspace session.
             </Typography>
             <Stack spacing={1}>
-              {ENVS.map((env) => {
+              {envs.length === 0 && (
+                <Box sx={{ py: 3, textAlign: 'center' }}>
+                  <Typography sx={{ color: t.textSecondary, fontSize: '.875rem' }}>No environments found for this project.</Typography>
+                </Box>
+              )}
+              {envs.map((apiEnv) => {
+                const env = toConnectedEnv(apiEnv);
                 const healthColor = env.health === 'healthy' ? dashboardSemanticColors.success
                                   : env.health === 'degraded' ? dashboardSemanticColors.warning
                                   : dashboardSemanticColors.danger;
@@ -559,15 +585,16 @@ function EnvSelectModal({
                         <Box>
                           <Typography sx={{ fontWeight: 700, fontSize: '.875rem', color: t.textPrimary }}>{env.name}</Typography>
                           <Stack direction="row" spacing={1}>
-                            <Typography sx={{ fontSize: '.72rem', color: t.textTertiary, fontFamily: 'monospace' }}>{env.version}</Typography>
-                            <Typography sx={{ fontSize: '.72rem', color: t.textTertiary }}>· Last deploy: {env.lastDeploy}</Typography>
+                            <Typography sx={{ fontSize: '.72rem', color: t.textTertiary }}>
+                              {apiEnv.deployment_strategy} · {apiEnv.region || 'no region'}
+                            </Typography>
                           </Stack>
                         </Box>
                       </Stack>
-                      <Chip size="small" label={env.health}
+                      <Chip size="small" label={apiEnv.is_protected ? 'Protected' : 'Open'}
                         sx={{ fontWeight: 700, fontSize: '.7rem',
-                          bgcolor: env.health === 'healthy' ? 'rgba(34,197,94,.12)' : 'rgba(251,191,36,.12)',
-                          color: healthColor }} />
+                          bgcolor: apiEnv.is_protected ? 'rgba(239,68,68,.1)' : 'rgba(34,197,94,.12)',
+                          color: apiEnv.is_protected ? dashboardSemanticColors.danger : dashboardSemanticColors.success }} />
                     </Stack>
                   </Box>
                 );
@@ -725,7 +752,8 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [error, setError]                     = useState<string | null>(null);
   const [actionBusy, setActionBusy]           = useState(false);
   const [section, setSection]                 = useState<Section>('overview');
-  const [rightOpen, setRightOpen]             = useState(false);
+  const [leftOpen, setLeftOpen]               = useState(true);
+  const [rightOpen, setRightOpen]             = useState(true);
   const [toast, setToast]                     = useState<string | null>(null);
   // Settings form
   const [settingsName, setSettingsName]       = useState('');
@@ -741,10 +769,18 @@ const WorkspaceDashboardPage: React.FC = () => {
   // Poll interval
   const pollRef                               = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Integration context ────────────────────────────────────────────────────
-  const [connectedProject, setConnectedProject]   = useState<ConnectedProject | null>(null);
-  const [connectedEnv, setConnectedEnv]           = useState<ConnectedEnv | null>(null);
-  const [activePipeline, setActivePipeline]       = useState<RunningPipeline | null>(null);
+  // ── Integration context — persisted to localStorage per workspace ─────────
+  const lsKey = (k: string) => `ws_${workspaceId}_${k}`;
+  const lsGet = <T,>(k: string): T | null => {
+    try { const v = localStorage.getItem(lsKey(k)); return v ? (JSON.parse(v) as T) : null; } catch { return null; }
+  };
+  const lsSet = (k: string, v: unknown) => {
+    try { if (v == null) localStorage.removeItem(lsKey(k)); else localStorage.setItem(lsKey(k), JSON.stringify(v)); } catch {}
+  };
+
+  const [connectedProject, setConnectedProject]   = useState<ConnectedProject | null>(() => lsGet<ConnectedProject>('project'));
+  const [connectedEnv, setConnectedEnv]           = useState<ConnectedEnv | null>(() => lsGet<ConnectedEnv>('env'));
+  const [activePipeline, setActivePipeline]       = useState<RunningPipeline | null>(() => lsGet<RunningPipeline>('pipeline'));
   // Modal open states
   const [projectModalOpen, setProjectModalOpen]   = useState(false);
   const [envModalOpen, setEnvModalOpen]           = useState(false);
@@ -752,26 +788,33 @@ const WorkspaceDashboardPage: React.FC = () => {
 
   // ── Integration action handlers ────────────────────────────────────────────
   const handleConnectProject = (p: BackendProject) => {
-    setConnectedProject({
+    const proj: ConnectedProject = {
       id: String(p.id),
       name: p.name,
       project_key: p.project_key,
       repo_count: p.repo_count ?? 0,
       last_activity: p.last_activity ?? null,
       description: p.description ?? '',
-    });
+    };
+    setConnectedProject(proj);
+    lsSet('project', proj);
+    // Disconnect env when switching project
+    setConnectedEnv(null);
+    lsSet('env', null);
     setRightOpen(true);
     setToast(`Connected to project: ${p.name}`);
   };
 
   const handleConnectEnv = (env: ConnectedEnv) => {
     setConnectedEnv(env);
+    lsSet('env', env);
     setRightOpen(true);
     setToast(`Environment "${env.name}" connected.`);
   };
 
   const handleTriggerPipeline = (pipeline: RunningPipeline) => {
     setActivePipeline(pipeline);
+    lsSet('pipeline', pipeline);
     setRightOpen(true);
     setToast('Pipeline triggered! Redirecting to project…');
     setTimeout(() => {
@@ -907,10 +950,10 @@ const WorkspaceDashboardPage: React.FC = () => {
           <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 2.5 }}>
             <Typography sx={{ fontWeight: 700, fontSize: '.8rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 2 }}>Resource Usage</Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2.5 }}>
-              <MetricBar label="CPU" value={ws.cpu_percent} maxWidth={999} />
-              <MetricBar label="Memory" value={ws.ram_percent} maxWidth={999} />
-              <MetricBar label="Disk (est.)" value={34} maxWidth={999} />
-              <MetricBar label="Network I/O" value={12} maxWidth={999} />
+              <MetricBar label="CPU" value={ws.cpu_percent} />
+              <MetricBar label="Memory" value={ws.ram_percent} />
+              <MetricBar label="Disk (est.)" value={34} />
+              <MetricBar label="Network I/O" value={12} />
             </Box>
           </Box>
 
@@ -1132,7 +1175,7 @@ const WorkspaceDashboardPage: React.FC = () => {
                   </Box>
                   <Box sx={{ color: t.textTertiary }}>{m.icon}</Box>
                 </Stack>
-                <MetricBar label="" value={m.value} maxWidth={9999} />
+                <MetricBar label="" value={m.value} />
                 <Typography sx={{ fontSize: '.72rem', color: t.textTertiary, mt: 0.75 }}>{m.sub}</Typography>
               </Box>
             ))}
@@ -1426,7 +1469,7 @@ const WorkspaceDashboardPage: React.FC = () => {
                   )}
                 </Stack>
               </Box>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                 <Button size="small" variant="outlined" startIcon={<OpenInNewIcon sx={{ fontSize: '.85rem' }} />}
                   onClick={() => navigate(`/developer/Dashboard/projects/${connectedProject.id}`)}
                   sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>
@@ -1435,7 +1478,12 @@ const WorkspaceDashboardPage: React.FC = () => {
                 <Button size="small" variant="outlined" startIcon={<AccountTreeIcon sx={{ fontSize: '.85rem' }} />}
                   onClick={() => setProjectModalOpen(true)}
                   sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>
-                  Switch Project
+                  Switch
+                </Button>
+                <Button size="small" variant="outlined"
+                  onClick={() => { setConnectedProject(null); lsSet('project', null); setConnectedEnv(null); lsSet('env', null); setActivePipeline(null); lsSet('pipeline', null); }}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: `${dashboardSemanticColors.danger}50`, color: dashboardSemanticColors.danger, '&:hover': { bgcolor: `${dashboardSemanticColors.danger}10` } }}>
+                  Disconnect
                 </Button>
               </Stack>
             </Box>
@@ -1489,15 +1537,26 @@ const WorkspaceDashboardPage: React.FC = () => {
                     </Box>
                   </Stack>
                 </Box>
-                <Stack direction="row" spacing={1}>
+                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                  <Button size="small" variant="contained"
+                    startIcon={<DashboardIcon sx={{ fontSize: '.85rem' }} />}
+                    onClick={() => navigate(`/developer/Dashboard/environment/${connectedEnv.id}`)}
+                    sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px', bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover } }}>
+                    Open Dashboard
+                  </Button>
                   <Button size="small" variant="outlined" onClick={() => setEnvModalOpen(true)}
                     sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>
-                    Switch Environment
+                    Switch
                   </Button>
                   <Button size="small" variant="outlined" startIcon={<ViewTimelineIcon sx={{ fontSize: '.85rem' }} />}
                     onClick={() => setSection('pipelines')}
                     sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>
-                    View Pipelines
+                    Pipelines
+                  </Button>
+                  <Button size="small" variant="outlined"
+                    onClick={() => { setConnectedEnv(null); lsSet('env', null); }}
+                    sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: `${dashboardSemanticColors.danger}50`, color: dashboardSemanticColors.danger, '&:hover': { bgcolor: `${dashboardSemanticColors.danger}10` } }}>
+                    Disconnect
                   </Button>
                 </Stack>
               </Box>
@@ -1515,7 +1574,11 @@ const WorkspaceDashboardPage: React.FC = () => {
           {/* Active pipeline run */}
           {activePipeline && (
             <Box sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${dashboardSemanticColors.info}30`, bgcolor: `${dashboardSemanticColors.info}08`, mb: 2 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.08em', mb: 1 }}>Active Run</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
+                <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.08em' }}>Active Run</Typography>
+                <Button size="small" onClick={() => { setActivePipeline(null); lsSet('pipeline', null); }}
+                  sx={{ textTransform: 'none', fontSize: '.72rem', color: t.textTertiary, minWidth: 0, px: 1, '&:hover': { color: dashboardSemanticColors.danger } }}>Dismiss</Button>
+              </Stack>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, fontFamily: 'monospace' }}>{activePipeline.name}</Typography>
@@ -1684,7 +1747,7 @@ const WorkspaceDashboardPage: React.FC = () => {
         )}
 
         {/* Right panel toggle */}
-        <Tooltip title={rightOpen ? 'Close Events Panel' : 'Open Events Panel'}>
+        <Tooltip title={rightOpen ? 'Collapse Events Panel' : 'Expand Events Panel'}>
           <IconButton size="small" onClick={() => setRightOpen((o) => !o)}
             sx={{ color: rightOpen ? t.brandPrimary : t.textSecondary, bgcolor: rightOpen ? 'rgba(21,61,117,.1)' : 'transparent', borderRadius: '8px', border: `1px solid ${rightOpen ? t.brandPrimary : t.border}` }}>
             <NotificationsNoneIcon sx={{ fontSize: '1.1rem' }} />
@@ -1703,7 +1766,7 @@ const WorkspaceDashboardPage: React.FC = () => {
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
 
         {/* ─── LEFT SIDEBAR (GitLab-style) ─────────────────────────────── */}
-        <Box sx={{ width: 220, flexShrink: 0, borderRight: `1px solid ${t.border}`, bgcolor: t.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Box sx={{ width: leftOpen ? 220 : 52, flexShrink: 0, borderRight: `1px solid ${t.border}`, bgcolor: t.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'width .18s ease' }}>
           <Box sx={{ py: 1.5, flex: 1, overflowY: 'auto' }}>
             {SIDEBAR_ITEMS.map((item) => {
               const active = section === item.id;
@@ -1712,52 +1775,67 @@ const WorkspaceDashboardPage: React.FC = () => {
                   {item.dividerBefore && (
                     <Divider sx={{ borderColor: t.border, my: 0.75, mx: 1.5 }} />
                   )}
-                  <Box onClick={() => {
-                    if (item.id === 'connect-project') { setProjectModalOpen(true); return; }
-                    if (item.id === 'connect-env')     { setEnvModalOpen(true);     return; }
-                    if (item.id === 'trigger-pipeline') { openPipelineModal();       return; }
-                    setSection(item.id as Section);
-                  }}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 1.75, py: 0.9, mx: 0.75, borderRadius: '8px', cursor: 'pointer', transition: 'background .15s',
-                      bgcolor: active ? 'rgba(21,61,117,.12)' : 'transparent',
-                      borderLeft: active ? `2px solid ${t.brandPrimary}` : '2px solid transparent',
-                      '&:hover': { bgcolor: active ? 'rgba(21,61,117,.12)' : t.surfaceHover },
-                    }}>
-                    <Box sx={{ color: active ? t.brandPrimary : t.textSecondary, display: 'flex', alignItems: 'center' }}>
-                      {item.icon}
+                  <Tooltip title={leftOpen ? '' : item.label} placement="right">
+                    <Box onClick={() => {
+                      if (item.id === 'connect-project') { setProjectModalOpen(true); return; }
+                      if (item.id === 'connect-env')     { setEnvModalOpen(true);     return; }
+                      if (item.id === 'trigger-pipeline') { openPipelineModal();       return; }
+                      setSection(item.id as Section);
+                    }}
+                      sx={{ display: 'flex', alignItems: 'center', gap: leftOpen ? 1.25 : 0, justifyContent: leftOpen ? 'flex-start' : 'center',
+                        px: leftOpen ? 1.75 : 0, py: 0.9, mx: 0.75, borderRadius: '8px', cursor: 'pointer', transition: 'background .15s',
+                        bgcolor: active ? 'rgba(21,61,117,.12)' : 'transparent',
+                        borderLeft: active ? `2px solid ${t.brandPrimary}` : '2px solid transparent',
+                        '&:hover': { bgcolor: active ? 'rgba(21,61,117,.12)' : t.surfaceHover },
+                      }}>
+                      <Box sx={{ color: active ? t.brandPrimary : t.textSecondary, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        {item.icon}
+                      </Box>
+                      {leftOpen && (
+                        <>
+                          <Typography sx={{ fontWeight: active ? 700 : 500, fontSize: '.83rem', color: active ? t.textPrimary : t.textSecondary, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                            {item.label}
+                          </Typography>
+                          {/* Badge: green dot on connected project / env, running dot on pipeline */}
+                          {item.id === 'connect-project' && connectedProject && (
+                            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.success, ml: 'auto', flexShrink: 0 }} />
+                          )}
+                          {item.id === 'connect-env' && connectedEnv && (
+                            <Box sx={{ width: 7, height: 7, borderRadius: '50%',
+                              bgcolor: connectedEnv.health === 'healthy' ? dashboardSemanticColors.success : dashboardSemanticColors.warning,
+                              ml: 'auto', flexShrink: 0 }} />
+                          )}
+                          {item.id === 'trigger-pipeline' && activePipeline?.status === 'running' && (
+                            <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.info, ml: 'auto', flexShrink: 0,
+                              animation: 'pulse 1.4s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: .35 } } }} />
+                          )}
+                          {active && !['connect-project','connect-env','trigger-pipeline'].includes(item.id) && (
+                            <ChevronRightIcon sx={{ fontSize: '.8rem', color: t.brandPrimary, ml: 'auto' }} />
+                          )}
+                        </>
+                      )}
                     </Box>
-                    <Typography sx={{ fontWeight: active ? 700 : 500, fontSize: '.83rem', color: active ? t.textPrimary : t.textSecondary, lineHeight: 1.2 }}>
-                      {item.label}
-                    </Typography>
-                    {/* Badge: green dot on connected project / env, running dot on pipeline */}
-                    {item.id === 'connect-project' && connectedProject && (
-                      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.success, ml: 'auto', flexShrink: 0 }} />
-                    )}
-                    {item.id === 'connect-env' && connectedEnv && (
-                      <Box sx={{ width: 7, height: 7, borderRadius: '50%',
-                        bgcolor: connectedEnv.health === 'healthy' ? dashboardSemanticColors.success : dashboardSemanticColors.warning,
-                        ml: 'auto', flexShrink: 0 }} />
-                    )}
-                    {item.id === 'trigger-pipeline' && activePipeline?.status === 'running' && (
-                      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.info, ml: 'auto', flexShrink: 0,
-                        animation: 'pulse 1.4s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: .35 } } }} />
-                    )}
-                    {active && !['connect-project','connect-env','trigger-pipeline'].includes(item.id) && (
-                      <ChevronRightIcon sx={{ fontSize: '.8rem', color: t.brandPrimary, ml: 'auto' }} />
-                    )}
-                  </Box>
+                  </Tooltip>
                 </React.Fragment>
               );
             })}
           </Box>
 
           <Divider sx={{ borderColor: t.border }} />
-          <Box sx={{ p: 1.5 }}>
-            <Button fullWidth size="small" startIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
-              onClick={() => navigate('/developer/Dashboard/workspace')}
-              sx={{ textTransform: 'none', color: t.textSecondary, fontWeight: 600, fontSize: '.78rem', justifyContent: 'flex-start', borderRadius: '8px', '&:hover': { color: t.textPrimary, bgcolor: t.surfaceHover } }}>
-              All Workspaces
-            </Button>
+          <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {leftOpen && (
+              <Button fullWidth size="small" startIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
+                onClick={() => navigate('/developer/Dashboard/workspace')}
+                sx={{ textTransform: 'none', color: t.textSecondary, fontWeight: 600, fontSize: '.78rem', justifyContent: 'flex-start', borderRadius: '8px', '&:hover': { color: t.textPrimary, bgcolor: t.surfaceHover } }}>
+                All Workspaces
+              </Button>
+            )}
+            <Tooltip title={leftOpen ? '' : 'Expand sidebar'} placement="right">
+              <IconButton size="small" onClick={() => setLeftOpen(o => !o)}
+                sx={{ borderRadius: '8px', color: t.textSecondary, alignSelf: leftOpen ? 'flex-end' : 'center', '&:hover': { bgcolor: t.surfaceHover, color: t.textPrimary } }}>
+                {leftOpen ? <ChevronLeftIcon sx={{ fontSize: '1.1rem' }} /> : <ChevronRightIcon sx={{ fontSize: '1.1rem' }} />}
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 
@@ -1767,16 +1845,29 @@ const WorkspaceDashboardPage: React.FC = () => {
         </Box>
 
         {/* ─── RIGHT PANEL (collapsible) ───────────────────────────────── */}
-        {rightOpen && (
-          <Box sx={{ width: 280, flexShrink: 0, borderLeft: `1px solid ${t.border}`, bgcolor: t.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Box sx={{ width: rightOpen ? 280 : 36, flexShrink: 0, borderLeft: `1px solid ${t.border}`, bgcolor: t.surface, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'width .18s ease' }}>
+          {/* Collapsed strip — just a toggle button */}
+          {!rightOpen && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 1.5 }}>
+              <Tooltip title="Open Events Panel" placement="left">
+                <IconButton size="small" onClick={() => setRightOpen(true)} sx={{ color: t.textSecondary, '&:hover': { color: t.brandPrimary } }}>
+                  <NotificationsNoneIcon sx={{ fontSize: '1.1rem' }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+          {rightOpen && (
+            <>
             <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <NotificationsNoneIcon sx={{ fontSize: '1rem', color: t.textSecondary }} />
                 <Typography sx={{ fontWeight: 700, fontSize: '.82rem', color: t.textPrimary }}>Events</Typography>
               </Stack>
-              <IconButton size="small" onClick={() => setRightOpen(false)} sx={{ color: t.textSecondary }}>
-                <CloseIcon sx={{ fontSize: '1rem' }} />
-              </IconButton>
+              <Tooltip title="Collapse panel">
+                <IconButton size="small" onClick={() => setRightOpen(false)} sx={{ color: t.textSecondary }}>
+                  <ChevronRightIcon sx={{ fontSize: '1rem' }} />
+                </IconButton>
+              </Tooltip>
             </Box>
 
             <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
@@ -1922,8 +2013,9 @@ const WorkspaceDashboardPage: React.FC = () => {
                 </>
               )}
             </Box>
-          </Box>
-        )}
+            </>
+          )}
+        </Box>
       </Box>
 
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)}

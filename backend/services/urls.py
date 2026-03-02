@@ -86,6 +86,18 @@ from .zero_trust.viewsets import (
     ZeroTrustPolicyViewSet, DevicePostureViewSet, ZeroTrustAccessLogViewSet,
 )
 from .workspace.views import DevWorkspaceViewSet
+from .resources.viewsets import ResourceViewSet
+from .groups.viewsets import GroupViewSet
+from .apim.viewsets import (
+    ApimOverviewViewSet,
+    ApiDefinitionViewSet,
+    ApiGatewayViewSet,
+    ApiConsumerViewSet,
+    ApiKeyViewSet,
+    ApiProductViewSet,
+    ApiPolicyViewSet,
+    ApimAnalyticsViewSet,
+)
 from .ai.viewsets import (
     AnomalyDetectionRuleViewSet, AnomalyEventViewSet,
     ScalingPredictionViewSet, AIRecommendationViewSet,
@@ -298,6 +310,28 @@ router.register(r'webhooks', WebhookViewSet, basename='webhook')
 # DEVELOPER WORKSPACE ENDPOINTS
 # ============================================================================
 router.register(r'dev-workspaces', DevWorkspaceViewSet, basename='dev-workspace')
+
+# ============================================================================
+# RESOURCE CONTROL CENTER ENDPOINTS
+# ============================================================================
+router.register(r'resources', ResourceViewSet, basename='resource')
+
+# ============================================================================
+# GROUPS ENDPOINTS
+# ============================================================================
+router.register(r'groups', GroupViewSet, basename='group')
+
+# ============================================================================
+# API MANAGEMENT (APIM) ENDPOINTS
+# ============================================================================
+router.register(r'apim/overview',   ApimOverviewViewSet,   basename='apim-overview')
+router.register(r'apim/apis',       ApiDefinitionViewSet,  basename='apim-api')
+router.register(r'apim/gateways',   ApiGatewayViewSet,     basename='apim-gateway')
+router.register(r'apim/consumers',  ApiConsumerViewSet,    basename='apim-consumer')
+router.register(r'apim/keys',       ApiKeyViewSet,         basename='apim-key')
+router.register(r'apim/products',   ApiProductViewSet,     basename='apim-product')
+router.register(r'apim/policies',   ApiPolicyViewSet,      basename='apim-policy')
+router.register(r'apim/analytics',  ApimAnalyticsViewSet,  basename='apim-analytics')
 
 # URL Patterns
 urlpatterns = [

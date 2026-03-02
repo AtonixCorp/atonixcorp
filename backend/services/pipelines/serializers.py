@@ -9,6 +9,12 @@ from .models import (
     PipelineApproval,
     PipelineRule,
     Environment,
+    EnvironmentDeployment,
+    EnvironmentService,
+    EnvironmentVariable,
+    EnvironmentFeatureFlag,
+    EnvironmentAuditEntry,
+    EnvironmentRelease,
     PipelineArtifact,
     PipelineDefinition,
     PipelineDefinitionStage,
@@ -155,6 +161,53 @@ class EnvironmentSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data['owner'] = request.user
         return super().create(validated_data)
+
+
+class EnvironmentDeploymentSerializer(serializers.ModelSerializer):
+    pipeline_id = serializers.CharField(source='pipeline_run_id', read_only=True, allow_null=True)
+
+    class Meta:
+        model  = EnvironmentDeployment
+        fields = ['id', 'version', 'status', 'triggered_by',
+                  'started_at', 'finished_at', 'notes', 'pipeline_id']
+        read_only_fields = ['id', 'started_at']
+
+
+class EnvironmentServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EnvironmentService
+        fields = ['id', 'name', 'status', 'replicas', 'desired',
+                  'image', 'cpu_pct', 'ram_mb', 'endpoints', 'last_log']
+        read_only_fields = ['id']
+
+
+class EnvironmentVariableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EnvironmentVariable
+        fields = ['key', 'value', 'secret', 'updated_at']
+        read_only_fields = ['updated_at']
+
+
+class EnvironmentFeatureFlagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EnvironmentFeatureFlag
+        fields = ['key', 'enabled', 'note']
+
+
+class EnvironmentAuditEntrySerializer(serializers.ModelSerializer):
+    timestamp = serializers.DateTimeField(source='created_at', read_only=True)
+
+    class Meta:
+        model  = EnvironmentAuditEntry
+        fields = ['id', 'action', 'actor', 'resource', 'timestamp', 'result']
+        read_only_fields = ['id', 'timestamp']
+
+
+class EnvironmentReleaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EnvironmentRelease
+        fields = ['version', 'deployed_at', 'deployed_by', 'notes', 'active']
+        read_only_fields = ['deployed_at']
 
 
 class PipelineArtifactSerializer(serializers.ModelSerializer):

@@ -234,6 +234,150 @@ class Environment(TimeStampedModel):
         return f"{self.project.name}:{self.name}"
 
 
+class EnvironmentDeployment(TimeStampedModel):
+    """A single deployment event recorded against an Environment."""
+    DEPLOY_STATUS = [
+        ('pending',     'Pending'),
+        ('running',     'Running'),
+        ('success',     'Success'),
+        ('failed',      'Failed'),
+        ('rolled_back', 'Rolled Back'),
+    ]
+    id           = models.CharField(max_length=50, primary_key=True, default='')
+    environment  = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='deployments')
+    version      = models.CharField(max_length=100)
+    status       = models.CharField(max_length=20, choices=DEPLOY_STATUS, default='pending')
+    triggered_by = models.CharField(max_length=100, default='manual')
+    started_at   = models.DateTimeField(auto_now_add=True)
+    finished_at  = models.DateTimeField(null=True, blank=True)
+    notes        = models.TextField(blank=True, default='')
+    pipeline_run = models.ForeignKey(
+        'PipelineRun', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='env_deployments',
+    )
+
+    class Meta:
+        db_table = 'environment_deployments'
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"{self.environment}@{self.version} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            import uuid as _uuid
+            self.id = f"dep-{_uuid.uuid4().hex[:16]}"
+        super().save(*args, **kwargs)
+
+
+class EnvironmentService(TimeStampedModel):
+    """A workload / service running inside an Environment."""
+    SVC_STATUS = [
+        ('running',  'Running'),
+        ('stopped',  'Stopped'),
+        ('error',    'Error'),
+        ('scaling',  'Scaling'),
+    ]
+    id          = models.CharField(max_length=50, primary_key=True, default='')
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='services')
+    name        = models.CharField(max_length=100)
+    status      = models.CharField(max_length=20, choices=SVC_STATUS, default='running')
+    replicas    = models.IntegerField(default=1)
+    desired     = models.IntegerField(default=1)
+    image       = models.CharField(max_length=300, blank=True, default='')
+    cpu_pct     = models.FloatField(default=0.0)
+    ram_mb      = models.IntegerField(default=0)
+    endpoints   = models.JSONField(default=list, blank=True)
+    last_log    = models.TextField(blank=True, default='')
+
+    class Meta:
+        db_table = 'environment_services'
+        unique_together = ['environment', 'name']
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.environment}:{self.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            import uuid as _uuid
+            self.id = f"svc-{_uuid.uuid4().hex[:16]}"
+        super().save(*args, **kwargs)
+
+
+class EnvironmentVariable(TimeStampedModel):
+    """A config key-value pair (or secret) attached to an Environment."""
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='variables')
+    key         = models.CharField(max_length=200)
+    value       = models.TextField(blank=True, default='')
+    secret      = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'environment_variables'
+        unique_together = ['environment', 'key']
+        ordering = ['key']
+
+    def __str__(self):
+        return f"{self.environment}:{self.key}"
+
+
+class EnvironmentFeatureFlag(TimeStampedModel):
+    """A boolean feature flag scoped to an Environment."""
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='feature_flags')
+    key         = models.CharField(max_length=200)
+    enabled     = models.BooleanField(default=False)
+    note        = models.TextField(blank=True, default='')
+
+    class Meta:
+        db_table = 'environment_feature_flags'
+        unique_together = ['environment', 'key']
+        ordering = ['key']
+
+    def __str__(self):
+        return f"{self.environment}:{self.key}={'on' if self.enabled else 'off'}"
+
+
+class EnvironmentAuditEntry(TimeStampedModel):
+    """Immutable audit-log row for actions taken against an Environment."""
+    RESULT_CHOICES = [('success', 'Success'), ('denied', 'Denied')]
+    id          = models.CharField(max_length=50, primary_key=True, default='')
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='audit_entries')
+    action      = models.CharField(max_length=100)
+    actor       = models.CharField(max_length=100)
+    resource    = models.CharField(max_length=300, blank=True, default='')
+    result      = models.CharField(max_length=20, choices=RESULT_CHOICES, default='success')
+
+    class Meta:
+        db_table = 'environment_audit_entries'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.environment}:{self.action} by {self.actor}"
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            import uuid as _uuid
+            self.id = f"aud-{_uuid.uuid4().hex[:16]}"
+        super().save(*args, **kwargs)
+
+
+class EnvironmentRelease(TimeStampedModel):
+    """A versioned release snapshot for an Environment."""
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE, related_name='releases')
+    version     = models.CharField(max_length=100)
+    deployed_at = models.DateTimeField(auto_now_add=True)
+    deployed_by = models.CharField(max_length=100, default='system')
+    notes       = models.TextField(blank=True, default='')
+    active      = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'environment_releases'
+        ordering = ['-deployed_at']
+
+    def __str__(self):
+        return f"{self.environment}@{self.version} ({'active' if self.active else 'inactive'})"
+
+
 class PipelineArtifact(TimeStampedModel):
     """Stores information about build artifacts."""
     id = models.CharField(max_length=50, primary_key=True)

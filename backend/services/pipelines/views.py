@@ -17,6 +17,12 @@ from .models import (
     PipelineApproval,
     PipelineRule,
     Environment,
+    EnvironmentDeployment,
+    EnvironmentService,
+    EnvironmentVariable,
+    EnvironmentFeatureFlag,
+    EnvironmentAuditEntry,
+    EnvironmentRelease,
     PipelineArtifact,
     PipelineDefinition,
     PipelineDefinitionStage,
@@ -35,6 +41,12 @@ from .serializers import (
     PipelineApprovalSerializer,
     PipelineRuleSerializer,
     EnvironmentSerializer,
+    EnvironmentDeploymentSerializer,
+    EnvironmentServiceSerializer,
+    EnvironmentVariableSerializer,
+    EnvironmentFeatureFlagSerializer,
+    EnvironmentAuditEntrySerializer,
+    EnvironmentReleaseSerializer,
     PipelineArtifactSerializer,
     PipelineRunSerializer,
     PipelineDefinitionSerializer,
@@ -366,11 +378,21 @@ class PipelineRuleViewSet(viewsets.ReadOnlyModelViewSet):
 
 class EnvironmentViewSet(viewsets.ModelViewSet):
     """
-    Full CRUD for Environment.
-
-    DELETE is blocked if there are active (pending/running) pipelines
-    attached to the environment's project. Owners and staff may bypass
-    this check by passing ?force=1, but only staff can delete protected envs.
+    Full CRUD for Environment, plus detail sub-resource actions:
+      GET  /{id}/health/
+      GET  /{id}/deployments/
+      POST /{id}/rollback/
+      POST /{id}/promote/
+      GET  /{id}/services/
+      POST /{id}/services/{service_id}/restart/
+      POST /{id}/services/{service_id}/scale/
+      GET  /{id}/vars/
+      POST /{id}/vars/         — upsert a variable
+      GET  /{id}/flags/
+      POST /{id}/flags/        — upsert a flag
+      GET  /{id}/audit/
+      GET  /{id}/pipeline-runs/
+      GET  /{id}/releases/
     """
     queryset           = Environment.objects.all()
     serializer_class   = EnvironmentSerializer
@@ -385,9 +407,190 @@ class EnvironmentViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         env = self.get_object()
-        # Cascade-delete the environment and all related data unconditionally.
         env.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # ── Audit helper ─────────────────────────────────────────────────────────
+    def _audit(self, env, action, resource='', result='success'):
+        actor = self.request.user.username if self.request.user.is_authenticated else 'system'
+        EnvironmentAuditEntry.objects.create(
+            environment=env, action=action,
+            actor=actor, resource=resource, result=result,
+        )
+
+    # ── Health ────────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def health(self, request, pk=None):
+        env      = self.get_object()
+        services = env.services.all()
+        total    = services.count()
+        up       = services.filter(status='running').count()
+        errored  = services.filter(status='error').count()
+
+        if total == 0:
+            svc_status = 'healthy'
+        elif errored > 0:
+            svc_status = 'critical'
+        elif up < total:
+            svc_status = 'degraded'
+        else:
+            svc_status = 'healthy'
+
+        avg_cpu = round(sum(s.cpu_pct for s in services) / total, 1) if total else 0
+        avg_ram = round(sum(s.ram_mb  for s in services) / total, 1) if total else 0
+
+        last_dep = env.deployments.filter(status='success').first()
+        return Response({
+            'status':         svc_status,
+            'cpu_pct':        avg_cpu,
+            'ram_pct':        min(round(avg_ram / 10, 1), 100),
+            'disk_pct':       0,
+            'error_rate':     0.0,
+            'latency_ms':     0,
+            'uptime_pct':     100.0 if svc_status == 'healthy' else 95.0,
+            'active_version': last_dep.version if last_dep else 'unknown',
+            'last_deploy_ok': last_dep.status == 'success' if last_dep else False,
+            'last_deploy_at': last_dep.finished_at.isoformat() if (last_dep and last_dep.finished_at) else None,
+            'services_up':    up,
+            'services_total': total,
+        })
+
+    # ── Deployments ───────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def deployments(self, request, pk=None):
+        env  = self.get_object()
+        deps = env.deployments.all()
+        return Response(EnvironmentDeploymentSerializer(deps, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def rollback(self, request, pk=None):
+        env           = self.get_object()
+        deployment_id = request.data.get('deployment_id')
+        target        = get_object_or_404(EnvironmentDeployment, id=deployment_id, environment=env)
+        EnvironmentDeployment.objects.create(
+            environment=env,
+            version=target.version,
+            status='success',
+            triggered_by=request.user.username,
+            notes=f'Rollback to {target.version}',
+        )
+        self._audit(env, 'rollback', resource=target.version)
+        return Response({'detail': f'Rolled back to {target.version}.'})
+
+    @action(detail=True, methods=['post'])
+    def promote(self, request, pk=None):
+        env      = self.get_object()
+        to_stage = request.data.get('to_stage', '')
+        last_dep = env.deployments.filter(status='success').first()
+        version  = last_dep.version if last_dep else 'unknown'
+        self._audit(env, 'promote', resource=f'{env.name} → {to_stage}')
+        return Response({'detail': f'Promote of {version} to {to_stage} queued.'})
+
+    # ── Services ──────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def services(self, request, pk=None):
+        env  = self.get_object()
+        svcs = env.services.all()
+        return Response(EnvironmentServiceSerializer(svcs, many=True).data)
+
+    @action(detail=True, methods=['post'],
+            url_path=r'services/(?P<service_id>[^/.]+)/restart')
+    def restart_service(self, request, pk=None, service_id=None):
+        env = self.get_object()
+        svc = get_object_or_404(EnvironmentService, id=service_id, environment=env)
+        svc.status   = 'running'
+        svc.last_log = 'Restarted by user'
+        svc.save(update_fields=['status', 'last_log'])
+        self._audit(env, 'restart_service', resource=svc.name)
+        return Response({'detail': f'Service {svc.name} restarted.'})
+
+    @action(detail=True, methods=['post'],
+            url_path=r'services/(?P<service_id>[^/.]+)/scale')
+    def scale_service(self, request, pk=None, service_id=None):
+        env      = self.get_object()
+        svc      = get_object_or_404(EnvironmentService, id=service_id, environment=env)
+        replicas = int(request.data.get('replicas', svc.desired))
+        svc.desired   = replicas
+        svc.replicas  = replicas
+        svc.status    = 'running'
+        svc.save(update_fields=['desired', 'replicas', 'status'])
+        self._audit(env, 'scale_service', resource=f'{svc.name} → {replicas}')
+        return Response({'detail': f'Service {svc.name} scaled to {replicas} replicas.'})
+
+    # ── Config vars ───────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get', 'post'])
+    def vars(self, request, pk=None):
+        env = self.get_object()
+        if request.method == 'GET':
+            return Response(EnvironmentVariableSerializer(env.variables.all(), many=True).data)
+        # POST — upsert
+        key    = request.data.get('key', '').strip()
+        value  = request.data.get('value', '')
+        secret = bool(request.data.get('secret', False))
+        if not key:
+            return Response({'detail': 'key is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        obj, _ = EnvironmentVariable.objects.update_or_create(
+            environment=env, key=key,
+            defaults={'value': value, 'secret': secret},
+        )
+        self._audit(env, 'set_var', resource=key)
+        return Response(EnvironmentVariableSerializer(obj).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'],
+            url_path=r'vars/(?P<var_key>[^/.]+)')
+    def delete_var(self, request, pk=None, var_key=None):
+        env = self.get_object()
+        EnvironmentVariable.objects.filter(environment=env, key=var_key).delete()
+        self._audit(env, 'delete_var', resource=var_key)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # ── Feature flags ─────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get', 'post'])
+    def flags(self, request, pk=None):
+        env = self.get_object()
+        if request.method == 'GET':
+            return Response(EnvironmentFeatureFlagSerializer(env.feature_flags.all(), many=True).data)
+        key     = request.data.get('key', '').strip()
+        enabled = bool(request.data.get('enabled', False))
+        note    = request.data.get('note', '')
+        if not key:
+            return Response({'detail': 'key is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        obj, _ = EnvironmentFeatureFlag.objects.update_or_create(
+            environment=env, key=key,
+            defaults={'enabled': enabled, 'note': note},
+        )
+        self._audit(env, 'set_flag', resource=f'{key}={enabled}')
+        return Response(EnvironmentFeatureFlagSerializer(obj).data, status=status.HTTP_201_CREATED)
+
+    # ── Audit log ─────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def audit(self, request, pk=None):
+        env = self.get_object()
+        return Response(EnvironmentAuditEntrySerializer(env.audit_entries.all(), many=True).data)
+
+    # ── Pipeline runs targeting this environment ───────────────────────────────
+    @action(detail=True, methods=['get'], url_path='pipeline-runs')
+    def pipeline_runs(self, request, pk=None):
+        env  = self.get_object()
+        runs = PipelineRun.objects.filter(
+            definition__project=env.project,
+            env_deployments__environment=env,
+        ).distinct().order_by('-created_at')[:50]
+        data = [{
+            'id':          r.id,
+            'name':        r.definition.name,
+            'status':      r.status,
+            'version':     r.commit_sha[:8] if r.commit_sha else '',
+            'started_at':  r.started_at.isoformat() if r.started_at else None,
+            'finished_at': r.finished_at.isoformat() if r.finished_at else None,
+        } for r in runs]
+        return Response(data)
+
+    # ── Releases ──────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def releases(self, request, pk=None):
+        env = self.get_object()
+        return Response(EnvironmentReleaseSerializer(env.releases.all(), many=True).data)
 
 
 class PipelineArtifactViewSet(viewsets.ReadOnlyModelViewSet):

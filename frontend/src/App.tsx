@@ -76,6 +76,7 @@ import ProjectCreatePage          from './pages/ProjectCreatePage';
 import ProjectDashboardPage       from './pages/ProjectDashboardPage';
 import RepoSetupPage              from './pages/RepoSetupPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
+import EnvironmentDetailPage      from './pages/EnvironmentDetailPage';
 import DevOperationalPage         from './pages/DevOperationalPage'
 import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
@@ -117,6 +118,7 @@ const AppShell: React.FC = () => {
   const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
   const isProjectPage = location.pathname.startsWith('/developer/Dashboard/projects/');
   const isWorkspaceDashboard = /^\/developer\/Dashboard\/workspace\/[^\/]+/.test(location.pathname);
+  const isEnvironmentDetailPage = /^\/developer\/Dashboard\/environment\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
@@ -128,6 +130,16 @@ const AppShell: React.FC = () => {
       <ProtectedRoute>
         <Routes>
           <Route path="/developer/Dashboard/workspace/:workspaceId" element={<WorkspaceDashboardPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isEnvironmentDetailPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/Dashboard/environment/:envId" element={<EnvironmentDetailPage />} />
         </Routes>
       </ProtectedRoute>
     );

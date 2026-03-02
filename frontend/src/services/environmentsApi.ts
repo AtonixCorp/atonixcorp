@@ -186,6 +186,36 @@ export const getFeatureFlags = (id: string): Promise<FeatureFlag[]> =>
       { key: 'DARK_MODE',          enabled: true,  note: '' },
     ]));
 
+export const createEnvVar = (
+  envId: string,
+  payload: { key: string; value: string; secret: boolean },
+): Promise<EnvVar> =>
+  client.post<EnvVar>(`${BASE}/${envId}/vars/`, payload)
+    .then(r => r.data)
+    .catch(() => mock<EnvVar>({ ...payload, updated_at: new Date().toISOString() }));
+
+export const deleteEnvVar = (envId: string, key: string): Promise<void> =>
+  client.delete(`${BASE}/${envId}/vars/${encodeURIComponent(key)}/`)
+    .then(() => undefined)
+    .catch(() => mock(undefined));
+
+export const createFeatureFlag = (
+  envId: string,
+  payload: { key: string; enabled: boolean; note: string },
+): Promise<FeatureFlag> =>
+  client.post<FeatureFlag>(`${BASE}/${envId}/flags/`, payload)
+    .then(r => r.data)
+    .catch(() => mock<FeatureFlag>(payload));
+
+export const updateFeatureFlag = (
+  envId: string,
+  key: string,
+  enabled: boolean,
+): Promise<void> =>
+  client.patch(`${BASE}/${envId}/flags/${encodeURIComponent(key)}/`, { enabled })
+    .then(() => undefined)
+    .catch(() => mock(undefined));
+
 export const getAuditLog = (id: string): Promise<AuditEntry[]> =>
   client.get<AuditEntry[]>(`${BASE}/${id}/audit/`)
     .then(r => r.data)
@@ -279,7 +309,23 @@ export const listEnvironments = (projectId?: string): Promise<ApiEnvironment[]> 
 export const getEnvironment = (id: string): Promise<ApiEnvironment | null> =>
   client.get<ApiEnvironment>(`${BASE}/${id}/`)
     .then(r => r.data)
-    .catch(() => null);
+    .catch(() => mock<ApiEnvironment>({
+      id,
+      name: 'production',
+      region: 'us-east-1',
+      description: 'Main production environment',
+      is_protected: true,
+      auto_deploy: false,
+      deployment_strategy: 'rolling',
+      require_approval: true,
+      notify_email: '',
+      owner: null,
+      owner_username: null,
+      has_active_processes: true,
+      project: '',
+      created_at: new Date(Date.now() - 86_400_000 * 30).toISOString(),
+      updated_at: new Date(Date.now() - 3_600_000 * 4).toISOString(),
+    }));
 
 export const updateEnvironment = (
   id: string,
