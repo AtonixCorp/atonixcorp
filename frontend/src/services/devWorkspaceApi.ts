@@ -89,9 +89,42 @@ export interface WorkspaceSetupPayload {
 }
 
 export interface CreateDevWorkspacePayload {
+  // Step 1 — Basics
   workspace_id: string
   display_name: string
+  description?: string
   region?: string
+  zone?: string
+  // Step 2 — Compute
+  vcpu?: number
+  ram_gb?: number
+  gpu_enabled?: boolean
+  gpu_model?: string
+  // Step 3 — Storage
+  storage_type?: 'standard_ssd' | 'high_iops_ssd'
+  storage_size_gb?: number
+  backup_policy?: 'daily' | 'weekly' | 'none'
+  // Step 4 — Network
+  vpc?: string
+  subnet?: string
+  firewall_profile?: string
+  public_ip?: boolean
+  // Step 5 — Project & Container
+  project_action?: 'create' | 'connect' | 'skip'
+  project_name?: string
+  project_id?: string
+  container_runtime?: 'docker' | 'podman' | 'kubernetes'
+  container_template?: string
+  // Step 6 — Environment
+  environment_action?: 'create' | 'connect' | 'skip'
+  environment_name?: string
+  environment_type?: 'dev' | 'staging' | 'production'
+  environment_id?: string
+  // Step 7 — Domain
+  domain?: string
+  auto_subdomain?: boolean
+  subdomain_prefix?: string
+  // IDE / image (existing)
   image?: string
   ide?: string
 }
