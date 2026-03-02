@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry
+from .models import (
+    Group, GroupMember, GroupInvitation, GroupAccessToken,
+    GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry,
+    GroupPipeline, GroupPipelineRun,
+)
 
 
 # ── User summary ──────────────────────────────────────────────────────────────
@@ -223,3 +227,104 @@ class GroupSidebarSerializer(serializers.Serializer):
     group_type = serializers.CharField()
     sections = GroupSidebarItemSerializer(many=True)
 
+
+# ── GroupPipeline serializers ────────────────────────────────────────────────────
+
+class GroupPipelineRunSummarySerializer(serializers.ModelSerializer):
+    triggered_by = UserSummarySerializer(read_only=True)
+
+    class Meta:
+        model = GroupPipelineRun
+        fields = [
+            'id', 'status', 'trigger_source', 'branch', 'commit_sha',
+            'commit_message', 'environment_id', 'environment_name',
+            'workspace_id', 'started_at', 'finished_at', 'duration_s',
+            'triggered_by', 'created_at',
+        ]
+
+
+class GroupPipelineSerializer(serializers.ModelSerializer):
+    created_by = UserSummarySerializer(read_only=True)
+    updated_by = UserSummarySerializer(read_only=True)
+    last_run = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GroupPipeline
+        fields = [
+            'id', 'name', 'slug', 'description', 'pipeline_type', 'status',
+            'project_id', 'project_name', 'environment_targets',
+            'definition', 'yaml_content', 'triggers',
+            'upstream_pipeline_ids', 'downstream_pipeline_ids',
+            'notifications', 'tags',
+            'run_count', 'last_run_status', 'last_run_at',
+            'avg_duration_s', 'success_rate',
+            'created_by', 'updated_by', 'created_at', 'updated_at',
+            'last_run',
+        ]
+        read_only_fields = ['id', 'run_count', 'last_run_status', 'last_run_at',
+                            'avg_duration_s', 'success_rate', 'created_at', 'updated_at']
+
+    def get_last_run(self, obj):
+        run = obj.runs.order_by('-created_at').first()
+        if not run:
+            return None
+        return GroupPipelineRunSummarySerializer(run).data
+
+
+class GroupPipelineCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupPipeline
+        fields = [
+            'name', 'slug', 'description', 'pipeline_type', 'status',
+            'project_id', 'project_name', 'environment_targets',
+            'definition', 'yaml_content', 'triggers',
+            'upstream_pipeline_ids', 'downstream_pipeline_ids',
+            'notifications', 'tags',
+        ]
+
+
+class GroupPipelineUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupPipeline
+        fields = [
+            'name', 'description', 'pipeline_type', 'status',
+            'project_id', 'project_name', 'environment_targets',
+            'definition', 'yaml_content', 'triggers',
+            'upstream_pipeline_ids', 'downstream_pipeline_ids',
+            'notifications', 'tags',
+        ]
+
+
+class GroupPipelineRunSerializer(serializers.ModelSerializer):
+    triggered_by = UserSummarySerializer(read_only=True)
+    pipeline_name = serializers.CharField(source='pipeline.name', read_only=True)
+    pipeline_slug = serializers.CharField(source='pipeline.slug', read_only=True)
+
+    class Meta:
+        model = GroupPipelineRun
+        fields = [
+            'id', 'pipeline', 'pipeline_name', 'pipeline_slug',
+            'status', 'trigger_source', 'triggered_by',
+            'branch', 'commit_sha', 'commit_message',
+            'environment_id', 'environment_name', 'workspace_id',
+            'parameters', 'started_at', 'finished_at', 'duration_s',
+            'stages_snapshot', 'artifacts', 'log_url', 'metrics',
+            'rolled_back_from', 'created_at',
+        ]
+        read_only_fields = ['id', 'pipeline', 'triggered_by', 'started_at',
+                            'finished_at', 'duration_s', 'created_at']
+
+
+class GroupPipelineRunCreateSerializer(serializers.Serializer):
+    """Controls what a caller may supply when triggering a run."""
+    branch          = serializers.CharField(required=False, default='')
+    commit_sha      = serializers.CharField(required=False, default='')
+    commit_message  = serializers.CharField(required=False, default='')
+    environment_id  = serializers.CharField(required=False, default='')
+    environment_name = serializers.CharField(required=False, default='')
+    workspace_id    = serializers.CharField(required=False, default='')
+    parameters      = serializers.DictField(required=False, default=dict)
+    trigger_source  = serializers.ChoiceField(
+        choices=['user', 'webhook', 'schedule', 'api', 'upstream'],
+        default='user',
+    )
