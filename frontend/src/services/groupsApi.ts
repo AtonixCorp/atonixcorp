@@ -11,10 +11,20 @@ function unwrap<T>(data: unknown): T[] {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type GroupVisibility = 'public' | 'internal' | 'private'
-export type GroupType = 'developer' | 'production' | 'marketing' | 'data' | 'custom'
+export type GroupType = 'developer' | 'enterprise' | 'system' | 'production' | 'marketing' | 'data' | 'custom'
 export type GroupRole = 'owner' | 'admin' | 'maintainer' | 'developer' | 'viewer'
 export type InviteStatus = 'pending' | 'accepted' | 'declined' | 'expired'
 export type ImportSource = 'github' | 'gitlab' | 'bitbucket' | 'atonix'
+
+export type ResourceType =
+  | 'project' | 'pipeline' | 'environment' | 'container'
+  | 'k8s_cluster' | 'secret' | 'env_var' | 'deployment'
+  | 'metric_stream' | 'log_stream' | 'api_key' | 'storage' | 'domain'
+
+export type ConfigFileType =
+  | 'dockerfile' | 'pipeline_yaml' | 'k8s_manifest' | 'helm_chart'
+  | 'terraform' | 'env_template' | 'buildpack' | 'ansible'
+  | 'compose' | 'config_generic'
 
 export interface GroupResources {
   projects?: boolean
@@ -116,6 +126,134 @@ export interface GroupAuditLog {
   target: string
   detail: Record<string, unknown>
   created_at: string
+}
+
+// ── Resource Registry ─────────────────────────────────────────────────────────
+
+export interface GroupRegisteredResource {
+  id: string
+  resource_type: ResourceType
+  resource_id: string
+  resource_name: string
+  resource_slug: string
+  status: 'active' | 'inactive' | 'error' | 'pending'
+  region: string
+  environment: string
+  tags: string[]
+  metadata: Record<string, unknown>
+  discovered_at: string | null
+  created_at: string
+}
+
+export interface GroupRegisteredResourceCreatePayload {
+  resource_type: ResourceType
+  resource_id: string
+  resource_name: string
+  resource_slug?: string
+  status?: 'active' | 'inactive' | 'pending'
+  region?: string
+  environment?: string
+  tags?: string[]
+  metadata?: Record<string, unknown>
+}
+
+// ── Config Registry ───────────────────────────────────────────────────────────
+
+export interface GroupConfigFile {
+  id: string
+  project_id: string
+  file_type: ConfigFileType
+  file_name: string
+  file_path: string
+  repo_url: string
+  branch: string
+  content_preview: string
+  sha: string
+  last_indexed_at: string | null
+  tags: string[]
+  created_at: string
+}
+
+export interface GroupConfigFileCreatePayload {
+  project_id?: string
+  file_type: ConfigFileType
+  file_name: string
+  file_path: string
+  repo_url?: string
+  branch?: string
+  content_preview?: string
+  sha?: string
+  tags?: string[]
+}
+
+// ── Resource Bundle ───────────────────────────────────────────────────────────
+
+export interface GroupResourceItem {
+  id: string
+  name: string
+  slug: string
+  status: string
+  region: string
+  environment: string
+  tags: string[]
+  metadata: Record<string, unknown>
+  created_at: string | null
+}
+
+export interface GroupResourceBundle {
+  projects:       GroupResourceItem[]
+  pipelines:      GroupResourceItem[]
+  environments:   GroupResourceItem[]
+  containers:     GroupResourceItem[]
+  k8s_clusters:   GroupResourceItem[]
+  secrets:        GroupResourceItem[]
+  env_vars:       GroupResourceItem[]
+  deployments:    GroupResourceItem[]
+  metric_streams: GroupResourceItem[]
+  log_streams:    GroupResourceItem[]
+  api_keys:       GroupResourceItem[]
+  config_files:   GroupConfigFile[]
+  resource_counts: Record<string, number>
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+export interface GroupSidebarSection {
+  id: string
+  label: string
+  count: number
+  badge: string
+  status: string
+}
+
+export interface GroupSidebarData {
+  group_id: string
+  group_name: string
+  group_handle: string
+  group_type: GroupType | ''
+  sections: GroupSidebarSection[]
+  workspace_connected?: boolean
+}
+
+// ── Workspace connection ──────────────────────────────────────────────────────
+
+export interface GroupWorkspaceSummary {
+  workspace_id: string
+  display_name: string
+  status: string
+  region: string
+  owner: string
+  created_at: string
+  started_at: string | null
+}
+
+// ── Discovery ────────────────────────────────────────────────────────────────
+
+export interface GroupDiscoveryResult {
+  status: string
+  group: string
+  newly_registered: number
+  resources: GroupRegisteredResource[]
 }
 
 // ─── Group CRUD ───────────────────────────────────────────────────────────────
@@ -265,6 +403,62 @@ export async function createGroupProject(
   }
 }
 
+// ─── Resource Registry ────────────────────────────────────────────────────────
+
+export async function getGroupResources(groupId: string): Promise<GroupResourceBundle> {
+  const { data } = await client.get(`${BASE}/${groupId}/resources/`)
+  return data as GroupResourceBundle
+}
+
+export async function registerGroupResource(
+  groupId: string,
+  payload: GroupRegisteredResourceCreatePayload,
+): Promise<GroupRegisteredResource> {
+  const { data } = await client.post(`${BASE}/${groupId}/resources/`, payload)
+  return data as GroupRegisteredResource
+}
+
+export async function removeGroupResource(groupId: string, registryId: string): Promise<void> {
+  await client.delete(`${BASE}/${groupId}/resources/${registryId}/`)
+}
+
+// ─── Config Files ─────────────────────────────────────────────────────────────
+
+export async function listGroupConfigFiles(groupId: string): Promise<GroupConfigFile[]> {
+  const { data } = await client.get(`${BASE}/${groupId}/config-files/`)
+  return unwrap<GroupConfigFile>(data)
+}
+
+export async function registerGroupConfigFile(
+  groupId: string,
+  payload: GroupConfigFileCreatePayload,
+): Promise<GroupConfigFile> {
+  const { data } = await client.post(`${BASE}/${groupId}/config-files/`, payload)
+  return data as GroupConfigFile
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
+export async function getGroupSidebar(groupId: string): Promise<GroupSidebarData> {
+  const { data } = await client.get(`${BASE}/${groupId}/sidebar/`)
+  return data as GroupSidebarData
+}
+
+// ─── Workspaces ───────────────────────────────────────────────────────────────
+
+export async function listGroupWorkspaces(groupId: string): Promise<GroupWorkspaceSummary[]> {
+  const { data } = await client.get(`${BASE}/${groupId}/workspaces/`)
+  return unwrap<GroupWorkspaceSummary>(data)
+}
+
+// ─── Discovery ────────────────────────────────────────────────────────────────
+
+export async function triggerGroupDiscovery(groupId: string): Promise<GroupDiscoveryResult> {
+  const { data } = await client.post(`${BASE}/${groupId}/discover/`)
+  return data as GroupDiscoveryResult
+}
+
 // ─── Legacy compat export (kept for any existing imports) ─────────────────────
 export const groupsApi = { listGroups, getGroup, createGroup, updateGroup, deleteGroup }
 export default groupsApi
+

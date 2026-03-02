@@ -33,6 +33,8 @@ VISIBILITY_CHOICES = [
 
 GROUP_TYPE_CHOICES = [
     ('developer',  'Developer Group'),
+    ('enterprise', 'Enterprise Group'),
+    ('system',     'System Group'),
     ('production', 'Production Group'),
     ('marketing',  'Marketing Group'),
     ('data',       'Data / Science Group'),
@@ -190,6 +192,9 @@ class GroupAuditLog(TimeStampedModel):
         ('token_created',   'Token Created'),
         ('token_revoked',   'Token Revoked'),
         ('settings_changed','Settings Changed'),
+        ('resource_linked', 'Resource Linked'),
+        ('resource_removed','Resource Removed'),
+        ('config_indexed',  'Config File Indexed'),
     ]
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='audit_logs')
@@ -202,3 +207,127 @@ class GroupAuditLog(TimeStampedModel):
         db_table = 'groups_audit_log'
         ordering = ['-created_at']
         indexes = [models.Index(fields=['group', '-created_at'])]
+
+
+# ── GroupResourceRegistry ─────────────────────────────────────────────────────
+
+def _uid_registry():
+    return f'reg-{uuid.uuid4().hex[:12]}'
+
+
+class GroupResourceRegistry(TimeStampedModel):
+    """
+    Maps any platform resource (project, pipeline, environment, container,
+    k8s cluster, secret, deployment…) to the owning Group.
+
+    The resource is referenced by a (resource_type, resource_id) pair so
+    this model imposes no FK coupling to any specific service model.
+    """
+
+    RESOURCE_TYPE_CHOICES = [
+        ('project',     'Project'),
+        ('pipeline',    'CI/CD Pipeline'),
+        ('environment', 'Environment'),
+        ('container',   'Container'),
+        ('k8s_cluster', 'Kubernetes Cluster'),
+        ('secret',      'Secret'),
+        ('env_var',     'Environment Variable'),
+        ('deployment',  'Deployment'),
+        ('metric_stream', 'Metric Stream'),
+        ('log_stream',  'Log Stream'),
+        ('api_key',     'API Key / Token'),
+        ('storage',     'Storage Bucket'),
+        ('domain',      'Domain'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active',    'Active'),
+        ('inactive',  'Inactive'),
+        ('error',     'Error'),
+        ('pending',   'Pending'),
+    ]
+
+    id = models.CharField(max_length=40, primary_key=True, default=_uid_registry, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='resource_registry')
+    resource_type = models.CharField(max_length=30, choices=RESOURCE_TYPE_CHOICES)
+    resource_id = models.CharField(max_length=255, help_text='Service-specific resource identifier')
+    resource_name = models.CharField(max_length=255)
+    resource_slug = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    region = models.CharField(max_length=64, blank=True, default='')
+    environment = models.CharField(max_length=64, blank=True, default='',
+        help_text='dev / staging / prod / (empty = all)')
+    tags = models.JSONField(default=list, blank=True)
+    metadata = models.JSONField(default=dict, blank=True,
+        help_text='Resource-specific metadata (e.g. k8s version, pipeline status)')
+    discovered_at = models.DateTimeField(null=True, blank=True,
+        help_text='Set when auto-discovered; null when manually linked')
+    linked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='group_resource_links')
+
+    class Meta:
+        db_table = 'groups_resource_registry'
+        unique_together = [('group', 'resource_type', 'resource_id')]
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['group', 'resource_type']),
+            models.Index(fields=['group', 'status']),
+        ]
+
+    def __str__(self):
+        return f'{self.resource_type}:{self.resource_name} → {self.group.handle}'
+
+
+# ── GroupConfigRegistry ───────────────────────────────────────────────────────
+
+def _uid_config():
+    return f'cfg-{uuid.uuid4().hex[:12]}'
+
+
+class GroupConfigRegistry(TimeStampedModel):
+    """
+    Registry of configuration files tracked by the Group.
+
+    Covers: Dockerfiles, pipeline YAML, Terraform, Helm charts,
+    Kubernetes manifests, .env templates, and custom config files.
+    The Workspace Right Panel renders these as browsable config files.
+    """
+
+    FILE_TYPE_CHOICES = [
+        ('dockerfile',     'Dockerfile'),
+        ('pipeline_yaml',  'Pipeline YAML'),
+        ('k8s_manifest',   'Kubernetes Manifest'),
+        ('helm_chart',     'Helm Chart'),
+        ('terraform',      'Terraform / HCL'),
+        ('env_template',   '.env Template'),
+        ('buildpack',      'Cloud Buildpack'),
+        ('ansible',        'Ansible Playbook'),
+        ('compose',        'Docker Compose'),
+        ('config_generic', 'Generic Config'),
+    ]
+
+    id = models.CharField(max_length=40, primary_key=True, default=_uid_config, editable=False)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='config_registry')
+    project_id = models.CharField(max_length=255, blank=True, default='',
+        help_text='Owning project (optional; global group configs leave this blank)')
+    file_type = models.CharField(max_length=30, choices=FILE_TYPE_CHOICES)
+    file_name = models.CharField(max_length=255)
+    file_path = models.CharField(max_length=1024, help_text='Repo-relative path, e.g. deploy/Dockerfile')
+    repo_url = models.CharField(max_length=1024, blank=True, default='')
+    branch = models.CharField(max_length=255, blank=True, default='main')
+    content_preview = models.TextField(blank=True, default='',
+        help_text='First ~4 KB of the file for quick preview without a full fetch')
+    sha = models.CharField(max_length=64, blank=True, default='')
+    last_indexed_at = models.DateTimeField(null=True, blank=True)
+    tags = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        db_table = 'groups_config_registry'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['group', 'file_type']),
+            models.Index(fields=['group', 'project_id']),
+        ]
+
+    def __str__(self):
+        return f'{self.file_name} ({self.file_type}) → {self.group.handle}'

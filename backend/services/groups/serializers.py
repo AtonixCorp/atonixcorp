@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog
+from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry
 
 
 # ── User summary ──────────────────────────────────────────────────────────────
@@ -137,3 +137,89 @@ class GroupAuditLogSerializer(serializers.ModelSerializer):
         model = GroupAuditLog
         fields = ['id', 'actor', 'action', 'target', 'detail', 'created_at']
         read_only_fields = fields
+
+
+# ── GroupResourceRegistry ─────────────────────────────────────────────────────
+
+class GroupResourceRegistrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupResourceRegistry
+        fields = [
+            'id', 'resource_type', 'resource_id', 'resource_name',
+            'resource_slug', 'status', 'region', 'environment',
+            'tags', 'metadata', 'discovered_at', 'created_at',
+        ]
+        read_only_fields = ['id', 'discovered_at', 'created_at']
+
+
+class GroupResourceRegistryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupResourceRegistry
+        fields = [
+            'resource_type', 'resource_id', 'resource_name',
+            'resource_slug', 'status', 'region', 'environment',
+            'tags', 'metadata',
+        ]
+
+
+# ── GroupConfigRegistry ───────────────────────────────────────────────────────
+
+class GroupConfigRegistrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupConfigRegistry
+        fields = [
+            'id', 'project_id', 'file_type', 'file_name', 'file_path',
+            'repo_url', 'branch', 'content_preview', 'sha',
+            'last_indexed_at', 'tags', 'created_at',
+        ]
+        read_only_fields = ['id', 'last_indexed_at', 'created_at']
+
+
+class GroupConfigRegistryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupConfigRegistry
+        fields = [
+            'project_id', 'file_type', 'file_name', 'file_path',
+            'repo_url', 'branch', 'content_preview', 'sha', 'tags',
+        ]
+
+
+# ── GroupResourceBundle (read-only aggregate) ─────────────────────────────────
+
+class GroupResourceBundleSerializer(serializers.Serializer):
+    """
+    Aggregated resources returned by GET /groups/{id}/resources/
+    Used by Workspace Dashboard to populate its sidebar from the Group.
+    """
+    projects = serializers.ListField(child=serializers.DictField(), default=list)
+    pipelines = serializers.ListField(child=serializers.DictField(), default=list)
+    environments = serializers.ListField(child=serializers.DictField(), default=list)
+    containers = serializers.ListField(child=serializers.DictField(), default=list)
+    k8s_clusters = serializers.ListField(child=serializers.DictField(), default=list)
+    secrets = serializers.ListField(child=serializers.DictField(), default=list)
+    env_vars = serializers.ListField(child=serializers.DictField(), default=list)
+    deployments = serializers.ListField(child=serializers.DictField(), default=list)
+    metric_streams = serializers.ListField(child=serializers.DictField(), default=list)
+    log_streams = serializers.ListField(child=serializers.DictField(), default=list)
+    api_keys = serializers.ListField(child=serializers.DictField(), default=list)
+    config_files = GroupConfigRegistrySerializer(many=True, default=list)
+    resource_counts = serializers.DictField(default=dict)
+
+
+# ── GroupSidebarSerializer ────────────────────────────────────────────────────
+
+class GroupSidebarItemSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    label = serializers.CharField()
+    count = serializers.IntegerField(default=0)
+    badge = serializers.CharField(allow_blank=True, default='')
+    status = serializers.CharField(allow_blank=True, default='')
+
+
+class GroupSidebarSerializer(serializers.Serializer):
+    group_id = serializers.CharField()
+    group_name = serializers.CharField()
+    group_handle = serializers.CharField()
+    group_type = serializers.CharField()
+    sections = GroupSidebarItemSerializer(many=True)
+

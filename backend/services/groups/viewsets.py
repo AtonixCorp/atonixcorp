@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog
+from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry
 from .serializers import (
     GroupSerializer,
     GroupCreateSerializer,
@@ -15,6 +15,12 @@ from .serializers import (
     GroupInviteCreateSerializer,
     GroupAccessTokenSerializer,
     GroupAuditLogSerializer,
+    GroupResourceRegistrySerializer,
+    GroupResourceRegistryCreateSerializer,
+    GroupConfigRegistrySerializer,
+    GroupConfigRegistryCreateSerializer,
+    GroupResourceBundleSerializer,
+    GroupSidebarSerializer,
 )
 
 
@@ -279,3 +285,197 @@ class GroupViewSet(viewsets.ModelViewSet):
             {'detail': 'Project creation via group API is not yet available.'},
             status=status.HTTP_501_NOT_IMPLEMENTED,
         )
+
+    # ── /groups/{id}/resources/ ───────────────────────────────────────────────
+
+    @action(detail=True, methods=['get', 'post'], url_path='resources')
+    def resources(self, request, pk=None):
+        """
+        GET  – Returns the full GroupResourceBundle: a structured summary of all
+               resources owned by this group, grouped by type.  Used by the
+               Workspace Dashboard to populate its sidebar.
+        POST – Register (link) a new resource to this group.
+        """
+        group = self.get_object()
+
+        if request.method == 'POST':
+            serializer = GroupResourceRegistryCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            entry = GroupResourceRegistry.objects.create(
+                group=group,
+                linked_by=request.user,
+                **serializer.validated_data,
+            )
+            _audit(group, request.user.username, 'resource_linked',
+                   entry.resource_name, {'type': entry.resource_type})
+            return Response(GroupResourceRegistrySerializer(entry).data, status=201)
+
+        # ── GET: build the resource bundle ────────────────────────────────────
+        registry = group.resource_registry.filter(status='active').order_by('resource_type', 'resource_name')
+
+        def _bucket(rtype):
+            return [
+                {
+                    'id':   r.resource_id,
+                    'name': r.resource_name,
+                    'slug': r.resource_slug,
+                    'status': r.status,
+                    'region': r.region,
+                    'environment': r.environment,
+                    'tags': r.tags,
+                    'metadata': r.metadata,
+                    'created_at': r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in registry if r.resource_type == rtype
+            ]
+
+        config_files = group.config_registry.order_by('file_type', 'file_name')
+        counts = {}
+        for r in registry:
+            counts[r.resource_type] = counts.get(r.resource_type, 0) + 1
+
+        bundle = {
+            'projects':      _bucket('project'),
+            'pipelines':     _bucket('pipeline'),
+            'environments':  _bucket('environment'),
+            'containers':    _bucket('container'),
+            'k8s_clusters':  _bucket('k8s_cluster'),
+            'secrets':       _bucket('secret'),
+            'env_vars':      _bucket('env_var'),
+            'deployments':   _bucket('deployment'),
+            'metric_streams': _bucket('metric_stream'),
+            'log_streams':   _bucket('log_stream'),
+            'api_keys':      _bucket('api_key'),
+            'config_files':  GroupConfigRegistrySerializer(config_files, many=True).data,
+            'resource_counts': counts,
+        }
+        return Response(bundle)
+
+    # ── /groups/{id}/resources/{reg_id}/ ──────────────────────────────────────
+
+    @action(detail=True, methods=['delete'], url_path=r'resources/(?P<reg_id>[^/.]+)')
+    def remove_resource(self, request, pk=None, reg_id=None):
+        group = self.get_object()
+        try:
+            entry = group.resource_registry.get(pk=reg_id)
+        except GroupResourceRegistry.DoesNotExist:
+            return Response({'error': 'Resource not found'}, status=404)
+        name = entry.resource_name
+        rtype = entry.resource_type
+        entry.delete()
+        _audit(group, request.user.username, 'resource_removed', name, {'type': rtype})
+        return Response(status=204)
+
+    # ── /groups/{id}/config-files/ ────────────────────────────────────────────
+
+    @action(detail=True, methods=['get', 'post'], url_path='config-files')
+    def config_files(self, request, pk=None):
+        """
+        GET  – List all config files tracked by this group (right panel feed).
+        POST – Register a new config file entry.
+        """
+        group = self.get_object()
+
+        if request.method == 'POST':
+            serializer = GroupConfigRegistryCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            cfg = GroupConfigRegistry.objects.create(
+                group=group,
+                last_indexed_at=timezone.now(),
+                **serializer.validated_data,
+            )
+            _audit(group, request.user.username, 'config_indexed', cfg.file_name,
+                   {'type': cfg.file_type, 'path': cfg.file_path})
+            return Response(GroupConfigRegistrySerializer(cfg).data, status=201)
+
+        configs = group.config_registry.order_by('file_type', 'file_name')
+        return Response(GroupConfigRegistrySerializer(configs, many=True).data)
+
+    # ── /groups/{id}/discover/ ────────────────────────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='discover')
+    def discover(self, request, pk=None):
+        """
+        POST /groups/{id}/discover/
+        Triggers auto-discovery: scans the platform for resources that belong
+        to this group (matching group slug / handle tags) and registers them
+        in the GroupResourceRegistry.
+
+        In a full implementation this would fan out to Project / Pipeline /
+        Environment / Container services and collect all matching IDs.
+        Here we return a summary of what would be discovered.
+        """
+        group = self.get_object()
+        # Stub – production would query each service for group-tagged resources
+        newly_found = []
+
+        return Response({
+            'status': 'discovery_complete',
+            'group': group.handle,
+            'newly_registered': len(newly_found),
+            'resources': newly_found,
+        })
+
+    # ── /groups/{id}/workspaces/ ──────────────────────────────────────────────
+
+    @action(detail=True, methods=['get'], url_path='workspaces')
+    def workspaces(self, request, pk=None):
+        """
+        GET /groups/{id}/workspaces/
+        Returns all DevWorkspaces connected to this group.
+        """
+        group = self.get_object()
+        from ..workspace.models import DevWorkspace
+        ws_qs = DevWorkspace.objects.filter(connected_group_id=group.id).order_by('-created_at')
+        data = [
+            {
+                'workspace_id':   ws.workspace_id,
+                'display_name':   ws.display_name,
+                'status':         ws.status,
+                'region':         ws.region,
+                'owner':          ws.owner.username,
+                'created_at':     ws.created_at.isoformat(),
+                'started_at':     ws.started_at.isoformat() if ws.started_at else None,
+            }
+            for ws in ws_qs
+        ]
+        return Response(data)
+
+    # ── /groups/{id}/sidebar/ ─────────────────────────────────────────────────
+
+    @action(detail=True, methods=['get'], url_path='sidebar')
+    def sidebar(self, request, pk=None):
+        """
+        GET /groups/{id}/sidebar/
+        Returns the sidebar navigation spec for this group, including resource
+        counts for each section.  The Workspace Dashboard consumes this to build
+        its live sidebar.
+        """
+        group = self.get_object()
+        registry = group.resource_registry.filter(status='active')
+
+        def _count(rtype):
+            return registry.filter(resource_type=rtype).count()
+
+        sections = [
+            {'id': 'overview',      'label': 'Overview',          'count': 0,                        'badge': '', 'status': 'ok'},
+            {'id': 'projects',      'label': 'Projects',          'count': group.project_count,       'badge': '', 'status': 'ok'},
+            {'id': 'pipelines',     'label': 'CI/CD Pipelines',   'count': group.pipeline_count,      'badge': '', 'status': 'ok'},
+            {'id': 'environments',  'label': 'Environments',       'count': _count('environment'),     'badge': '', 'status': 'ok'},
+            {'id': 'containers',    'label': 'Containers',         'count': _count('container'),       'badge': '', 'status': 'ok'},
+            {'id': 'kubernetes',    'label': 'Kubernetes',         'count': _count('k8s_cluster'),     'badge': '', 'status': 'ok'},
+            {'id': 'deployments',   'label': 'Deployments',        'count': _count('deployment'),      'badge': '', 'status': 'ok'},
+            {'id': 'metrics',       'label': 'Metrics',            'count': _count('metric_stream'),   'badge': '', 'status': 'ok'},
+            {'id': 'logs',          'label': 'Logs',               'count': _count('log_stream'),      'badge': '', 'status': 'ok'},
+            {'id': 'secrets',       'label': 'Secrets',            'count': _count('secret'),          'badge': '', 'status': 'ok'},
+            {'id': 'env-vars',      'label': 'Environment Vars',   'count': _count('env_var'),         'badge': '', 'status': 'ok'},
+            {'id': 'access',        'label': 'Access Control',     'count': group.member_count,        'badge': '', 'status': 'ok'},
+            {'id': 'settings',      'label': 'Settings',           'count': 0,                        'badge': '', 'status': 'ok'},
+        ]
+        return Response({
+            'group_id':     group.id,
+            'group_name':   group.name,
+            'group_handle': group.handle,
+            'group_type':   group.group_type,
+            'sections':     sections,
+        })

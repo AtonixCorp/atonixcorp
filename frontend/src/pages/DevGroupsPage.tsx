@@ -58,6 +58,8 @@ const VISIBILITY_BG: Record<GroupVisibility, string> = {
 };
 const TYPE_LABEL: Record<GroupType, string> = {
   developer:  'Dev',
+  enterprise: 'Enterprise',
+  system:     'System',
   production: 'Prod',
   marketing:  'Mktg',
   data:       'Data',

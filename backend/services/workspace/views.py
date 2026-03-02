@@ -276,3 +276,70 @@ class DevWorkspaceViewSet(viewsets.ModelViewSet):
             DevWorkspaceSerializer(workspace).data,
             status=status.HTTP_200_OK,
         )
+
+    # ------------------------------------------------------------------
+    # Group-powered sidebar
+    # GET /api/services/dev-workspaces/<workspace_id>/group-sidebar/
+    # ------------------------------------------------------------------
+
+    @action(detail=True, methods=['get'], url_path='group-sidebar')
+    def group_sidebar(self, request, workspace_id=None):
+        """
+        Returns the Group sidebar spec for the workspace's connected group,
+        including per-section resource counts.  If no group is connected
+        the response has an empty sections list.
+        """
+        workspace = self.get_object()
+        if not workspace.connected_group_id:
+            return Response({
+                'group_id': '',
+                'group_name': '',
+                'group_handle': '',
+                'group_type': '',
+                'sections': [],
+                'workspace_connected': False,
+            })
+
+        from ..groups.models import Group as GroupModel, GroupResourceRegistry
+        try:
+            group = GroupModel.objects.get(id=workspace.connected_group_id)
+        except GroupModel.DoesNotExist:
+            return Response({
+                'group_id': workspace.connected_group_id,
+                'group_name': workspace.connected_group_name,
+                'group_handle': '',
+                'group_type': '',
+                'sections': [],
+                'workspace_connected': True,
+                'error': 'Group not found',
+            })
+
+        registry = GroupResourceRegistry.objects.filter(group=group, status='active')
+
+        def _count(rtype):
+            return registry.filter(resource_type=rtype).count()
+
+        sections = [
+            {'id': 'overview',     'label': 'Overview',         'count': 0,                    'badge': '', 'status': 'ok'},
+            {'id': 'projects',     'label': 'Projects',         'count': group.project_count,   'badge': '', 'status': 'ok'},
+            {'id': 'pipelines',    'label': 'CI/CD Pipelines',  'count': group.pipeline_count,  'badge': '', 'status': 'ok'},
+            {'id': 'environments', 'label': 'Environments',      'count': _count('environment'), 'badge': '', 'status': 'ok'},
+            {'id': 'containers',   'label': 'Containers',        'count': _count('container'),   'badge': '', 'status': 'ok'},
+            {'id': 'kubernetes',   'label': 'Kubernetes',        'count': _count('k8s_cluster'), 'badge': '', 'status': 'ok'},
+            {'id': 'deployments',  'label': 'Deployments',       'count': _count('deployment'),  'badge': '', 'status': 'ok'},
+            {'id': 'metrics',      'label': 'Metrics',           'count': _count('metric_stream'),'badge': '','status': 'ok'},
+            {'id': 'logs',         'label': 'Logs',              'count': _count('log_stream'),  'badge': '', 'status': 'ok'},
+            {'id': 'secrets',      'label': 'Secrets',           'count': _count('secret'),      'badge': '', 'status': 'ok'},
+            {'id': 'env-vars',     'label': 'Environment Vars',  'count': _count('env_var'),     'badge': '', 'status': 'ok'},
+            {'id': 'access',       'label': 'Access Control',    'count': group.member_count,    'badge': '', 'status': 'ok'},
+            {'id': 'settings',     'label': 'Settings',          'count': 0,                    'badge': '', 'status': 'ok'},
+        ]
+
+        return Response({
+            'group_id':          group.id,
+            'group_name':        group.name,
+            'group_handle':      group.handle,
+            'group_type':        group.group_type,
+            'sections':          sections,
+            'workspace_connected': True,
+        })

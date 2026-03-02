@@ -52,6 +52,7 @@ import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDes
 import {
   getDevWorkspace, startDevWorkspace, stopDevWorkspace,
   restartDevWorkspace, deleteDevWorkspace, updateDevWorkspace,
+  getWorkspaceGroupSidebar,
   type DevWorkspace,
 } from '../services/devWorkspaceApi';
 import WorkspaceSetupWizard, { type WorkspaceSetupWizardResult } from '../components/Workspace/WorkspaceSetupWizard';
@@ -68,6 +69,7 @@ import {
   type Group,
   type GroupType,
   type GroupVisibility,
+  type GroupSidebarData,
 } from '../services/groupsApi';
 import {
   listClusters, createCluster,
@@ -795,6 +797,8 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [newVal, setNewVal]                   = useState('');
   // Poll interval
   const pollRef                               = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Group sidebar data (loaded when workspace has a connected group)
+  const [groupSidebar, setGroupSidebar]       = useState<GroupSidebarData | null>(null);
 
   // ── Integration context — persisted to localStorage per workspace ─────────
   const lsKey = (k: string) => `ws_${workspaceId}_${k}`;
@@ -831,7 +835,7 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [grpName, setGrpName]                     = useState('');
   const [grpDescription, setGrpDescription]       = useState('');
   const [grpVisibility, setGrpVisibility]         = useState<'private' | 'internal' | 'public'>('private');
-  const [grpType, setGrpType]                     = useState<'developer' | 'production' | 'marketing' | 'data' | 'custom'>('developer');
+  const [grpType, setGrpType]                     = useState<GroupType>('developer');
   const [grpMembers, setGrpMembers]               = useState('');
   const [grpBusy, setGrpBusy]                     = useState(false);
   const [groupsList, setGroupsList]               = useState<Group[]>([]);
@@ -1021,6 +1025,10 @@ const WorkspaceDashboardPage: React.FC = () => {
       // Auto-open right panel on error or high resource usage
       if (data.status === 'error' || data.cpu_percent > 80 || data.ram_percent > 80) {
         setRightOpen(true);
+      }
+      // Load group sidebar if workspace is connected to a group
+      if (data.connected_group_id) {
+        getWorkspaceGroupSidebar(workspaceId).then(d => setGroupSidebar(d)).catch(() => {});
       }
     } catch {
       setError('Could not load workspace.');
@@ -2264,7 +2272,7 @@ const WorkspaceDashboardPage: React.FC = () => {
                   </Stack>
                   <Stack direction="row" spacing={1}>
                     <Button size="small" variant="outlined" endIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
-                      onClick={() => navigate(`/developer/Dashboard/groups/${ws.connected_group_id}`)}
+                      onClick={() => navigate(`/groups/${ws.connected_group_id}`)}
                       sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>View Group</Button>
                     <Button size="small" variant="outlined" onClick={() => setSetupWizardOpen(true)}
                       sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Change</Button>
@@ -2914,6 +2922,29 @@ const WorkspaceDashboardPage: React.FC = () => {
                   </>
                 );
               })()}
+
+              {/* ── Group Resources (from connected group's control plane) ── */}
+              {groupSidebar && groupSidebar.sections.length > 0 && (
+                <>
+                  <Divider sx={{ borderColor: t.border, my: 1.5 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '.72rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1, px: 0.5 }}>
+                    Group Resources
+                  </Typography>
+                  <Box sx={{ p: 1.5, borderRadius: '8px', bgcolor: t.surfaceSubtle, border: `1px solid ${t.brandPrimary}20` }}>
+                    <Stack spacing={0.6}>
+                      {groupSidebar.sections.filter(s => s.count > 0).map(s => (
+                        <Stack key={s.id} direction="row" justifyContent="space-between" alignItems="center">
+                          <Typography sx={{ fontSize: '.76rem', color: t.textSecondary, textTransform: 'capitalize' }}>
+                            {s.label}
+                          </Typography>
+                          <Chip label={s.count} size="small" sx={{ height: 18, fontSize: '.68rem', fontWeight: 700,
+                            bgcolor: `${t.brandPrimary}18`, color: t.brandPrimary, minWidth: 24 }} />
+                        </Stack>
+                      ))}
+                    </Stack>
+                  </Box>
+                </>
+              )}
 
               {/* ── Active Pipeline ───────────────────────────────────────── */}
               {activePipeline && (

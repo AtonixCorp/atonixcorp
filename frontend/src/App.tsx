@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 // Context
@@ -103,6 +103,13 @@ import DevCatalogPage            from './pages/DevCatalogPage';
 import DevSandboxPage            from './pages/DevSandboxPage';
 import DevWebhooksPage           from './pages/DevWebhooksPage';
 
+// Redirect /developer/Dashboard/groups/:groupId → /groups/:groupId
+const RedirectToGroupPage: React.FC = () => {
+  const { groupId, section } = useParams<{ groupId: string; section?: string }>();
+  if (section) return <Navigate to={`/groups/${groupId}/${section}`} replace />;
+  return <Navigate to={`/groups/${groupId}`} replace />;
+};
+
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isInitializing } = useAuth() as any;
@@ -204,6 +211,8 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/developer/Dashboard/workspace" element={<DevWorkspacePage />} />
             <Route path="/developer/Dashboard/groups" element={<DevGroupsPage />} />
+            <Route path="/developer/Dashboard/groups/:groupId" element={<RedirectToGroupPage />} />
+            <Route path="/developer/Dashboard/groups/:groupId/:section" element={<RedirectToGroupPage />} />
             <Route path="/developer/Dashboard/environment" element={<DevEnvironmentPage />} />
             <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
             <Route path="/developer/Dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />

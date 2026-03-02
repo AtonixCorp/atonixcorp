@@ -1,6 +1,7 @@
 // AtonixCorp Cloud – Developer Workspace API Client
 
 import client from './apiClient'
+import type { GroupSidebarData } from './groupsApi'
 
 const BASE = '/api/services/dev-workspaces'
 
@@ -248,3 +249,14 @@ export async function workspaceSetup(
   )
   return data
 }
+
+/**
+ * Fetch the Group-powered sidebar for this workspace.
+ * GET /api/services/dev-workspaces/<workspace_id>/group-sidebar/
+ * If no group is connected, sections will be empty.
+ */
+export async function getWorkspaceGroupSidebar(workspaceId: string): Promise<GroupSidebarData> {
+  const { data } = await client.get(`${BASE}/${workspaceId}/group-sidebar/`)
+  return data as GroupSidebarData
+}
+
