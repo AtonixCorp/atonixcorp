@@ -20,6 +20,7 @@ import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import ErrorIcon              from '@mui/icons-material/Error';
 import CloudQueueIcon         from '@mui/icons-material/CloudQueue';
 import CodeIcon               from '@mui/icons-material/Code';
+import DashboardIcon          from '@mui/icons-material/Dashboard';
 import DeleteIcon             from '@mui/icons-material/Delete';
 import DevicesIcon            from '@mui/icons-material/Devices';
 import ExploreIcon            from '@mui/icons-material/Explore';
@@ -110,7 +111,7 @@ interface SidebarItem {
 }
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { id: 'overview',      label: 'Overview',         icon: <GroupIcon sx={{ fontSize: '1rem' }} /> },
+  { id: 'overview',      label: 'Overview',         icon: <DashboardIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'projects',      label: 'Projects',          icon: <FolderOpenIcon sx={{ fontSize: '1rem' }} /> },
   { id: 'pipelines',     label: 'CI/CD Pipelines',   icon: <PlayCircleOutlineIcon sx={{ fontSize: '1rem' }} /> },
   { id: 'environments',  label: 'Environments',      icon: <DevicesIcon sx={{ fontSize: '1rem' }} /> },
