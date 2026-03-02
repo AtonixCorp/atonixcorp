@@ -1,0 +1,164 @@
+# AtonixCorp – OpenStack Prometheus Alert Rules
+# Requires: openstack-exporter  (https://github.com/openstack-exporter/openstack-exporter)
+#   docker run -d -p 9180:9180 \
+#     -v /etc/openstack:/etc/openstack:ro \
+#     quay.io/openstack-exporter/openstack-exporter:latest
+#
+# All metrics are prefixed openstack_<service>_<metric>
+# Severity levels: page / warning / info
+
+groups:
+
+  - name: openstack.nova
+    rules:
+      - alert: NovaInstanceCreationHighFailureRate
+        expr: |
+          rate(openstack_nova_server_status{status="ERROR"}[10m])
+          / rate(openstack_nova_server_status[10m]) > 0.10
+        for: 5m
+        labels:
+          severity: page
+          cloud_type: "{{ $labels.cloud }}"
+        annotations:
+          summary: "Nova instance creation failure rate > 10%"
+          description: "More than 10% of Nova VM creation requests are failing. Check nova-api and nova-conductor logs."
+          runbook: "docs/runbooks/incident-response.md#nova-api-failure"
+
+      - alert: NovaHypervisorMemoryPressure
+        expr: |
+          openstack_nova_used_ram_mbs / openstack_nova_total_ram_mbs > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Nova hypervisor memory usage > 85%"
+          description: "Hypervisor {{ $labels.hostname }} memory utilisation is {{ $value | humanizePercentage }}. Consider adding compute nodes."
+          runbook: "docs/runbooks/scaling.md#add-compute-nodes"
+
+      - alert: NovaHypervisorVCPUOvercommit
+        expr: |
+          openstack_nova_used_vcpus / (openstack_nova_total_vcpus * 16) > 0.90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Nova vCPU overcommit ratio > 90% of 16:1 target"
+          description: "vCPU allocation is {{ $value | humanizePercentage }} of the 16:1 overcommit ceiling."
+          runbook: "docs/runbooks/scaling.md#add-compute-nodes"
+
+      - alert: NovaNoRunningInstances
+        expr: sum(openstack_nova_instances) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No running Nova instances detected (possible service outage)"
+          description: "The Nova exporter reports zero running instances. Check if nova-compute is accessible."
+
+  - name: openstack.neutron
+    rules:
+      - alert: NeutronAgentDown
+        expr: openstack_neutron_agent_state == 0
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: "Neutron agent {{ $labels.binary }} on {{ $labels.host }} is DOWN"
+          description: "Agent {{ $labels.binary }} ({{ $labels.agent_type }}) on {{ $labels.host }} has been down for >2 min."
+          runbook: "docs/runbooks/incident-response.md#neutron-agent-down"
+
+      - alert: NeutronL3AgentAllDown
+        expr: count(openstack_neutron_agent_state{binary="neutron-l3-agent"} == 1) == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "All Neutron L3 agents are DOWN — routers unreachable"
+          description: "No neutron-l3-agent is up. All tenant routers are offline. North-south traffic will fail."
+          runbook: "docs/runbooks/incident-response.md#neutron-l3-all-down"
+
+      - alert: NeutronIPAllocationExhaustion
+        expr: |
+          openstack_neutron_used_ips / openstack_neutron_total_ips > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Neutron floating IP pool > 90% exhausted (subnet {{ $labels.subnet_name }})"
+          description: "{{ $value | humanizePercentage }} of floating IPs in subnet {{ $labels.subnet_name }} are allocated."
+          runbook: "docs/runbooks/scaling.md#expand-floating-ip-pool"
+
+  - name: openstack.cinder
+    rules:
+      - alert: CinderVolumeHighFailureRate
+        expr: |
+          rate(openstack_cinder_volumes{status="error"}[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cinder volumes entering ERROR state"
+          description: "{{ $value }} Cinder volumes transitioned to ERROR state in the last 10 min. Check cinder-volume and Ceph RBD."
+          runbook: "docs/runbooks/incident-response.md#cinder-volume-error"
+
+      - alert: CinderVolumeServiceDown
+        expr: openstack_cinder_volume_service{state="down"} > 0
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: "Cinder volume service {{ $labels.host }} is DOWN"
+          description: "Cinder volume service on {{ $labels.host }} has been down >2 min. Block volume operations will fail."
+          runbook: "docs/runbooks/incident-response.md#cinder-service-down"
+
+  - name: openstack.keystone
+    rules:
+      - alert: KeystoneHighAuthFailureRate
+        expr: |
+          rate(openstack_identity_credentials_total{type="token"}[5m]) == 0
+        for: 3m
+        labels:
+          severity: page
+        annotations:
+          summary: "Keystone is not issuing tokens — authentication may be down"
+          description: "No token issuances recorded in the last 3 min. Check keystone-wsgi-admin and keystone-wsgi-public."
+          runbook: "docs/runbooks/incident-response.md#keystone-token-down"
+
+  - name: openstack.quotas
+    rules:
+      - alert: ProjectVCPUQuotaNearLimit
+        expr: |
+          openstack_nova_limits_vcpus_used / openstack_nova_limits_vcpus_max > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Project {{ $labels.project }} vCPU quota > 90% used"
+          description: "Project {{ $labels.project }} has consumed {{ $value | humanizePercentage }} of its vCPU quota."
+          runbook: "docs/runbooks/scaling.md#increase-project-quota"
+
+      - alert: ProjectMemoryQuotaNearLimit
+        expr: |
+          openstack_nova_limits_memory_used / openstack_nova_limits_memory_max > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Project {{ $labels.project }} RAM quota > 90% used"
+          description: "Project {{ $labels.project }} RAM usage is {{ $value | humanizePercentage }} of quota."
+          runbook: "docs/runbooks/scaling.md#increase-project-quota"
+
+  - name: openstack.api_latency
+    rules:
+      - alert: OpenStackAPIHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(openstack_api_request_duration_seconds_bucket{service=~"nova|neutron|cinder|keystone"}[5m])
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OpenStack {{ $labels.service }} API p95 latency > 2s"
+          description: "API p95 latency for {{ $labels.service }} is {{ $value }}s. Check controller node load and DB."
+          runbook: "docs/runbooks/incident-response.md#api-high-latency"

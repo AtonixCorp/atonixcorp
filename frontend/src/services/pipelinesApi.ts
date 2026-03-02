@@ -60,7 +60,105 @@ export interface BackendPipelineArtifact {
   created_at?: string;
 }
 
-/* ───────── Pipeline runs ───────── */
+/* ───────── Pipeline Definition types ───────── */
+
+export type NodeStatus = 'pending' | 'running' | 'success' | 'failed' | 'skipped' | 'waiting' | 'cancelled';
+export type StageType  = 'build' | 'test' | 'security' | 'deploy' | 'verify' | 'notify' | 'custom';
+export type StepType   = 'script' | 'docker' | 'kubernetes' | 'approval' | 'notification' | 'artifact' | 'test' | 'scan';
+
+export interface PipelineDefinitionStep {
+  id:              number;
+  name:            string;
+  type:            StepType;
+  script:          string;
+  config_json:     Record<string, unknown>;
+  order:           number;
+  condition:       'always' | 'on_success' | 'on_failure';
+  timeout_seconds: number;
+  retry_count:     number;
+}
+
+export interface PipelineDefinitionStage {
+  id:          number;
+  definition:  string;
+  name:        string;
+  type:        StageType;
+  order:       number;
+  environment: string;
+  parallel:    boolean;
+  condition:   string;
+  steps:       PipelineDefinitionStep[];
+}
+
+export interface PipelineDefinition {
+  id:                  string;
+  project:             string;
+  project_name:        string;
+  name:                string;
+  description:         string;
+  yaml_definition:     string;
+  variables:           Array<{ name: string; value: string; secret?: boolean }>;
+  triggers:            Array<Record<string, unknown>>;
+  is_active:           boolean;
+  created_by:          number | null;
+  created_by_username: string | null;
+  created_at:          string;
+  updated_at:          string;
+  stages:              PipelineDefinitionStage[];
+  last_run_status:     NodeStatus | null;
+  total_runs:          number;
+}
+
+export interface PipelineRunNode {
+  id:          number;
+  node_type:   'stage' | 'step';
+  stage_name:  string;
+  step_name:   string;
+  status:      NodeStatus;
+  order:       number;
+  started_at:  string | null;
+  finished_at: string | null;
+  duration_s:  number | null;
+  log_output:  string;
+  error_msg:   string;
+  artifacts:   Array<{ name: string; url: string }>;
+}
+
+export interface PipelineRunArtifact {
+  id:            number;
+  run:           string;
+  node:          number | null;
+  name:          string;
+  artifact_type: string;
+  storage_url:   string;
+  size_bytes:    number;
+  metadata:      Record<string, unknown>;
+  created_at:    string;
+}
+
+export interface PipelineRun {
+  id:              string;
+  definition:      string;
+  definition_name: string;
+  project_name:    string;
+  repo:            string | null;
+  repo_name:       string | null;
+  status:          NodeStatus;
+  triggered_by:    string;
+  branch:          string;
+  commit_sha:      string;
+  commit_msg:      string;
+  variables:       Record<string, string>;
+  started_at:      string | null;
+  finished_at:     string | null;
+  duration_s:      number | null;
+  created_at:      string;
+  updated_at:      string;
+  nodes?:          PipelineRunNode[];
+  run_artifacts?:  PipelineRunArtifact[];
+}
+
+/* ───────── Pipeline runs (legacy) ───────── */
 
 export async function listPipelines(params?: {
   project?: string;
@@ -107,9 +205,9 @@ export async function getJobLogs(jobId: string): Promise<BackendJobLog[]> {
 
 /* ───────── Repositories ───────── */
 
-export async function listRepositories(): Promise<BackendRepository[]> {
-  const response = await apiClient.get<BackendRepository[]>('/api/services/pipelines/repositories/');
-  return response.data;
+export async function listRepositories(params?: { project?: string }): Promise<BackendRepository[]> {
+  const response = await apiClient.get<BackendRepository[]>('/api/services/pipelines/repositories/', { params });
+  return Array.isArray(response.data) ? response.data : (response.data as any).results ?? [];
 }
 
 export async function getRepositoryBranches(repoId: string): Promise<{ name: string; commit: string }[]> {
@@ -155,4 +253,105 @@ export async function listProjects(): Promise<BackendProject[]> {
 export async function createProject(data: { name: string; description?: string }): Promise<BackendProject> {
   const response = await apiClient.post<BackendProject>('/api/services/pipelines/projects/', data);
   return response.data;
+}
+
+/* ───────── Pipeline Definitions (new engine) ───────── */
+
+export async function listDefinitions(params?: { project?: string; active?: boolean }): Promise<PipelineDefinition[]> {
+  const response = await apiClient.get<PipelineDefinition[]>('/api/services/pipelines/definitions/', { params });
+  return Array.isArray(response.data) ? response.data : (response.data as any).results ?? [];
+}
+
+export async function getDefinition(id: string): Promise<PipelineDefinition> {
+  const response = await apiClient.get<PipelineDefinition>(`/api/services/pipelines/definitions/${id}/`);
+  return response.data;
+}
+
+export async function createDefinition(data: {
+  project: string;
+  name: string;
+  description?: string;
+  yaml_definition?: string;
+  variables?: Array<{ name: string; value: string; secret?: boolean }>;
+  triggers?: Array<Record<string, unknown>>;
+}): Promise<PipelineDefinition> {
+  const response = await apiClient.post<PipelineDefinition>('/api/services/pipelines/definitions/', data);
+  return response.data;
+}
+
+export async function updateDefinition(id: string, data: Partial<PipelineDefinition>): Promise<PipelineDefinition> {
+  const response = await apiClient.patch<PipelineDefinition>(`/api/services/pipelines/definitions/${id}/`, data);
+  return response.data;
+}
+
+export async function deleteDefinition(id: string): Promise<void> {
+  await apiClient.delete(`/api/services/pipelines/definitions/${id}/`);
+}
+
+export async function getDefinitionYaml(id: string): Promise<string> {
+  const response = await apiClient.get<{ yaml_definition: string }>(`/api/services/pipelines/definitions/${id}/yaml/`);
+  return response.data.yaml_definition;
+}
+
+export async function updateDefinitionYaml(id: string, yamlText: string): Promise<string> {
+  const response = await apiClient.put<{ yaml_definition: string }>(
+    `/api/services/pipelines/definitions/${id}/yaml/`,
+    { yaml_definition: yamlText },
+  );
+  return response.data.yaml_definition;
+}
+
+export async function triggerDefinition(id: string, data: {
+  branch?: string;
+  commit_sha?: string;
+  commit_msg?: string;
+  variables?: Record<string, string>;
+  repo?: string | null;
+}): Promise<PipelineRun> {
+  const response = await apiClient.post<PipelineRun>(
+    `/api/services/pipelines/definitions/${id}/trigger/`, data);
+  return response.data;
+}
+
+export async function listDefinitionRuns(id: string): Promise<PipelineRun[]> {
+  const response = await apiClient.get<PipelineRun[]>(`/api/services/pipelines/definitions/${id}/runs/`);
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+/* ───────── Pipeline Runs (new engine) ───────── */
+
+export async function listPipelineRuns(params?: {
+  definition?: string;
+  status?: string;
+}): Promise<PipelineRun[]> {
+  const response = await apiClient.get<PipelineRun[]>('/api/services/pipelines/pipeline-runs/', { params });
+  return Array.isArray(response.data) ? response.data : (response.data as any).results ?? [];
+}
+
+export async function getPipelineRun(id: string): Promise<PipelineRun> {
+  const response = await apiClient.get<PipelineRun>(`/api/services/pipelines/pipeline-runs/${id}/`);
+  return response.data;
+}
+
+export async function getRunGraph(id: string): Promise<PipelineRunNode[]> {
+  const response = await apiClient.get<PipelineRunNode[]>(`/api/services/pipelines/pipeline-runs/${id}/graph/`);
+  return response.data;
+}
+
+export async function getRunNodeLogs(runId: string, nodeId: number): Promise<{
+  node_id: number; stage_name: string; step_name: string;
+  status: NodeStatus; log_output: string; error_msg: string;
+}> {
+  const response = await apiClient.get(`/api/services/pipelines/pipeline-runs/${runId}/logs/${nodeId}/`);
+  return response.data;
+}
+
+export async function cancelPipelineRun(id: string): Promise<PipelineRun> {
+  const response = await apiClient.post<PipelineRun>(`/api/services/pipelines/pipeline-runs/${id}/cancel/`);
+  return response.data;
+}
+
+export async function getRunArtifacts(id: string): Promise<PipelineRunArtifact[]> {
+  const response = await apiClient.get<PipelineRunArtifact[]>(`/api/services/pipelines/pipeline-runs/${id}/artifacts/`);
+  return Array.isArray(response.data) ? response.data : [];
 }

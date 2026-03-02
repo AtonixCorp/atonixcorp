@@ -1,0 +1,159 @@
+---
+# AtonixCorp – Ceph Storage Cluster Deployment
+#
+# Deploys a Ceph cluster using cephadm (Reef / 18.x):
+#   - Bootstrap MON/MGR on the first monitor node
+#   - Add additional MON/MGR nodes
+#   - Add OSD nodes and auto-deploy OSDs on available block devices
+#   - Create the AtonixCorp pool set (public / private / hybrid)
+#   - Enable the Ceph Dashboard
+#   - Enable RADOS Gateway for S3-compatible object storage
+#
+# Pre-requisites:
+#   - All nodes: Ubuntu 22.04 LTS, 2 GB RAM minimum for MON, 64 GB+ disks for OSD
+#   - SSH key-based access from the Ansible control node
+#   - DNS or /etc/hosts resolution between all Ceph nodes
+#
+# Usage:
+#   ansible-playbook -i inventory/production.ini playbooks/ceph-deploy.yml
+#   ansible-playbook -i inventory/production.ini playbooks/ceph-deploy.yml \
+#     --tags bootstrap   # bootstrap-only
+
+- name: AtonixCorp Ceph Cluster Deployment
+  hosts: ceph_all
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - "../group_vars/all.yml"
+    - "../group_vars/ceph.yml"
+
+  vars:
+    ceph_release: reef        # Reef = 18.x
+    ceph_fsid:    "{{ ceph_cluster_fsid | default(omit) }}"
+
+  # ── Bootstrap (first MON only) ────────────────────────────────────────────
+  tasks:
+    - name: Install cephadm on bootstrap node
+      when: inventory_hostname == groups['ceph_mons'][0]
+      block:
+        - name: Download cephadm
+          get_url:
+            url: "https://download.ceph.com/rpm-{{ ceph_release }}/el9/noarch/cephadm"
+            dest: /usr/local/bin/cephadm
+            mode: '0755'
+          tags: [bootstrap]
+
+        - name: Bootstrap Ceph cluster
+          command: >
+            cephadm bootstrap
+            --mon-ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+            --cluster-network {{ ceph_cluster_network }}
+            --allow-overwrite
+            --initial-dashboard-user admin
+            --initial-dashboard-password "{{ ceph_dashboard_password }}"
+          args:
+            creates: /etc/ceph/ceph.conf
+          register: bootstrap_result
+          tags: [bootstrap]
+
+        - name: Distribute ceph.conf and keyring to other nodes
+          fetch:
+            src:  "{{ item }}"
+            dest: "/tmp/ceph-artifacts/"
+            flat: true
+          loop:
+            - /etc/ceph/ceph.conf
+            - /etc/ceph/ceph.client.admin.keyring
+          tags: [bootstrap]
+
+    # ── Add MON / OSD / MGR hosts ─────────────────────────────────────────────
+    - name: Add additional Ceph hosts via cephadm
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: >
+        ceph orch host add {{ item }}
+        {{ hostvars[item]['ansible_default_ipv4']['address'] }}
+      loop: "{{ groups['ceph_all'] | difference([groups['ceph_mons'][0]]) }}"
+      ignore_errors: true
+      tags: [hosts]
+
+    - name: Add OSD label to OSD nodes
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: >
+        ceph orch host label add {{ item }} osd
+      loop: "{{ groups['ceph_osds'] }}"
+      ignore_errors: true
+      tags: [osds]
+
+    - name: Deploy OSDs on all OSD-labelled hosts (auto-discover)
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: ceph orch apply osd --all-available-devices
+      tags: [osds]
+
+    # ── Create AtonixCorp pools ───────────────────────────────────────────────
+    - name: Create AtonixCorp cloud pools
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: >
+        ceph osd pool create {{ item.name }} {{ item.pg }} {{ item.pg }} replicated
+      loop:
+        - { name: atonix-public-cinder,  pg: 128 }
+        - { name: atonix-public-glance,  pg: 64  }
+        - { name: atonix-public-nova,    pg: 128 }
+        - { name: atonix-public-rgw,     pg: 64  }
+        - { name: atonix-private-cinder, pg: 128 }
+        - { name: atonix-private-glance, pg: 64  }
+        - { name: atonix-private-nova,   pg: 128 }
+        - { name: atonix-hybrid-cinder,  pg: 128 }
+        - { name: atonix-hybrid-glance,  pg: 64  }
+        - { name: atonix-hybrid-nova,    pg: 128 }
+        - { name: atonix-hybrid-rgw,     pg: 64  }
+      ignore_errors: true
+      tags: [pools]
+
+    - name: Enable RBD application on Cinder/Nova/Glance pools
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: >
+        ceph osd pool application enable {{ item }} rbd
+      loop:
+        - atonix-public-cinder
+        - atonix-public-nova
+        - atonix-public-glance
+        - atonix-private-cinder
+        - atonix-private-nova
+        - atonix-private-glance
+        - atonix-hybrid-cinder
+        - atonix-hybrid-nova
+        - atonix-hybrid-glance
+      ignore_errors: true
+      tags: [pools]
+
+    - name: Enable RGW application on object storage pools
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: >
+        ceph osd pool application enable {{ item }} rgw
+      loop:
+        - atonix-public-rgw
+        - atonix-hybrid-rgw
+      ignore_errors: true
+      tags: [pools]
+
+    # ── Enable RADOS Gateway ──────────────────────────────────────────────────
+    - name: Deploy RADOS Gateway
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: ceph orch apply rgw atonix --placement="{{ groups['ceph_rgw'] | join(' ') }}"
+      ignore_errors: true
+      tags: [rgw]
+
+    # ── Report cluster health ─────────────────────────────────────────────────
+    - name: Check Ceph cluster health
+      when: inventory_hostname == groups['ceph_mons'][0]
+      command: ceph health
+      register: ceph_health
+      changed_when: false
+      tags: [verify]
+
+    - name: Print Ceph health
+      when: inventory_hostname == groups['ceph_mons'][0]
+      debug:
+        msg: "{{ ceph_health.stdout }}"
+      tags: [verify]

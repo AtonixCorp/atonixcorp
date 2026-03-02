@@ -1,0 +1,86 @@
+---
+# AtonixCorp – OpenStack Compute Node Role
+# tasks/main.yml
+
+- name: Add Ubuntu Cloud Archive (UCA) for {{ openstack_release }}
+  apt_repository:
+    repo: "ppa:ubuntu-cloud-archive/{{ openstack_release }}-staging"
+    state: present
+    update_cache: true
+  tags: [packages]
+
+- name: Install Nova compute packages
+  apt:
+    name:
+      - nova-compute
+      - neutron-linuxbridge-agent
+      - python3-openstackclient
+      - python3-rados
+      - python3-rbd
+      - ceph-common
+      - qemu-kvm
+      - libvirt-daemon-system
+      - libvirt-clients
+    state: present
+  tags: [packages]
+
+# ── Nova Compute ──────────────────────────────────────────────────────────────
+- name: Configure nova.conf for compute node
+  template:
+    src: nova.conf.j2
+    dest: /etc/nova/nova.conf
+    owner: nova
+    group: nova
+    mode: '0640'
+  notify: Restart nova-compute
+  tags: [nova]
+
+- name: Configure Ceph keyring for Nova ephemeral (if RBD backend)
+  template:
+    src: ceph.client.nova.keyring.j2
+    dest: /etc/ceph/ceph.client.nova.keyring
+    owner: nova
+    group: nova
+    mode: '0640'
+  when: nova_ephemeral_backend | default('local') == 'rbd'
+  tags: [nova, ceph]
+
+# ── Neutron (compute side) ────────────────────────────────────────────────────
+- name: Configure Neutron LinuxBridge agent
+  template:
+    src: linuxbridge_agent.ini.j2
+    dest: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+    owner: neutron
+    group: neutron
+    mode: '0640'
+  notify: Restart neutron-linuxbridge-agent
+  tags: [neutron]
+
+# ── Libvirt secret for Ceph (Cinder volumes) ─────────────────────────────────
+- name: Define libvirt secret for Ceph RBD
+  command: virsh secret-define --file /tmp/ceph_secret.xml
+  when: ceph_libvirt_secret_uuid is defined
+  changed_when: false
+  tags: [ceph, libvirt]
+
+- name: Set libvirt secret value
+  command: >
+    virsh secret-set-value
+    --secret {{ ceph_libvirt_secret_uuid }}
+    --base64 {{ ceph_client_key | b64encode }}
+  when: ceph_libvirt_secret_uuid is defined
+  no_log: true
+  changed_when: false
+  tags: [ceph, libvirt]
+
+# ── Enable services ───────────────────────────────────────────────────────────
+- name: Enable and start compute services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - libvirtd
+    - nova-compute
+    - neutron-linuxbridge-agent
+  tags: [services]

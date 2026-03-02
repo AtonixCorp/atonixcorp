@@ -41,7 +41,7 @@ export const dashboardStatusColors = {
     draft: dashboardSemanticColors.purple,
     open: dashboardSemanticColors.warning,
     paid: dashboardSemanticColors.success,
-    void: dashboardTokens.colors.textSecondary,
+    void: '#6B7280',
     uncollectable: dashboardSemanticColors.danger,
   },
   domain: {
@@ -50,14 +50,14 @@ export const dashboardStatusColors = {
     expired: dashboardSemanticColors.danger,
     suspended: dashboardSemanticColors.danger,
     transferring: dashboardSemanticColors.info,
-    deleting: dashboardTokens.colors.textSecondary,
+    deleting: '#6B7280',
     error: dashboardSemanticColors.danger,
   },
   ssl: {
     active: dashboardSemanticColors.success,
     pending: dashboardSemanticColors.warning,
     expired: dashboardSemanticColors.danger,
-    revoked: dashboardTokens.colors.textSecondary,
+    revoked: '#6B7280',
     error: dashboardSemanticColors.danger,
   },
   monitoringService: {

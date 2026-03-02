@@ -73,6 +73,21 @@ export async function stopDevWorkspace(workspaceId: string): Promise<DevWorkspac
   return data
 }
 
+/** Restart a workspace (stop + start in one call) */
+export async function restartDevWorkspace(workspaceId: string): Promise<DevWorkspace> {
+  const { data } = await client.post<DevWorkspace>(`${BASE}/${workspaceId}/restart/`)
+  return data
+}
+
+/** Partial-update workspace display name / image / ide / region */
+export async function updateDevWorkspace(
+  workspaceId: string,
+  payload: Partial<Pick<DevWorkspace, 'display_name' | 'image' | 'ide' | 'region'>>,
+): Promise<DevWorkspace> {
+  const { data } = await client.patch<DevWorkspace>(`${BASE}/${workspaceId}/`, payload)
+  return data
+}
+
 /** Build the full WebSocket URL from the backend's terminal_ws_url path */
 export function buildTerminalWsUrl(terminalWsPath: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'

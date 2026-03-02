@@ -35,15 +35,12 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 import { listProjects as listProjectsApi, deleteProject as deleteProjectApi, type BackendProject } from '../services/projectsApi';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
-const PROJECTS_STORAGE_KEY = 'atonix:projects:list:v1';
-const PROJECTS_SNACK_KEY = 'atonix:projects:snack:v1';
-const PROJECTS_CACHE_RESET_FLAG = 'atonix:projects:cache-reset:v1';
 
 type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived';
 type ProjectLang = 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java' | 'HCL';
@@ -80,8 +77,6 @@ const mapBackendProject = (project: BackendProject): Project => ({
   provider: 'github',
 });
 
-const PROJECTS: Project[] = [];
-
 const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: string }> = {
   active:      { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)',   label: 'Active'      },
   'in-progress':{ color: dashboardSemanticColors.info,   bg: 'rgba(21,61,117,.12)',   label: 'In Progress' },
@@ -114,28 +109,8 @@ const MEMBER_COLORS = ['#153d75', '#8B5CF6', '#F97316', '#22C55E', '#EC4899'];
 
 const DevProjectsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>(() => {
-    try {
-      const cacheResetDone = localStorage.getItem(PROJECTS_CACHE_RESET_FLAG) === '1';
-      if (!cacheResetDone) {
-        localStorage.removeItem(PROJECTS_STORAGE_KEY);
-        localStorage.removeItem(PROJECTS_SNACK_KEY);
-        localStorage.setItem(PROJECTS_CACHE_RESET_FLAG, '1');
-        return [];
-      }
-
-      const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Project[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch {
-      // ignore malformed storage
-    }
-    return [];
-  });
+  const location = useLocation();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [query, setQuery]       = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | ProjectStatus>('all');
   const [snack, setSnack]               = useState<string | null>(null);
@@ -144,24 +119,12 @@ const DevProjectsPage: React.FC = () => {
   const [deletingProject, setDeletingProject] = useState(false);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
-    } catch {
-      // non-blocking persistence
+    const message = (location.state as { snack?: string } | null)?.snack;
+    if (message) {
+      setSnack(message);
+      navigate(location.pathname, { replace: true, state: null });
     }
-  }, [projects]);
-
-  useEffect(() => {
-    try {
-      const message = localStorage.getItem(PROJECTS_SNACK_KEY);
-      if (message) {
-        setSnack(message);
-        localStorage.removeItem(PROJECTS_SNACK_KEY);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     let mounted = true;
@@ -169,11 +132,16 @@ const DevProjectsPage: React.FC = () => {
       try {
         const backendProjects = await listProjectsApi();
         if (!mounted) return;
-        if (backendProjects.length > 0) {
-          setProjects(backendProjects.map(mapBackendProject));
+        setProjects(backendProjects.map(mapBackendProject));
+      } catch (error: any) {
+        if (!mounted) return;
+        const status = error?.response?.status;
+        if (status === 401) {
+          setSnack('Unable to load projects from backend. Please sign in again.');
+        } else {
+          setSnack('Unable to load projects from backend.');
         }
-      } catch {
-        // keep local fallback data
+        setProjects([]);
       }
     })();
     return () => {
@@ -186,14 +154,20 @@ const DevProjectsPage: React.FC = () => {
     setDeletingProject(true);
     try {
       await deleteProjectApi(deleteTarget.id);
-    } catch {
-      // local fallback if backend delete fails
+      setProjects(prev => prev.filter(p => p.id !== deleteTarget.id));
+      setSnack(`Project "${deleteTarget.name}" deleted.`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 401) {
+        setSnack('Project was not deleted. Please sign in again.');
+      } else {
+        setSnack('Project was not deleted in backend.');
+      }
+    } finally {
+      setDeletingProject(false);
+      setDeleteTarget(null);
+      setDeleteInput('');
     }
-    setProjects(prev => prev.filter(p => p.id !== deleteTarget.id));
-    setDeletingProject(false);
-    setDeleteTarget(null);
-    setDeleteInput('');
-    setSnack(`Project "${deleteTarget.name}" deleted.`);
   };
 
   const filtered = projects.filter((p) => {

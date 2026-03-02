@@ -1,0 +1,206 @@
+# AtonixCorp Cloud – RBAC Matrix
+# ─────────────────────────────────────────────────────────────────────────────
+# Defines which platform roles can perform which actions on which services
+# per cloud type.
+#
+# Permission levels:
+#   full    – create, read, update, delete, manage
+#   read    – read / list only
+#   none    – no access
+#   scoped  – access limited to own workspace / project scope
+#
+# Roles are enforced via:
+#   1. Django permission classes (IsAdminUser, IsAuthenticated, WorkspaceOwner)
+#   2. IAMPolicy records in services.iam
+#   3. OpenStack Keystone roles (admin, member, reader) per project
+# ─────────────────────────────────────────────────────────────────────────────
+
+roles:
+  platform_admin:
+    description: "AtonixCorp platform superuser — full access to all resources in all regions"
+    keystone_role: admin
+    trust_level: highest
+
+  org_admin:
+    description: "Organisation-wide admin — manages workspaces, billing, users within their org domain"
+    keystone_role: org_admin
+    trust_level: high
+
+  project_admin:
+    description: "Workspace/project owner — full control over resources within their workspace"
+    keystone_role: member
+    trust_level: medium
+
+  developer:
+    description: "Developer — can provision and manage resources scoped to their workspace"
+    keystone_role: member
+    trust_level: medium
+
+  viewer:
+    description: "Read-only auditor — inspect resources and telemetry, no mutations"
+    keystone_role: reader
+    trust_level: low
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Service-level permissions per cloud type
+# ─────────────────────────────────────────────────────────────────────────────
+
+permissions:
+
+  # ─── Identity (Keystone) ──────────────────────────────────────────────────
+  keystone:
+    cloud_types: [public, private, hybrid]
+    actions:
+      manage_domains:          { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+      manage_projects:         { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: read  }
+      manage_users:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: read  }
+      assign_roles:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      manage_federation:       { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+      list_service_catalog:    { platform_admin: full,   org_admin: full,   project_admin: full,   developer: full,   viewer: full  }
+
+  # ─── Compute (Nova) ───────────────────────────────────────────────────────
+  nova:
+    cloud_types: [public, private, hybrid]
+    actions:
+      list_servers:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      create_server:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      delete_server:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      resize_server:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      live_migrate:            { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+      manage_flavors:          { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: read  }
+      manage_keypairs:         { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      list_hypervisors:        { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+
+  # ─── Networking (Neutron) ─────────────────────────────────────────────────
+  neutron:
+    cloud_types: [public, private, hybrid]
+    actions:
+      manage_networks:         { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_subnets:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_routers:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_security_groups:  { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_floating_ips:     { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_vpnaas:           { platform_admin: full,   org_admin: full,   project_admin: none,   developer: none,   viewer: none  }
+      manage_bgp:              { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+
+  # ─── Block Storage (Cinder) ───────────────────────────────────────────────
+  cinder:
+    cloud_types: [public, private, hybrid]
+    actions:
+      manage_volumes:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_snapshots:        { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_volume_types:     { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: read  }
+      manage_backups:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_quotas:           { platform_admin: full,   org_admin: full,   project_admin: none,   developer: none,   viewer: read  }
+
+  # ─── Image Service (Glance) ───────────────────────────────────────────────
+  glance:
+    cloud_types: [public, private, hybrid]
+    actions:
+      list_images:             { platform_admin: full,   org_admin: full,   project_admin: full,   developer: full,   viewer: full  }
+      upload_image:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      delete_image:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      share_image:             { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+
+  # ─── Object Storage (Swift / RGW) ─────────────────────────────────────────
+  swift:
+    cloud_types: [public]
+    actions:
+      manage_containers:       { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      upload_objects:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      delete_objects:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      manage_acls:             { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+
+  # ─── Load Balancing (Octavia) ─────────────────────────────────────────────
+  octavia:
+    cloud_types: [public]
+    actions:
+      manage_load_balancers:   { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_listeners:        { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_pools:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+
+  # ─── DNS (Designate) ──────────────────────────────────────────────────────
+  designate:
+    cloud_types: [public]
+    actions:
+      manage_zones:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_records:          { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+
+  # ─── Secrets Management (Barbican) ────────────────────────────────────────
+  barbican:
+    cloud_types: [hybrid]
+    actions:
+      store_secret:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      read_secret:             { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+      delete_secret:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      manage_certificates:     { platform_admin: full,   org_admin: full,   project_admin: none,   developer: none,   viewer: none  }
+
+  # ─── Orchestration (Heat) ─────────────────────────────────────────────────
+  heat:
+    cloud_types: [hybrid]
+    actions:
+      manage_stacks:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      preview_stack:           { platform_admin: full,   org_admin: full,   project_admin: full,   developer: full,   viewer: full  }
+      abandon_stack:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+
+  # ─── Workflow (Mistral) ───────────────────────────────────────────────────
+  mistral:
+    cloud_types: [hybrid]
+    actions:
+      manage_workflows:        { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      execute_workflow:        { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: none  }
+
+  # ─── Alarming (Aodh) ──────────────────────────────────────────────────────
+  aodh:
+    cloud_types: [hybrid, public]
+    actions:
+      manage_alarms:           { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      list_alarm_history:      { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+
+  # ─── Telemetry (Ceilometer / Gnocchi) ─────────────────────────────────────
+  telemetry:
+    cloud_types: [public, private, hybrid]
+    actions:
+      read_metrics:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      read_billing_data:       { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      manage_metric_retention: { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+
+  # ─── Container Orchestration (Magnum) ─────────────────────────────────────
+  magnum:
+    cloud_types: [public, hybrid]
+    actions:
+      manage_clusters:         { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+      manage_cluster_templates:{ platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: read  }
+
+  # ─── Dashboard & API Gateway ──────────────────────────────────────────────
+  atonix_api:
+    cloud_types: [public, private, hybrid]
+    actions:
+      admin_panel:             { platform_admin: full,   org_admin: full,   project_admin: none,   developer: none,   viewer: none  }
+      billing_dashboard:       { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: none  }
+      developer_dashboard:     { platform_admin: full,   org_admin: full,   project_admin: full,   developer: full,   viewer: read  }
+      marketing_dashboard:     { platform_admin: full,   org_admin: full,   project_admin: none,   developer: none,   viewer: none  }
+      service_catalog_write:   { platform_admin: full,   org_admin: none,   project_admin: none,   developer: none,   viewer: none  }
+      manage_workspaces:       { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: none,   viewer: read  }
+      manage_ci_cd:            { platform_admin: full,   org_admin: full,   project_admin: scoped, developer: scoped, viewer: read  }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Enforcement references
+# ─────────────────────────────────────────────────────────────────────────────
+enforcement:
+  django_permission_classes:
+    platform_admin: "IsAdminUser"
+    org_admin:      "IsOrgAdmin"           # custom: services.iam.permissions
+    project_admin:  "IsProjectAdminOrOwner"
+    developer:      "IsWorkspaceMember"
+    viewer:         "IsAuthenticated"
+
+  keystone_role_mapping:
+    platform_admin: admin
+    org_admin:      org_admin
+    project_admin:  member
+    developer:      member
+    viewer:         reader
+
+  openstack_policy_file: "/etc/keystone/policy.yaml"
+  atonix_iam_model:      "services.iam.models.IAMRole"

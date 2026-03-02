@@ -50,6 +50,7 @@ class WorkspaceBinding(models.Model):
     Fields:
         workspace          – FK to Workspace
         environment        – dev / staging / prod
+        cloud_type         – public / private / hybrid  (drives service catalog)
         openstack_project  – OpenStack project name (used as OS_PROJECT_NAME)
         openstack_region   – OpenStack region (default: RegionOne)
         quota_vcpus        – max vCPUs allowed in this workspace/environment
@@ -57,8 +58,18 @@ class WorkspaceBinding(models.Model):
         quota_storage_gb   – max block storage (GB) allowed
     """
 
+    CLOUD_TYPE_CHOICES = [
+        ("public",  "Public Cloud"),
+        ("private", "Private Cloud"),
+        ("hybrid",  "Hybrid Cloud"),
+    ]
+
     workspace          = models.ForeignKey(Workspace, on_delete=models.CASCADE, related_name="bindings")
     environment        = models.CharField(max_length=16, choices=Workspace.ENVIRONMENT_CHOICES)
+    cloud_type         = models.CharField(
+        max_length=16, choices=CLOUD_TYPE_CHOICES, default="public", db_index=True,
+        help_text="Determines which service catalog entries are available for this binding.",
+    )
     openstack_project  = models.CharField(max_length=128, help_text="OpenStack project/tenant name")
     openstack_region   = models.CharField(max_length=64, default="RegionOne")
     quota_vcpus        = models.PositiveIntegerField(default=20)

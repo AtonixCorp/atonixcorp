@@ -43,6 +43,60 @@ clouds:
     #   application_credential_id: CREDENTIAL_ID
     #   application_credential_secret: CREDENTIAL_SECRET
 
+  # ------------------------------------------------------------------------
+  # AtonixCorp multi-region reference profiles
+  # ------------------------------------------------------------------------
+  # Region A = Public Cloud (multi-tenant)
+  atonix-region-a-public:
+    auth:
+      auth_url: https://region-a.atonixcorp.com:5000/v3
+      username: api-public
+      password: CHANGE_ME
+      project_name: atonix-public-shared
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: RegionA
+    interface: public
+    identity_api_version: 3
+
+  # Region B = Private Cloud (dedicated enterprise projects)
+  atonix-region-b-private:
+    auth:
+      auth_url: https://region-b.atonixcorp.com:5000/v3
+      username: api-private
+      password: CHANGE_ME
+      project_name: atonix-private-control
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: RegionB
+    interface: public
+    identity_api_version: 3
+
+  # Region C = Hybrid Cloud (connected to customer datacenters)
+  atonix-region-c-hybrid:
+    auth:
+      auth_url: https://region-c.atonixcorp.com:5000/v3
+      username: api-hybrid
+      password: CHANGE_ME
+      project_name: atonix-hybrid-core
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: RegionC
+    interface: public
+    identity_api_version: 3
+
+  # Optional: service account profile that can be used with app credentials
+  # in CI/CD jobs, then overridden per-request by WorkspaceBinding.
+  atonix-service:
+    auth_type: v3applicationcredential
+    auth:
+      auth_url: https://keystone.atonixcorp.com:5000/v3
+      application_credential_id: CHANGE_ME
+      application_credential_secret: CHANGE_ME
+    region_name: RegionA
+    interface: public
+    identity_api_version: 3
+
   # Microstack / MicroCloud
   microstack:
     auth:

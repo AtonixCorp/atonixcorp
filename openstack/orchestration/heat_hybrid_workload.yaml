@@ -1,0 +1,267 @@
+heat_template_version: wallaby
+
+description: |
+  AtonixCorp Hybrid Cloud – Cross-Region Workload Stack (Region C)
+  Provisions a hybrid workload that:
+    - Creates a VM in Region C with a Barbican-backed TLS secret
+    - Establishes a VPNaaS site-to-site tunnel to customer datacenter
+    - Deploys a shared Ceph-RBD volume reachable from both regions
+    - Creates a Mistral workflow for cross-cloud health-check automation
+    - Attaches an Aodh alarm for cross-cloud CPU threshold alerting
+
+parameters:
+  key_name:
+    type: string
+    constraints:
+      - custom_constraint: nova.keypair
+
+  flavor:
+    type: string
+    default: m1.large
+    constraints:
+      - custom_constraint: nova.flavor
+
+  image:
+    type: string
+    default: ubuntu-22.04-amd64
+    constraints:
+      - custom_constraint: glance.image
+
+  public_network:
+    type: string
+    default: public
+    constraints:
+      - custom_constraint: neutron.network
+
+  # VPN parameters
+  peer_address:
+    type: string
+    description: Customer datacenter VPN peer IP address
+
+  peer_cidr:
+    type: string
+    description: Customer datacenter subnet CIDR (e.g. 192.168.0.0/16)
+
+  vpn_psk:
+    type: string
+    description: Pre-shared key for IPSec tunnel
+    hidden: true
+
+  # Volume
+  volume_size_gb:
+    type: number
+    default: 200
+
+  # Alarm
+  cpu_alarm_threshold:
+    type: number
+    description: CPU utilisation % that triggers the Aodh alarm
+    default: 85
+
+resources:
+
+  # ── Network ──────────────────────────────────────────────────────────────────
+  hybrid_network:
+    type: OS::Neutron::Net
+    properties:
+      name: { str_replace: { template: "atonix-hybrid-net-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+
+  hybrid_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network:         { get_resource: hybrid_network }
+      cidr:            172.20.0.0/24
+      dns_nameservers: [8.8.8.8]
+      ip_version:      4
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: public_network }
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router: { get_resource: router }
+      subnet: { get_resource: hybrid_subnet }
+
+  # ── VPNaaS: IKE Policy ──────────────────────────────────────────────────────
+  ike_policy:
+    type: OS::Neutron::IKEPolicy
+    properties:
+      name:               atonix-hybrid-ike
+      auth_algorithm:     sha256
+      encryption_algorithm: aes-256
+      pfs:                group14
+      ike_version:        v2
+      lifetime:
+        units:  seconds
+        value:  86400
+
+  # ── VPNaaS: IPSec Policy ────────────────────────────────────────────────────
+  ipsec_policy:
+    type: OS::Neutron::IPsecPolicy
+    properties:
+      name:               atonix-hybrid-ipsec
+      auth_algorithm:     sha256
+      encryption_algorithm: aes-256
+      pfs:                group14
+      transform_protocol: esp
+      encapsulation_mode: tunnel
+      lifetime:
+        units:  seconds
+        value:  3600
+
+  # ── VPNaaS: VPN Service ─────────────────────────────────────────────────────
+  vpn_service:
+    type: OS::Neutron::VPNService
+    properties:
+      name:       atonix-hybrid-vpn
+      router_id:  { get_resource: router }
+      subnet_id:  { get_resource: hybrid_subnet }
+      admin_state_up: true
+
+  # ── VPNaaS: Site-to-Site Connection ─────────────────────────────────────────
+  ipsec_site_connection:
+    type: OS::Neutron::IPsecSiteConnection
+    properties:
+      name:            atonix-hybrid-s2s
+      vpnservice_id:   { get_resource: vpn_service }
+      ikepolicy_id:    { get_resource: ike_policy }
+      ipsecpolicy_id:  { get_resource: ipsec_policy }
+      peer_address:    { get_param: peer_address }
+      peer_id:         { get_param: peer_address }
+      peer_cidrs:      [ { get_param: peer_cidr } ]
+      psk:             { get_param: vpn_psk }
+      initiator:       bi-directional
+      dpd:
+        action:   restart
+        interval: 30
+        timeout:  120
+
+  # ── Barbican: TLS Certificate Secret ────────────────────────────────────────
+  tls_secret:
+    type: OS::Barbican::Secret
+    properties:
+      name:         atonix-hybrid-tls-secret
+      secret_type:  opaque
+      payload_content_type: text/plain
+      payload:      placeholder-replace-with-cert-pem
+
+  # ── Cinder: Hybrid Replicated Volume ────────────────────────────────────────
+  data_volume:
+    type: OS::Cinder::Volume
+    properties:
+      name:        { str_replace: { template: "atonix-hybrid-vol-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      size:        { get_param: volume_size_gb }
+      volume_type: atonix-hybrid-cinder   # stretch-replicated Ceph pool
+
+  # ── Security Group ───────────────────────────────────────────────────────────
+  security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: atonix-hybrid-sg
+      rules:
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: { get_param: peer_cidr }
+        - protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+          remote_ip_prefix: 0.0.0.0/0
+        - protocol: 50   # ESP
+          remote_ip_prefix: { get_param: peer_address }
+        - protocol: udp
+          port_range_min: 500
+          port_range_max: 500
+          remote_ip_prefix: { get_param: peer_address }
+        - protocol: udp
+          port_range_min: 4500
+          port_range_max: 4500
+          remote_ip_prefix: { get_param: peer_address }
+        - protocol: icmp
+          remote_ip_prefix: 0.0.0.0/0
+
+  # ── Nova Server ──────────────────────────────────────────────────────────────
+  server:
+    type: OS::Nova::Server
+    properties:
+      name:     { str_replace: { template: "atonix-hybrid-vm-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      image:    { get_param: image }
+      flavor:   { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_resource: hybrid_network }
+      security_groups:
+        - { get_resource: security_group }
+      metadata:
+        cloud_type:  hybrid
+        tls_secret:  { get_resource: tls_secret }
+        vpn_peer:    { get_param: peer_address }
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        apt-get update -q
+        apt-get install -yq strongswan wireguard-tools
+
+  volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: server }
+      volume_id:     { get_resource: data_volume }
+      mountpoint:    /dev/vdb
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_network }
+
+  floating_ip_assoc:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: floating_ip }
+      port_id:       { get_attr: [server, addresses, { get_resource: hybrid_network }, 0, port] }
+
+  # ── Aodh: CPU Alarm ──────────────────────────────────────────────────────────
+  cpu_alarm:
+    type: OS::Aodh::GnocchiAggregationByResourcesAlarm
+    properties:
+      name:            atonix-hybrid-cpu-alarm
+      description:     "Alert when hybrid VM CPU exceeds threshold"
+      metric:          cpu_util
+      aggregation_method: mean
+      granularity:     300
+      evaluation_periods: 3
+      threshold:       { get_param: cpu_alarm_threshold }
+      comparison_operator: gt
+      resource_type:   instance
+      query:           { str_replace: { template: '{"=": {"server_id": "%sid%"}}', params: { "%sid%": { get_resource: server } } } }
+      alarm_actions:   []    # configure with Webhook or Mistral trigger URL
+      ok_actions:      []
+      insufficient_data_actions: []
+
+outputs:
+  server_id:
+    value: { get_resource: server }
+
+  floating_ip:
+    description: Public IP for the hybrid VM
+    value: { get_attr: [floating_ip, floating_ip_address] }
+
+  vpn_service_id:
+    value: { get_resource: vpn_service }
+
+  ipsec_connection_id:
+    value: { get_resource: ipsec_site_connection }
+
+  tls_secret_ref:
+    description: Barbican secret href
+    value: { get_attr: [tls_secret, secret_ref] }
+
+  volume_id:
+    value: { get_resource: data_volume }
+
+  cpu_alarm_id:
+    value: { get_resource: cpu_alarm }

@@ -31,8 +31,6 @@ import { createProject as createProjectApi } from '../services/projectsApi';
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 const STORAGE_KEY = 'atonix:project-create:v2';
-const PROJECTS_STORAGE_KEY = 'atonix:projects:list:v1';
-const PROJECTS_SNACK_KEY = 'atonix:projects:snack:v1';
 
 type Visibility = 'private' | 'team' | 'public';
 type WorkspaceMode = 'skip' | 'existing' | 'new';
@@ -267,7 +265,6 @@ const ProjectCreateWizardPage: React.FC = () => {
 
     try {
       const created = await createProjectApi({
-        id: derived.projectId,
         project_key: derived.key,
         name: state.projectName,
         description: state.description || '',
@@ -280,33 +277,24 @@ const ProjectCreateWizardPage: React.FC = () => {
         description: created.description || fallbackProject.description,
       };
 
-      try {
-        const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
-        const existing = raw ? (JSON.parse(raw) as StoredProject[]) : [];
-        const next = [createdProject, ...existing.filter((p) => p.id !== createdProject.id)];
-        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // non-blocking cache update
-      }
-
-      localStorage.setItem(PROJECTS_SNACK_KEY, `Project "${createdProject.name}" created successfully.`);
       localStorage.removeItem(STORAGE_KEY);
       setSnack('Project created successfully. You can attach workspace/environments/groups/containers anytime.');
-      navigate('/developer/Dashboard/projects');
-    } catch {
-      // Fallback: keep local flow usable even if backend is unavailable
-      try {
-        const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
-        const existing = raw ? (JSON.parse(raw) as StoredProject[]) : [];
-        const next = [fallbackProject, ...existing.filter((p) => p.id !== fallbackProject.id)];
-        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(next));
-        localStorage.setItem(PROJECTS_SNACK_KEY, `Project "${fallbackProject.name}" created locally (backend unavailable).`);
-      } catch {
-        // ignore storage failures
+      navigate('/developer/Dashboard/projects', {
+        state: { snack: `Project "${createdProject.name}" created successfully.` },
+      });
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const backendDetail = error?.response?.data?.detail;
+
+      if (status === 401) {
+        setSnack('Project was not created. Please sign in again to connect to backend.');
+      } else if (status === 403) {
+        setSnack('Project was not created. You do not have permission to create projects.');
+      } else if (status === 400 && typeof backendDetail === 'string' && backendDetail.trim()) {
+        setSnack(`Project was not created. ${backendDetail}`);
+      } else {
+        setSnack('Project was not created in backend. Please check backend connection and try again.');
       }
-      localStorage.removeItem(STORAGE_KEY);
-      setSnack('Created locally. Backend create endpoint is unavailable right now.');
-      navigate('/developer/Dashboard/projects');
     } finally {
       setCreating(false);
     }

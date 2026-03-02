@@ -36,6 +36,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import { useNavigate } from 'react-router-dom';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 import {
   listDevWorkspaces,
@@ -226,6 +228,7 @@ function CreateDialog({ open, onClose, onCreated }: CreateDialogProps) {
 // ── Main page ──────────────────────────────────────────────────────────────────
 
 const DevWorkspacePage: React.FC = () => {
+  const navigate = useNavigate();
   const [workspaces, setWorkspaces]   = useState<DevWorkspace[]>([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
@@ -422,10 +425,17 @@ const DevWorkspacePage: React.FC = () => {
                               </span>
                             </Tooltip>
                           )}
+                          <Tooltip title="Open Workspace Dashboard">
+                            <IconButton size="small"
+                              onClick={() => navigate(`/developer/Dashboard/workspace/${ws.workspace_id}`)}
+                              sx={{ color: t.brandPrimary }}>
+                              <DashboardIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
                           {isRunning && ws.editor_url && (
-                            <Tooltip title="Open IDE">
+                            <Tooltip title="Open IDE in new tab">
                               <IconButton size="small" component="a" href={ws.editor_url} target="_blank"
-                                sx={{ color: t.brandPrimary }}>
+                                sx={{ color: t.textSecondary }}>
                                 <OpenInNewIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -433,8 +443,7 @@ const DevWorkspacePage: React.FC = () => {
                           {isRunning && (
                             <Tooltip title="Terminal">
                               <IconButton size="small"
-                                component="a"
-                                href={`/developer/Dashboard/workspace/${ws.workspace_id}/terminal`}
+                                onClick={() => navigate(`/developer/Dashboard/workspace/${ws.workspace_id}?section=terminal`)}
                                 sx={{ color: t.textSecondary }}>
                                 <TerminalIcon fontSize="small" />
                               </IconButton>

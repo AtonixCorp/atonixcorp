@@ -1,0 +1,170 @@
+---
+# AtonixCorp – Neutron Network Configuration
+#
+# Configures:
+#   - OVS bridges (br-ex, br-int, br-tun) on network nodes
+#   - VXLAN and VLAN provider networks for Public / Private / Hybrid
+#   - L3 router creation per cloud type via the OpenStack CLI
+#   - Floating IP pool configuration (Public cloud region A)
+#   - VPNaaS IKE / IPSec policies for Hybrid cloud (region C)
+#   - DNS automation: Designate zones aligned with cloud type
+#
+# Usage:
+#   ansible-playbook -i inventory/production.ini playbooks/network-configure.yml
+
+- name: AtonixCorp Neutron Network Configuration
+  hosts: openstack_network
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - "../group_vars/all.yml"
+    - "../group_vars/openstack.yml"
+    - "../group_vars/network.yml"
+
+  tasks:
+    # ── OVS bridge setup ──────────────────────────────────────────────────────
+    - name: Install Open vSwitch
+      apt:
+        name: [openvswitch-switch, openvswitch-common, neutron-openvswitch-agent]
+        state: present
+        update_cache: true
+      tags: [ovs]
+
+    - name: Create br-ex bridge (external/public)
+      openvswitch_bridge:
+        bridge: br-ex
+        state:  present
+      tags: [ovs]
+
+    - name: Attach provider NIC to br-ex
+      openvswitch_port:
+        bridge: br-ex
+        port:   "{{ external_interface }}"
+        state:  present
+      tags: [ovs]
+
+    - name: Create br-provider bridge (VLAN provider for private cloud)
+      openvswitch_bridge:
+        bridge: br-provider
+        state:  present
+      tags: [ovs]
+
+    - name: Attach provider VLAN NIC to br-provider
+      openvswitch_port:
+        bridge: br-provider
+        port:   "{{ vlan_interface }}"
+        state:  present
+      when: vlan_interface is defined
+      tags: [ovs]
+
+    # ── Provider networks via OpenStack CLI ───────────────────────────────────
+    - name: Create public flat provider network (Region A)
+      command: >
+        openstack network create
+        --provider-network-type flat
+        --provider-physical-network external
+        --external
+        --share
+        atonix-public-external
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: net_create
+      failed_when:
+        - net_create.rc != 0
+        - "'already exists' not in net_create.stderr"
+      changed_when: net_create.rc == 0
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [networks, public]
+
+    - name: Create public external subnet
+      command: >
+        openstack subnet create
+        --network atonix-public-external
+        --subnet-range {{ public_floating_cidr }}
+        --no-dhcp
+        --gateway {{ public_gateway }}
+        --allocation-pool start={{ float_pool_start }},end={{ float_pool_end }}
+        atonix-public-external-subnet
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: subnet_create
+      failed_when:
+        - subnet_create.rc != 0
+        - "'already exists' not in subnet_create.stderr"
+      changed_when: subnet_create.rc == 0
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [networks, public]
+
+    - name: Create private VLAN provider network (Region B)
+      command: >
+        openstack network create
+        --provider-network-type vlan
+        --provider-physical-network provider
+        --provider-segment {{ private_vlan_id }}
+        --share
+        atonix-private-provider
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: priv_net
+      failed_when:
+        - priv_net.rc != 0
+        - "'already exists' not in priv_net.stderr"
+      changed_when: priv_net.rc == 0
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [networks, private]
+
+    # ── Designate DNS zones ───────────────────────────────────────────────────
+    - name: Create Public Cloud DNS zone
+      command: >
+        openstack zone create
+        --email noc@atonixcorp.com
+        --description "AtonixCorp Public Cloud DNS"
+        public.cloud.atonixcorp.com.
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: dns_public
+      failed_when:
+        - dns_public.rc != 0
+        - "'already exists' not in dns_public.stderr"
+      changed_when: dns_public.rc == 0
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [dns]
+
+    - name: Create Hybrid Cloud DNS zone
+      command: >
+        openstack zone create
+        --email noc@atonixcorp.com
+        --description "AtonixCorp Hybrid Cloud DNS"
+        hybrid.cloud.atonixcorp.com.
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: dns_hybrid
+      failed_when:
+        - dns_hybrid.rc != 0
+        - "'already exists' not in dns_hybrid.stderr"
+      changed_when: dns_hybrid.rc == 0
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [dns]
+
+    # ── Summary ───────────────────────────────────────────────────────────────
+    - name: List networks
+      command: openstack network list
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: net_list
+      changed_when: false
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      run_once: true
+      tags: [verify]
+
+    - name: Print network summary
+      debug:
+        msg: "{{ net_list.stdout_lines }}"
+      run_once: true
+      tags: [verify]

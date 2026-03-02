@@ -4,6 +4,8 @@ global:
 
 rule_files:
   - "alert_rules.yml"
+  - "ceph_alerts.yml"
+  - "openstack_alerts.yml"
 
 scrape_configs:
   # Prometheus itself
@@ -64,6 +66,43 @@ scrape_configs:
   - job_name: 'node'
     static_configs:
       - targets: ['node-exporter:9100']
+
+  # Ceph MGR Prometheus module (ceph mgr module enable prometheus)
+  - job_name: 'ceph'
+    static_configs:
+      - targets:
+          - 'ceph-mon-1:9283'
+          - 'ceph-mon-2:9283'
+          - 'ceph-mon-3:9283'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # OpenStack Exporter (https://github.com/openstack-exporter/openstack-exporter)
+  - job_name: 'openstack'
+    static_configs:
+      - targets: ['openstack-exporter:9180']
+    params:
+      cloud: [atonix]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # OpenStack Nova Hypervisor metrics via openstack_exporter
+  - job_name: 'openstack-nova'
+    static_configs:
+      - targets: ['openstack-exporter:9180']
+    params:
+      cloud:    [atonix]
+      prefix:   [openstack_nova]
+
+  # OpenStack Neutron metrics
+  - job_name: 'openstack-neutron'
+    static_configs:
+      - targets: ['openstack-exporter:9180']
+    params:
+      cloud:  [atonix]
+      prefix: [openstack_neutron]
 
 alerting:
   alertmanagers:

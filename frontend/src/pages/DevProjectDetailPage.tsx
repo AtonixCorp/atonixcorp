@@ -36,6 +36,10 @@ const DevProjectDetailPage: React.FC = () => {
         setLoading(false);
         return;
       }
+      if (id === 'new' || id === 'create') {
+        navigate('/developer/Dashboard/projects/create', { replace: true });
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -54,7 +58,7 @@ const DevProjectDetailPage: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, navigate]);
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, fontFamily: FONT }}>

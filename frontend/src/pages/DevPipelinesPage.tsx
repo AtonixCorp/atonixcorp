@@ -7,10 +7,6 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -25,15 +21,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { useNavigate } from 'react-router-dom';
+import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 import {
   listPipelines,
-  triggerPipeline,
   cancelPipeline,
-  listPipelineFiles,
   type BackendPipeline,
-  type BackendPipelineFile,
 } from '../services/pipelinesApi';
 import { listProjects, type BackendProject } from '../services/projectsApi';
 
@@ -59,15 +52,11 @@ function timeAgo(iso: string) {
 }
 
 const DevPipelinesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [pipelines, setPipelines] = useState<BackendPipeline[]>([]);
   const [projects, setProjects] = useState<BackendProject[]>([]);
-  const [pipelineFiles, setPipelineFiles] = useState<BackendPipelineFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
-  const [triggerForm, setTriggerForm] = useState({ pipeline_file: '', branch: '', environment: '' });
-  const [triggerLoading, setTriggerLoading] = useState(false);
-  const [triggerError, setTriggerError] = useState<string | null>(null);
   const [filterProject, setFilterProject] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterBranch, setFilterBranch] = useState<string>('');
@@ -76,23 +65,20 @@ const DevPipelinesPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [pipelinesData, projectsData, filesData] = await Promise.all([
+      const [pipelinesData, projectsData] = await Promise.all([
         listPipelines({
           project: filterProject || undefined,
           status: filterStatus || undefined,
           branch: filterBranch || undefined,
         }),
         listProjects(),
-        listPipelineFiles(),
       ]);
       setPipelines(Array.isArray(pipelinesData) ? pipelinesData : []);
       setProjects(Array.isArray(projectsData) ? projectsData : []);
-      setPipelineFiles(Array.isArray(filesData) ? filesData : []);
     } catch (err) {
       setError('Failed to load pipeline data. Please try again.');
       setPipelines([]);
       setProjects([]);
-      setPipelineFiles([]);
     } finally {
       setLoading(false);
     }
@@ -102,29 +88,6 @@ const DevPipelinesPage: React.FC = () => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterProject, filterStatus, filterBranch]);
-
-  const handleTriggerPipeline = async () => {
-    if (!triggerForm.pipeline_file || !triggerForm.branch) {
-      setTriggerError('Pipeline file and branch are required.');
-      return;
-    }
-    setTriggerLoading(true);
-    setTriggerError(null);
-    try {
-      await triggerPipeline({
-        pipeline_file: triggerForm.pipeline_file,
-        branch: triggerForm.branch,
-        environment: triggerForm.environment || undefined,
-      });
-      setTriggerDialogOpen(false);
-      setTriggerForm({ pipeline_file: '', branch: '', environment: '' });
-      loadData();
-    } catch (err) {
-      setTriggerError('Failed to trigger pipeline. Please try again.');
-    } finally {
-      setTriggerLoading(false);
-    }
-  };
 
   const handleCancelPipeline = async (pipelineId: string) => {
     try {
@@ -153,14 +116,6 @@ const DevPipelinesPage: React.FC = () => {
           <Typography variant="h5" sx={{ fontWeight: 700, color: t.textPrimary }}>CI/CD Pipelines</Typography>
           <Typography variant="body2" sx={{ color: t.textSecondary }}>Manage and monitor pipeline runs across projects.</Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<PlayArrowIcon />}
-          sx={dashboardPrimaryButtonSx}
-          onClick={() => setTriggerDialogOpen(true)}
-        >
-          Trigger Pipeline
-        </Button>
       </Stack>
 
       {/* Summary cards */}
@@ -288,7 +243,11 @@ const DevPipelinesPage: React.FC = () => {
                         <TableCell sx={{ color: t.textSecondary, fontSize: '.85rem' }}>{timeAgo(pipeline.started_at)}</TableCell>
                         <TableCell align="right">
                           <Stack direction="row" justifyContent="flex-end" gap={1}>
-                            <Button size="small" sx={{ color: t.brandPrimary, textTransform: 'none' }}>
+                            <Button
+                              size="small"
+                              sx={{ color: t.brandPrimary, textTransform: 'none' }}
+                              onClick={() => navigate(`/developer/Dashboard/cicd/runs/${pipeline.id}`)}
+                            >
                               View
                             </Button>
                             {(pipeline.status === 'running' || pipeline.status === 'pending') && (
@@ -312,58 +271,6 @@ const DevPipelinesPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Trigger Pipeline Dialog */}
-      <Dialog open={triggerDialogOpen} onClose={() => setTriggerDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ bgcolor: t.surface, color: t.textPrimary }}>Trigger Pipeline Run</DialogTitle>
-        <DialogContent sx={{ bgcolor: t.surface }}>
-          {triggerError && <Alert severity="error" sx={{ mb: 2, mt: 2 }}>{triggerError}</Alert>}
-          <Stack spacing={2} sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel sx={{ color: t.textSecondary }}>Pipeline File</InputLabel>
-              <Select
-                value={triggerForm.pipeline_file}
-                label="Pipeline File"
-                onChange={(e) => setTriggerForm({ ...triggerForm, pipeline_file: e.target.value })}
-                sx={{ color: t.textPrimary, bgcolor: t.surfaceSubtle }}
-              >
-                {Array.isArray(pipelineFiles) && pipelineFiles.map((file) => (
-                  <MenuItem key={file.id} value={file.id}>{file.path}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Branch"
-              value={triggerForm.branch}
-              onChange={(e) => setTriggerForm({ ...triggerForm, branch: e.target.value })}
-              placeholder="main"
-              sx={{ '& .MuiInputBase-root': { bgcolor: t.surfaceSubtle, color: t.textPrimary } }}
-            />
-            <TextField
-              fullWidth
-              label="Environment (optional)"
-              value={triggerForm.environment}
-              onChange={(e) => setTriggerForm({ ...triggerForm, environment: e.target.value })}
-              placeholder="production"
-              sx={{ '& .MuiInputBase-root': { bgcolor: t.surfaceSubtle, color: t.textPrimary } }}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ bgcolor: t.surface }}>
-          <Button onClick={() => setTriggerDialogOpen(false)} sx={{ color: t.textSecondary }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleTriggerPipeline}
-            disabled={triggerLoading}
-            sx={dashboardPrimaryButtonSx}
-          >
-            {triggerLoading ? <CircularProgress size={20} /> : 'Trigger'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

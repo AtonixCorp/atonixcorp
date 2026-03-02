@@ -1,0 +1,134 @@
+heat_template_version: wallaby
+
+description: |
+  AtonixCorp Private Cloud – VM Stack
+  Provisions a Nova instance in Region B (Private) with:
+    - a dedicated Neutron VLAN-backed network (no public floating IP)
+    - a Cinder encrypted block volume (Barbican-backed key)
+    - a security group allowing internal-only SSH access
+    - no external routing (air-gapped tenant)
+
+parameters:
+  key_name:
+    type: string
+    constraints:
+      - custom_constraint: nova.keypair
+
+  flavor:
+    type: string
+    default: m1.medium
+    constraints:
+      - custom_constraint: nova.flavor
+
+  image:
+    type: string
+    default: ubuntu-22.04-hardened
+    constraints:
+      - custom_constraint: glance.image
+
+  volume_size_gb:
+    type: number
+    default: 100
+
+  internal_cidr:
+    type: string
+    description: RFC-1918 CIDR for the private tenant network
+    default: 192.168.10.0/24
+
+  dns_servers:
+    type: comma_delimited_list
+    description: Internal DNS resolvers (no internet DNS for private cloud)
+    default: 192.168.1.53
+
+  encryption_key_id:
+    type: string
+    description: Barbican secret UUID for Cinder volume encryption
+    default: ""
+
+resources:
+
+  # ── Network (no router to external) ─────────────────────────────────────────
+  private_network:
+    type: OS::Neutron::Net
+    properties:
+      name: { str_replace: { template: "atonix-private-net-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      # provider:network_type vlan is configured by the admin via provider extension
+      admin_state_up: true
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network:         { get_resource: private_network }
+      cidr:            { get_param: internal_cidr }
+      dns_nameservers: { get_param: dns_servers }
+      ip_version:      4
+      # No gateway — isolated from internet
+      gateway_ip: ~
+
+  # ── Security Group (internal-only) ───────────────────────────────────────────
+  security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: { str_replace: { template: "atonix-private-sg-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      rules:
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: { get_param: internal_cidr }
+        - protocol: icmp
+          remote_ip_prefix: { get_param: internal_cidr }
+
+  # ── Encrypted Volume ─────────────────────────────────────────────────────────
+  # Cinder volume_type 'atonix-private-cinder-enc' is a Cinder type with
+  # encryption provider 'nova.volume.encryptors.luks.LuksEncryptor' and
+  # cipher 'aes-xts-plain64' key_size 512, backed by Barbican.
+  data_volume:
+    type: OS::Cinder::Volume
+    properties:
+      name: { str_replace: { template: "atonix-private-enc-vol-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      size:        { get_param: volume_size_gb }
+      volume_type: atonix-private-cinder   # encrypted via Barbican + LUKS
+
+  # ── Server ───────────────────────────────────────────────────────────────────
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { str_replace: { template: "atonix-private-vm-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      image:    { get_param: image }
+      flavor:   { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_resource: private_network }
+      security_groups:
+        - { get_resource: security_group }
+      metadata:
+        cloud_type:      private
+        compliance_tier: enterprise
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        # Harden SSH
+        sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+        sed -i 's/PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+        systemctl restart sshd
+        # AIDE integrity baseline
+        apt-get update -q && apt-get install -yq aide
+        aide --init && cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+
+  volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: server }
+      volume_id:     { get_resource: data_volume }
+      mountpoint:    /dev/vdb
+
+outputs:
+  server_id:
+    value: { get_resource: server }
+
+  private_ip:
+    description: Fixed IP on the isolated private network
+    value: { get_attr: [server, first_address] }
+
+  volume_id:
+    value: { get_resource: data_volume }

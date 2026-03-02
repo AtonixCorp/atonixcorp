@@ -6,7 +6,7 @@ class WorkspaceBindingSerializer(serializers.ModelSerializer):
     class Meta:
         model  = WorkspaceBinding
         fields = [
-            "id", "workspace", "environment",
+            "id", "workspace", "environment", "cloud_type",
             "openstack_project", "openstack_region",
             "quota_vcpus", "quota_ram_gb", "quota_storage_gb",
         ]

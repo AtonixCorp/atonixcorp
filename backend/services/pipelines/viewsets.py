@@ -9,4 +9,7 @@ from .views import (
     PipelineRuleViewSet,
     EnvironmentViewSet,
     PipelineArtifactViewSet,
+    PipelineDefinitionViewSet,
+    PipelineRunViewSet,
+    PipelineRunNodeViewSet,
 )

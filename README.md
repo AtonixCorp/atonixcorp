@@ -98,6 +98,18 @@ AtonixCorp Cloud
 
 ---
 
+## Cloud Enablement Playbook (Public / Private / Hybrid)
+
+Execution-ready implementation assets for the multi-region OpenStack + Ceph strategy are available at:
+
+- `docs/cloud-enablement/IMPLEMENTATION_PLAYBOOK.md`
+- `docs/cloud-enablement/ROLLOUT_CHECKLIST.yaml`
+- `backend/clouds.yaml.example` (RegionA/RegionB/RegionC profiles)
+
+Use these artifacts to drive rollout phases, evidence-based go-live checks, and service-catalog alignment.
+
+---
+
 ## The 10 Core Principles
 
 ### 1. OpenStack is Your IaaS Control Plane

@@ -54,6 +54,7 @@ import DevCloudManagePage        from './pages/DevCloudManagePage';
 import DevApiManagementPage      from './pages/DevApiManagementPage';
 import DevResourceControlPage    from './pages/DevResourceControlPage';
 import DevWorkspacePage          from './pages/DevWorkspacePage';
+import WorkspaceDashboardPage    from './pages/WorkspaceDashboardPage';
 import DevSettingsPage           from './pages/DevSettingsPage';
 import MarketingSettingsPage     from './pages/MarketingSettingsPage';
 import MarketingOverviewPage     from './pages/MarketingOverviewPage';
@@ -69,7 +70,11 @@ import GroupCreatePage            from './pages/GroupCreatePage';
 import GroupDashboardPage         from './pages/GroupDashboardPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
 import DevProjectDetailPage       from './pages/DevProjectDetailPage';
-import ProjectCreateWizardPage    from './pages/ProjectCreateWizardPage';
+import ProjectEntryPage           from './pages/ProjectEntryPage';
+import ProjectImportPage          from './pages/ProjectImportPage';
+import ProjectCreatePage          from './pages/ProjectCreatePage';
+import ProjectDashboardPage       from './pages/ProjectDashboardPage';
+import RepoSetupPage              from './pages/RepoSetupPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
 import DevOperationalPage         from './pages/DevOperationalPage'
 import DevDeployAppPage           from './pages/DevDeployAppPage';
@@ -110,11 +115,23 @@ const AppShell: React.FC = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
+  const isProjectPage = location.pathname.startsWith('/developer/Dashboard/projects/');
+  const isWorkspaceDashboard = /^\/developer\/Dashboard\/workspace\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
   const isGroupsPage = location.pathname.startsWith('/groups');
+
+  if (isWorkspaceDashboard) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/Dashboard/workspace/:workspaceId" element={<WorkspaceDashboardPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
 
   if (isGroupsPage) {
     return (
@@ -125,6 +142,22 @@ const AppShell: React.FC = () => {
           <Route path="/groups/:groupId/:section"        element={<GroupDashboardPage />} />
           <Route path="/groups/:groupId/:section/:sub"   element={<GroupDashboardPage />} />
           <Route path="/groups/*"                        element={<Navigate to="/developer/Dashboard/groups" replace />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isProjectPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/Dashboard/projects/new"             element={<ProjectCreatePage />} />
+          <Route path="/developer/Dashboard/projects/import"           element={<ProjectImportPage />} />
+          <Route path="/developer/Dashboard/projects/create"           element={<ProjectCreatePage />} />
+          <Route path="/developer/Dashboard/projects/repo/setup"       element={<RepoSetupPage />} />
+          <Route path="/developer/Dashboard/projects/:id"              element={<ProjectDashboardPage />} />
+          <Route path="/developer/Dashboard/projects/:id/detail"       element={<DevProjectDetailPage />} />
+          <Route path="/developer/Dashboard/projects/*"                element={<Navigate to="/developer/Dashboard/projects" replace />} />
         </Routes>
       </ProtectedRoute>
     );
@@ -148,9 +181,7 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
-            <Route path="/developer/Dashboard/projects"     element={<DevProjectsPage />} />
-            <Route path="/developer/Dashboard/projects/create"  element={<ProjectCreateWizardPage />} />
-            <Route path="/developer/Dashboard/projects/:id"  element={<DevProjectDetailPage />} />
+            <Route path="/developer/Dashboard/projects"  element={<DevProjectsPage />} />
             <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/developer/Dashboard/cloud-manage" element={<DevCloudManagePage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />

@@ -1,0 +1,72 @@
+---
+# AtonixCorp – Ceph OSD Node Role
+# tasks/main.yml
+#
+# Installs ceph-osd on a storage node and adds the host to
+# an existing cluster bootstrapped by the ceph-deploy playbook.
+
+- name: Install ceph-common and cephadm
+  apt:
+    name: [ceph-common, lvm2, smartmontools, nvme-cli]
+    state: present
+    update_cache: true
+  tags: [packages]
+
+- name: Copy ceph.conf from primary MON
+  copy:
+    src: /tmp/ceph-artifacts/ceph.conf
+    dest: /etc/ceph/ceph.conf
+    owner: ceph
+    group: ceph
+    mode: '0644'
+  tags: [config]
+
+- name: Copy admin keyring
+  copy:
+    src: /tmp/ceph-artifacts/ceph.client.admin.keyring
+    dest: /etc/ceph/ceph.client.admin.keyring
+    owner: ceph
+    group: ceph
+    mode: '0600'
+  tags: [config]
+
+- name: Install cephadm binary
+  get_url:
+    url: "https://download.ceph.com/rpm-reef/el9/noarch/cephadm"
+    dest: /usr/local/bin/cephadm
+    mode: '0755'
+  tags: [cephadm]
+
+- name: Prepare OSD disks (wipe existing partitions)
+  command: ceph-volume lvm zap "{{ item }}" --destroy
+  loop: "{{ ceph_osd_devices }}"
+  ignore_errors: true
+  when: ceph_wipe_disks | default(false)
+  tags: [osd, disks]
+
+- name: Report available block devices
+  command: lsblk -d -o NAME,SIZE,TYPE,MODEL
+  register: block_devices
+  changed_when: false
+  tags: [osd, preflight]
+
+- name: Print block devices
+  debug:
+    msg: "{{ block_devices.stdout_lines }}"
+  tags: [osd, preflight]
+
+- name: Check disk health (SMART)
+  command: smartctl -H "{{ item }}"
+  loop: "{{ ceph_osd_devices }}"
+  register: smart_check
+  changed_when: false
+  failed_when:
+    - smart_check.rc not in [0, 4]   # rc=4 means SMART not supported (NVMe differs)
+  tags: [osd, preflight]
+
+- name: Enable and start ceph-osd target
+  systemd:
+    name: "ceph-osd.target"
+    state: started
+    enabled: true
+  tags: [services]

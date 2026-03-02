@@ -1,0 +1,207 @@
+---
+# AtonixCorp – OpenStack Controller Role
+# tasks/main.yml
+#
+# Installs and configures the full OpenStack controller service stack
+# on Ubuntu 22.04 using the OpenStack Ubuntu Cloud Archive packages.
+
+- name: Add Ubuntu Cloud Archive (UCA) for {{ openstack_release }}
+  apt_repository:
+    repo: "ppa:ubuntu-cloud-archive/{{ openstack_release }}-staging"
+    state: present
+    update_cache: true
+  tags: [packages]
+
+- name: Install core controller packages
+  apt:
+    name:
+      - keystone
+      - glance
+      - nova-api
+      - nova-conductor
+      - nova-novncproxy
+      - nova-scheduler
+      - neutron-server
+      - neutron-linuxbridge-agent
+      - neutron-l3-agent
+      - neutron-dhcp-agent
+      - neutron-metadata-agent
+      - cinder-api
+      - cinder-scheduler
+      - openstack-dashboard
+      - python3-keystoneclient
+      - python3-novaclient
+      - python3-neutronclient
+      - python3-cinderclient
+      - python3-openstackclient
+      - python3-memcache
+    state: present
+  tags: [packages]
+
+# ── Keystone ──────────────────────────────────────────────────────────────────
+- name: Configure Keystone
+  template:
+    src: keystone.conf.j2
+    dest: /etc/keystone/keystone.conf
+    owner: keystone
+    group: keystone
+    mode: '0640'
+  notify: Restart keystone
+  tags: [keystone]
+
+- name: Populate Keystone DB
+  command: keystone-manage db_sync
+  become_user: keystone
+  changed_when: false
+  tags: [keystone, db]
+
+- name: Initialise Fernet tokens
+  command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+  args:
+    creates: /etc/keystone/fernet-keys/0
+  tags: [keystone]
+
+- name: Bootstrap Keystone
+  command: >
+    keystone-manage bootstrap
+    --bootstrap-password {{ keystone_admin_password }}
+    --bootstrap-admin-url http://{{ controller_host }}:5000/v3/
+    --bootstrap-internal-url http://{{ controller_host }}:5000/v3/
+    --bootstrap-public-url http://{{ public_endpoint }}:5000/v3/
+    --bootstrap-region-id {{ openstack_region }}
+  args:
+    creates: /etc/keystone/.bootstrapped
+  notify: Restart apache2
+  tags: [keystone]
+
+- name: Touch bootstrap sentinel
+  file:
+    path: /etc/keystone/.bootstrapped
+    state: touch
+    owner: keystone
+  tags: [keystone]
+
+# ── Glance ────────────────────────────────────────────────────────────────────
+- name: Configure Glance API
+  template:
+    src: glance-api.conf.j2
+    dest: /etc/glance/glance-api.conf
+    owner: glance
+    group: glance
+    mode: '0640'
+  notify: Restart glance-api
+  tags: [glance]
+
+- name: Populate Glance DB
+  command: glance-manage db_sync
+  become_user: glance
+  changed_when: false
+  tags: [glance, db]
+
+# ── Nova ──────────────────────────────────────────────────────────────────────
+- name: Configure Nova
+  template:
+    src: nova.conf.j2
+    dest: /etc/nova/nova.conf
+    owner: nova
+    group: nova
+    mode: '0640'
+  notify:
+    - Restart nova-api
+    - Restart nova-conductor
+    - Restart nova-scheduler
+  tags: [nova]
+
+- name: Populate Nova DB
+  command: nova-manage api_db sync
+  become_user: nova
+  changed_when: false
+  tags: [nova, db]
+
+- name: Populate Nova cell0 DB
+  command: nova-manage cell_v2 map_cell0
+  become_user: nova
+  changed_when: false
+  tags: [nova, db]
+
+- name: Create Nova cell1
+  command: nova-manage cell_v2 create_cell --name=cell1 --verbose
+  become_user: nova
+  register: cell1
+  changed_when: "'succe' in cell1.stdout"
+  failed_when: cell1.rc != 0 and 'already exists' not in cell1.stderr
+  tags: [nova, db]
+
+- name: Nova DB sync
+  command: nova-manage db sync
+  become_user: nova
+  changed_when: false
+  tags: [nova, db]
+
+# ── Neutron ───────────────────────────────────────────────────────────────────
+- name: Configure Neutron
+  template:
+    src: neutron.conf.j2
+    dest: /etc/neutron/neutron.conf
+    owner: neutron
+    group: neutron
+    mode: '0640'
+  notify: Restart neutron-server
+  tags: [neutron]
+
+- name: Configure ML2 plugin
+  template:
+    src: ml2_conf.ini.j2
+    dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+    owner: neutron
+    group: neutron
+    mode: '0640'
+  notify: Restart neutron-server
+  tags: [neutron]
+
+- name: Populate Neutron DB
+  command: neutron-db-manage --config-file /etc/neutron/neutron.conf
+           --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+  become_user: neutron
+  changed_when: false
+  tags: [neutron, db]
+
+# ── Cinder ────────────────────────────────────────────────────────────────────
+- name: Configure Cinder
+  template:
+    src: cinder.conf.j2
+    dest: /etc/cinder/cinder.conf
+    owner: cinder
+    group: cinder
+    mode: '0640'
+  notify:
+    - Restart cinder-api
+    - Restart cinder-scheduler
+  tags: [cinder]
+
+- name: Populate Cinder DB
+  command: cinder-manage db sync
+  become_user: cinder
+  changed_when: false
+  tags: [cinder, db]
+
+# ── Enable services ───────────────────────────────────────────────────────────
+- name: Enable and start controller services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - apache2
+    - nova-api
+    - nova-conductor
+    - nova-novncproxy
+    - nova-scheduler
+    - neutron-server
+    - neutron-linuxbridge-agent
+    - neutron-l3-agent
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
+    - cinder-api
+    - cinder-scheduler
+  tags: [services]

@@ -1,0 +1,159 @@
+version: 1
+name: AtonixCorp Public-Private-Hybrid Rollout Checklist
+owner: platform-engineering
+status_scale:
+  - not_started
+  - in_progress
+  - blocked
+  - done
+
+phases:
+  - id: phase-1-foundation
+    name: Foundation (Region + Identity + Baseline Policy)
+    status: not_started
+    tasks:
+      - id: p1-1
+        title: Finalize RegionA/RegionB/RegionC naming and endpoint conventions
+        status: not_started
+        evidence: []
+      - id: p1-2
+        title: Publish Keystone federation design (LDAP/SAML/OIDC)
+        status: not_started
+        evidence: []
+      - id: p1-3
+        title: Define RBAC matrix (platform_admin, org_admin, project_admin, developer, viewer)
+        status: not_started
+        evidence: []
+      - id: p1-4
+        title: Validate WorkspaceBinding policy model and region routing behavior
+        status: not_started
+        evidence: []
+      - id: p1-5
+        title: Confirm cloud profile strategy and secure secret injection path
+        status: not_started
+        evidence: []
+
+  - id: phase-2-public-private
+    name: Public + Private Cloud Service Enablement
+    status: not_started
+    tasks:
+      - id: p2-1
+        title: Enable public service catalog (VM, volume, network, LBaaS, DNS, object)
+        status: not_started
+        evidence: []
+      - id: p2-2
+        title: Enable private service catalog (VM, volume, network, image)
+        status: not_started
+        evidence: []
+      - id: p2-3
+        title: Apply project-scoped quotas and enforcement tests
+        status: not_started
+        evidence: []
+      - id: p2-4
+        title: Validate DNS and load-balancer automation in public region
+        status: not_started
+        evidence: []
+      - id: p2-5
+        title: Confirm tenant isolation via negative authorization tests
+        status: not_started
+        evidence: []
+
+  - id: phase-3-hybrid
+    name: Hybrid Connectivity + Orchestration
+    status: not_started
+    tasks:
+      - id: p3-1
+        title: Establish RegionC connectivity with customer datacenter (VPNaaS/direct)
+        status: not_started
+        evidence: []
+      - id: p3-2
+        title: Validate routing and firewall policy for hybrid network paths
+        status: not_started
+        evidence: []
+      - id: p3-3
+        title: Enable Heat templates for cross-region workload orchestration
+        status: not_started
+        evidence: []
+      - id: p3-4
+        title: Enable Mistral workflows for orchestration and rollback
+        status: not_started
+        evidence: []
+      - id: p3-5
+        title: Integrate Barbican/Vault secret handling in hybrid operations
+        status: not_started
+        evidence: []
+
+  - id: phase-4-operations
+    name: Operations, Security, and Go-Live
+    status: not_started
+    tasks:
+      - id: p4-1
+        title: Verify telemetry pipeline (Ceilometer/Gnocchi/Aodh + Prometheus/Grafana)
+        status: not_started
+        evidence: []
+      - id: p4-2
+        title: Validate billing aggregation data quality and report integrity
+        status: not_started
+        evidence: []
+      - id: p4-3
+        title: Execute incident drills (API failure, Ceph degradation, Neutron routing)
+        status: not_started
+        evidence: []
+      - id: p4-4
+        title: Verify TLS hardening, RBAC enforcement, and secret rotation controls
+        status: not_started
+        evidence: []
+      - id: p4-5
+        title: Complete go-live sign-off packet and approval workflow
+        status: not_started
+        evidence: []
+
+acceptance_tests:
+  - id: at-1
+    title: Region routing respects workspace binding
+    expected: Requests with different bindings route to different OpenStack project/region combinations.
+    status: not_started
+  - id: at-2
+    title: Cross-tenant access is blocked
+    expected: Unauthorized project resource fetch returns denial.
+    status: not_started
+  - id: at-3
+    title: Public workflow success
+    expected: VM + floating IP + LB + DNS lifecycle succeeds in RegionA.
+    status: not_started
+  - id: at-4
+    title: Private workflow success
+    expected: Enterprise-dedicated project receives isolated resources in RegionB.
+    status: not_started
+  - id: at-5
+    title: Hybrid workflow success
+    expected: RegionC workload reaches approved on-prem network target.
+    status: not_started
+  - id: at-6
+    title: Secret hygiene
+    expected: No static production credentials in repository configuration.
+    status: not_started
+  - id: at-7
+    title: Monitoring coverage
+    expected: API/OpenStack/Ceph alerts visible and actionable in monitoring stack.
+    status: not_started
+
+service_catalog:
+  public:
+    - vm
+    - volume
+    - network
+    - lbaas
+    - dns
+    - object
+  private:
+    - vm
+    - volume
+    - network
+    - image
+  hybrid:
+    - vm
+    - volume
+    - network
+    - orchestration
+    - secrets

@@ -1,0 +1,162 @@
+# AtonixCorp – Ceph Prometheus Alert Rules
+# Rule source: Ceph MGR Prometheus module v18.x (Reef)
+#
+# Integrate by ensuring the Ceph MGR Prometheus module is enabled:
+#   ceph mgr module enable prometheus
+# Endpoint: http://<ceph-mon>:9283/metrics
+#
+# Severity levels:
+#   page    – immediate on-call notification
+#   warning – business-hours follow-up
+#   info    – informational / trend monitoring
+
+groups:
+
+  - name: ceph.cluster.health
+    rules:
+      - alert: CephClusterErrorState
+        expr: ceph_health_status == 2
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph cluster is in HEALTH_ERR"
+          description: "Ceph cluster {{ $labels.cluster }} has been in HEALTH_ERR for >5 min. Immediate investigation required."
+          runbook: "docs/runbooks/incident-response.md#ceph-health-err"
+
+      - alert: CephClusterWarnState
+        expr: ceph_health_status == 1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph cluster is in HEALTH_WARN"
+          description: "Ceph cluster {{ $labels.cluster }} has been in HEALTH_WARN for >15 min."
+          runbook: "docs/runbooks/incident-response.md#ceph-health-warn"
+
+      - alert: CephClusterNearFull
+        expr: |
+          ceph_cluster_total_used_bytes / ceph_cluster_total_bytes > 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph cluster near capacity (>80%)"
+          description: "Cluster usage is {{ $value | humanizePercentage }} of total capacity. Add OSDs before reaching 85%."
+          runbook: "docs/runbooks/scaling.md#add-osd-nodes"
+
+      - alert: CephClusterFull
+        expr: |
+          ceph_cluster_total_used_bytes / ceph_cluster_total_bytes > 0.90
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph cluster critically full (>90%)"
+          description: "Cluster usage is {{ $value | humanizePercentage }}. Write I/O may be paused. Add OSDs immediately."
+          runbook: "docs/runbooks/incident-response.md#ceph-cluster-full"
+
+  - name: ceph.osd
+    rules:
+      - alert: CephOSDDown
+        expr: ceph_osd_up == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph OSD {{ $labels.ceph_daemon }} is DOWN"
+          description: "OSD {{ $labels.ceph_daemon }} on host {{ $labels.hostname }} has been down for >1 min."
+          runbook: "docs/runbooks/incident-response.md#ceph-osd-down"
+
+      - alert: CephOSDNearFull
+        expr: ceph_osd_utilization > 0.80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph OSD {{ $labels.ceph_daemon }} near full (>80%)"
+          description: "OSD {{ $labels.ceph_daemon }} is {{ $value | humanizePercentage }} full."
+          runbook: "docs/runbooks/scaling.md#rebalance-ceph"
+
+      - alert: CephOSDFlapping
+        expr: |
+          changes(ceph_osd_up[5m]) > 4
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph OSD {{ $labels.ceph_daemon }} is flapping"
+          description: "OSD {{ $labels.ceph_daemon }} changed state >4 times in 5 min. Check network or disk health."
+          runbook: "docs/runbooks/incident-response.md#ceph-osd-flapping"
+
+      - alert: CephOSDSlowOps
+        expr: ceph_osd_op_w_latency_sum / ceph_osd_op_w_latency_count > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph OSD {{ $labels.ceph_daemon }} high write latency"
+          description: "Mean write latency on OSD {{ $labels.ceph_daemon }} is {{ $value }}s."
+
+  - name: ceph.mon
+    rules:
+      - alert: CephMonDown
+        expr: ceph_mon_quorum_status == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph MON {{ $labels.ceph_daemon }} lost quorum"
+          description: "Monitor {{ $labels.ceph_daemon }} is not in quorum. Cluster writes may stall."
+          runbook: "docs/runbooks/incident-response.md#ceph-mon-quorum"
+
+      - alert: CephMonQuorumAtRisk
+        expr: |
+          count(ceph_mon_quorum_status == 1) <= 1
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph MON quorum is at risk — only 1 monitor in quorum"
+          description: "Fewer than the minimum number of monitors are in quorum. Cluster may become unavailable."
+
+  - name: ceph.pg
+    rules:
+      - alert: CephPGDegraded
+        expr: ceph_pg_degraded > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} Ceph PGs are degraded"
+          description: "{{ $value }} placement groups are in a degraded state. Data availability is reduced."
+
+      - alert: CephPGUnavailable
+        expr: ceph_pg_undersized > 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $value }} Ceph PGs are undersized"
+          description: "{{ $value }} PGs have fewer copies than required. Risk of data loss if another OSD fails."
+
+  - name: ceph.rgw
+    rules:
+      - alert: CephRGWHighLatency
+        expr: |
+          histogram_quantile(0.99, rate(ceph_rgw_get_initial_lat_sum[5m]) / rate(ceph_rgw_get_initial_lat_count[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ceph RGW p99 GET latency > 2s"
+          description: "Object storage GET p99 latency is {{ $value }}s. Check RGW thread counts and disk I/O."
+
+      - alert: CephRGWDown
+        expr: ceph_rgw_metadata{ceph_daemon=~"rgw.*"} unless ceph_rgw_req > 0
+        for: 3m
+        labels:
+          severity: page
+        annotations:
+          summary: "Ceph RGW daemon {{ $labels.ceph_daemon }} appears unhealthy"
+          description: "RGW daemon {{ $labels.ceph_daemon }} has no request metrics for 3 min."

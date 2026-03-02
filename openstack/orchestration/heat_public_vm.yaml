@@ -1,0 +1,160 @@
+heat_template_version: wallaby
+
+description: |
+  AtonixCorp Public Cloud – VM Stack
+  Provisions a Nova instance in Region A (Public) with:
+    - a Neutron network and subnet
+    - a security group allowing SSH + HTTPS
+    - a floating IP for public access
+    - a Cinder block volume attached at /dev/vdb
+
+parameters:
+  key_name:
+    type: string
+    description: Name of an existing keypair
+    constraints:
+      - custom_constraint: nova.keypair
+
+  flavor:
+    type: string
+    description: Nova flavor
+    default: m1.small
+    constraints:
+      - custom_constraint: nova.flavor
+
+  image:
+    type: string
+    description: Glance image name or ID
+    default: ubuntu-22.04-amd64
+    constraints:
+      - custom_constraint: glance.image
+
+  public_network:
+    type: string
+    description: External network for floating IP allocation
+    default: public
+    constraints:
+      - custom_constraint: neutron.network
+
+  volume_size_gb:
+    type: number
+    description: Block volume size in GB
+    default: 50
+
+  allowed_cidr:
+    type: string
+    description: CIDR range permitted to reach SSH (port 22)
+    default: 0.0.0.0/0
+
+resources:
+
+  # ── Network ─────────────────────────────────────────────────────────────────
+  private_network:
+    type: OS::Neutron::Net
+    properties:
+      name: { str_replace: { template: "atonix-public-net-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network: { get_resource: private_network }
+      cidr: 10.10.0.0/24
+      dns_nameservers: [8.8.8.8, 1.1.1.1]
+      ip_version: 4
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: public_network }
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router: { get_resource: router }
+      subnet: { get_resource: private_subnet }
+
+  # ── Security Group ───────────────────────────────────────────────────────────
+  security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: { str_replace: { template: "atonix-public-sg-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      rules:
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: { get_param: allowed_cidr }
+        - protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+          remote_ip_prefix: 0.0.0.0/0
+        - protocol: icmp
+          remote_ip_prefix: 0.0.0.0/0
+
+  # ── Volume ───────────────────────────────────────────────────────────────────
+  data_volume:
+    type: OS::Cinder::Volume
+    properties:
+      name: { str_replace: { template: "atonix-public-vol-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      size: { get_param: volume_size_gb }
+      volume_type: atonix-public-cinder   # maps to atonix-public-cinder Ceph pool
+
+  # ── Server ───────────────────────────────────────────────────────────────────
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { str_replace: { template: "atonix-public-vm-%wsid%", params: { "%wsid%": { get_param: "OS::stack_name" } } } }
+      image:  { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_resource: private_network }
+      security_groups:
+        - { get_resource: security_group }
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        apt-get update -q
+        apt-get install -yq cloud-utils parted
+        # Format and mount data volume
+        parted /dev/vdb mklabel gpt
+        parted /dev/vdb mkpart primary ext4 0% 100%
+        mkfs.ext4 /dev/vdb1
+        mkdir -p /data
+        echo '/dev/vdb1 /data ext4 defaults 0 2' >> /etc/fstab
+        mount -a
+
+  volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: server }
+      volume_id:     { get_resource: data_volume }
+      mountpoint:    /dev/vdb
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_network }
+
+  floating_ip_assoc:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id:  { get_resource: floating_ip }
+      port_id:        { get_attr: [server, addresses, { get_resource: private_network }, 0, port] }
+
+outputs:
+  server_id:
+    description: Nova server UUID
+    value: { get_resource: server }
+
+  private_ip:
+    description: Fixed IP on the private network
+    value: { get_attr: [server, first_address] }
+
+  floating_ip:
+    description: Public floating IP
+    value: { get_attr: [floating_ip, floating_ip_address] }
+
+  volume_id:
+    description: Cinder volume UUID
+    value: { get_resource: data_volume }

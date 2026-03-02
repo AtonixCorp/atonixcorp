@@ -1,0 +1,72 @@
+---
+# AtonixCorp – OpenStack Compute Node Deployment
+#
+# Installs and configures:
+#   - nova-compute (KVM hypervisor)
+#   - neutron-openvswitch-agent (VXLAN tenant networking)
+#   - ceph client (RBD for Nova ephemeral + Cinder volumes)
+#   - libvirt + qemu-kvm
+#   - nova-migration keypair (live migration support)
+#
+# Usage:
+#   ansible-playbook -i inventory/production.ini playbooks/openstack-compute.yml
+#   ansible-playbook -i inventory/production.ini playbooks/openstack-compute.yml \
+#     --tags nova --limit region-a-compute
+
+- name: AtonixCorp OpenStack Compute Node Deployment
+  hosts: openstack_compute
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - "../group_vars/all.yml"
+    - "../group_vars/openstack.yml"
+
+  vars:
+    openstack_release: "2024.1"
+
+  pre_tasks:
+    - name: Check CPU virtualisation extensions
+      command: grep -c -E '(vmx|svm)' /proc/cpuinfo
+      register: virt_check
+      failed_when: virt_check.stdout | int == 0
+      changed_when: false
+      tags: [preflight]
+
+    - name: Load KVM kernel modules
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      loop: [kvm, kvm_intel, kvm_amd]
+      ignore_errors: true
+      tags: [preflight]
+
+  roles:
+    - role: security-harden
+      tags: [security]
+    - role: openstack-compute
+      tags: [openstack, compute, nova]
+    - role: monitoring-agent
+      tags: [monitoring]
+
+  post_tasks:
+    - name: Verify nova-compute is running
+      service:
+        name: nova-compute
+        state: started
+        enabled: true
+      tags: [verify]
+
+    - name: Check hypervisor appears in Nova inventory
+      command: openstack hypervisor list --long
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      delegate_to: "{{ groups['openstack_controllers'][0] }}"
+      register: hypervisor_list
+      changed_when: false
+      tags: [verify]
+
+    - name: Show hypervisor count
+      debug:
+        msg: "Registered hypervisors: {{ hypervisor_list.stdout_lines | length - 2 }}"
+      tags: [verify]

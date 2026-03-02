@@ -110,3 +110,19 @@ class DevWorkspaceViewSet(viewsets.ModelViewSet):
             'cpu_percent', 'ram_percent', 'containers', 'volumes',
         ])
         return Response(DevWorkspaceSerializer(workspace).data)
+
+    @action(detail=True, methods=['post'], url_path='restart')
+    def restart(self, request, workspace_id=None):
+        workspace = self.get_object()
+        workspace.status = 'running'
+        workspace.started_at = django_tz.now()
+        workspace.editor_url = f'https://editor.atonixcorp.dev/{workspace.workspace_id}'
+        workspace.cpu_percent = 5
+        workspace.ram_percent = 20
+        workspace.containers = 1
+        workspace.volumes = 1
+        workspace.save(update_fields=[
+            'status', 'started_at', 'editor_url',
+            'cpu_percent', 'ram_percent', 'containers', 'volumes',
+        ])
+        return Response(DevWorkspaceSerializer(workspace).data)

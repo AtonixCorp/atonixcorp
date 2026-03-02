@@ -10,17 +10,43 @@ from .models import (
     PipelineRule,
     Environment,
     PipelineArtifact,
+    PipelineDefinition,
+    PipelineDefinitionStage,
+    PipelineDefinitionStep,
+    PipelineRun,
+    PipelineRunNode,
+    PipelineRunArtifact,
 )
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer for Project model."""
+    owner_username   = serializers.CharField(source='owner.username', read_only=True)
+    repo_count       = serializers.SerializerMethodField()
+    pipeline_count   = serializers.SerializerMethodField()
+    has_repo         = serializers.SerializerMethodField()
+
+    def get_repo_count(self, obj):
+        return obj.repositories.count()
+
+    def get_pipeline_count(self, obj):
+        return PipelineDefinition.objects.filter(project=obj).count()
+
+    def get_has_repo(self, obj):
+        return obj.repositories.exists()
 
     class Meta:
         model = Project
-        fields = '__all__'
-        read_only_fields = ('owner', 'created_at', 'updated_at')
-        # id is a CharField pk; allow the view's perform_create to supply it
+        fields = [
+            'id', 'owner', 'owner_username',
+            'name', 'project_key', 'namespace', 'description',
+            'visibility', 'avatar_color', 'last_activity',
+            'repo_count', 'pipeline_count', 'has_repo',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ('owner', 'owner_username', 'namespace',
+                            'repo_count', 'pipeline_count', 'has_repo',
+                            'created_at', 'updated_at')
         extra_kwargs = {
             'id': {'required': False, 'allow_blank': True},
         }
@@ -33,6 +59,10 @@ class RepositorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Repository
         fields = '__all__'
+        extra_kwargs = {
+            # id is generated server-side in perform_create; never required on input
+            'id': {'required': False},
+        }
 
 
 class PipelineFileSerializer(serializers.ModelSerializer):
@@ -149,3 +179,109 @@ class PipelineRunSerializer(serializers.Serializer):
         allow_null=True,
     )
     parameters = serializers.JSONField(required=False)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+#  Pipeline Definition System serializers
+# ────────────────────────────────────────────────────────────────────────────
+
+class PipelineDefinitionStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = PipelineDefinitionStep
+        fields = ['id', 'name', 'type', 'script', 'config_json', 'order',
+                  'condition', 'timeout_seconds', 'retry_count']
+
+
+class PipelineDefinitionStageSerializer(serializers.ModelSerializer):
+    steps = PipelineDefinitionStepSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = PipelineDefinitionStage
+        fields = ['id', 'definition', 'name', 'type', 'order', 'environment',
+                  'parallel', 'condition', 'steps']
+        read_only_fields = ['definition']
+
+
+class PipelineDefinitionSerializer(serializers.ModelSerializer):
+    stages       = PipelineDefinitionStageSerializer(many=True, read_only=True)
+    project_name = serializers.CharField(source='project.name', read_only=True)
+    created_by_username = serializers.CharField(
+        source='created_by.username', read_only=True, default=None)
+    last_run_status = serializers.SerializerMethodField()
+    total_runs      = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = PipelineDefinition
+        fields = ['id', 'project', 'project_name', 'name', 'description',
+                  'yaml_definition', 'variables', 'triggers', 'is_active',
+                  'created_by', 'created_by_username', 'created_at', 'updated_at',
+                  'stages', 'last_run_status', 'total_runs']
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
+
+    def get_last_run_status(self, obj):
+        run = obj.runs.order_by('-created_at').first()
+        return run.status if run else None
+
+    def get_total_runs(self, obj):
+        return obj.runs.count()
+
+
+class PipelineRunNodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = PipelineRunNode
+        fields = ['id', 'node_type', 'stage_name', 'step_name', 'status',
+                  'order', 'started_at', 'finished_at', 'duration_s',
+                  'log_output', 'error_msg', 'artifacts']
+
+
+class PipelineRunArtifactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = PipelineRunArtifact
+        fields = ['id', 'run', 'node', 'name', 'artifact_type',
+                  'storage_url', 'size_bytes', 'metadata', 'created_at']
+
+
+class PipelineRunDetailSerializer(serializers.ModelSerializer):
+    nodes           = PipelineRunNodeSerializer(many=True, read_only=True)
+    run_artifacts   = PipelineRunArtifactSerializer(many=True, read_only=True)
+    definition_name = serializers.CharField(source='definition.name', read_only=True)
+    project_name    = serializers.CharField(source='definition.project.name', read_only=True)
+    repo_name       = serializers.SerializerMethodField()
+
+    def get_repo_name(self, obj):
+        return obj.repo.repo_name if obj.repo else None
+
+    class Meta:
+        model  = PipelineRun
+        fields = ['id', 'definition', 'definition_name', 'project_name',
+                  'repo', 'repo_name',
+                  'status', 'triggered_by', 'branch', 'commit_sha', 'commit_msg',
+                  'variables', 'started_at', 'finished_at', 'duration_s',
+                  'created_at', 'updated_at', 'nodes', 'run_artifacts']
+
+
+class PipelineRunListSerializer(serializers.ModelSerializer):
+    """Lighter serializer used in list views (no nested nodes)."""
+    definition_name = serializers.CharField(source='definition.name', read_only=True)
+    project_name    = serializers.CharField(source='definition.project.name', read_only=True)
+    repo_name       = serializers.SerializerMethodField()
+
+    def get_repo_name(self, obj):
+        return obj.repo.repo_name if obj.repo else None
+
+    class Meta:
+        model  = PipelineRun
+        fields = ['id', 'definition', 'definition_name', 'project_name',
+                  'repo', 'repo_name',
+                  'status', 'triggered_by', 'branch', 'commit_sha',
+                  'started_at', 'finished_at', 'duration_s',
+                  'created_at', 'updated_at']
+
+
+class TriggerPipelineRunSerializer(serializers.Serializer):
+    """Payload for POST /pipeline-definitions/{id}/trigger/"""
+    branch     = serializers.CharField(max_length=200, default='main')
+    commit_sha = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    commit_msg = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    variables  = serializers.JSONField(required=False, default=dict)
+    repo       = serializers.CharField(max_length=50, required=False, allow_blank=True, allow_null=True, default=None)

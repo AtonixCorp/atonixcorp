@@ -1,0 +1,62 @@
+---
+# AtonixCorp – OpenStack Controller Node Deployment
+#
+# Installs and configures Keystone, Glance, Nova API/Scheduler,
+# Neutron Server/L3/DHCP, Cinder API/Scheduler, Octavia API,
+# Designate API, Barbican, and the Ceilometer/Gnocchi/Aodh
+# telemetry stack on controller node(s).
+#
+# Usage:
+#   ansible-playbook -i inventory/production.ini playbooks/openstack-controller.yml
+#   ansible-playbook -i inventory/production.ini playbooks/openstack-controller.yml \
+#     --tags keystone --limit region-a-controller
+
+- name: AtonixCorp OpenStack Controller Deployment
+  hosts: openstack_controllers
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - "../group_vars/all.yml"
+    - "../group_vars/openstack.yml"
+
+  vars:
+    openstack_release: "2024.1"          # Caracal
+    mysql_host:     "{{ db_host }}"
+    rabbitmq_host:  "{{ mq_host }}"
+    memcached_host: "{{ cache_host }}"
+
+  pre_tasks:
+    - name: Ensure Python3 and pip are present
+      apt:
+        name: [python3, python3-pip, python3-venv]
+        state: present
+        update_cache: true
+      tags: [always]
+
+    - name: Set hostname
+      hostname:
+        name: "{{ inventory_hostname }}"
+      tags: [always]
+
+  roles:
+    - role: security-harden
+      tags: [security]
+    - role: openstack-controller
+      tags: [openstack, controller]
+    - role: monitoring-agent
+      tags: [monitoring]
+
+  post_tasks:
+    - name: Run OpenStack service health check
+      command: openstack catalog list
+      environment:
+        OS_CLOUD: "{{ openstack_admin_cloud }}"
+      register: catalog_check
+      changed_when: false
+      tags: [verify]
+
+    - name: Print catalog summary
+      debug:
+        msg: "{{ catalog_check.stdout_lines | length }} services in catalog"
+      tags: [verify]

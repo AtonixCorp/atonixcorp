@@ -5,16 +5,40 @@ import uuid
 
 
 class Project(TimeStampedModel):
-    """Represents a user project that can have multiple repositories."""
-    id = models.CharField(max_length=50, primary_key=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    """
+    Represents a user project — an empty container that grows as the user
+    attaches repositories, workspaces, environments, groups and containers.
+    Created in a single step (no wizard).
+    """
+    VISIBILITY_CHOICES = [
+        ('private', 'Private'),
+        ('team',    'Team'),
+        ('public',  'Public'),
+    ]
+
+    id          = models.CharField(max_length=50, primary_key=True)
+    owner       = models.ForeignKey(User, on_delete=models.CASCADE)
+    name        = models.CharField(max_length=100)
+    project_key = models.CharField(
+        max_length=50, blank=True, default='',
+        help_text='Short URL-safe identifier, e.g. "my-app".',
+    )
+    namespace   = models.CharField(
+        max_length=80, blank=True, default='',
+        help_text='Kubernetes/org namespace auto-generated from owner+key.',
+    )
     description = models.TextField(blank=True)
+    visibility  = models.CharField(
+        max_length=10, choices=VISIBILITY_CHOICES, default='private',
+    )
+    avatar_color = models.CharField(max_length=20, blank=True, default='#153d75')
+    last_activity = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'projects'
         indexes = [
             models.Index(fields=['owner', 'name']),
+            models.Index(fields=['owner', 'project_key']),
         ]
 
     def __str__(self):
@@ -29,9 +53,11 @@ class Repository(TimeStampedModel):
         ('github', 'GitHub'),
         ('gitlab', 'GitLab'),
         ('bitbucket', 'Bitbucket'),
+        ('atonix', 'Atonix'),
     ])
     repo_name = models.CharField(max_length=100)
     default_branch = models.CharField(max_length=100, default='main')
+    tree_data = models.JSONField(default=list, blank=True)
 
     class Meta:
         db_table = 'repositories'
@@ -223,3 +249,221 @@ class PipelineArtifact(TimeStampedModel):
 
     def __str__(self):
         return f"Artifact {self.artifact_path} for {self.job}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Pipeline Definition System  (named YAML templates + execution graph models)
+# ─────────────────────────────────────────────────────────────────────────────
+
+STAGE_TYPE_CHOICES = [
+    ('build',    'Build'),
+    ('test',     'Test'),
+    ('security', 'Security Scan'),
+    ('deploy',   'Deploy'),
+    ('verify',   'Verify'),
+    ('notify',   'Notify'),
+    ('custom',   'Custom'),
+]
+
+STEP_TYPE_CHOICES = [
+    ('script',       'Shell Script'),
+    ('docker',       'Docker Build/Push'),
+    ('kubernetes',   'Kubernetes Manifest'),
+    ('approval',     'Manual Approval'),
+    ('notification', 'Notification'),
+    ('artifact',     'Artifact Upload'),
+    ('test',         'Test Runner'),
+    ('scan',         'Security Scan'),
+]
+
+NODE_STATUS_CHOICES = [
+    ('pending',  'Pending'),
+    ('running',  'Running'),
+    ('success',  'Success'),
+    ('failed',   'Failed'),
+    ('skipped',  'Skipped'),
+    ('waiting',  'Waiting Approval'),
+    ('cancelled','Cancelled'),
+]
+
+
+class PipelineDefinition(TimeStampedModel):
+    """
+    A named, reusable pipeline template backed by a YAML definition.
+    Analogous to a Harness pipeline or a GitLab CI config.
+    """
+    id              = models.CharField(max_length=60, primary_key=True)
+    project         = models.ForeignKey(Project, on_delete=models.CASCADE,
+                                        related_name='pipeline_definitions')
+    name            = models.CharField(max_length=120)
+    description     = models.TextField(blank=True, default='')
+    yaml_definition = models.TextField(blank=True, default='',
+                        help_text='Full YAML definition of the pipeline.')
+    variables       = models.JSONField(default=list,
+                        help_text='List of {name, value, secret} variable dicts.')
+    triggers        = models.JSONField(default=list,
+                        help_text='List of trigger configs (push, schedule, manual).')
+    created_by      = models.ForeignKey(User, null=True, blank=True,
+                                        on_delete=models.SET_NULL,
+                                        related_name='created_definitions')
+    is_active       = models.BooleanField(default=True)
+
+    class Meta:
+        db_table        = 'pipeline_definitions'
+        unique_together = [('project', 'name')]
+        indexes         = [models.Index(fields=['project', 'is_active'])]
+
+    def __str__(self):
+        return f"{self.project.name}/{self.name}"
+
+
+class PipelineDefinitionStage(models.Model):
+    """
+    An ordered stage within a PipelineDefinition (Build → Test → Deploy).
+    """
+    definition  = models.ForeignKey(PipelineDefinition, on_delete=models.CASCADE,
+                                     related_name='stages')
+    name        = models.CharField(max_length=100)
+    type        = models.CharField(max_length=20, choices=STAGE_TYPE_CHOICES,
+                                   default='custom')
+    order       = models.PositiveIntegerField(default=0)
+    environment = models.CharField(max_length=100, blank=True, default='',
+                    help_text='Target environment for deploy stages.')
+    parallel    = models.BooleanField(default=False,
+                    help_text='Run this stage\'s steps in parallel.')
+    condition   = models.CharField(max_length=200, blank=True, default='',
+                    help_text='Expression determining whether this stage runs.')
+
+    class Meta:
+        db_table  = 'pipeline_definition_stages'
+        ordering  = ['order']
+        unique_together = [('definition', 'name')]
+
+    def __str__(self):
+        return f"{self.definition.name} › {self.name}"
+
+
+class PipelineDefinitionStep(models.Model):
+    """
+    An ordered step within a PipelineDefinitionStage.
+    """
+    stage           = models.ForeignKey(PipelineDefinitionStage,
+                                        on_delete=models.CASCADE,
+                                        related_name='steps')
+    name            = models.CharField(max_length=100)
+    type            = models.CharField(max_length=20, choices=STEP_TYPE_CHOICES,
+                                       default='script')
+    script          = models.TextField(blank=True, default='',
+                        help_text='Shell script body for script-type steps.')
+    config_json     = models.JSONField(default=dict,
+                        help_text='Type-specific config (image, manifest, etc.).')
+    order           = models.PositiveIntegerField(default=0)
+    condition       = models.CharField(max_length=20,
+                        choices=[('always','Always'),('on_success','On Success'),
+                                 ('on_failure','On Failure')],
+                        default='on_success')
+    timeout_seconds = models.PositiveIntegerField(default=3600)
+    retry_count     = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'pipeline_definition_steps'
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.stage.definition.name} › {self.stage.name} › {self.name}"
+
+
+class PipelineRun(TimeStampedModel):
+    """
+    A single execution of a PipelineDefinition.
+    Distinct from the legacy Pipeline model (which stays).
+    """
+    id          = models.CharField(max_length=60, primary_key=True)
+    definition  = models.ForeignKey(PipelineDefinition, on_delete=models.CASCADE,
+                                    related_name='runs')
+    status      = models.CharField(max_length=20,
+                    choices=[s for s in [
+                        ('pending','Pending'), ('running','Running'),
+                        ('success','Success'), ('failed','Failed'),
+                        ('cancelled','Cancelled'), ('waiting','Waiting Approval'),
+                    ]],
+                    default='pending')
+    repo         = models.ForeignKey('Repository', on_delete=models.SET_NULL,
+                     null=True, blank=True, related_name='pipeline_runs')
+    triggered_by = models.CharField(max_length=120)
+    branch       = models.CharField(max_length=200, blank=True, default='main')
+    commit_sha   = models.CharField(max_length=64, blank=True, default='')
+    commit_msg   = models.CharField(max_length=300, blank=True, default='')
+    variables    = models.JSONField(default=dict,
+                    help_text='Run-time variable overrides.')
+    started_at   = models.DateTimeField(null=True, blank=True)
+    finished_at  = models.DateTimeField(null=True, blank=True)
+    duration_s   = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'pipeline_runs'
+        indexes  = [
+            models.Index(fields=['definition', 'status']),
+            models.Index(fields=['status', 'started_at']),
+        ]
+
+    def __str__(self):
+        return f"Run {self.id} of {self.definition.name} ({self.status})"
+
+
+class PipelineRunNode(models.Model):
+    """
+    One node in the execution graph for a PipelineRun.
+    Represents either an entire stage or a single step.
+    """
+    run         = models.ForeignKey(PipelineRun, on_delete=models.CASCADE,
+                                    related_name='nodes')
+    node_type   = models.CharField(max_length=10,
+                    choices=[('stage','Stage'),('step','Step')],
+                    default='step')
+    stage_name  = models.CharField(max_length=100)
+    step_name   = models.CharField(max_length=100, blank=True, default='')
+    status      = models.CharField(max_length=20, choices=NODE_STATUS_CHOICES,
+                                   default='pending')
+    order       = models.PositiveIntegerField(default=0)
+    started_at  = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    duration_s  = models.FloatField(null=True, blank=True)
+    log_output  = models.TextField(blank=True, default='')
+    error_msg   = models.TextField(blank=True, default='')
+    artifacts   = models.JSONField(default=list,
+                    help_text='List of {name, url} artifact references.')
+
+    class Meta:
+        db_table = 'pipeline_run_nodes'
+        ordering = ['order']
+        indexes  = [
+            models.Index(fields=['run', 'status']),
+            models.Index(fields=['run', 'stage_name']),
+        ]
+
+    def __str__(self):
+        label = f"{self.stage_name}:{self.step_name}" if self.step_name else self.stage_name
+        return f"Node {label} ({self.status})"
+
+
+class PipelineRunArtifact(TimeStampedModel):
+    """Artifact produced during a PipelineRun (linked to a node)."""
+    run         = models.ForeignKey(PipelineRun, on_delete=models.CASCADE,
+                                    related_name='run_artifacts')
+    node        = models.ForeignKey(PipelineRunNode, null=True, blank=True,
+                                    on_delete=models.SET_NULL,
+                                    related_name='run_artifacts')
+    name        = models.CharField(max_length=200)
+    artifact_type = models.CharField(max_length=50, blank=True, default='',
+                    help_text='docker_image, test_report, manifest, binary, etc.')
+    storage_url = models.URLField(blank=True, default='')
+    size_bytes  = models.BigIntegerField(default=0)
+    metadata    = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = 'pipeline_run_artifacts'
+        indexes  = [models.Index(fields=['run', 'artifact_type'])]
+
+    def __str__(self):
+        return f"{self.name} for run {self.run_id}"

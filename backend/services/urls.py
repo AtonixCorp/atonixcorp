@@ -65,6 +65,9 @@ from .pipelines.viewsets import (
     PipelineRuleViewSet,
     EnvironmentViewSet,
     PipelineArtifactViewSet,
+    PipelineDefinitionViewSet,
+    PipelineRunViewSet,
+    PipelineRunNodeViewSet,
 )
 from .kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 from .deployments.viewsets import (
@@ -90,6 +93,7 @@ from .ai.viewsets import (
 from .regions.viewsets import (
     CloudRegionViewSet, AvailabilityZoneViewSet, RegionPeerViewSet,
 )
+from .catalog.viewsets import ServiceCatalogViewSet, ServiceCatalogPolicyViewSet
 from .webhooks.viewsets import WebhookViewSet
 from .provisioning.views import (
     provision_vm,
@@ -205,15 +209,18 @@ router.register(r'billing/credits',         CreditViewSet,           basename='c
 # ============================================================================
 # CI/CD PIPELINES ENDPOINTS
 # ============================================================================
-router.register(r'pipelines/projects',         ProjectViewSet,         basename='pipeline-project')
-router.register(r'pipelines/repositories',     RepositoryViewSet,      basename='pipeline-repository')
-router.register(r'pipelines/files',            PipelineFileViewSet,    basename='pipeline-file')
-router.register(r'pipelines/runs',             PipelineViewSet,        basename='pipeline-run')
-router.register(r'pipelines/jobs',             PipelineJobViewSet,     basename='pipeline-job')
-router.register(r'pipelines/approvals',        PipelineApprovalViewSet, basename='pipeline-approval')
-router.register(r'pipelines/rules',            PipelineRuleViewSet,    basename='pipeline-rule')
-router.register(r'pipelines/environments',     EnvironmentViewSet,     basename='pipeline-environment')
-router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename='pipeline-artifact')
+router.register(r'pipelines/projects',         ProjectViewSet,             basename='pipeline-project')
+router.register(r'pipelines/repositories',     RepositoryViewSet,          basename='pipeline-repository')
+router.register(r'pipelines/files',            PipelineFileViewSet,        basename='pipeline-file')
+router.register(r'pipelines/runs',             PipelineViewSet,            basename='pipeline-run')
+router.register(r'pipelines/jobs',             PipelineJobViewSet,         basename='pipeline-job')
+router.register(r'pipelines/approvals',        PipelineApprovalViewSet,    basename='pipeline-approval')
+router.register(r'pipelines/rules',            PipelineRuleViewSet,        basename='pipeline-rule')
+router.register(r'pipelines/environments',     EnvironmentViewSet,         basename='pipeline-environment')
+router.register(r'pipelines/artifacts',        PipelineArtifactViewSet,    basename='pipeline-artifact')
+router.register(r'pipelines/definitions',      PipelineDefinitionViewSet,  basename='pipeline-definition')
+router.register(r'pipelines/pipeline-runs',    PipelineRunViewSet,         basename='pipeline-run-v2')
+router.register(r'pipelines/run-nodes',        PipelineRunNodeViewSet,     basename='pipeline-run-node')
 
 # ============================================================================
 # KUBERNETES INTEGRATION ENDPOINTS
@@ -275,6 +282,12 @@ router.register(r'ai/recommendations',     AIRecommendationViewSet,     basename
 router.register(r'regions',           CloudRegionViewSet,      basename='region')
 router.register(r'regions/zones',     AvailabilityZoneViewSet, basename='availability-zone')
 router.register(r'regions/peers',     RegionPeerViewSet,       basename='region-peer')
+
+# ============================================================================
+# SERVICE CATALOG ENDPOINTS
+# ============================================================================
+router.register(r'catalog',                ServiceCatalogViewSet,       basename='catalog')
+router.register(r'catalog/policies',       ServiceCatalogPolicyViewSet, basename='catalog-policy')
 
 # ============================================================================
 # WEBHOOKS ENDPOINTS
