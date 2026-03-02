@@ -106,6 +106,32 @@ export interface EnvRelease {
   active:      boolean;
 }
 
+// ─── Config / Infrastructure Files ───────────────────────────────────────────
+
+export type EnvFileType =
+  'dockerfile' | 'env' | 'yaml' | 'helm' | 'k8s' | 'terraform' |
+  'compose'   | 'config' | 'properties' | 'other';
+
+export interface EnvFile {
+  id:                 number;
+  file_name:          string;
+  file_path:          string;
+  file_type:          EnvFileType;
+  associated_service: string;
+  is_valid:           boolean;
+  has_errors:         boolean;
+  error_message:      string;
+  is_env_specific:    boolean;
+  last_modified:      string | null;
+  discovered_at:      string;
+}
+
+export interface DiscoveryResult {
+  detail: string;
+  count:  number;
+  files:  EnvFile[];
+}
+
 // ─── Detail fetchers (fall back to mock data if backend 404s) ─────────────────
 
 const mock = <T>(data: T): Promise<T> =>
@@ -246,6 +272,16 @@ export const getEnvReleases = (id: string): Promise<EnvRelease[]> =>
       { version: 'v1.8.0', deployed_at: new Date(Date.now() - 3_600_000 * 72).toISOString(), deployed_by: 'bob',          notes: 'Initial production release',                  active: false },
     ]));
 
+export const getEnvFiles = (id: string, fileType?: string): Promise<EnvFile[]> =>
+  client.get<EnvFile[]>(`${BASE}/${id}/files/`, { params: fileType ? { type: fileType } : {} })
+    .then(r => r.data)
+    .catch(() => mock<EnvFile[]>([]));
+
+export const triggerDiscovery = (id: string): Promise<DiscoveryResult> =>
+  client.post<DiscoveryResult>(`${BASE}/${id}/discover/`)
+    .then(r => r.data)
+    .catch(() => mock<DiscoveryResult>({ detail: 'Discovery complete (offline mock).', count: 0, files: [] }));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DeploymentStrategy = 'rolling' | 'blue_green' | 'canary' | 'recreate';
@@ -336,13 +372,15 @@ export const updateEnvironment = (
     .catch(() => null);
 
 /** Returns null on success, or an error message string if blocked. */
-export const deleteEnvironment = (id: string): Promise<null | string> =>
-  client.delete(`${BASE}/${id}/`)
+export const deleteEnvironment = (id: string): Promise<null | string> => {
+  if (!id || id === 'undefined') return Promise.resolve('Cannot delete: invalid environment ID.');
+  return client.delete(`${BASE}/${id}/`)
     .then(() => null)
     .catch(err => {
       const detail = err?.response?.data?.detail;
       return typeof detail === 'string' ? detail : 'Failed to delete environment.';
     });
+};
 
 export const createEnvironment = (
   payload: CreateEnvironmentPayload,

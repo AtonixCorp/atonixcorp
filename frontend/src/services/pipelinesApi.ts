@@ -162,6 +162,7 @@ export interface PipelineRun {
 
 export async function listPipelines(params?: {
   project?: string;
+  repo?: string;
   status?: string;
   branch?: string;
 }): Promise<BackendPipeline[]> {

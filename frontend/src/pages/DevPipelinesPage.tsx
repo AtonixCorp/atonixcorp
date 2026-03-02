@@ -26,7 +26,10 @@ import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../st
 import {
   listPipelines,
   cancelPipeline,
+  listRepositories,
+  getRepositoryBranches,
   type BackendPipeline,
+  type BackendRepository,
 } from '../services/pipelinesApi';
 import { listProjects, type BackendProject } from '../services/projectsApi';
 
@@ -58,8 +61,13 @@ const DevPipelinesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterProject, setFilterProject] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterRepo, setFilterRepo] = useState<string>('');
   const [filterBranch, setFilterBranch] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [repos, setRepos] = useState<BackendRepository[]>([]);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [branches, setBranches] = useState<{ name: string; commit: string }[]>([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -68,6 +76,7 @@ const DevPipelinesPage: React.FC = () => {
       const [pipelinesData, projectsData] = await Promise.all([
         listPipelines({
           project: filterProject || undefined,
+          repo: filterRepo || undefined,
           status: filterStatus || undefined,
           branch: filterBranch || undefined,
         }),
@@ -84,10 +93,40 @@ const DevPipelinesPage: React.FC = () => {
     }
   };
 
+  // When project changes, reload repos and reset downstream filters
+  useEffect(() => {
+    setFilterRepo('');
+    setFilterBranch('');
+    setBranches([]);
+    setRepos([]);
+    if (filterProject) {
+      setReposLoading(true);
+      listRepositories({ project: filterProject })
+        .then((data) => setRepos(Array.isArray(data) ? data : []))
+        .catch(() => setRepos([]))
+        .finally(() => setReposLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterProject]);
+
+  // When repo changes, reload branches and reset branch filter
+  useEffect(() => {
+    setFilterBranch('');
+    setBranches([]);
+    if (filterRepo) {
+      setBranchesLoading(true);
+      getRepositoryBranches(filterRepo)
+        .then((data) => setBranches(Array.isArray(data) ? data : []))
+        .catch(() => setBranches([]))
+        .finally(() => setBranchesLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterRepo]);
+
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterProject, filterStatus, filterBranch]);
+  }, [filterProject, filterRepo, filterStatus, filterBranch]);
 
   const handleCancelPipeline = async (pipelineId: string) => {
     try {
@@ -149,7 +188,8 @@ const DevPipelinesPage: React.FC = () => {
       {/* Filters */}
       <Card sx={{ ...dashboardCardSx, mb: 2 }}>
         <CardContent>
-          <Stack direction="row" spacing={2} flexWrap="wrap">
+          <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
+            {/* 1. Project */}
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel sx={{ color: t.textSecondary }}>Project</InputLabel>
               <Select
@@ -164,6 +204,54 @@ const DevPipelinesPage: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+
+            {/* 2. Repository — only active once a project is chosen */}
+            <FormControl size="small" sx={{ minWidth: 180 }} disabled={!filterProject}>
+              <InputLabel sx={{ color: t.textSecondary }}>
+                {reposLoading ? 'Loading…' : 'Repository'}
+              </InputLabel>
+              <Select
+                value={filterRepo}
+                label={reposLoading ? 'Loading…' : 'Repository'}
+                onChange={(e) => setFilterRepo(e.target.value)}
+                sx={{ color: t.textPrimary, bgcolor: t.surfaceSubtle }}
+                endAdornment={
+                  reposLoading ? (
+                    <CircularProgress size={14} sx={{ mr: 2, color: t.brandPrimary }} />
+                  ) : undefined
+                }
+              >
+                <MenuItem value="">All Repositories</MenuItem>
+                {repos.map((r) => (
+                  <MenuItem key={r.id} value={r.id}>{r.repo_name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* 3. Branch — only active once a repo is chosen */}
+            <FormControl size="small" sx={{ minWidth: 160 }} disabled={!filterRepo}>
+              <InputLabel sx={{ color: t.textSecondary }}>
+                {branchesLoading ? 'Loading…' : 'Branch'}
+              </InputLabel>
+              <Select
+                value={filterBranch}
+                label={branchesLoading ? 'Loading…' : 'Branch'}
+                onChange={(e) => setFilterBranch(e.target.value)}
+                sx={{ color: t.textPrimary, bgcolor: t.surfaceSubtle }}
+                endAdornment={
+                  branchesLoading ? (
+                    <CircularProgress size={14} sx={{ mr: 2, color: t.brandPrimary }} />
+                  ) : undefined
+                }
+              >
+                <MenuItem value="">All Branches</MenuItem>
+                {branches.map((b) => (
+                  <MenuItem key={b.name} value={b.name}>{b.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* 4. Status */}
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel sx={{ color: t.textSecondary }}>Status</InputLabel>
               <Select
@@ -180,13 +268,6 @@ const DevPipelinesPage: React.FC = () => {
                 <MenuItem value="cancelled">Cancelled</MenuItem>
               </Select>
             </FormControl>
-            <TextField
-              size="small"
-              label="Branch"
-              value={filterBranch}
-              onChange={(e) => setFilterBranch(e.target.value)}
-              sx={{ minWidth: 160, '& .MuiInputBase-root': { bgcolor: t.surfaceSubtle, color: t.textPrimary } }}
-            />
           </Stack>
         </CardContent>
       </Card>

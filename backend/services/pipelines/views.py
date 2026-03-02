@@ -23,6 +23,7 @@ from .models import (
     EnvironmentFeatureFlag,
     EnvironmentAuditEntry,
     EnvironmentRelease,
+    EnvironmentFile,
     PipelineArtifact,
     PipelineDefinition,
     PipelineDefinitionStage,
@@ -47,6 +48,7 @@ from .serializers import (
     EnvironmentFeatureFlagSerializer,
     EnvironmentAuditEntrySerializer,
     EnvironmentReleaseSerializer,
+    EnvironmentFileSerializer,
     PipelineArtifactSerializer,
     PipelineRunSerializer,
     PipelineDefinitionSerializer,
@@ -399,14 +401,25 @@ class EnvironmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Environment.objects.all()
+        qs = Environment.objects.exclude(id='')  # exclude any legacy records with empty id
         project_id = self.request.query_params.get('project_id')
         if project_id:
             qs = qs.filter(project_id=project_id)
         return qs
 
+    def perform_create(self, serializer):
+        name   = self.request.data.get('name', 'env')
+        raw_id = f"{slugify(name)[:32]}-{uuid.uuid4().hex[:8]}"
+        serializer.save(id=raw_id)
+
     def destroy(self, request, *args, **kwargs):
         env = self.get_object()
+        if env.is_protected:
+            return Response(
+                {'detail': 'Protected environments cannot be deleted. Unlock it first.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        self._audit(env, 'delete', resource=env.name)
         env.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -591,6 +604,72 @@ class EnvironmentViewSet(viewsets.ModelViewSet):
     def releases(self, request, pk=None):
         env = self.get_object()
         return Response(EnvironmentReleaseSerializer(env.releases.all(), many=True).data)
+
+    # ── Discovered Config Files ───────────────────────────────────────────────
+    @action(detail=True, methods=['get'])
+    def files(self, request, pk=None):
+        """Return all discovered configuration/infra files for this environment."""
+        env   = self.get_object()
+        qs    = env.files.all()
+        ftype = request.query_params.get('type')
+        if ftype:
+            qs = qs.filter(file_type=ftype)
+        return Response(EnvironmentFileSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def discover(self, request, pk=None):
+        """
+        Trigger a (simulated) config-file discovery scan for this environment.
+        In a real deployment this would fan out to repo scanners; here we seed
+        representative sample data so the UI has something to render immediately.
+        """
+        import random
+        from django.utils import timezone as tz
+        from datetime import timedelta
+
+        env = self.get_object()
+
+        # Clear stale discovery results so re-runs stay fresh
+        env.files.all().delete()
+
+        SAMPLES = [
+            ('Dockerfile',                'Dockerfile',                       'dockerfile',  True,  False, 'api-gateway'),
+            ('docker-compose.yml',        'docker-compose.yml',               'compose',     True,  False, ''),
+            ('.env.production',           '.env.production',                  'env',         True,  False, ''),
+            ('values.yaml',               'helm/values.yaml',                 'helm',        True,  False, ''),
+            ('deployment.yaml',           'k8s/deployment.yaml',              'k8s',         True,  False, 'api-gateway'),
+            ('service.yaml',              'k8s/service.yaml',                 'k8s',         True,  False, 'api-gateway'),
+            ('main.tf',                   'terraform/main.tf',                'terraform',   True,  False, ''),
+            ('variables.tf',              'terraform/variables.tf',           'terraform',   True,  False, ''),
+            ('nginx.conf',                'docker/nginx.conf',                'config',      True,  False, 'nginx'),
+            ('application.yaml',          'src/main/resources/application.yaml', 'yaml',    True,  False, ''),
+            ('.env.staging',              '.env.staging',                     'env',         False, True,  ''),
+            ('Chart.yaml',                'helm/Chart.yaml',                  'helm',        True,  False, ''),
+        ]
+
+        created = []
+        for file_name, file_path, file_type, is_valid, is_env_specific, svc in SAMPLES:
+            has_errors = not is_valid
+            f = EnvironmentFile.objects.create(
+                environment=env,
+                file_name=file_name,
+                file_path=file_path,
+                file_type=file_type,
+                associated_service=svc,
+                is_valid=is_valid,
+                has_errors=has_errors,
+                error_message='Syntax error on line 12' if has_errors else '',
+                is_env_specific=is_env_specific,
+                last_modified=tz.now() - timedelta(days=random.randint(0, 30)),
+            )
+            created.append(f)
+
+        self._audit(env, 'discover_files', resource=f'{len(created)} files found')
+        return Response({
+            'detail': f'Discovery complete. {len(created)} files found.',
+            'count':  len(created),
+            'files':  EnvironmentFileSerializer(created, many=True).data,
+        })
 
 
 class PipelineArtifactViewSet(viewsets.ReadOnlyModelViewSet):

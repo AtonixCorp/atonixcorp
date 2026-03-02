@@ -42,6 +42,8 @@ import VisibilityIcon      from '@mui/icons-material/Visibility';
 import VisibilityOffIcon   from '@mui/icons-material/VisibilityOff';
 import DeleteOutlineIcon   from '@mui/icons-material/DeleteOutline';
 import SaveIcon            from '@mui/icons-material/Save';
+import FolderOpenIcon     from '@mui/icons-material/FolderOpen';
+import SyncIcon           from '@mui/icons-material/Sync';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
@@ -51,11 +53,13 @@ import {
   getEnvServices, restartService, scaleService,
   getEnvVars, getFeatureFlags, getAuditLog,
   getEnvPipelineRuns, getEnvReleases,
+  getEnvFiles, triggerDiscovery,
   createEnvVar, deleteEnvVar, createFeatureFlag, updateFeatureFlag,
   type ApiEnvironment, type DeploymentStrategy,
   type EnvHealth, type EnvDeployment, type EnvService,
   type EnvVar, type FeatureFlag, type AuditEntry,
   type EnvPipelineRun, type EnvRelease,
+  type EnvFile,
 } from '../services/environmentsApi';
 
 const FONT = dashboardTokens.typography.fontFamily;
@@ -65,7 +69,7 @@ const sc   = dashboardSemanticColors;
 // ─── Sidebar section type ─────────────────────────────────────────────────────
 
 type Section =
-  | 'overview' | 'deployments' | 'services' | 'config' | 'secrets'
+  | 'overview' | 'deployments' | 'services' | 'files' | 'config' | 'secrets'
   | 'logs' | 'metrics' | 'governance' | 'audit' | 'pipelines'
   | 'releases' | 'settings';
 
@@ -80,6 +84,7 @@ const SIDEBAR: SideItem[] = [
   { id: 'overview',    label: 'Overview',        icon: <DashboardIcon        sx={{ fontSize: '1.05rem' }} /> },
   { id: 'deployments', label: 'Deployments',     icon: <RocketLaunchIcon     sx={{ fontSize: '1.05rem' }} /> },
   { id: 'services',    label: 'Services',         icon: <DevicesIcon          sx={{ fontSize: '1.05rem' }} /> },
+  { id: 'files',       label: 'Config Files',     icon: <FolderOpenIcon       sx={{ fontSize: '1.05rem' }} /> },
   { id: 'config',      label: 'Config',           icon: <TuneIcon             sx={{ fontSize: '1.05rem' }} /> },
   { id: 'secrets',     label: 'Secrets',          icon: <LockIcon             sx={{ fontSize: '1.05rem' }} /> },
   { id: 'logs',        label: 'Logs',             icon: <ArticleIcon          sx={{ fontSize: '1.05rem' }} />, dividerBefore: true },
@@ -1033,6 +1038,173 @@ const ReleasesPanel: React.FC<{ envId: string }> = ({ envId }) => {
   );
 };
 
+// ── Config Files (Discovery) ──────────────────────────────────────────────────
+
+const FILE_TYPE_META: Record<string, { label: string; color: string }> = {
+  dockerfile:  { label: 'Dockerfile',     color: '#2563eb' },
+  env:         { label: '.env',           color: '#d97706' },
+  yaml:        { label: 'YAML',           color: '#6b7280' },
+  helm:        { label: 'Helm',           color: '#7c3aed' },
+  k8s:         { label: 'Kubernetes',     color: '#16a34a' },
+  terraform:   { label: 'Terraform',      color: '#4f46e5' },
+  compose:     { label: 'Compose',        color: '#0891b2' },
+  config:      { label: 'Config',         color: '#6b7280' },
+  properties:  { label: 'Properties',     color: '#ea580c' },
+  other:       { label: 'Other',          color: '#6b7280' },
+};
+
+const ConfigFilesPanel: React.FC<{ envId: string }> = ({ envId }) => {
+  const [files,    setFiles]    = useState<EnvFile[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [scanning, setScanning] = useState(false);
+  const [filterType, setFilterType] = useState('');
+  const [msg, setMsg] = useState<{ text: string; severity: 'success' | 'error' } | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const data = await getEnvFiles(envId, filterType || undefined);
+    setFiles(data);
+    setLoading(false);
+  }, [envId, filterType]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleScan = async () => {
+    setScanning(true);
+    try {
+      const res = await triggerDiscovery(envId);
+      setFiles(res.files);
+      setMsg({ text: res.detail, severity: 'success' });
+    } catch {
+      setMsg({ text: 'Discovery failed.', severity: 'error' });
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const uniqueTypes = Array.from(new Set(files.map(f => f.file_type)));
+
+  return (
+    <Box>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1rem', color: t.textPrimary }}>
+          Configuration & Infrastructure Files
+        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel sx={{ fontFamily: FONT, fontSize: '.8rem' }}>File Type</InputLabel>
+            <Select
+              value={filterType} label="File Type"
+              onChange={e => setFilterType(e.target.value)}
+              sx={{ fontFamily: FONT, fontSize: '.82rem' }}
+            >
+              <MenuItem value="">All Types</MenuItem>
+              {Object.entries(FILE_TYPE_META).map(([k, v]) => (
+                <MenuItem key={k} value={k} sx={{ fontFamily: FONT, fontSize: '.82rem' }}>{v.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Button
+            variant="outlined" size="small"
+            startIcon={scanning ? <CircularProgress size={13} /> : <SyncIcon sx={{ fontSize: 14 }} />}
+            disabled={scanning}
+            onClick={handleScan}
+            sx={{ fontFamily: FONT, fontSize: '.78rem', textTransform: 'none', borderColor: t.brandPrimary, color: t.brandPrimary }}
+          >
+            {scanning ? 'Scanning…' : 'Scan Now'}
+          </Button>
+        </Stack>
+      </Stack>
+
+      {msg && (
+        <Alert severity={msg.severity} onClose={() => setMsg(null)} sx={{ mb: 2, fontFamily: FONT, fontSize: '.82rem' }}>
+          {msg.text}
+        </Alert>
+      )}
+
+      {loading ? (
+        <LinearProgress sx={{ borderRadius: 1 }} />
+      ) : files.length === 0 ? (
+        <Card variant="outlined" sx={{ bgcolor: t.surface, borderColor: t.border }}>
+          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+            <FolderOpenIcon sx={{ fontSize: '2.5rem', color: t.textTertiary, mb: 1 }} />
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: .5 }}>
+              No files discovered yet
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: '.82rem', color: t.textSecondary }}>
+              Click <strong>Scan Now</strong> to discover Dockerfile, .env, YAML, Helm, K8s, Terraform, and other config files.
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card variant="outlined" sx={{ bgcolor: t.surface, borderColor: t.border }}>
+          <Box sx={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['File', 'Type', 'Path', 'Valid', 'Env-Specific', 'Service', 'Last Modified'].map(h => (
+                    <th key={h} style={{
+                      fontFamily: FONT, fontSize: '.72rem', fontWeight: 700,
+                      color: t.textSecondary, textAlign: 'left',
+                      padding: '8px 12px', borderBottom: `1px solid ${t.border}`,
+                      whiteSpace: 'nowrap',
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {files.map(f => {
+                  const meta = FILE_TYPE_META[f.file_type] ?? FILE_TYPE_META.other;
+                  return (
+                    <tr key={f.id} style={{ borderBottom: `1px solid ${t.border}` }}>
+                      <td style={{ padding: '7px 12px', fontFamily: FONT, fontSize: '.82rem', color: t.textPrimary, fontWeight: 600 }}>
+                        {f.file_name}
+                      </td>
+                      <td style={{ padding: '7px 12px' }}>
+                        <Chip
+                          label={meta.label} size="small"
+                          sx={{
+                            fontFamily: FONT, fontSize: '.7rem', height: 20,
+                            bgcolor: `${meta.color}22`, color: meta.color,
+                            border: `1px solid ${meta.color}44`,
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: '7px 12px', fontFamily: FONT, fontSize: '.75rem', color: t.textSecondary, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Tooltip title={f.file_path}><span>{f.file_path}</span></Tooltip>
+                      </td>
+                      <td style={{ padding: '7px 12px' }}>
+                        {f.is_valid
+                          ? <CheckCircleIcon sx={{ fontSize: 16, color: sc.success }} />
+                          : <Tooltip title={f.error_message || 'File has errors'}><ErrorIcon sx={{ fontSize: 16, color: sc.danger }} /></Tooltip>
+                        }
+                      </td>
+                      <td style={{ padding: '7px 12px', fontFamily: FONT, fontSize: '.82rem', color: f.is_env_specific ? t.brandPrimary : t.textTertiary }}>
+                        {f.is_env_specific ? 'Yes' : '—'}
+                      </td>
+                      <td style={{ padding: '7px 12px', fontFamily: FONT, fontSize: '.78rem', color: t.textSecondary }}>
+                        {f.associated_service || '—'}
+                      </td>
+                      <td style={{ padding: '7px 12px', fontFamily: FONT, fontSize: '.75rem', color: t.textTertiary, whiteSpace: 'nowrap' }}>
+                        {f.last_modified ? new Date(f.last_modified).toLocaleDateString() : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Box>
+          <Box sx={{ px: 2, py: 1, borderTop: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textTertiary }}>
+              {files.length} file{files.length !== 1 ? 's' : ''} · {uniqueTypes.length} type{uniqueTypes.length !== 1 ? 's' : ''}
+            </Typography>
+          </Box>
+        </Card>
+      )}
+    </Box>
+  );
+};
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 const STRATEGIES: DeploymentStrategy[] = ['rolling', 'blue_green', 'canary', 'recreate'];
 
@@ -1147,7 +1319,7 @@ const EnvironmentDetailPage: React.FC = () => {
   const [section,  setSection] = useState<Section>('overview');
 
   const load = useCallback(async () => {
-    if (!envId) { setError('No environment ID.'); setLoading(false); return; }
+    if (!envId || envId === 'undefined') { setError('Invalid environment ID.'); setLoading(false); return; }
     setLoading(true); setError(null);
     const r = await getEnvironment(envId);
     if (!r) setError('Environment not found.');
@@ -1253,6 +1425,7 @@ const EnvironmentDetailPage: React.FC = () => {
           {section === 'overview'    && <OverviewPanel    envId={env.id} env={env} />}
           {section === 'deployments' && <DeploymentsPanel envId={env.id} env={env} />}
           {section === 'services'    && <ServicesPanel    envId={env.id} />}
+          {section === 'files'       && <ConfigFilesPanel envId={env.id} />}
           {section === 'config'      && <ConfigPanel      envId={env.id} />}
           {section === 'secrets'     && <SecretsPanel     envId={env.id} />}
           {section === 'logs'        && <LogsPanel        envId={env.id} />}

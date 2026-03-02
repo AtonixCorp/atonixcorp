@@ -39,6 +39,9 @@ import OpenInNewIcon      from '@mui/icons-material/OpenInNew';
 import LockIcon           from '@mui/icons-material/Lock';
 import LayersIcon         from '@mui/icons-material/Layers';
 import DashboardIcon      from '@mui/icons-material/Dashboard';
+import CheckCircleIcon    from '@mui/icons-material/CheckCircle';
+import WarningAmberIcon   from '@mui/icons-material/WarningAmber';
+import ErrorIcon          from '@mui/icons-material/Error';
 import { useNavigate }    from 'react-router-dom';
 
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
@@ -46,15 +49,23 @@ import {
   listEnvironments,
   createEnvironment,
   deleteEnvironment,
+  getEnvHealth,
   type ApiEnvironment,
   type CreateEnvironmentPayload,
   type DeploymentStrategy,
+  type EnvHealth,
 } from '../services/environmentsApi';
 import { listProjects, type BackendProject } from '../services/projectsApi';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t    = dashboardTokens.colors;
 const sc   = dashboardSemanticColors;
+
+const HC = {
+  healthy:  { color: sc.success, icon: CheckCircleIcon,  label: 'Healthy'  },
+  degraded: { color: '#F59E0B',  icon: WarningAmberIcon, label: 'Degraded' },
+  critical: { color: sc.danger,  icon: ErrorIcon,        label: 'Critical' },
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -242,6 +253,7 @@ const DevEnvironmentPage: React.FC = () => {
   const navigate = useNavigate();
   const [envs,         setEnvs]         = useState<ApiEnvironment[]>([]);
   const [projects,     setProjects]     = useState<BackendProject[]>([]);
+  const [healthMap,    setHealthMap]    = useState<Record<string, EnvHealth>>({});
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
   const [createOpen,   setCreateOpen]   = useState(false);
@@ -256,8 +268,14 @@ const DevEnvironmentPage: React.FC = () => {
         listEnvironments().catch(() => [] as ApiEnvironment[]),
         listProjects().catch(() => [] as BackendProject[]),
       ]);
-      setEnvs(Array.isArray(e) ? e : []);
+      const envList = Array.isArray(e) ? e : [];
+      setEnvs(envList);
       setProjects(Array.isArray(p) ? p : []);
+      // Load health for all envs in parallel (best-effort)
+      const healthResults = await Promise.allSettled(envList.map(env => getEnvHealth(env.id).then(h => [env.id, h] as [string, EnvHealth])));
+      const map: Record<string, EnvHealth> = {};
+      healthResults.forEach(r => { if (r.status === 'fulfilled') map[r.value[0]] = r.value[1]; });
+      setHealthMap(map);
     } catch {
       setError('Unable to fetch environments. Check your connection and try again.');
     } finally { setLoading(false); }
@@ -276,9 +294,14 @@ const DevEnvironmentPage: React.FC = () => {
     setToast('Environment deleted.');
   };
 
-  const prodCount  = envs.filter(e => stageOf(e.name) === 'prod').length;
-  const stageCount = envs.filter(e => stageOf(e.name) === 'stage').length;
-  const devCount   = envs.filter(e => stageOf(e.name) === 'dev').length;
+  const prodCount    = envs.filter(e => stageOf(e.name) === 'prod').length;
+  const stageCount   = envs.filter(e => stageOf(e.name) === 'stage').length;
+  const devCount     = envs.filter(e => stageOf(e.name) === 'dev').length;
+
+  const healthValues = Object.values(healthMap);
+  const healthyCount  = healthValues.filter(h => h.status === 'healthy').length;
+  const degradedCount = healthValues.filter(h => h.status === 'degraded').length;
+  const criticalCount = healthValues.filter(h => h.status === 'critical').length;
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, fontFamily: FONT, bgcolor: t.background, minHeight: '100vh' }}>
@@ -328,6 +351,30 @@ const DevEnvironmentPage: React.FC = () => {
         ))}
       </Box>
 
+      {/* ── Health summary bar ── */}
+      {healthValues.length > 0 && (
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
+          {healthyCount > 0 && (
+            <Stack direction="row" alignItems="center" spacing={.6} sx={{ bgcolor: 'rgba(34,197,94,.08)', border: '1px solid rgba(34,197,94,.25)', borderRadius: '20px', px: 1.5, py: .5 }}>
+              <CheckCircleIcon sx={{ fontSize: '0.85rem', color: sc.success }} />
+              <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: sc.success }}>{healthyCount} Healthy</Typography>
+            </Stack>
+          )}
+          {degradedCount > 0 && (
+            <Stack direction="row" alignItems="center" spacing={.6} sx={{ bgcolor: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.25)', borderRadius: '20px', px: 1.5, py: .5 }}>
+              <WarningAmberIcon sx={{ fontSize: '0.85rem', color: '#F59E0B' }} />
+              <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: '#F59E0B' }}>{degradedCount} Degraded</Typography>
+            </Stack>
+          )}
+          {criticalCount > 0 && (
+            <Stack direction="row" alignItems="center" spacing={.6} sx={{ bgcolor: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.25)', borderRadius: '20px', px: 1.5, py: .5 }}>
+              <ErrorIcon sx={{ fontSize: '0.85rem', color: sc.danger }} />
+              <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: sc.danger }}>{criticalCount} Critical</Typography>
+            </Stack>
+          )}
+        </Box>
+      )}
+
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {/* ── Table ── */}
@@ -365,6 +412,9 @@ const DevEnvironmentPage: React.FC = () => {
                 {envs.map(env => {
                   const envStage = stageOf(env.name);
                   const scfg     = STAGE_CFG[envStage];
+                  const health   = healthMap[env.id];
+                  const hcfg     = health ? HC[health.status] : null;
+                  const HIcon    = hcfg?.icon;
                   return (
                     <TableRow key={env.id} hover sx={{ cursor: 'pointer', '&:hover': { bgcolor: t.surfaceHover } }}
                       onClick={() => navigate(`/developer/Dashboard/environment/${env.id}`)}>
@@ -378,6 +428,35 @@ const DevEnvironmentPage: React.FC = () => {
                           <Typography sx={{ color: t.textSecondary, fontSize: '.75rem',
                             maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {env.description}
+                          </Typography>
+                        )}
+                      </TableCell>
+
+                      {/* Health status */}
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        {hcfg && HIcon ? (
+                          <Stack direction="row" alignItems="center" spacing={.6}>
+                            <HIcon sx={{ fontSize: '0.85rem', color: hcfg.color }} />
+                            <Typography sx={{ fontSize: '.78rem', fontWeight: 700, color: hcfg.color }}>{hcfg.label}</Typography>
+                          </Stack>
+                        ) : (
+                          <Typography sx={{ fontSize: '.75rem', color: t.textTertiary }}>—</Typography>
+                        )}
+                        {health && (
+                          <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, mt: .2 }}>
+                            CPU {health.cpu_pct}% · RAM {health.ram_pct}%
+                          </Typography>
+                        )}
+                      </TableCell>
+
+                      {/* Active version */}
+                      <TableCell>
+                        <Typography sx={{ fontFamily: 'monospace', fontSize: '.78rem', color: t.textPrimary, fontWeight: 600 }}>
+                          {health?.active_version ?? '—'}
+                        </Typography>
+                        {health?.last_deploy_at && (
+                          <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, mt: .2 }}>
+                            {timeAgo(health.last_deploy_at)}
                           </Typography>
                         )}
                       </TableCell>

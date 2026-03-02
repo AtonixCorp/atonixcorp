@@ -30,6 +30,10 @@ import {
   PersonAdd as PersonAddIcon,
   Settings as SettingsIcon,
   Timeline as TimelineIcon,
+  Devices as DevicesIcon,
+  CheckCircle as CheckCircleIcon,
+  WarningAmber as WarningAmberIcon,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -43,6 +47,7 @@ import {
   GroupRole,
 } from '../services/groupsApi';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth, type HealthStatus } from '../services/environmentsApi';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
@@ -323,9 +328,133 @@ const AuditTab: React.FC<{ logs: GroupAuditLog[] }> = ({ logs }) => {
   );
 };
 
+// ── Environments tab ──────────────────────────────────────────────────────────
+
+const ENV_HEALTH_COLORS: Record<string, string> = {
+  healthy:  dashboardSemanticColors.success,
+  degraded: '#d97706',
+  critical: dashboardSemanticColors.danger,
+};
+
+const EnvironmentsTab: React.FC<{ environments: ApiEnvironment[] }> = ({ environments }) => {
+  const navigate = useNavigate();
+  const t = dashboardTokens.colors;
+  const BP = t.brandPrimary;
+  const sc = dashboardSemanticColors;
+
+  const [healthMap, setHealthMap] = useState<Record<string, EnvHealth>>({});
+
+  useEffect(() => {
+    if (environments.length === 0) return;
+    Promise.allSettled(
+      environments.map(e => getEnvHealth(e.id).then(h => ({ id: e.id, h })))
+    ).then(results => {
+      const map: Record<string, EnvHealth> = {};
+      results.forEach(r => { if (r.status === 'fulfilled') map[r.value.id] = r.value.h; });
+      setHealthMap(map);
+    });
+  }, [environments]);
+
+  if (environments.length === 0) {
+    return (
+      <Box sx={{ ...dashboardCardSx, p: 3, textAlign: 'center' }}>
+        <DevicesIcon sx={{ fontSize: '3rem', color: t.textSecondary, mb: 1.5, opacity: 0.5 }} />
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1rem', color: t.textPrimary, mb: 0.75 }}>
+          No environments yet
+        </Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: '.85rem', color: t.textSecondary }}>
+          Environments across all projects will appear here.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ ...dashboardCardSx, overflow: 'hidden' }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow sx={{ '& th': { fontFamily: FONT, fontSize: '.75rem', fontWeight: 700, color: t.textSecondary, borderColor: t.border, bgcolor: t.surface } }}>
+            <TableCell>Environment</TableCell>
+            <TableCell>Region</TableCell>
+            <TableCell>Strategy</TableCell>
+            <TableCell>Health</TableCell>
+            <TableCell>Version</TableCell>
+            <TableCell>Status</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {environments.map((env) => {
+            const health = healthMap[env.id];
+            const hColor = health ? ENV_HEALTH_COLORS[health.status] ?? t.textSecondary : t.textTertiary;
+            const HealthIcon = health?.status === 'healthy' ? CheckCircleIcon
+              : health?.status === 'degraded' ? WarningAmberIcon
+              : health?.status === 'critical' ? ErrorIcon
+              : null;
+            return (
+              <TableRow
+                key={env.id}
+                hover
+                sx={{ cursor: 'pointer', '& td': { fontFamily: FONT, fontSize: '.84rem', borderColor: t.border } }}
+                onClick={() => navigate(`/developer/Dashboard/environment/${env.id}`)}
+              >
+                <TableCell>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <DevicesIcon sx={{ fontSize: '1rem', color: BP }} />
+                    <Box>
+                      <Typography sx={{ fontFamily: FONT, fontSize: '.84rem', fontWeight: 600, color: t.textPrimary }}>{env.name}</Typography>
+                      {env.description && (
+                        <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textSecondary }}>{env.description}</Typography>
+                      )}
+                    </Box>
+                  </Stack>
+                </TableCell>
+                <TableCell sx={{ color: t.textSecondary }}>{env.region || '—'}</TableCell>
+                <TableCell>
+                  <Chip label={env.deployment_strategy.replace('_', ' ')} size="small"
+                    sx={{ fontFamily: FONT, fontSize: '.7rem', textTransform: 'capitalize',
+                      bgcolor: `${BP}18`, color: BP, border: `1px solid ${BP}33` }} />
+                </TableCell>
+                <TableCell>
+                  {HealthIcon ? (
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <HealthIcon sx={{ fontSize: '1rem', color: hColor }} />
+                      <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', color: hColor, fontWeight: 600, textTransform: 'capitalize' }}>
+                        {health!.status}
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: t.textTertiary }}>—</Typography>
+                  )}
+                </TableCell>
+                <TableCell sx={{ color: t.textSecondary }}>
+                  {health?.active_version ?? '—'}
+                </TableCell>
+                <TableCell>
+                  {env.is_protected && (
+                    <Chip label="Protected" size="small"
+                      sx={{ fontFamily: FONT, fontSize: '.7rem', bgcolor: `${sc.danger}18`, color: sc.danger, border: `1px solid ${sc.danger}44` }} />
+                  )}
+                  {env.auto_deploy && (
+                    <Chip label="Auto-deploy" size="small" sx={{ ml: .5, fontFamily: FONT, fontSize: '.7rem', bgcolor: `${sc.success}18`, color: sc.success, border: `1px solid ${sc.success}44` }} />
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+      <Box sx={{ px: 2, py: 1, borderTop: `1px solid ${t.border}` }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textTertiary }}>
+          {environments.length} environment{environments.length !== 1 ? 's' : ''}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-const TABS = ['overview', 'projects', 'members', 'audit'] as const;
+const TABS = ['overview', 'projects', 'environments', 'members', 'audit'] as const;
 type TabKey = typeof TABS[number];
 
 const GroupDashboardPage: React.FC = () => {
@@ -339,6 +468,7 @@ const GroupDashboardPage: React.FC = () => {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [auditLogs, setAuditLogs] = useState<GroupAuditLog[]>([]);
+  const [environments, setEnvironments] = useState<ApiEnvironment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -347,14 +477,16 @@ const GroupDashboardPage: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const [grp, mems, logs] = await Promise.all([
+      const [grp, mems, logs, envs] = await Promise.all([
         getGroup(groupId),
         listMembers(groupId),
         listAuditLogs(groupId),
+        listEnvironments(),
       ]);
       setGroup(grp);
       setMembers(mems);
       setAuditLogs(logs);
+      setEnvironments(envs);
     } catch (err: any) {
       const msg = err?.response?.data?.detail || err?.message || 'Failed to load group.';
       setError(msg);
@@ -482,6 +614,7 @@ const GroupDashboardPage: React.FC = () => {
           }}>
           <Tab value="overview" label="Overview" icon={<CodeIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
           <Tab value="projects" label={`Projects${group.project_count > 0 ? ` · ${group.project_count}` : ''}`} icon={<FolderOpenIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
+          <Tab value="environments" label={`Environments${environments.length > 0 ? ` · ${environments.length}` : ''}`} icon={<DevicesIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
           <Tab value="members" label={`Members · ${group.member_count}`} icon={<PeopleIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
           <Tab value="audit" label="Audit Log" icon={<TimelineIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
         </Tabs>
@@ -491,6 +624,7 @@ const GroupDashboardPage: React.FC = () => {
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         {activeTab === 'overview' && <OverviewTab group={group} />}
         {activeTab === 'projects' && <ProjectsTab group={group} />}
+        {activeTab === 'environments' && <EnvironmentsTab environments={environments} />}
         {activeTab === 'members' && (
           <MembersTab
             members={members}

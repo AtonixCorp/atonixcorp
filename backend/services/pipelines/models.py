@@ -378,6 +378,47 @@ class EnvironmentRelease(TimeStampedModel):
         return f"{self.environment}@{self.version} ({'active' if self.active else 'inactive'})"
 
 
+class EnvironmentFile(TimeStampedModel):
+    """A configuration / infrastructure file discovered in an environment's linked repos."""
+    FILE_TYPE_CHOICES = [
+        ('dockerfile',  'Dockerfile'),
+        ('env',         '.env / dotenv'),
+        ('yaml',        'YAML / YML'),
+        ('helm',        'Helm Chart'),
+        ('k8s',         'Kubernetes Manifest'),
+        ('terraform',   'Terraform'),
+        ('compose',     'Docker Compose'),
+        ('config',      'Config File'),
+        ('properties',  'Properties File'),
+        ('other',       'Other'),
+    ]
+
+    environment       = models.ForeignKey(Environment, on_delete=models.CASCADE,
+                          related_name='files')
+    file_name         = models.CharField(max_length=255)
+    file_path         = models.CharField(max_length=1000)
+    file_type         = models.CharField(max_length=20, choices=FILE_TYPE_CHOICES, default='other')
+    associated_service = models.CharField(max_length=200, blank=True, default='')
+    is_valid          = models.BooleanField(default=True)
+    has_errors        = models.BooleanField(default=False)
+    error_message     = models.TextField(blank=True, default='')
+    is_env_specific   = models.BooleanField(default=False,
+                          help_text='True if this file contains env-specific overrides.')
+    last_modified     = models.DateTimeField(null=True, blank=True)
+    discovered_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table  = 'environment_files'
+        ordering  = ['file_type', 'file_name']
+        indexes   = [
+            models.Index(fields=['environment', 'file_type']),
+            models.Index(fields=['environment', 'is_valid']),
+        ]
+
+    def __str__(self):
+        return f"{self.environment}:{self.file_path}"
+
+
 class PipelineArtifact(TimeStampedModel):
     """Stores information about build artifacts."""
     id = models.CharField(max_length=50, primary_key=True)

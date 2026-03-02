@@ -15,6 +15,7 @@ from .models import (
     EnvironmentFeatureFlag,
     EnvironmentAuditEntry,
     EnvironmentRelease,
+    EnvironmentFile,
     PipelineArtifact,
     PipelineDefinition,
     PipelineDefinitionStage,
@@ -208,6 +209,17 @@ class EnvironmentReleaseSerializer(serializers.ModelSerializer):
         model  = EnvironmentRelease
         fields = ['version', 'deployed_at', 'deployed_by', 'notes', 'active']
         read_only_fields = ['deployed_at']
+
+
+class EnvironmentFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EnvironmentFile
+        fields = [
+            'id', 'file_name', 'file_path', 'file_type',
+            'associated_service', 'is_valid', 'has_errors', 'error_message',
+            'is_env_specific', 'last_modified', 'discovered_at',
+        ]
+        read_only_fields = ['id', 'discovered_at']
 
 
 class PipelineArtifactSerializer(serializers.ModelSerializer):
