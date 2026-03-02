@@ -48,17 +48,17 @@ const MOCK_JOBS = [
 const MOCK_LOGS = `Installing dependencies...
 go: downloading github.com/gofiber/fiber v2.51.0
 go: downloading github.com/golang-jwt/jwt v4.5.0
-✓ Dependencies installed
+OK Dependencies installed
 
 Building binary...
 go build -o bin/gateway ./cmd/gateway
-✓ Build successful (7.4 MB)
+OK Build successful (7.4 MB)
 
 Running tests...
 --- PASS: TestAuth (0.03s)
 --- PASS: TestRateLimit (0.07s)
 --- PASS: TestRouting (0.12s)
-✓ All tests passed (38/38)
+OK All tests passed (38/38)
 
 Deploying to production...
 Waiting for rollout...`;

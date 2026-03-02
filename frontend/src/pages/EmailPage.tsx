@@ -400,7 +400,7 @@ const EmailPage: React.FC = () => {
                           />
                         </Box>
                       </TableCell>
-                      <TableCell sx={tdSx}>{m.is_admin ? '✓' : '—'}</TableCell>
+                      <TableCell sx={tdSx}>{m.is_admin ? 'OK' : '—'}</TableCell>
                       <TableCell sx={tdSx}>
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
                           <Tooltip title={m.status === 'suspended' ? 'Activate' : 'Suspend'}>

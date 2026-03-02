@@ -154,7 +154,7 @@ class TeamPermission(TimeStampedModel):
         ordering = ['permission_key']
 
     def __str__(self):
-        sign = '✓' if self.allowed else '✗'
+        sign = 'OK' if self.allowed else 'FAIL'
         return f'{self.team.name} | {self.permission_key} {sign}'
 
 

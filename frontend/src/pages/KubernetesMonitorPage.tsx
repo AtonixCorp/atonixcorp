@@ -344,7 +344,7 @@ const KubernetesMonitorPage: React.FC = () => {
                 <Tab label="Pods" />
                 <Tab label="Networking" />
                 <Tab label={`Events ${data.events.filter(e => e.type === 'Warning').length > 0
-                  ? `(${data.events.filter(e => e.type === 'Warning').length} ⚠)` : ''}`} />
+                  ? `(${data.events.filter(e => e.type === 'Warning').length} [WARN])` : ''}`} />
               </Tabs>
 
               {tab === 0 && (

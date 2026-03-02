@@ -727,7 +727,7 @@ const ProjectCreateWizardPage: React.FC = () => {
                               fontWeight: 800,
                             }}
                           >
-                            {option.value && '✓'}
+                            {option.value && 'OK'}
                           </Box>
                           <Typography sx={{ fontSize: '.85rem', color: t.textPrimary, fontWeight: 500 }}>
                             {option.label}
