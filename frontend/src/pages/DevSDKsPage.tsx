@@ -22,7 +22,7 @@ const SDKS = [
 const CLI_COMMANDS = [
   { cmd: 'atonix login', desc: 'Authenticate with AtonixCorp Cloud' },
   { cmd: 'atonix compute list', desc: 'List all VM instances' },
-  { cmd: 'atonix compute create --name web-01 --type c2.medium --region us-east-1', desc: 'Create a new VM instance' },
+  { cmd: 'atonix compute create --name web-01 --type vcpu4.cpu --region us-east-1', desc: 'Create a new VM instance' },
   { cmd: 'atonix storage buckets list', desc: 'List all storage buckets' },
   { cmd: 'atonix k8s clusters', desc: 'List Kubernetes clusters' },
   { cmd: 'atonix iam users list', desc: 'List all IAM users' },
