@@ -211,10 +211,10 @@ export async function restartDevWorkspace(workspaceId: string): Promise<DevWorks
   return data
 }
 
-/** Partial-update workspace display name / image / ide / region */
+/** Partial-update workspace fields including group connection */
 export async function updateDevWorkspace(
   workspaceId: string,
-  payload: Partial<Pick<DevWorkspace, 'display_name' | 'image' | 'ide' | 'region'>>,
+  payload: Partial<Pick<DevWorkspace, 'display_name' | 'image' | 'ide' | 'region' | 'connected_group_id' | 'connected_group_name'>>,
 ): Promise<DevWorkspace> {
   const { data } = await client.patch<DevWorkspace>(`${BASE}/${workspaceId}/`, payload)
   return data

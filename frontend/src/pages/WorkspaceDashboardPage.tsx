@@ -932,6 +932,18 @@ const WorkspaceDashboardPage: React.FC = () => {
 
   useEffect(() => { if (section === 'kubernetes') loadClusters(); }, [section, loadClusters]);
 
+  const loadGroupsList = useCallback(async () => {
+    try {
+      const list = await listGroups();
+      setGroupsList(list);
+      setGroupsLoaded(true);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (section === 'groups' && !groupsLoaded) loadGroupsList();
+  }, [section, groupsLoaded, loadGroupsList]);
+
   const handleCreateK8sCluster = async () => {
     if (!k8sName.trim()) { setToast('Cluster name is required.'); return; }
     setK8sBusy(true);
@@ -969,8 +981,20 @@ const WorkspaceDashboardPage: React.FC = () => {
         group_type: grpType,
       });
       setGroupsList((prev) => [g, ...prev]);
-      setToast(`Group "${g.name}" created.`);
-      setGrpName(''); setGrpDescription(''); setGroupsView('list');
+      // Connect this workspace to the newly created group so it survives reload
+      if (workspaceId) {
+        try {
+          const updated = await updateDevWorkspace(workspaceId, {
+            connected_group_id: g.id,
+            connected_group_name: g.name,
+          });
+          setWs(updated);
+        } catch { /* non-fatal – group still created */ }
+      }
+      setToast(`Group "${g.name}" created. Opening dashboard…`);
+      setGrpName(''); setGrpDescription('');
+      // Navigate to the group's own dashboard
+      navigate(`/groups/${g.id}`);
     } catch { setToast('Failed to create group.'); }
     finally { setGrpBusy(false); }
   };
@@ -2230,11 +2254,14 @@ const WorkspaceDashboardPage: React.FC = () => {
                 </Stack>
               </Stack>
 
-              {/* Created groups list */}
+              {/* Created / loaded groups list */}
               {groupsList.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   {groupsList.map((g) => (
-                    <Box key={g.id} sx={{ p: 2, borderRadius: '10px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 1 }}>
+                    <Box key={g.id}
+                      onClick={() => navigate(`/groups/${g.id}`)}
+                      sx={{ p: 2, borderRadius: '10px', bgcolor: t.surface, border: `1px solid ${ws.connected_group_id === g.id ? t.brandPrimary : t.border}`, mb: 1, cursor: 'pointer',
+                        '&:hover': { borderColor: t.brandPrimary, bgcolor: 'rgba(21,61,117,.05)' } }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack direction="row" spacing={1.25} alignItems="center">
                           <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: t.brandPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -2245,11 +2272,18 @@ const WorkspaceDashboardPage: React.FC = () => {
                             <Typography sx={{ fontSize: '.72rem', color: t.textTertiary, fontFamily: 'monospace' }}>@{g.handle} · {g.group_type}</Typography>
                           </Box>
                         </Stack>
-                        <Chip label={g.visibility} size="small"
-                          sx={{ fontWeight: 700, fontSize: '.7rem',
-                            bgcolor: g.visibility === 'public' ? 'rgba(34,197,94,.12)' : g.visibility === 'internal' ? 'rgba(245,158,11,.12)' : 'rgba(239,68,68,.12)',
-                            color: g.visibility === 'public' ? dashboardSemanticColors.success : g.visibility === 'internal' ? dashboardSemanticColors.warning : dashboardSemanticColors.danger,
-                          }} />
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          {ws.connected_group_id === g.id && (
+                            <Chip label="connected" size="small"
+                              sx={{ fontWeight: 700, fontSize: '.7rem', bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success }} />
+                          )}
+                          <Chip label={g.visibility} size="small"
+                            sx={{ fontWeight: 700, fontSize: '.7rem',
+                              bgcolor: g.visibility === 'public' ? 'rgba(34,197,94,.12)' : g.visibility === 'internal' ? 'rgba(245,158,11,.12)' : 'rgba(239,68,68,.12)',
+                              color: g.visibility === 'public' ? dashboardSemanticColors.success : g.visibility === 'internal' ? dashboardSemanticColors.warning : dashboardSemanticColors.danger,
+                            }} />
+                          <OpenInNewIcon sx={{ fontSize: '.85rem', color: t.textTertiary }} />
+                        </Stack>
                       </Stack>
                     </Box>
                   ))}
