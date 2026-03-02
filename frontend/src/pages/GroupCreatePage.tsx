@@ -54,11 +54,14 @@ const GROUP_TYPES: { value: GroupType; label: string; description: string; accen
 ];
 
 const ROLES: { value: GroupRole; label: string; description: string }[] = [
-  { value: 'owner',      label: 'Owner',       description: 'Full control — delete group, manage billing & settings.' },
-  { value: 'admin',      label: 'Admin',       description: 'Manage members, configure integrations and webhooks.' },
-  { value: 'maintainer', label: 'Maintainer',  description: 'Merge code, manage runners, create releases.' },
-  { value: 'developer',  label: 'Developer',   description: 'Push code, run pipelines, manage issues.' },
-  { value: 'viewer',     label: 'Viewer',      description: 'Read-only access to all group resources.' },
+  { value: 'owner',          label: 'Owner',            description: 'Full control — delete group, manage billing & settings.' },
+  { value: 'admin',          label: 'Admin',            description: 'Manage members, configure integrations and webhooks.' },
+  { value: 'architect',      label: 'Architect',        description: 'Manage infrastructure, environments and deployments.' },
+  { value: 'devops_engineer',label: 'DevOps Engineer',  description: 'Manage pipelines, CI/CD and Kubernetes.' },
+  { value: 'developer',      label: 'Developer',        description: 'Push code, run pipelines, manage issues.' },
+  { value: 'data_scientist', label: 'Data Scientist',   description: 'Access datasets, notebooks and compute resources.' },
+  { value: 'finance',        label: 'Finance',          description: 'View billing, usage and cost reports.' },
+  { value: 'viewer',         label: 'Viewer',           description: 'Read-only access to all group resources.' },
 ];
 
 const RESOURCE_KEYS: { key: keyof GroupResources; label: string; description: string }[] = [

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from .models import (
     Group, GroupMember, GroupInvitation, GroupAccessToken,
     GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry,
+    GroupPipeline, GroupPipelineRun,
     PERMISSION_MATRIX,
 )
 from .serializers import (
@@ -25,6 +26,11 @@ from .serializers import (
     GroupConfigRegistryCreateSerializer,
     GroupResourceBundleSerializer,
     GroupSidebarSerializer,
+    GroupPipelineSerializer,
+    GroupPipelineCreateSerializer,
+    GroupPipelineUpdateSerializer,
+    GroupPipelineRunSerializer,
+    GroupPipelineRunCreateSerializer,
 )
 
 
@@ -603,3 +609,222 @@ class GroupViewSet(GroupPermissionMixin, viewsets.ModelViewSet):
             'group_type':   group.group_type,
             'sections':     sections,
         })
+
+    # ── /groups/{id}/group-pipelines/ ────────────────────────────────────────
+
+    @action(detail=True, methods=['get', 'post'], url_path='group-pipelines')
+    def group_pipelines(self, request, pk=None):
+        """
+        GET  /groups/{id}/group-pipelines/   – list pipelines owned by the group.
+        POST /groups/{id}/group-pipelines/   – create a new pipeline definition.
+        """
+        group = self.get_object()
+
+        if request.method == 'POST':
+            self._require_group_permission(group, request.user, 'pipeline.create')
+            serializer = GroupPipelineCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            pipeline = GroupPipeline.objects.create(
+                group=group,
+                created_by=request.user,
+                updated_by=request.user,
+                **serializer.validated_data,
+            )
+            group.pipeline_count = group.pipelines.count()
+            group.save(update_fields=['pipeline_count'])
+            _audit(group, request.user.username, 'resource_linked', pipeline.name,
+                   {'type': 'pipeline', 'id': pipeline.id})
+            return Response(GroupPipelineSerializer(pipeline).data, status=201)
+
+        qs = group.pipelines.select_related('created_by', 'updated_by').order_by('-created_at')
+        # Filter by status if supplied
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return Response(GroupPipelineSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=['get', 'put', 'patch', 'delete'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)')
+    def group_pipeline_detail(self, request, pk=None, pipeline_id=None):
+        """
+        GET    /groups/{id}/group-pipelines/{pid}/  – retrieve pipeline.
+        PUT/PATCH                                   – update pipeline definition.
+        DELETE                                      – delete pipeline.
+        """
+        group = self.get_object()
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            # Also try by slug
+            try:
+                pipeline = group.pipelines.get(slug=pipeline_id)
+            except GroupPipeline.DoesNotExist:
+                return Response({'error': 'Pipeline not found'}, status=404)
+
+        if request.method == 'DELETE':
+            self._require_group_permission(group, request.user, 'pipeline.delete')
+            pipeline.delete()
+            group.pipeline_count = group.pipelines.count()
+            group.save(update_fields=['pipeline_count'])
+            return Response(status=204)
+
+        if request.method in ('PUT', 'PATCH'):
+            self._require_group_permission(group, request.user, 'pipeline.edit')
+            partial = request.method == 'PATCH'
+            serializer = GroupPipelineUpdateSerializer(pipeline, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(updated_by=request.user)
+            return Response(GroupPipelineSerializer(pipeline).data)
+
+        # GET
+        return Response(GroupPipelineSerializer(pipeline).data)
+
+    @action(detail=True, methods=['get', 'put', 'patch'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)/definition')
+    def group_pipeline_definition(self, request, pk=None, pipeline_id=None):
+        """
+        GET  – return the structured definition + YAML.
+        PUT  – replace the full definition.
+        PATCH – partial update (e.g. update only YAML or only stages).
+        """
+        group = self.get_object()
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            try:
+                pipeline = group.pipelines.get(slug=pipeline_id)
+            except GroupPipeline.DoesNotExist:
+                return Response({'error': 'Pipeline not found'}, status=404)
+
+        if request.method in ('PUT', 'PATCH'):
+            self._require_group_permission(group, request.user, 'pipeline.edit')
+            if 'definition' in request.data:
+                pipeline.definition = request.data['definition']
+            if 'yaml_content' in request.data:
+                pipeline.yaml_content = request.data['yaml_content']
+            if 'triggers' in request.data:
+                pipeline.triggers = request.data['triggers']
+            pipeline.updated_by = request.user
+            pipeline.save()
+            return Response({'definition': pipeline.definition, 'yaml_content': pipeline.yaml_content})
+
+        return Response({
+            'id':           pipeline.id,
+            'name':         pipeline.name,
+            'slug':         pipeline.slug,
+            'definition':   pipeline.definition,
+            'yaml_content': pipeline.yaml_content,
+            'triggers':     pipeline.triggers,
+        })
+
+    # ── /groups/{id}/group-pipelines/{pid}/runs/ ──────────────────────────────
+
+    @action(detail=True, methods=['get', 'post'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)/runs')
+    def group_pipeline_runs(self, request, pk=None, pipeline_id=None):
+        """
+        GET  – list all runs for the pipeline.
+        POST – trigger a new run.
+        """
+        group = self.get_object()
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            try:
+                pipeline = group.pipelines.get(slug=pipeline_id)
+            except GroupPipeline.DoesNotExist:
+                return Response({'error': 'Pipeline not found'}, status=404)
+
+        if request.method == 'POST':
+            self._require_group_permission(group, request.user, 'pipeline.run')
+            serializer = GroupPipelineRunCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            run = GroupPipelineRun.objects.create(
+                pipeline=pipeline,
+                triggered_by=request.user,
+                status='queued',
+                stages_snapshot=pipeline.definition.get('stages', []),
+                **serializer.validated_data,
+            )
+            pipeline.run_count = pipeline.runs.count()
+            pipeline.last_run_at = run.created_at
+            pipeline.last_run_status = run.status
+            pipeline.save(update_fields=['run_count', 'last_run_at', 'last_run_status'])
+            return Response(GroupPipelineRunSerializer(run).data, status=201)
+
+        qs = pipeline.runs.select_related('triggered_by').order_by('-created_at')[:50]
+        return Response(GroupPipelineRunSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=['get'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)/runs/(?P<run_id>[^/.]+)')
+    def group_pipeline_run_detail(self, request, pk=None, pipeline_id=None, run_id=None):
+        """GET /groups/{id}/group-pipelines/{pid}/runs/{rid}/ – full run detail."""
+        group = self.get_object()
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            try:
+                pipeline = group.pipelines.get(slug=pipeline_id)
+            except GroupPipeline.DoesNotExist:
+                return Response({'error': 'Pipeline not found'}, status=404)
+        try:
+            run = pipeline.runs.get(pk=run_id)
+        except GroupPipelineRun.DoesNotExist:
+            return Response({'error': 'Run not found'}, status=404)
+        return Response(GroupPipelineRunSerializer(run).data)
+
+    @action(detail=True, methods=['post'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)/runs/(?P<run_id>[^/.]+)/cancel')
+    def group_pipeline_run_cancel(self, request, pk=None, pipeline_id=None, run_id=None):
+        """POST .../cancel – cancel a queued or running run."""
+        group = self.get_object()
+        self._require_group_permission(group, request.user, 'pipeline.cancel')
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            return Response({'error': 'Pipeline not found'}, status=404)
+        try:
+            run = pipeline.runs.get(pk=run_id)
+        except GroupPipelineRun.DoesNotExist:
+            return Response({'error': 'Run not found'}, status=404)
+        if run.status not in ('queued', 'running'):
+            return Response({'error': f'Cannot cancel a run with status "{run.status}"'}, status=400)
+        run.status = 'cancelled'
+        run.save(update_fields=['status'])
+        pipeline.last_run_status = 'cancelled'
+        pipeline.save(update_fields=['last_run_status'])
+        return Response(GroupPipelineRunSerializer(run).data)
+
+    @action(detail=True, methods=['post'],
+            url_path=r'group-pipelines/(?P<pipeline_id>[^/.]+)/runs/(?P<run_id>[^/.]+)/rollback')
+    def group_pipeline_run_rollback(self, request, pk=None, pipeline_id=None, run_id=None):
+        """POST .../rollback – create a rollback run from a failed or succeeded run."""
+        group = self.get_object()
+        self._require_group_permission(group, request.user, 'deployment.rollback')
+        try:
+            pipeline = group.pipelines.get(pk=pipeline_id)
+        except GroupPipeline.DoesNotExist:
+            return Response({'error': 'Pipeline not found'}, status=404)
+        try:
+            original_run = pipeline.runs.get(pk=run_id)
+        except GroupPipelineRun.DoesNotExist:
+            return Response({'error': 'Run not found'}, status=404)
+        rollback_run = GroupPipelineRun.objects.create(
+            pipeline=pipeline,
+            triggered_by=request.user,
+            trigger_source='user',
+            status='queued',
+            branch=original_run.branch,
+            commit_sha=original_run.commit_sha,
+            environment_id=original_run.environment_id,
+            environment_name=original_run.environment_name,
+            workspace_id=original_run.workspace_id,
+            stages_snapshot=pipeline.definition.get('stages', []),
+            rolled_back_from=original_run,
+        )
+        original_run.status = 'rolled_back'
+        original_run.save(update_fields=['status'])
+        pipeline.last_run_status = rollback_run.status
+        pipeline.save(update_fields=['last_run_status'])
+        return Response(GroupPipelineRunSerializer(rollback_run).data, status=201)
+

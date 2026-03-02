@@ -408,3 +408,182 @@ class GroupConfigRegistry(TimeStampedModel):
 
     def __str__(self):
         return f'{self.file_name} ({self.file_type}) → {self.group.handle}'
+
+
+# ── GroupPipeline (first-class pipeline definition) ───────────────────────────
+
+def _uid_pipeline():
+    return f'pipe-{uuid.uuid4().hex[:12]}'
+
+
+def _uid_run():
+    return f'run-{uuid.uuid4().hex[:12]}'
+
+
+class GroupPipeline(TimeStampedModel):
+    """
+    A first-class CI/CD pipeline definition owned by a Group.
+    Separate from a run record — this is the blueprint.
+    """
+
+    PIPELINE_TYPE_CHOICES = [
+        ('ci',          'Continuous Integration'),
+        ('cd',          'Continuous Delivery'),
+        ('ci_cd',       'CI/CD (Multi-stage)'),
+        ('build',       'Build Only'),
+        ('deploy',      'Deploy Only'),
+        ('release',     'Release Pipeline'),
+        ('rollback',    'Rollback Pipeline'),
+        ('scheduled',   'Scheduled / Cron'),
+        ('custom',      'Custom'),
+    ]
+
+    PIPELINE_STATUS_CHOICES = [
+        ('active',    'Active'),
+        ('disabled',  'Disabled'),
+        ('archived',  'Archived'),
+        ('draft',     'Draft'),
+    ]
+
+    TRIGGER_TYPE_CHOICES = [
+        ('push',      'Git Push'),
+        ('pr',        'Pull Request'),
+        ('tag',       'Tag Push'),
+        ('schedule',  'Scheduled'),
+        ('manual',    'Manual'),
+        ('api',       'API Trigger'),
+        ('upstream',  'Upstream Pipeline'),
+    ]
+
+    id          = models.CharField(max_length=40, primary_key=True, default=_uid_pipeline, editable=False)
+    group       = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='pipelines')
+    created_by  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_pipelines')
+    updated_by  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='updated_pipelines')
+
+    name        = models.CharField(max_length=200)
+    slug        = models.SlugField(max_length=120)
+    description = models.TextField(blank=True, default='')
+    pipeline_type = models.CharField(max_length=20, choices=PIPELINE_TYPE_CHOICES, default='ci_cd')
+    status      = models.CharField(max_length=20, choices=PIPELINE_STATUS_CHOICES, default='draft')
+
+    # Optional project link
+    project_id  = models.CharField(max_length=255, blank=True, default='')
+    project_name = models.CharField(max_length=200, blank=True, default='')
+
+    # Environment targets
+    environment_targets = models.JSONField(
+        default=list,
+        help_text='List of environment IDs or slugs this pipeline can deploy to',
+    )
+
+    # Structured definition (stages → steps)
+    definition  = models.JSONField(
+        default=dict,
+        help_text='Structured pipeline definition: {stages: [{name, steps: [...]}]}',
+    )
+    # Raw YAML / text form
+    yaml_content = models.TextField(blank=True, default='')
+
+    # Triggers configuration
+    triggers    = models.JSONField(
+        default=list,
+        help_text='List of trigger configs: [{type, branch_pattern, schedule, ...}]',
+    )
+
+    # Downstream / upstream pipeline links
+    upstream_pipeline_ids   = models.JSONField(default=list, blank=True)
+    downstream_pipeline_ids = models.JSONField(default=list, blank=True)
+
+    # Notification config
+    notifications = models.JSONField(default=dict, blank=True)
+
+    # Stats (denormalised)
+    run_count       = models.PositiveIntegerField(default=0)
+    last_run_status = models.CharField(max_length=20, blank=True, default='')
+    last_run_at     = models.DateTimeField(null=True, blank=True)
+    avg_duration_s  = models.FloatField(default=0)
+    success_rate    = models.FloatField(default=0, help_text='0–100 percentage')
+
+    tags = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        db_table = 'groups_pipeline'
+        unique_together = [('group', 'slug')]
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['group', 'status']),
+            models.Index(fields=['group', 'pipeline_type']),
+        ]
+
+    def __str__(self):
+        return f'{self.group.handle}/{self.slug}'
+
+
+class GroupPipelineRun(TimeStampedModel):
+    """A single execution of a GroupPipeline."""
+
+    RUN_STATUS_CHOICES = [
+        ('queued',     'Queued'),
+        ('running',    'Running'),
+        ('succeeded',  'Succeeded'),
+        ('failed',     'Failed'),
+        ('cancelled',  'Cancelled'),
+        ('pending',    'Pending Approval'),
+        ('rolled_back','Rolled Back'),
+    ]
+
+    TRIGGER_SOURCE_CHOICES = [
+        ('user',     'Manual Trigger'),
+        ('webhook',  'Webhook'),
+        ('schedule', 'Scheduled'),
+        ('api',      'API'),
+        ('upstream', 'Upstream Pipeline'),
+    ]
+
+    id          = models.CharField(max_length=40, primary_key=True, default=_uid_run, editable=False)
+    pipeline    = models.ForeignKey(GroupPipeline, on_delete=models.CASCADE, related_name='runs')
+    triggered_by    = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='triggered_runs')
+    trigger_source  = models.CharField(max_length=20, choices=TRIGGER_SOURCE_CHOICES, default='user')
+    status          = models.CharField(max_length=20, choices=RUN_STATUS_CHOICES, default='queued')
+
+    # Execution context
+    branch          = models.CharField(max_length=200, blank=True, default='')
+    commit_sha      = models.CharField(max_length=64, blank=True, default='')
+    commit_message  = models.CharField(max_length=500, blank=True, default='')
+    environment_id  = models.CharField(max_length=255, blank=True, default='')
+    environment_name = models.CharField(max_length=200, blank=True, default='')
+    workspace_id    = models.CharField(max_length=255, blank=True, default='')
+
+    # Run parameters (user-supplied overrides)
+    parameters      = models.JSONField(default=dict, blank=True)
+
+    # Timing
+    started_at      = models.DateTimeField(null=True, blank=True)
+    finished_at     = models.DateTimeField(null=True, blank=True)
+    duration_s      = models.FloatField(null=True, blank=True)
+
+    # Stage execution snapshot (copy of definition at run time)
+    stages_snapshot = models.JSONField(default=list, blank=True,
+        help_text='Per-stage status at run time: [{name, status, steps:[{name, status, log}]}]')
+
+    # Artifacts, logs, metrics
+    artifacts       = models.JSONField(default=list, blank=True)
+    log_url         = models.CharField(max_length=1024, blank=True, default='')
+    metrics         = models.JSONField(default=dict, blank=True)
+
+    # Rollback reference
+    rolled_back_from = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='rollback_runs',
+    )
+
+    class Meta:
+        db_table = 'groups_pipeline_run'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['pipeline', 'status']),
+            models.Index(fields=['pipeline', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f'Run {self.id} – {self.pipeline.slug} ({self.status})'

@@ -511,3 +511,275 @@ export async function triggerGroupDiscovery(groupId: string): Promise<GroupDisco
 export const groupsApi = { listGroups, getGroup, createGroup, updateGroup, deleteGroup }
 export default groupsApi
 
+// ════════════════════════════════════════════════════════════════════════════
+// Group Pipelines  (first-class pipeline definitions owned by a group)
+// ════════════════════════════════════════════════════════════════════════════
+
+export type PipelineType =
+  | 'ci' | 'cd' | 'ci_cd' | 'build' | 'deploy'
+  | 'release' | 'rollback' | 'scheduled' | 'custom'
+
+export type PipelineStatus = 'active' | 'disabled' | 'archived' | 'draft'
+
+export type PipelineRunStatus =
+  | 'queued' | 'running' | 'succeeded' | 'failed'
+  | 'cancelled' | 'pending' | 'rolled_back'
+
+export type PipelineTriggerSource = 'user' | 'webhook' | 'schedule' | 'api' | 'upstream'
+
+// ── Stage / Step definition ──────────────────────────────────────────────────
+
+export interface PipelineStep {
+  name:        string
+  type:        'script' | 'docker' | 'kubernetes' | 'approval' | 'notification' | 'artifact' | 'test' | 'scan'
+  command?:    string
+  image?:      string
+  env?:        Record<string, string>
+  condition?:  string
+  timeout_s?:  number
+  status?:     'pending' | 'running' | 'succeeded' | 'failed' | 'skipped'
+  log?:        string
+}
+
+export interface PipelineStage {
+  name:        string
+  type?:       'build' | 'test' | 'security' | 'deploy' | 'verify' | 'notify' | 'rollback' | 'custom'
+  steps:       PipelineStep[]
+  depends_on?: string[]
+  condition?:  string
+  status?:     'pending' | 'running' | 'succeeded' | 'failed' | 'skipped'
+}
+
+export interface PipelineDefinition {
+  stages:     PipelineStage[]
+  variables?: Record<string, string>
+  timeout_s?: number
+}
+
+export interface PipelineTriggerConfig {
+  type:             PipelineTriggerSource
+  branch_pattern?:  string
+  tag_pattern?:     string
+  schedule?:        string   // cron expression
+  pipeline_id?:     string   // upstream trigger
+}
+
+// ── GroupPipeline entity ─────────────────────────────────────────────────────
+
+export interface GroupPipelineRunSummary {
+  id:               string
+  status:           PipelineRunStatus
+  trigger_source:   PipelineTriggerSource
+  branch:           string
+  commit_sha:       string
+  commit_message:   string
+  environment_id:   string
+  environment_name: string
+  workspace_id:     string
+  started_at:       string | null
+  finished_at:      string | null
+  duration_s:       number | null
+  triggered_by:     UserSummary | null
+  created_at:       string
+}
+
+export interface GroupPipeline {
+  id:                       string
+  name:                     string
+  slug:                     string
+  description:              string
+  pipeline_type:            PipelineType
+  status:                   PipelineStatus
+  project_id:               string
+  project_name:             string
+  environment_targets:      string[]
+  definition:               PipelineDefinition
+  yaml_content:             string
+  triggers:                 PipelineTriggerConfig[]
+  upstream_pipeline_ids:    string[]
+  downstream_pipeline_ids:  string[]
+  notifications:            Record<string, unknown>
+  tags:                     string[]
+  run_count:                number
+  last_run_status:          string
+  last_run_at:              string | null
+  avg_duration_s:           number
+  success_rate:             number
+  created_by:               UserSummary | null
+  updated_by:               UserSummary | null
+  created_at:               string
+  updated_at:               string
+  last_run:                 GroupPipelineRunSummary | null
+}
+
+export interface GroupPipelineCreatePayload {
+  name:                     string
+  slug:                     string
+  description?:             string
+  pipeline_type?:           PipelineType
+  status?:                  PipelineStatus
+  project_id?:              string
+  project_name?:            string
+  environment_targets?:     string[]
+  definition?:              PipelineDefinition
+  yaml_content?:            string
+  triggers?:                PipelineTriggerConfig[]
+  upstream_pipeline_ids?:   string[]
+  downstream_pipeline_ids?: string[]
+  notifications?:           Record<string, unknown>
+  tags?:                    string[]
+}
+
+export interface GroupPipelineUpdatePayload extends Partial<Omit<GroupPipelineCreatePayload, 'slug'>> {}
+
+export interface GroupPipelineRun {
+  id:               string
+  pipeline:         string
+  pipeline_name:    string
+  pipeline_slug:    string
+  status:           PipelineRunStatus
+  trigger_source:   PipelineTriggerSource
+  triggered_by:     UserSummary | null
+  branch:           string
+  commit_sha:       string
+  commit_message:   string
+  environment_id:   string
+  environment_name: string
+  workspace_id:     string
+  parameters:       Record<string, unknown>
+  started_at:       string | null
+  finished_at:      string | null
+  duration_s:       number | null
+  stages_snapshot:  PipelineStage[]
+  artifacts:        unknown[]
+  log_url:          string
+  metrics:          Record<string, unknown>
+  rolled_back_from: string | null
+  created_at:       string
+}
+
+export interface TriggerRunPayload {
+  branch?:           string
+  commit_sha?:       string
+  commit_message?:   string
+  environment_id?:   string
+  environment_name?: string
+  workspace_id?:     string
+  parameters?:       Record<string, unknown>
+  trigger_source?:   PipelineTriggerSource
+}
+
+// ── API functions ─────────────────────────────────────────────────────────────
+
+export async function listGroupPipelines(
+  groupId: string,
+  statusFilter?: PipelineStatus,
+): Promise<GroupPipeline[]> {
+  const params = statusFilter ? { status: statusFilter } : {}
+  const { data } = await client.get(`${BASE}/${groupId}/group-pipelines/`, { params })
+  return unwrap<GroupPipeline>(data)
+}
+
+export async function createGroupPipeline(
+  groupId: string,
+  payload: GroupPipelineCreatePayload,
+): Promise<GroupPipeline> {
+  const { data } = await client.post(`${BASE}/${groupId}/group-pipelines/`, payload)
+  return data as GroupPipeline
+}
+
+export async function getGroupPipeline(
+  groupId: string,
+  pipelineId: string,
+): Promise<GroupPipeline> {
+  const { data } = await client.get(`${BASE}/${groupId}/group-pipelines/${pipelineId}/`)
+  return data as GroupPipeline
+}
+
+export async function updateGroupPipeline(
+  groupId: string,
+  pipelineId: string,
+  payload: GroupPipelineUpdatePayload,
+): Promise<GroupPipeline> {
+  const { data } = await client.patch(`${BASE}/${groupId}/group-pipelines/${pipelineId}/`, payload)
+  return data as GroupPipeline
+}
+
+export async function deleteGroupPipeline(groupId: string, pipelineId: string): Promise<void> {
+  await client.delete(`${BASE}/${groupId}/group-pipelines/${pipelineId}/`)
+}
+
+// ── Definition ────────────────────────────────────────────────────────────────
+
+export async function getGroupPipelineDefinition(
+  groupId: string,
+  pipelineId: string,
+): Promise<{ id: string; name: string; slug: string; definition: PipelineDefinition; yaml_content: string; triggers: PipelineTriggerConfig[] }> {
+  const { data } = await client.get(`${BASE}/${groupId}/group-pipelines/${pipelineId}/definition/`)
+  return data
+}
+
+export async function updateGroupPipelineDefinition(
+  groupId: string,
+  pipelineId: string,
+  payload: { definition?: PipelineDefinition; yaml_content?: string; triggers?: PipelineTriggerConfig[] },
+): Promise<{ definition: PipelineDefinition; yaml_content: string }> {
+  const { data } = await client.patch(`${BASE}/${groupId}/group-pipelines/${pipelineId}/definition/`, payload)
+  return data
+}
+
+// ── Runs ───────────────────────────────────────────────────────────────────────
+
+export async function listGroupPipelineRuns(
+  groupId: string,
+  pipelineId: string,
+): Promise<GroupPipelineRun[]> {
+  const { data } = await client.get(`${BASE}/${groupId}/group-pipelines/${pipelineId}/runs/`)
+  return unwrap<GroupPipelineRun>(data)
+}
+
+export async function triggerGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  payload?: TriggerRunPayload,
+): Promise<GroupPipelineRun> {
+  const { data } = await client.post(
+    `${BASE}/${groupId}/group-pipelines/${pipelineId}/runs/`,
+    payload ?? {},
+  )
+  return data as GroupPipelineRun
+}
+
+export async function getGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const { data } = await client.get(
+    `${BASE}/${groupId}/group-pipelines/${pipelineId}/runs/${runId}/`,
+  )
+  return data as GroupPipelineRun
+}
+
+export async function cancelGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const { data } = await client.post(
+    `${BASE}/${groupId}/group-pipelines/${pipelineId}/runs/${runId}/cancel/`,
+  )
+  return data as GroupPipelineRun
+}
+
+export async function rollbackGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const { data } = await client.post(
+    `${BASE}/${groupId}/group-pipelines/${pipelineId}/runs/${runId}/rollback/`,
+  )
+  return data as GroupPipelineRun
+}
+
