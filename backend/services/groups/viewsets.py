@@ -112,6 +112,8 @@ class GroupViewSet(GroupPermissionMixin, viewsets.ModelViewSet):
         _audit(group, self.request.user.username, 'group_created', group.name)
 
     def perform_update(self, serializer):
+        group = self.get_object()
+        self._require_group_permission(group, self.request.user, 'group.manage_settings')
         group = serializer.save()
         _audit(group, self.request.user.username, 'group_updated', group.name)
 
@@ -226,7 +228,7 @@ class GroupViewSet(GroupPermissionMixin, viewsets.ModelViewSet):
             new_owner = DjangoUser.objects.get(pk=new_owner_id)
         except DjangoUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
-        GroupMember.objects.filter(group=group, role='owner').update(role='maintainer')
+        GroupMember.objects.filter(group=group, role='owner').update(role='admin')
         GroupMember.objects.update_or_create(
             group=group, user=new_owner,
             defaults={'role': 'owner'},

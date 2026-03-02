@@ -5,8 +5,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Chip, CircularProgress,
-  Divider, IconButton, LinearProgress, List, ListItemButton,
-  Stack, Table, TableBody, TableCell, TableHead, TableRow,
+  Divider, FormControl, IconButton, InputLabel, LinearProgress, List, ListItemButton,
+  MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
   TextField, Tooltip, Typography,
 } from '@mui/material';
 import AccountTreeIcon         from '@mui/icons-material/AccountTree';
@@ -46,10 +46,12 @@ import {
   getGroup, listMembers, listAuditLogs, removeMember, deleteGroup,
   getGroupResources, listGroupConfigFiles, listGroupWorkspaces,
   getGroupSidebar, triggerGroupDiscovery,
-  Group, GroupMember, GroupAuditLog, GroupRole,
+  inviteToGroup, listInvitations, cancelInvitation, updateMemberRole,
+  Group, GroupMember, GroupAuditLog, GroupRole, GroupInvitation,
   GroupResourceBundle, GroupConfigFile, GroupWorkspaceSummary, GroupSidebarSection,
 } from '../services/groupsApi';
 import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth } from '../services/environmentsApi';
+import { useGroupPermissions } from '../hooks/useGroupPermissions';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -59,12 +61,19 @@ const BP   = t.brandPrimary;
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
+const ALL_ROLES: GroupRole[] = [
+  'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'finance', 'viewer',
+];
+
 const ROLE_COLORS: Record<GroupRole, string> = {
-  owner:      '#7c3aed',
-  admin:      '#dc2626',
-  maintainer: '#d97706',
-  developer:  '#2563eb',
-  viewer:     '#6b7280',
+  owner:           '#7c3aed',
+  admin:           '#dc2626',
+  architect:       '#0891b2',
+  devops_engineer: '#6d28d9',
+  developer:       '#2563eb',
+  data_scientist:  '#059669',
+  finance:         '#d97706',
+  viewer:          '#6b7280',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -341,71 +350,238 @@ const OverviewSection: React.FC<{
 
 // ── Members / Access Control section ──────────────────────────────────────────
 
-const AccessSection: React.FC<{ members: GroupMember[]; myRole: GroupRole | null; groupId: string; onRemoved: (id: string) => void }> = ({
-  members, myRole, groupId, onRemoved,
-}) => {
-  const [busy, setBusy] = useState<string | null>(null);
+const AccessSection: React.FC<{
+  members: GroupMember[];
+  myRole: GroupRole | null;
+  groupId: string;
+  onRemoved: (id: string) => void;
+  onRoleChanged: (id: string, newRole: GroupRole) => void;
+}> = ({ members, myRole, groupId, onRemoved, onRoleChanged }) => {
+  const [busy,          setBusy]          = useState<string | null>(null);
+  const [inviteEmail,   setInviteEmail]   = useState('');
+  const [inviteRole,    setInviteRole]    = useState<GroupRole>('developer');
+  const [inviting,      setInviting]      = useState(false);
+  const [inviteError,   setInviteError]   = useState<string | null>(null);
+  const [invitations,   setInvitations]   = useState<GroupInvitation[]>([]);
+  const [loadInvites,   setLoadInvites]   = useState(false);
+  const [cancelId,      setCancelId]      = useState<string | null>(null);
+  const [changingId,    setChangingId]    = useState<string | null>(null);
+
   const canManage = myRole === 'owner' || myRole === 'admin';
 
-  const handleRemove = async (m: GroupMember) => {
-    if (!window.confirm(`Remove ${m.user.display_name || m.user.username}?`)) return;
-    setBusy(m.id);
-    try { await removeMember(groupId, m.id); onRemoved(m.id); }
-    catch { /* keep in list */ }
-    finally { setBusy(null); }
+  // Load pending invitations when canManage
+  useEffect(() => {
+    if (!canManage) return;
+    setLoadInvites(true);
+    listInvitations(groupId)
+      .then(data => setInvitations(data.filter(i => i.status === 'pending')))
+      .catch(() => {})
+      .finally(() => setLoadInvites(false));
+  }, [groupId, canManage]);
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviting(true); setInviteError(null);
+    try {
+      const inv = await inviteToGroup(groupId, inviteEmail.trim(), inviteRole);
+      setInvitations(prev => [inv, ...prev]);
+      setInviteEmail('');
+    } catch (err: any) {
+      setInviteError(err?.response?.data?.error || err?.response?.data?.detail || 'Failed to send invite.');
+    } finally { setInviting(false); }
   };
 
-  if (members.length === 0) return <EmptySection icon={<PeopleIcon />} title="No members" />;
+  const handleCancelInvite = async (invId: string) => {
+    setCancelId(invId);
+    try { await cancelInvitation(groupId, invId); setInvitations(prev => prev.filter(i => i.id !== invId)); }
+    catch { /* ignore */ }
+    finally { setCancelId(null); }
+  };
+
+  const handleRoleChange = async (m: GroupMember, newRole: GroupRole) => {
+    setChangingId(m.id);
+    try { await updateMemberRole(groupId, m.id, newRole); onRoleChanged(m.id, newRole); }
+    catch { /* ignore */ }
+    finally { setChangingId(null); }
+  };
+
+  const roleColor = (r: GroupRole) => ROLE_COLORS[r] ?? '#6b7280';
 
   return (
-    <Box sx={{ ...dashboardCardSx, overflow: 'hidden' }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow sx={{ '& th': { fontFamily: FONT, fontSize: '.74rem', fontWeight: 700, color: t.textSecondary, borderColor: t.border, bgcolor: t.surface } }}>
-            <TableCell>Member</TableCell>
-            <TableCell>Role</TableCell>
-            <TableCell>Joined</TableCell>
-            {canManage && <TableCell align="right">Actions</TableCell>}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {members.map((m) => (
-            <TableRow key={m.id} sx={{ '& td': { fontFamily: FONT, fontSize: '.83rem', borderColor: t.border } }}>
-              <TableCell>
-                <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <Avatar sx={{ width: 28, height: 28, fontSize: '.68rem', bgcolor: `${ROLE_COLORS[m.role]}33`, color: ROLE_COLORS[m.role] }}>
-                    {initials(m.user.display_name || m.user.username)}
-                  </Avatar>
-                  <Box>
-                    <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', fontWeight: 600, color: t.textPrimary }}>{m.user.display_name || m.user.username}</Typography>
-                    <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textSecondary }}>{m.user.email}</Typography>
-                  </Box>
-                </Stack>
-              </TableCell>
-              <TableCell>
-                <Chip label={m.role} size="small" sx={{
-                  fontFamily: FONT, fontSize: '.7rem', fontWeight: 600, textTransform: 'capitalize',
-                  bgcolor: `${ROLE_COLORS[m.role]}22`, color: ROLE_COLORS[m.role], border: `1px solid ${ROLE_COLORS[m.role]}44`,
-                }} />
-              </TableCell>
-              <TableCell sx={{ color: t.textSecondary }}>{fmtDate(m.created_at)}</TableCell>
-              {canManage && (
-                <TableCell align="right">
-                  {m.role !== 'owner' && (
-                    <Tooltip title="Remove member">
-                      <IconButton size="small" onClick={() => handleRemove(m)} disabled={busy === m.id}
-                        sx={{ color: sc.danger, '&:hover': { bgcolor: `${sc.danger}18` } }}>
-                        {busy === m.id ? <CircularProgress size={12} /> : <DeleteIcon sx={{ fontSize: '.95rem' }} />}
-                      </IconButton>
-                    </Tooltip>
+    <Stack spacing={2.5}>
+
+      {/* ── Invite form ──────────────────────────────────────────────────── */}
+      {canManage && (
+        <Box sx={{ ...dashboardCardSx, p: 2.5 }}>
+          <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.88rem', color: t.textPrimary, mb: 2 }}>
+            Invite member
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="flex-start">
+            <TextField
+              size="small"
+              placeholder="Email address"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleInvite(); }}
+              sx={{ flex: 1, '& input': { fontFamily: FONT, fontSize: '.85rem' } }}
+            />
+            <FormControl size="small" sx={{ minWidth: 170 }}>
+              <InputLabel sx={{ fontFamily: FONT, fontSize: '.82rem' }}>Role</InputLabel>
+              <Select
+                label="Role"
+                value={inviteRole}
+                onChange={e => setInviteRole(e.target.value as GroupRole)}
+                sx={{ fontFamily: FONT, fontSize: '.82rem' }}
+              >
+                {ALL_ROLES.filter(r => r !== 'owner').map(r => (
+                  <MenuItem key={r} value={r} sx={{ fontFamily: FONT, fontSize: '.82rem', textTransform: 'capitalize' }}>
+                    {r.replace(/_/g, '\u00a0')}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained" size="small"
+              onClick={handleInvite}
+              disabled={inviting || !inviteEmail.trim()}
+              startIcon={inviting ? <CircularProgress size={12} color="inherit" /> : <PersonAddIcon sx={{ fontSize: '.9rem' }} />}
+              sx={{ fontFamily: FONT, fontSize: '.82rem', textTransform: 'none', bgcolor: BP, '&:hover': { bgcolor: `${BP}dd` }, whiteSpace: 'nowrap', height: 40 }}
+            >
+              Send invite
+            </Button>
+          </Stack>
+          {inviteError && (
+            <Alert severity="error" sx={{ fontFamily: FONT, fontSize: '.8rem', mt: 1.5 }} onClose={() => setInviteError(null)}>
+              {inviteError}
+            </Alert>
+          )}
+        </Box>
+      )}
+
+      {/* ── Pending invitations ───────────────────────────────────────────── */}
+      {canManage && (loadInvites || invitations.length > 0) && (
+        <Box sx={{ ...dashboardCardSx, overflow: 'hidden' }}>
+          <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.85rem', color: t.textPrimary }}>
+              Pending Invitations {invitations.length > 0 && `(${invitations.length})`}
+            </Typography>
+          </Box>
+          {loadInvites ? (
+            <Box sx={{ p: 2 }}><LinearProgress sx={{ borderRadius: 1 }} /></Box>
+          ) : (
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ '& th': { fontFamily: FONT, fontSize: '.74rem', fontWeight: 700, color: t.textSecondary, borderColor: t.border, bgcolor: t.surface } }}>
+                  <TableCell>Email</TableCell><TableCell>Role</TableCell><TableCell>Sent</TableCell><TableCell align="right">Cancel</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {invitations.map(inv => (
+                  <TableRow key={inv.id} sx={{ '& td': { fontFamily: FONT, fontSize: '.82rem', borderColor: t.border } }}>
+                    <TableCell sx={{ color: t.textPrimary, fontWeight: 600 }}>{inv.email}</TableCell>
+                    <TableCell>
+                      <Chip label={inv.role.replace(/_/g, ' ')} size="small" sx={{
+                        fontFamily: FONT, fontSize: '.7rem', fontWeight: 600, textTransform: 'capitalize',
+                        bgcolor: `${roleColor(inv.role)}22`, color: roleColor(inv.role), border: `1px solid ${roleColor(inv.role)}44`,
+                      }} />
+                    </TableCell>
+                    <TableCell sx={{ color: t.textSecondary }}>{fmtDate(inv.created_at)}</TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Cancel invitation">
+                        <IconButton size="small" onClick={() => handleCancelInvite(inv.id)} disabled={cancelId === inv.id}
+                          sx={{ color: sc.danger, '&:hover': { bgcolor: `${sc.danger}18` } }}>
+                          {cancelId === inv.id ? <CircularProgress size={12} /> : <DeleteIcon sx={{ fontSize: '.9rem' }} />}
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Box>
+      )}
+
+      {/* ── Members list ─────────────────────────────────────────────────── */}
+      {members.length === 0 ? (
+        <EmptySection icon={<PeopleIcon />} title="No members" />
+      ) : (
+        <Box sx={{ ...dashboardCardSx, overflow: 'hidden' }}>
+          <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.85rem', color: t.textPrimary }}>
+              Members ({members.length})
+            </Typography>
+          </Box>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ '& th': { fontFamily: FONT, fontSize: '.74rem', fontWeight: 700, color: t.textSecondary, borderColor: t.border, bgcolor: t.surface } }}>
+                <TableCell>Member</TableCell><TableCell>Role</TableCell><TableCell>Joined</TableCell>
+                {canManage && <TableCell align="right">Actions</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {members.map(m => (
+                <TableRow key={m.id} sx={{ '& td': { fontFamily: FONT, fontSize: '.83rem', borderColor: t.border } }}>
+                  <TableCell>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                      <Avatar sx={{ width: 28, height: 28, fontSize: '.68rem', bgcolor: `${roleColor(m.role)}33`, color: roleColor(m.role) }}>
+                        {initials(m.user.display_name || m.user.username)}
+                      </Avatar>
+                      <Box>
+                        <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', fontWeight: 600, color: t.textPrimary }}>{m.user.display_name || m.user.username}</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textSecondary }}>{m.user.email}</Typography>
+                      </Box>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    {canManage && m.role !== 'owner' ? (
+                      <FormControl size="small" variant="outlined" sx={{ minWidth: 160 }}>
+                        <Select
+                          value={m.role}
+                          onChange={e => handleRoleChange(m, e.target.value as GroupRole)}
+                          disabled={changingId === m.id}
+                          sx={{ fontFamily: FONT, fontSize: '.78rem', '.MuiSelect-select': { py: '4px', px: 1 } }}
+                        >
+                          {ALL_ROLES.filter(r => r !== 'owner').map(r => (
+                            <MenuItem key={r} value={r} sx={{ fontFamily: FONT, fontSize: '.82rem', textTransform: 'capitalize' }}>
+                              {r.replace(/_/g, ' ')}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <Chip label={m.role.replace(/_/g, ' ')} size="small" sx={{
+                        fontFamily: FONT, fontSize: '.7rem', fontWeight: 600, textTransform: 'capitalize',
+                        bgcolor: `${roleColor(m.role)}22`, color: roleColor(m.role), border: `1px solid ${roleColor(m.role)}44`,
+                      }} />
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ color: t.textSecondary }}>{fmtDate(m.created_at)}</TableCell>
+                  {canManage && (
+                    <TableCell align="right">
+                      {m.role !== 'owner' && (
+                        <Tooltip title="Remove member">
+                          <IconButton size="small"
+                            onClick={() => {
+                              if (!window.confirm(`Remove ${m.user.display_name || m.user.username}?`)) return;
+                              setBusy(m.id);
+                              removeMember(groupId, m.id).then(() => onRemoved(m.id)).catch(() => {}).finally(() => setBusy(null));
+                            }}
+                            disabled={busy === m.id}
+                            sx={{ color: sc.danger, '&:hover': { bgcolor: `${sc.danger}18` } }}>
+                            {busy === m.id ? <CircularProgress size={12} /> : <DeleteIcon sx={{ fontSize: '.95rem' }} />}
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </TableCell>
                   )}
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
+    </Stack>
   );
 };
 
@@ -830,6 +1006,7 @@ const RightPanel: React.FC<{
 const GroupDashboardPage: React.FC = () => {
   const { groupId, section } = useParams<{ groupId: string; section?: string }>();
   const navigate = useNavigate();
+  const { can: canGroup } = useGroupPermissions(groupId);
 
   const activeSection: SectionId = (SIDEBAR_ITEMS.some(s => s.id === section) ? section : 'overview') as SectionId;
 
@@ -892,6 +1069,10 @@ const GroupDashboardPage: React.FC = () => {
     if (group) setGroup({ ...group, member_count: Math.max(0, group.member_count - 1) });
   };
 
+  const handleMemberRoleChanged = (id: string, newRole: GroupRole) => {
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, role: newRole } : m));
+  };
+
   const sCount = (id: string): number => {
     const map: Record<string, number> = {
       projects:     group?.project_count ?? 0,
@@ -945,7 +1126,7 @@ const GroupDashboardPage: React.FC = () => {
       case 'logs':         return <LogsSection bundle={bundle} />;
       case 'secrets':      return <ResourceTable rows={bundle?.secrets ?? []} emptyIcon={<LockIcon />} emptyMsg="No secrets registered" />;
       case 'env-vars':     return <ResourceTable rows={bundle?.env_vars ?? []} emptyIcon={<LayersIcon />} emptyMsg="No environment variables registered" />;
-      case 'access':       return <AccessSection members={members} myRole={group.my_role} groupId={groupId!} onRemoved={handleMemberRemoved} />;
+      case 'access':       return <AccessSection members={members} myRole={group.my_role} groupId={groupId!} onRemoved={handleMemberRemoved} onRoleChanged={handleMemberRoleChanged} />;
       case 'settings':     return <SettingsSection group={group} groupId={groupId!} onDeleted={() => navigate('/developer/Dashboard/groups')} />;
       case 'workspaces':   return <WorkspacesSection workspaces={workspaces} navigate={navigate} />;
       case 'audit':        return <AuditSection logs={auditLogs} />;
