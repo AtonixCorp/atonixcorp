@@ -55,6 +55,12 @@ class DevWorkspaceSerializer(serializers.ModelSerializer):
             'status', 'region', 'image', 'ide', 'editor_url',
             'cpu_percent', 'ram_percent', 'containers', 'volumes',
             'terminal_ws_url', 'started_at', 'created_at', 'updated_at',
+            # Provisioning plan
+            'vcpus', 'ram_gb', 'gpu_enabled',
+            'storage_type', 'storage_gb', 'backup_policy',
+            'vpc_name', 'subnet_name', 'firewall_profile', 'public_ip',
+            'container_runtime', 'container_template',
+            'domain',
             # Setup-wizard connections
             'connected_project_id', 'connected_project_name',
             'connected_env_id', 'connected_env_name',
@@ -74,11 +80,27 @@ class DevWorkspaceSerializer(serializers.ModelSerializer):
 
 
 class DevWorkspaceCreateSerializer(serializers.ModelSerializer):
-    """Minimal serializer used only on POST /dev-workspaces/."""
+    """
+    Full creation serializer — used on POST /dev-workspaces/.
+    Accepts all provisioning plan fields collected by the Workspace Creation Wizard.
+    """
 
     class Meta:
         model = DevWorkspace
-        fields = ['workspace_id', 'display_name', 'region', 'image', 'ide']
+        fields = [
+            # Basics
+            'workspace_id', 'display_name', 'region', 'image', 'ide',
+            # Compute plan
+            'vcpus', 'ram_gb', 'gpu_enabled',
+            # Storage plan
+            'storage_type', 'storage_gb', 'backup_policy',
+            # Network plan
+            'vpc_name', 'subnet_name', 'firewall_profile', 'public_ip',
+            # Container runtime
+            'container_runtime', 'container_template',
+            # Domain
+            'domain',
+        ]
 
 
 class WorkspaceSetupSerializer(serializers.Serializer):

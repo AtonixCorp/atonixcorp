@@ -48,6 +48,7 @@ import {
   type DevWorkspace,
   type CreateDevWorkspacePayload,
 } from '../services/devWorkspaceApi';
+import WorkspaceCreationWizard from '../components/Workspace/WorkspaceCreationWizard';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
@@ -470,8 +471,15 @@ const DevWorkspacePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Create dialog */}
-      <CreateDialog open={createOpen} onClose={() => setCreateOpen(false)} onCreated={load} />
+      {/* Workspace Creation Wizard */}
+      <WorkspaceCreationWizard
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(ws) => {
+          load();
+          navigate(`/developer/Dashboard/workspace/${ws.workspace_id}`);
+        }}
+      />
 
       {/* Delete confirm dialog */}
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth

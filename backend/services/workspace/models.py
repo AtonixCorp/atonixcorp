@@ -176,6 +176,60 @@ class DevWorkspace(models.Model):
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
 
+    # ── Provisioning plan (set during creation wizard) ────────────────────────
+    # Compute
+    vcpus            = models.PositiveSmallIntegerField(default=2,
+        help_text='Number of virtual CPUs to reserve.')
+    ram_gb           = models.PositiveSmallIntegerField(default=4,
+        help_text='RAM in GB to reserve.')
+    gpu_enabled      = models.BooleanField(default=False,
+        help_text='Whether a GPU accelerator is requested.')
+
+    # Storage
+    STORAGE_TYPE_CHOICES = [
+        ('standard',  'Standard SSD'),
+        ('high-iops', 'High-IOPS SSD'),
+    ]
+    BACKUP_POLICY_CHOICES = [
+        ('none',   'No Backup'),
+        ('daily',  'Daily Backup'),
+        ('weekly', 'Weekly Backup'),
+    ]
+    storage_type     = models.CharField(max_length=16, choices=STORAGE_TYPE_CHOICES, default='standard')
+    storage_gb       = models.PositiveIntegerField(default=20,
+        help_text='Block storage size in GB.')
+    backup_policy    = models.CharField(max_length=16, choices=BACKUP_POLICY_CHOICES, default='none')
+
+    # Network
+    FIREWALL_PROFILE_CHOICES = [
+        ('default', 'Default (web-server)'),
+        ('strict',  'Strict (no inbound)'),
+        ('open',    'Open (all)'),
+        ('custom',  'Custom'),
+    ]
+    vpc_name         = models.CharField(max_length=128, blank=True, default='',
+        help_text='VPC to attach the workspace to.')
+    subnet_name      = models.CharField(max_length=128, blank=True, default='',
+        help_text='Subnet inside the VPC.')
+    firewall_profile = models.CharField(max_length=16, choices=FIREWALL_PROFILE_CHOICES, default='default')
+    public_ip        = models.BooleanField(default=False,
+        help_text='Whether a floating / public IP should be assigned.')
+
+    # Container runtime
+    CONTAINER_RUNTIME_CHOICES = [
+        ('docker',     'Docker'),
+        ('podman',     'Podman'),
+        ('kubernetes', 'Kubernetes Pod'),
+    ]
+    container_runtime  = models.CharField(
+        max_length=32, choices=CONTAINER_RUNTIME_CHOICES, default='docker')
+    container_template = models.CharField(max_length=64, blank=True, default='',
+        help_text='Template image family (node, python, go, php, java, etc.)')
+
+    # Domain binding (optional)
+    domain           = models.CharField(max_length=253, blank=True, default='',
+        help_text='Optional custom domain or auto-generated subdomain for this workspace.')
+
     # ── Unified setup connections ─────────────────────────────────────────────
     # Stores IDs / slugs of resources attached via the Setup Wizard.
     # Kept as plain char fields for portability (no hard FK across apps).

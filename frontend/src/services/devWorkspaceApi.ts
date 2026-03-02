@@ -8,6 +8,12 @@ const BASE = '/api/services/dev-workspaces'
 
 export type DevWorkspaceStatus = 'stopped' | 'starting' | 'running' | 'stopping' | 'error'
 
+// ── Provisioning plan types ──────────────────────────────────────────────────
+export type StorageType       = 'standard' | 'high-iops'
+export type BackupPolicy      = 'none' | 'daily' | 'weekly'
+export type FirewallProfile   = 'default' | 'strict' | 'open' | 'custom'
+export type ContainerRuntime  = 'docker' | 'podman' | 'kubernetes'
+
 export interface DevWorkspace {
   id: number
   workspace_id: string
@@ -26,6 +32,20 @@ export interface DevWorkspace {
   started_at: string | null
   created_at: string
   updated_at: string
+  // Provisioning plan
+  vcpus: number
+  ram_gb: number
+  gpu_enabled: boolean
+  storage_type: StorageType
+  storage_gb: number
+  backup_policy: BackupPolicy
+  vpc_name: string
+  subnet_name: string
+  firewall_profile: FirewallProfile
+  public_ip: boolean
+  container_runtime: ContainerRuntime
+  container_template: string
+  domain: string
   // Setup wizard connections
   connected_project_id: string
   connected_project_name: string
@@ -39,6 +59,25 @@ export interface DevWorkspace {
   pipeline_last_failure: string | null
   pipeline_last_status: string
   setup_metadata: Record<string, unknown>
+}
+
+// ── Catalog types ────────────────────────────────────────────────────────────
+export interface ComputePlan {
+  id: string
+  label: string
+  vcpus: number
+  ram_gb: number
+  price_hint: string
+}
+export interface CatalogOption { id: string; label: string; [key: string]: unknown }
+export interface WorkspaceCatalog {
+  compute_plans: ComputePlan[]
+  storage_types: CatalogOption[]
+  backup_policies: CatalogOption[]
+  firewall_profiles: (CatalogOption & { description: string })[]
+  container_runtimes: CatalogOption[]
+  container_templates: (CatalogOption & { image: string })[]
+  regions: CatalogOption[]
 }
 
 // ─── Setup Wizard types ─────────────────────────────────────────────────────
@@ -89,11 +128,30 @@ export interface WorkspaceSetupPayload {
 }
 
 export interface CreateDevWorkspacePayload {
+  // Basics
   workspace_id: string
   display_name: string
   region?: string
   image?: string
   ide?: string
+  // Compute plan
+  vcpus?: number
+  ram_gb?: number
+  gpu_enabled?: boolean
+  // Storage plan
+  storage_type?: StorageType
+  storage_gb?: number
+  backup_policy?: BackupPolicy
+  // Network plan
+  vpc_name?: string
+  subnet_name?: string
+  firewall_profile?: FirewallProfile
+  public_ip?: boolean
+  // Container runtime
+  container_runtime?: ContainerRuntime
+  container_template?: string
+  // Domain
+  domain?: string
 }
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
@@ -154,6 +212,12 @@ export function buildTerminalWsUrl(terminalWsPath: string): string {
   const envHost = typeof process !== 'undefined' ? (process.env as any).REACT_APP_WS_HOST : undefined
   const host = envHost ?? window.location.host
   return `${protocol}//${host}${terminalWsPath}`
+}
+
+/** Fetch the workspace creation catalog (compute plans, images, regions, etc.) */
+export async function fetchWorkspaceCatalog(): Promise<WorkspaceCatalog> {
+  const { data } = await client.get<WorkspaceCatalog>(`${BASE}/catalog/`)
+  return data
 }
 
 /**

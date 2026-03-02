@@ -132,6 +132,60 @@ class DevWorkspaceViewSet(viewsets.ModelViewSet):
     # POST /api/services/dev-workspaces/<workspace_id>/setup/
     # ------------------------------------------------------------------
 
+    @action(detail=False, methods=['get'], url_path='catalog')
+    def catalog(self, request):
+        """
+        GET /api/services/dev-workspaces/catalog/
+        Returns all hardware template options for the Workspace Creation Wizard.
+        """
+        return Response({
+            'compute_plans': [
+                {'id': 'nano',    'label': 'Nano',    'vcpus': 1,  'ram_gb': 2,  'price_hint': 'Free tier'},
+                {'id': 'micro',   'label': 'Micro',   'vcpus': 2,  'ram_gb': 4,  'price_hint': 'Starter'},
+                {'id': 'small',   'label': 'Small',   'vcpus': 4,  'ram_gb': 8,  'price_hint': 'Standard'},
+                {'id': 'medium',  'label': 'Medium',  'vcpus': 8,  'ram_gb': 16, 'price_hint': 'Professional'},
+                {'id': 'large',   'label': 'Large',   'vcpus': 16, 'ram_gb': 32, 'price_hint': 'Enterprise'},
+            ],
+            'storage_types': [
+                {'id': 'standard',  'label': 'Standard SSD',   'iops_hint': 'Up to 3,000 IOPS'},
+                {'id': 'high-iops', 'label': 'High-IOPS SSD',  'iops_hint': 'Up to 16,000 IOPS'},
+            ],
+            'backup_policies': [
+                {'id': 'none',   'label': 'No Backup'},
+                {'id': 'daily',  'label': 'Daily Backup'},
+                {'id': 'weekly', 'label': 'Weekly Backup'},
+            ],
+            'firewall_profiles': [
+                {'id': 'default', 'label': 'Default (web-server)',  'description': 'Ports 80, 443, 22 open'},
+                {'id': 'strict',  'label': 'Strict (no inbound)',    'description': 'Outbound only'},
+                {'id': 'open',    'label': 'Open (all)',             'description': 'All ports open – dev only'},
+                {'id': 'custom',  'label': 'Custom',                 'description': 'Define your own rules'},
+            ],
+            'container_runtimes': [
+                {'id': 'docker',     'label': 'Docker'},
+                {'id': 'podman',     'label': 'Podman'},
+                {'id': 'kubernetes', 'label': 'Kubernetes Pod'},
+            ],
+            'container_templates': [
+                {'id': 'node',    'label': 'Node.js',  'image': 'atonix/devbox:node20'},
+                {'id': 'python',  'label': 'Python',   'image': 'atonix/devbox:python312'},
+                {'id': 'go',      'label': 'Go',       'image': 'atonix/devbox:golang123'},
+                {'id': 'php',     'label': 'PHP',      'image': 'atonix/devbox:php83'},
+                {'id': 'java',    'label': 'Java',     'image': 'atonix/devbox:java21'},
+                {'id': 'rust',    'label': 'Rust',     'image': 'atonix/devbox:rust'},
+                {'id': 'ubuntu',  'label': 'Ubuntu LTS','image': 'atonix/devbox:22.04-lts'},
+                {'id': 'custom',  'label': 'Custom',   'image': ''},
+            ],
+            'regions': [
+                {'id': 'us-east-1',      'label': 'US East (N. Virginia)'},
+                {'id': 'us-west-2',      'label': 'US West (Oregon)'},
+                {'id': 'eu-west-1',      'label': 'EU West (Ireland)'},
+                {'id': 'eu-central-1',   'label': 'EU Central (Frankfurt)'},
+                {'id': 'ap-southeast-1', 'label': 'AP Southeast (Singapore)'},
+                {'id': 'ap-northeast-1', 'label': 'AP Northeast (Tokyo)'},
+            ],
+        })
+
     @action(detail=True, methods=['post'], url_path='setup')
     def setup(self, request, workspace_id=None):
         """
