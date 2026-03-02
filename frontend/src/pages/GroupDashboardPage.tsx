@@ -7,7 +7,7 @@ import {
   Alert, Avatar, Box, Button, Chip, CircularProgress,
   Divider, IconButton, LinearProgress, List, ListItemButton,
   Stack, Table, TableBody, TableCell, TableHead, TableRow,
-  Tooltip, Typography,
+  TextField, Tooltip, Typography,
 } from '@mui/material';
 import AccountTreeIcon         from '@mui/icons-material/AccountTree';
 import AppsIcon               from '@mui/icons-material/Apps';
@@ -43,7 +43,7 @@ import WarningAmberIcon       from '@mui/icons-material/WarningAmber';
 import WorkspacesIcon         from '@mui/icons-material/Workspaces';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  getGroup, listMembers, listAuditLogs, removeMember,
+  getGroup, listMembers, listAuditLogs, removeMember, deleteGroup,
   getGroupResources, listGroupConfigFiles, listGroupWorkspaces,
   getGroupSidebar, triggerGroupDiscovery,
   Group, GroupMember, GroupAuditLog, GroupRole,
@@ -144,16 +144,19 @@ function initials(name: string) {
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
-const StatCard: React.FC<{ label: string; value: number | string; icon: React.ReactNode; color: string }> = ({ label, value, icon, color }) => (
-  <Box sx={{ ...dashboardCardSx, flex: 1, minWidth: 140, p: 2.5 }}>
+const StatCard: React.FC<{ label: string; value: number | string; icon: React.ReactNode; color: string; onClick?: () => void }> = ({ label, value, icon, color, onClick }) => (
+  <Box onClick={onClick} sx={{ ...dashboardCardSx, flex: 1, minWidth: 140, p: 2.5,
+    ...(onClick ? { cursor: 'pointer', '&:hover': { borderColor: color, bgcolor: `${color}08`, transform: 'translateY(-1px)', transition: 'all .15s ease' } } : {}),
+  }}>
     <Stack direction="row" alignItems="center" spacing={1.5}>
       <Box sx={{ width: 38, height: 38, borderRadius: 1.5, bgcolor: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         {icon}
       </Box>
-      <Box>
+      <Box sx={{ flex: 1 }}>
         <Typography sx={{ fontFamily: FONT, fontSize: '1.45rem', fontWeight: 800, color: t.textPrimary, lineHeight: 1 }}>{value}</Typography>
         <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: t.textSecondary, mt: 0.2 }}>{label}</Typography>
       </Box>
+      {onClick && <ChevronRightIcon sx={{ fontSize: '.9rem', color: t.textTertiary, opacity: .6, flexShrink: 0 }} />}
     </Stack>
   </Box>
 );
@@ -215,28 +218,30 @@ const OverviewSection: React.FC<{
   bundle: GroupResourceBundle | null;
   environments: ApiEnvironment[];
   workspaces: GroupWorkspaceSummary[];
-}> = ({ group, bundle, environments, workspaces }) => {
+  groupId: string;
+  onNavigate: (section: string) => void;
+}> = ({ group, bundle, environments, workspaces, groupId, onNavigate }) => {
   const enabledResources = Object.entries(group.resources || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, ' '));
   const counts = bundle?.resource_counts ?? {};
 
   return (
     <Stack spacing={2.5}>
-      {/* Top stats row */}
+      {/* Top stats row — each card navigates to its section */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
-        <StatCard label="Members"      value={group.member_count}  icon={<PeopleIcon sx={{ fontSize: '1.1rem' }} />}           color={BP} />
-        <StatCard label="Projects"     value={group.project_count} icon={<FolderOpenIcon sx={{ fontSize: '1.1rem' }} />}        color={sc.info} />
-        <StatCard label="Pipelines"    value={group.pipeline_count} icon={<PlayCircleOutlineIcon sx={{ fontSize: '1.1rem' }} />} color={sc.success} />
-        <StatCard label="Environments" value={counts['environment'] ?? environments.length} icon={<DevicesIcon sx={{ fontSize: '1.1rem' }} />} color="#d97706" />
-        <StatCard label="Workspaces"   value={workspaces.length}   icon={<WorkspacesIcon sx={{ fontSize: '1.1rem' }} />}        color="#7c3aed" />
+        <StatCard label="Members"      value={group.member_count}  icon={<PeopleIcon sx={{ fontSize: '1.1rem' }} />}           color={BP}          onClick={() => onNavigate('access')} />
+        <StatCard label="Projects"     value={group.project_count} icon={<FolderOpenIcon sx={{ fontSize: '1.1rem' }} />}        color={sc.info}     onClick={() => onNavigate('projects')} />
+        <StatCard label="Pipelines"    value={group.pipeline_count} icon={<PlayCircleOutlineIcon sx={{ fontSize: '1.1rem' }} />} color={sc.success}  onClick={() => onNavigate('pipelines')} />
+        <StatCard label="Environments" value={counts['environment'] ?? environments.length} icon={<DevicesIcon sx={{ fontSize: '1.1rem' }} />} color="#d97706" onClick={() => onNavigate('environments')} />
+        <StatCard label="Workspaces"   value={workspaces.length}   icon={<WorkspacesIcon sx={{ fontSize: '1.1rem' }} />}        color="#7c3aed"     onClick={() => onNavigate('workspaces')} />
       </Stack>
 
       {/* Second row */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
-        <StatCard label="Containers"  value={counts['container']   ?? 0} icon={<AppsIcon sx={{ fontSize: '1.1rem' }} />}         color="#0891b2" />
-        <StatCard label="K8s Clusters" value={counts['k8s_cluster'] ?? 0} icon={<CloudQueueIcon sx={{ fontSize: '1.1rem' }} />}  color="#0f766e" />
-        <StatCard label="Deployments" value={counts['deployment']  ?? 0} icon={<RocketLaunchIcon sx={{ fontSize: '1.1rem' }} />} color="#7c3aed" />
-        <StatCard label="Secrets"     value={counts['secret']      ?? 0} icon={<LockIcon sx={{ fontSize: '1.1rem' }} />}         color={sc.danger} />
-        <StatCard label="Config Files" value={bundle?.config_files.length ?? 0} icon={<InsertDriveFileIcon sx={{ fontSize: '1.1rem' }} />} color="#9333ea" />
+        <StatCard label="Containers"   value={counts['container']   ?? 0} icon={<AppsIcon sx={{ fontSize: '1.1rem' }} />}          color="#0891b2" onClick={() => onNavigate('containers')} />
+        <StatCard label="K8s Clusters" value={counts['k8s_cluster'] ?? 0} icon={<CloudQueueIcon sx={{ fontSize: '1.1rem' }} />}    color="#0f766e" onClick={() => onNavigate('kubernetes')} />
+        <StatCard label="Deployments"  value={counts['deployment']  ?? 0} icon={<RocketLaunchIcon sx={{ fontSize: '1.1rem' }} />}  color="#7c3aed" onClick={() => onNavigate('deployments')} />
+        <StatCard label="Secrets"      value={counts['secret']      ?? 0} icon={<LockIcon sx={{ fontSize: '1.1rem' }} />}           color={sc.danger} onClick={() => onNavigate('secrets')} />
+        <StatCard label="Config Files" value={bundle?.config_files.length ?? 0} icon={<InsertDriveFileIcon sx={{ fontSize: '1.1rem' }} />} color="#9333ea" onClick={() => onNavigate('settings')} />
       </Stack>
 
       {/* Group identity card */}
@@ -283,12 +288,19 @@ const OverviewSection: React.FC<{
         </Box>
       )}
 
-      {/* Connected workspaces */}
+      {/* Connected workspaces preview */}
       {workspaces.length > 0 && (
         <Box sx={{ ...dashboardCardSx, p: 2.5 }}>
-          <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 1.5 }}>Connected Workspaces</Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>Connected Workspaces</Typography>
+            <Button size="small" endIcon={<ChevronRightIcon sx={{ fontSize: '.85rem' }} />}
+              onClick={() => onNavigate('workspaces')}
+              sx={{ fontFamily: FONT, textTransform: 'none', fontSize: '.75rem', color: BP, fontWeight: 600, p: 0. }}>
+              View all
+            </Button>
+          </Stack>
           <Stack spacing={1}>
-            {workspaces.slice(0, 5).map((ws) => (
+            {workspaces.slice(0, 4).map((ws) => (
               <Stack key={ws.workspace_id} direction="row" alignItems="center" justifyContent="space-between"
                 sx={{ px: 1.5, py: 1, borderRadius: 1, bgcolor: t.surface, border: `1px solid ${t.border}` }}>
                 <Box>
@@ -305,6 +317,24 @@ const OverviewSection: React.FC<{
           </Stack>
         </Box>
       )}
+
+      {/* Quick Navigate hub — matches Workspace overview style */}
+      <Box sx={{ ...dashboardCardSx, p: 2.5 }}>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.8rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.5 }}>Quick Navigate</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 1 }}>
+          {SIDEBAR_ITEMS.filter(item => item.id !== 'overview').map((item) => (
+            <Box key={item.id} onClick={() => onNavigate(item.id)}
+              sx={{ p: 1.5, borderRadius: '10px', border: `1px solid ${t.border}`, bgcolor: t.surface, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 1.25,
+                '&:hover': { borderColor: BP, bgcolor: `${BP}06`, transform: 'translateY(-1px)', transition: 'all .15s ease' },
+              }}>
+              <Box sx={{ color: t.textTertiary, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{item.icon}</Box>
+              <Typography sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textPrimary, fontWeight: 600 }}>{item.label}</Typography>
+              <ChevronRightIcon sx={{ fontSize: '.8rem', color: t.textTertiary, ml: 'auto', opacity: .6 }} />
+            </Box>
+          ))}
+        </Box>
+      </Box>
     </Stack>
   );
 };
@@ -550,36 +580,117 @@ const LogsSection: React.FC<{ bundle: GroupResourceBundle | null }> = ({ bundle 
 
 // ── Settings section ──────────────────────────────────────────────────────────
 
-const SettingsSection: React.FC<{ group: Group }> = ({ group }) => (
-  <Stack spacing={2.5}>
-    <Box sx={{ ...dashboardCardSx, p: 2.5 }}>
-      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 2 }}>General Settings</Typography>
-      <Stack spacing={1.2}>
-        {[
-          ['Name',       group.name],
-          ['Handle',     `@${group.handle}`],
-          ['Type',       TYPE_LABELS[group.group_type] ?? group.group_type],
-          ['Visibility', group.visibility],
-        ].map(([l, v]) => (
-          <Stack key={l as string} direction="row" spacing={1.5} alignItems="center">
-            <Typography sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, minWidth: 100 }}>{l}</Typography>
-            <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', color: t.textPrimary, fontWeight: 500 }}>{v}</Typography>
+const SettingsSection: React.FC<{ group: Group; groupId: string; onDeleted: () => void }> = ({ group, groupId, onDeleted }) => {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting,     setDeleting]   = useState(false);
+  const [deleteError,  setDeleteError] = useState('');
+
+  const handleDelete = async () => {
+    if (confirmText !== group.name) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteGroup(groupId);
+      onDeleted();
+    } catch (e: any) {
+      setDeleteError(e?.response?.data?.detail ?? e?.message ?? 'Delete failed.');
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <Stack spacing={2.5}>
+      <Box sx={{ ...dashboardCardSx, p: 2.5 }}>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 2 }}>General Settings</Typography>
+        <Stack spacing={1.2}>
+          {[
+            ['Name',       group.name],
+            ['Handle',     `@${group.handle}`],
+            ['Type',       TYPE_LABELS[group.group_type] ?? group.group_type],
+            ['Visibility', group.visibility],
+          ].map(([l, v]) => (
+            <Stack key={l as string} direction="row" spacing={1.5} alignItems="center">
+              <Typography sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, minWidth: 100 }}>{l}</Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', color: t.textPrimary, fontWeight: 500 }}>{v}</Typography>
+            </Stack>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* ── Danger Zone ── */}
+      <Box sx={{ ...dashboardCardSx, p: 2.5, border: `1px solid ${sc.danger}55`, bgcolor: `${sc.danger}04` }}>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+          <WarningAmberIcon sx={{ fontSize: '1rem', color: sc.danger }} />
+          <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: sc.danger }}>Danger Zone</Typography>
+        </Stack>
+        <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', color: t.textSecondary, mb: 2, lineHeight: 1.6 }}>
+          Deleting this group is <strong style={{ color: t.textPrimary }}>irreversible</strong>. All resources, members, and config files
+          associated with <strong style={{ color: t.textPrimary }}>{group.name}</strong> will be permanently removed.
+        </Typography>
+
+        {!confirmOpen ? (
+          <Button variant="outlined" size="small" startIcon={<DeleteIcon sx={{ fontSize: '.9rem' }} />}
+            onClick={() => setConfirmOpen(true)}
+            sx={{ fontFamily: FONT, textTransform: 'none', fontWeight: 600, borderColor: sc.danger, color: sc.danger,
+              '&:hover': { bgcolor: `${sc.danger}10`, borderColor: sc.danger } }}>
+            Delete Group
+          </Button>
+        ) : (
+          <Stack spacing={1.5}>
+            <Box sx={{ p: 1.5, borderRadius: 1, bgcolor: `${sc.danger}0d`, border: `1px solid ${sc.danger}33` }}>
+              <Typography sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, mb: 1, lineHeight: 1.55 }}>
+                To confirm, type the group name exactly:
+              </Typography>
+              <Typography sx={{ fontFamily: 'monospace', fontSize: '.85rem', fontWeight: 700, color: t.textPrimary, mb: 1.25,
+                px: 1, py: 0.5, bgcolor: t.surface, borderRadius: .5, border: `1px solid ${t.border}`, display: 'inline-block' }}>
+                {group.name}
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder={group.name}
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                autoFocus
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    fontFamily: 'monospace', fontSize: '.85rem',
+                    bgcolor: t.surface, color: t.textPrimary,
+                    '& fieldset': { borderColor: confirmText === group.name ? sc.danger : t.border },
+                    '&:hover fieldset': { borderColor: sc.danger },
+                    '&.Mui-focused fieldset': { borderColor: sc.danger },
+                  },
+                }}
+              />
+            </Box>
+
+            {deleteError && (
+              <Alert severity="error" sx={{ fontFamily: FONT, fontSize: '.8rem', py: 0.5 }}>{deleteError}</Alert>
+            )}
+
+            <Stack direction="row" spacing={1}>
+              <Button variant="contained" size="small"
+                disabled={confirmText !== group.name || deleting}
+                startIcon={deleting ? <CircularProgress size={13} sx={{ color: 'inherit' }} /> : <DeleteIcon sx={{ fontSize: '.9rem' }} />}
+                onClick={handleDelete}
+                sx={{ fontFamily: FONT, textTransform: 'none', fontWeight: 700,
+                  bgcolor: sc.danger, '&:hover': { bgcolor: '#b91c1c' },
+                  '&.Mui-disabled': { bgcolor: `${sc.danger}40`, color: '#fff' },
+                  borderRadius: '8px' }}>
+                {deleting ? 'Deleting…' : 'Confirm Delete'}
+              </Button>
+              <Button size="small" onClick={() => { setConfirmOpen(false); setConfirmText(''); setDeleteError(''); }}
+                sx={{ fontFamily: FONT, textTransform: 'none', color: t.textSecondary }}>
+                Cancel
+              </Button>
+            </Stack>
           </Stack>
-        ))}
-      </Stack>
-    </Box>
-    <Box sx={{ ...dashboardCardSx, p: 2.5, border: `1px solid ${sc.danger}44` }}>
-      <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.9rem', color: sc.danger, mb: 1 }}>Danger Zone</Typography>
-      <Typography sx={{ fontFamily: FONT, fontSize: '.83rem', color: t.textSecondary, mb: 2 }}>
-        Deleting this group is irreversible. All resources must be removed first.
-      </Typography>
-      <Button variant="outlined" size="small" startIcon={<DeleteIcon />}
-        sx={{ fontFamily: FONT, textTransform: 'none', borderColor: sc.danger, color: sc.danger, '&:hover': { bgcolor: `${sc.danger}12` } }}>
-        Delete Group
-      </Button>
-    </Box>
-  </Stack>
-);
+        )}
+      </Box>
+    </Stack>
+  );
+};
 
 // ── RIGHT PANEL ───────────────────────────────────────────────────────────────
 
@@ -823,7 +934,7 @@ const GroupDashboardPage: React.FC = () => {
   // ── Render section content ──────────────────────────────────────────────────
   const renderCenter = () => {
     switch (activeSection) {
-      case 'overview':     return <OverviewSection group={group} bundle={bundle} environments={environments} workspaces={workspaces} />;
+      case 'overview':     return <OverviewSection group={group} bundle={bundle} environments={environments} workspaces={workspaces} groupId={groupId!} onNavigate={(s) => navigate(`/groups/${groupId}/${s}`)} />;
       case 'projects':     return <ResourceTable rows={bundle?.projects ?? []} emptyIcon={<FolderOpenIcon />} emptyMsg="No projects linked" />;
       case 'pipelines':    return <ResourceTable rows={bundle?.pipelines ?? []} emptyIcon={<PlayCircleOutlineIcon />} emptyMsg="No pipelines linked" />;
       case 'environments': return <EnvironmentsSection environments={environments} navigate={navigate} />;
@@ -835,7 +946,7 @@ const GroupDashboardPage: React.FC = () => {
       case 'secrets':      return <ResourceTable rows={bundle?.secrets ?? []} emptyIcon={<LockIcon />} emptyMsg="No secrets registered" />;
       case 'env-vars':     return <ResourceTable rows={bundle?.env_vars ?? []} emptyIcon={<LayersIcon />} emptyMsg="No environment variables registered" />;
       case 'access':       return <AccessSection members={members} myRole={group.my_role} groupId={groupId!} onRemoved={handleMemberRemoved} />;
-      case 'settings':     return <SettingsSection group={group} />;
+      case 'settings':     return <SettingsSection group={group} groupId={groupId!} onDeleted={() => navigate('/developer/Dashboard/groups')} />;
       case 'workspaces':   return <WorkspacesSection workspaces={workspaces} navigate={navigate} />;
       case 'audit':        return <AuditSection logs={auditLogs} />;
       default:             return null;
