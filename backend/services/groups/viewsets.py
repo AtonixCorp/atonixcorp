@@ -4,7 +4,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Group, GroupMember, GroupInvitation, GroupAccessToken, GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry
+from .models import (
+    Group, GroupMember, GroupInvitation, GroupAccessToken,
+    GroupAuditLog, GroupResourceRegistry, GroupConfigRegistry,
+    PERMISSION_MATRIX,
+)
 from .serializers import (
     GroupSerializer,
     GroupCreateSerializer,
@@ -34,9 +38,58 @@ def _audit(group, actor, action, target='', detail=None):
     )
 
 
+# ── Permission helpers ────────────────────────────────────────────────────────
+
+def _get_my_role(group: Group, user) -> str | None:
+    """Return the requesting user's role string in this group, or None."""
+    if group.owner_id == user.id:
+        return 'owner'
+    try:
+        return group.memberships.get(user=user).role
+    except GroupMember.DoesNotExist:
+        return None
+
+
+def _build_permission_set(role: str | None) -> dict[str, bool]:
+    """Return a flat permission map for the given role."""
+    return {perm: (role in allowed) for perm, allowed in PERMISSION_MATRIX.items()}
+
+
+class GroupPermissionMixin:
+    """
+    Mixin for any view that needs to gate an action based on the requesting
+    user's role inside a specific group.
+
+    Usage::
+
+        def some_action(self, request, pk=None):
+            group = self.get_object()
+            self._require_group_permission(group, request.user, 'pipeline.run')
+            ...
+    """
+
+    def _require_group_permission(
+        self,
+        group: Group,
+        user,
+        permission: str,
+        *,
+        raise_on_deny: bool = True,
+    ) -> bool:
+        role = _get_my_role(group, user)
+        allowed = PERMISSION_MATRIX.get(permission, frozenset())
+        has_perm = role in allowed
+        if not has_perm and raise_on_deny:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(
+                f"Your role ('{role}') does not have '{permission}' permission."
+            )
+        return has_perm
+
+
 # ── GroupViewSet ──────────────────────────────────────────────────────────────
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(GroupPermissionMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -92,6 +145,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='members/add')
     def add_member(self, request, pk=None):
         group = self.get_object()
+        self._require_group_permission(group, request.user, 'group.manage_members')
         user_id = request.data.get('user_id')
         role = request.data.get('role', 'developer')
         from django.contrib.auth.models import User as DjangoUser
@@ -113,6 +167,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['delete'], url_path='members/(?P<member_id>[^/.]+)')
     def remove_member(self, request, pk=None, member_id=None):
         group = self.get_object()
+        self._require_group_permission(group, request.user, 'group.manage_members')
         try:
             member = group.memberships.get(pk=member_id)
         except GroupMember.DoesNotExist:
@@ -129,6 +184,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'], url_path='members/(?P<member_id>[^/.]+)/role')
     def update_member_role(self, request, pk=None, member_id=None):
         group = self.get_object()
+        self._require_group_permission(group, request.user, 'group.manage_members')
         try:
             member = group.memberships.get(pk=member_id)
         except GroupMember.DoesNotExist:
@@ -189,6 +245,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             invites = group.invitations.filter(status='pending').order_by('-created_at')
             return Response(GroupInvitationSerializer(invites, many=True, context={'request': request}).data)
 
+        self._require_group_permission(group, request.user, 'group.manage_members')
         serializer = GroupInviteCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
@@ -227,6 +284,71 @@ class GroupViewSet(viewsets.ModelViewSet):
         group.save(update_fields=['member_count'])
         _audit(group, request.user.username, 'invite_accepted', invite.email)
         return Response(GroupMemberSerializer(member, context={'request': request}).data)
+
+    # ── /groups/{id}/invitations/{inv_id}/decline/ ────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='invitations/(?P<invite_id>[^/.]+)/decline')
+    def decline_invite(self, request, pk=None, invite_id=None):
+        group = self.get_object()
+        try:
+            invite = group.invitations.get(pk=invite_id, status='pending')
+        except GroupInvitation.DoesNotExist:
+            return Response({'error': 'Invitation not found or already actioned'}, status=404)
+        invite.status = 'declined'
+        invite.save()
+        _audit(group, request.user.username, 'invite_sent', invite.email, {'declined': True})
+        return Response({'status': 'declined'})
+
+    # ── /groups/{id}/invitations/{inv_id}/cancel/ ─────────────────────────────
+
+    @action(detail=True, methods=['delete'], url_path='invitations/(?P<invite_id>[^/.]+)/cancel')
+    def cancel_invite(self, request, pk=None, invite_id=None):
+        """Owner/Admin can cancel a pending invitation."""
+        group = self.get_object()
+        self._require_group_permission(group, request.user, 'group.manage_members')
+        try:
+            invite = group.invitations.get(pk=invite_id, status='pending')
+        except GroupInvitation.DoesNotExist:
+            return Response({'error': 'Invitation not found'}, status=404)
+        invite.status = 'declined'
+        invite.save()
+        _audit(group, request.user.username, 'invite_sent', invite.email, {'cancelled': True})
+        return Response(status=204)
+
+    # ── /groups/{id}/permissions/ ─────────────────────────────────────────────
+
+    @action(detail=True, methods=['get'], url_path='permissions')
+    def permissions_view(self, request, pk=None):
+        """
+        GET /groups/{id}/permissions/
+        Returns:
+          - my_role: the requesting user's role in this group
+          - my_permissions: flat dict { 'action.resource': bool }
+          - role_matrix: full permission matrix for all roles (owner/admin only)
+        """
+        group = self.get_object()
+        role = _get_my_role(group, request.user)
+        my_perms = _build_permission_set(role)
+
+        response: dict = {
+            'group_id':      group.id,
+            'my_role':       role,
+            'my_permissions': my_perms,
+        }
+
+        # Full matrix only for owners / admins
+        if role in ('owner', 'admin'):
+            all_roles = [r[0] for r in [
+                ('owner', ''), ('admin', ''), ('architect', ''),
+                ('devops_engineer', ''), ('developer', ''),
+                ('data_scientist', ''), ('finance', ''), ('viewer', ''),
+            ]]
+            role_matrix = {}
+            for r in all_roles:
+                role_matrix[r] = _build_permission_set(r)
+            response['role_matrix'] = role_matrix
+
+        return Response(response)
 
     # ── /groups/{id}/tokens/ ──────────────────────────────────────────────────
 

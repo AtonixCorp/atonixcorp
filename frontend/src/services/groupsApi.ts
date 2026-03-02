@@ -12,9 +12,43 @@ function unwrap<T>(data: unknown): T[] {
 
 export type GroupVisibility = 'public' | 'internal' | 'private'
 export type GroupType = 'developer' | 'enterprise' | 'system' | 'production' | 'marketing' | 'data' | 'custom'
-export type GroupRole = 'owner' | 'admin' | 'maintainer' | 'developer' | 'viewer'
+export type GroupRole =
+  | 'owner'
+  | 'admin'
+  | 'architect'
+  | 'devops_engineer'
+  | 'developer'
+  | 'data_scientist'
+  | 'finance'
+  | 'viewer'
 export type InviteStatus = 'pending' | 'accepted' | 'declined' | 'expired'
 export type ImportSource = 'github' | 'gitlab' | 'bitbucket' | 'atonix'
+
+// Permission keys mirror the backend PERMISSION_MATRIX
+export type GroupPermissionKey =
+  | 'group.manage_members' | 'group.manage_settings' | 'group.delete' | 'group.transfer'
+  | 'group.view_billing'  | 'group.manage_billing'
+  | 'project.create' | 'project.edit' | 'project.delete' | 'project.view'
+  | 'pipeline.run' | 'pipeline.cancel' | 'pipeline.create' | 'pipeline.edit'
+  | 'pipeline.delete' | 'pipeline.view' | 'pipeline.approve'
+  | 'environment.create' | 'environment.edit' | 'environment.promote'
+  | 'environment.deploy' | 'environment.delete' | 'environment.view'
+  | 'container.build' | 'container.push' | 'container.pull' | 'container.delete' | 'container.view'
+  | 'kubernetes.deploy' | 'kubernetes.scale' | 'kubernetes.restart' | 'kubernetes.delete' | 'kubernetes.view'
+  | 'secret.create' | 'secret.edit' | 'secret.view' | 'secret.delete'
+  | 'env_var.create' | 'env_var.edit' | 'env_var.view' | 'env_var.delete'
+  | 'deployment.trigger' | 'deployment.rollback' | 'deployment.approve' | 'deployment.view'
+  | 'metrics.view' | 'logs.view'
+
+export type GroupPermissionSet = Record<GroupPermissionKey, boolean>
+
+export interface GroupPermissionsResponse {
+  group_id:       string
+  my_role:        GroupRole | null
+  my_permissions: GroupPermissionSet
+  /** Present only for owner / admin */
+  role_matrix?:   Record<GroupRole, GroupPermissionSet>
+}
 
 export type ResourceType =
   | 'project' | 'pipeline' | 'environment' | 'container'
@@ -326,6 +360,21 @@ export async function inviteToGroup(groupId: string, email: string, role: GroupR
 export async function acceptInvitation(groupId: string, inviteId: string): Promise<GroupMember> {
   const { data } = await client.post(`${BASE}/${groupId}/invitations/${inviteId}/accept/`)
   return data
+}
+
+export async function declineInvitation(groupId: string, inviteId: string): Promise<void> {
+  await client.post(`${BASE}/${groupId}/invitations/${inviteId}/decline/`)
+}
+
+export async function cancelInvitation(groupId: string, inviteId: string): Promise<void> {
+  await client.delete(`${BASE}/${groupId}/invitations/${inviteId}/cancel/`)
+}
+
+// ─── Permissions ─────────────────────────────────────────────────────────────
+
+export async function getGroupPermissions(groupId: string): Promise<GroupPermissionsResponse> {
+  const { data } = await client.get(`${BASE}/${groupId}/permissions/`)
+  return data as GroupPermissionsResponse
 }
 
 // ─── Access Tokens ────────────────────────────────────────────────────────────

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'services',
+    'services.groups',
     'services.pipelines',
     'services.containers',
     'services.kubernetes_integration',

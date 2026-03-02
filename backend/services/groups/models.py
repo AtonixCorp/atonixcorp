@@ -42,12 +42,89 @@ GROUP_TYPE_CHOICES = [
 ]
 
 ROLE_CHOICES = [
-    ('owner',      'Owner'),
-    ('admin',      'Admin'),
-    ('maintainer', 'Maintainer'),
-    ('developer',  'Developer'),
-    ('viewer',     'Viewer'),
+    ('owner',           'Owner'),
+    ('admin',           'Admin'),
+    ('architect',       'Architect'),
+    ('devops_engineer', 'DevOps Engineer'),
+    ('developer',       'Developer'),
+    ('data_scientist',  'Data Scientist'),
+    ('finance',         'Finance'),
+    ('viewer',          'Viewer'),
 ]
+
+# ── Permission Matrix ─────────────────────────────────────────────────────────
+# Each permission key maps to a frozenset of roles that hold that permission.
+# This is the single source of truth – consumed by the permission mixin,
+# the /permissions/ API endpoint, and the frontend permission hook.
+
+PERMISSION_MATRIX: dict[str, frozenset[str]] = {
+    # Group administration
+    'group.manage_members':  frozenset({'owner', 'admin'}),
+    'group.manage_settings': frozenset({'owner', 'admin'}),
+    'group.delete':          frozenset({'owner'}),
+    'group.transfer':        frozenset({'owner'}),
+    'group.view_billing':    frozenset({'owner', 'admin', 'finance'}),
+    'group.manage_billing':  frozenset({'owner', 'finance'}),
+
+    # Projects
+    'project.create': frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'project.edit':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'project.delete': frozenset({'owner', 'admin', 'architect'}),
+    'project.view':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'finance', 'viewer'}),
+
+    # Pipelines
+    'pipeline.run':    frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'pipeline.cancel': frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'pipeline.create': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'pipeline.edit':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'pipeline.delete': frozenset({'owner', 'admin', 'architect'}),
+    'pipeline.view':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'viewer'}),
+    'pipeline.approve': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+
+    # Environments
+    'environment.create':  frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'environment.edit':    frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'environment.promote': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'environment.deploy':  frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'environment.delete':  frozenset({'owner', 'admin', 'architect'}),
+    'environment.view':    frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'viewer'}),
+
+    # Containers
+    'container.build':  frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'container.push':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer'}),
+    'container.pull':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist'}),
+    'container.delete': frozenset({'owner', 'admin', 'architect'}),
+    'container.view':   frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'viewer'}),
+
+    # Kubernetes
+    'kubernetes.deploy':  frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'kubernetes.scale':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'kubernetes.restart': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'kubernetes.delete':  frozenset({'owner', 'admin', 'architect'}),
+    'kubernetes.view':    frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'viewer'}),
+
+    # Secrets
+    'secret.create': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'secret.edit':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'secret.view':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'secret.delete': frozenset({'owner', 'admin', 'architect'}),
+
+    # Environment Variables
+    'env_var.create': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'env_var.edit':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'env_var.view':   frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'env_var.delete': frozenset({'owner', 'admin', 'architect'}),
+
+    # Deployments
+    'deployment.trigger':  frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'deployment.rollback': frozenset({'owner', 'admin', 'architect', 'devops_engineer'}),
+    'deployment.approve':  frozenset({'owner', 'admin', 'architect'}),
+    'deployment.view':     frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'viewer'}),
+
+    # Observability
+    'metrics.view': frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'finance', 'viewer'}),
+    'logs.view':    frozenset({'owner', 'admin', 'architect', 'devops_engineer', 'developer', 'data_scientist', 'viewer'}),
+}
 
 INVITE_STATUS_CHOICES = [
     ('pending',  'Pending'),
