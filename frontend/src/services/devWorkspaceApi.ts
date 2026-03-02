@@ -128,30 +128,43 @@ export interface WorkspaceSetupPayload {
 }
 
 export interface CreateDevWorkspacePayload {
-  // Basics
+  // Step 1 — Basics
   workspace_id: string
   display_name: string
+  description?: string
   region?: string
+  zone?: string
   image?: string
   ide?: string
-  // Compute plan
+  // Step 2 — Compute
   vcpus?: number
   ram_gb?: number
   gpu_enabled?: boolean
-  // Storage plan
+  gpu_model?: string
+  // Step 3 — Storage
   storage_type?: StorageType
   storage_gb?: number
   backup_policy?: BackupPolicy
-  // Network plan
+  // Step 4 — Network
   vpc_name?: string
   subnet_name?: string
   firewall_profile?: FirewallProfile
   public_ip?: boolean
-  // Container runtime
+  // Step 5 — Project & Container
+  project_action?: 'create' | 'connect' | 'skip'
+  project_name?: string
+  project_id?: string
   container_runtime?: ContainerRuntime
   container_template?: string
-  // Domain
+  // Step 6 — Environment
+  environment_action?: 'create' | 'connect' | 'skip'
+  environment_name?: string
+  environment_type?: 'dev' | 'stage' | 'prod'
+  environment_id?: string
+  // Step 7 — Domain
   domain?: string
+  auto_subdomain?: boolean
+  subdomain_prefix?: string
 }
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
