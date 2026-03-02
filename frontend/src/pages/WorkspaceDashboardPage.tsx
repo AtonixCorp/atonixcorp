@@ -71,6 +71,8 @@ import {
   type GroupVisibility,
   type GroupSidebarData,
 } from '../services/groupsApi';
+import { useGroupPermissions } from '../hooks/useGroupPermissions';
+import { PermissionGate } from '../components/PermissionGate';
 import {
   listClusters, createCluster,
   K8S_VERSIONS, CLUSTER_REGIONS,
@@ -1105,10 +1107,13 @@ const WorkspaceDashboardPage: React.FC = () => {
 
   // ── Derived UI values ──────────────────────────────────────────────────────
   const cfg       = STATUS_CFG[ws?.status ?? 'stopped'] ?? STATUS_CFG.stopped;
-  const isRunning = ws?.status === 'running';
-  const canStart  = ws?.status === 'stopped' || ws?.status === 'error';
-  const canStop   = ws?.status === 'running' || ws?.status === 'starting';
+  const isRunning  = ws?.status === 'running';
+  const canStart   = (ws?.status === 'stopped' || ws?.status === 'error');
+  const canStop    = (ws?.status === 'running' || ws?.status === 'starting');
   const canRestart = isRunning;
+
+  // ── Group permission gate ─────────────────────────────────────────────────
+  const { can } = useGroupPermissions(ws?.connected_group_id ?? undefined);
 
   if (loading) {
     return (
@@ -1238,7 +1243,7 @@ const WorkspaceDashboardPage: React.FC = () => {
               <Typography sx={{ color: t.textSecondary, fontSize: '.875rem', textAlign: 'center', maxWidth: 360 }}>
                 Start the workspace to launch the browser-based VS Code IDE.
               </Typography>
-              {canStart && (
+              {canStart && can('project.edit') && (
                 <Button variant="contained" startIcon={actionBusy ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : <PlayArrowIcon />}
                   onClick={handleStart} disabled={actionBusy}
                   sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '10px' }}>
@@ -1546,7 +1551,7 @@ const WorkspaceDashboardPage: React.FC = () => {
               sx={{ mb: 3, '& .MuiInputBase-root': { bgcolor: t.surfaceSubtle, color: t.textPrimary, fontFamily: 'monospace' } }} />
 
             <Button variant="contained" startIcon={settingsBusy ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : <SaveIcon sx={{ fontSize: '1rem' }} />}
-              onClick={handleSaveSettings} disabled={settingsBusy}
+              onClick={handleSaveSettings} disabled={settingsBusy || !can('group.manage_settings')}
               sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px', mb: 5 }}>
               Save Changes
             </Button>
@@ -1558,7 +1563,7 @@ const WorkspaceDashboardPage: React.FC = () => {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Button variant="outlined" size="small" startIcon={<DeleteOutlineIcon sx={{ fontSize: '.9rem' }} />}
-                  onClick={handleDeleteWorkspace}
+                  onClick={handleDeleteWorkspace} disabled={!can('group.manage_settings')}
                   sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: dashboardSemanticColors.danger, color: dashboardSemanticColors.danger, '&:hover': { bgcolor: `${dashboardSemanticColors.danger}12` } }}>
                   {confirmDelete ? 'Confirm Delete?' : 'Delete Workspace'}
                 </Button>
@@ -1606,14 +1611,14 @@ const WorkspaceDashboardPage: React.FC = () => {
           <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2.5 }}>Runtime tools available in this workspace.</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 1.5 }}>
             {[
-              { name: 'Git',      version: '2.42.0',  icon: '🔀', status: 'ok' },
-              { name: 'Node.js',  version: '20.11.1', icon: '🟢', status: 'ok' },
-              { name: 'npm',      version: '10.2.4',  icon: '📦', status: 'ok' },
-              { name: 'Python 3', version: '3.11.7',  icon: '🐍', status: 'ok' },
-              { name: 'Docker',   version: '25.0.3',  icon: '🐳', status: 'ok' },
-              { name: 'kubectl',  version: '1.29.1',  icon: '☸️',  status: 'ok' },
-              { name: 'Terraform',version: '1.7.3',   icon: '🏗️', status: 'ok' },
-              { name: 'Go',       version: '1.22.0',  icon: '🐹', status: 'ok' },
+              { name: 'Git',      version: '2.42.0',  icon: '', status: 'ok' },
+              { name: 'Node.js',  version: '20.11.1', icon: '[node]', status: 'ok' },
+              { name: 'npm',      version: '10.2.4',  icon: '[npm]', status: 'ok' },
+              { name: 'Python 3', version: '3.11.7',  icon: '', status: 'ok' },
+              { name: 'Docker',   version: '25.0.3',  icon: '', status: 'ok' },
+              { name: 'kubectl',  version: '1.29.1',  icon: '[k8s]',  status: 'ok' },
+              { name: 'Terraform',version: '1.7.3',   icon: '[tf]', status: 'ok' },
+              { name: 'Go',       version: '1.22.0',  icon: '', status: 'ok' },
             ].map((tool) => (
               <Box key={tool.name} sx={{ p: 2, borderRadius: '10px', border: `1px solid ${t.border}`, bgcolor: t.surface, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography sx={{ fontSize: '1.4rem' }}>{tool.icon}</Typography>
@@ -2152,7 +2157,7 @@ const WorkspaceDashboardPage: React.FC = () => {
                     sx={{ textTransform: 'none', borderColor: t.border, color: t.textSecondary, borderRadius: '8px' }}>
                     Cancel
                   </Button>
-                  <Button size="small" variant="contained" onClick={handleCreateK8sCluster} disabled={k8sBusy}
+                  <Button size="small" variant="contained" onClick={handleCreateK8sCluster} disabled={k8sBusy || !can('kubernetes.deploy')}
                     startIcon={k8sBusy ? <CircularProgress size={13} sx={{ color: 'inherit' }} /> : <CloudIcon sx={{ fontSize: '.9rem' }} />}
                     sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
                     {k8sBusy ? 'Creating…' : 'Create Cluster'}
@@ -2425,7 +2430,7 @@ const WorkspaceDashboardPage: React.FC = () => {
                     sx={{ textTransform: 'none', borderColor: t.border, color: t.textSecondary, borderRadius: '8px' }}>
                     Cancel
                   </Button>
-                  <Button size="small" variant="contained" onClick={handleCreateEnvironment} disabled={envBusy}
+                  <Button size="small" variant="contained" onClick={handleCreateEnvironment} disabled={envBusy || !can('environment.create')}
                     startIcon={envBusy ? <CircularProgress size={13} sx={{ color: 'inherit' }} /> : <DnsIcon sx={{ fontSize: '.9rem' }} />}
                     sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
                     {envBusy ? 'Creating…' : 'Create Environment'}
@@ -2621,21 +2626,21 @@ const WorkspaceDashboardPage: React.FC = () => {
 
         {/* Start / Stop / Restart */}
         <Stack direction="row" spacing={0.75} sx={{ ml: 1 }}>
-          {canStart && (
+          {canStart && can('project.edit') && (
             <Button size="small" variant="contained" startIcon={actionBusy ? <CircularProgress size={12} sx={{ color: '#fff' }} /> : <PlayArrowIcon sx={{ fontSize: '.9rem' }} />}
               onClick={handleStart} disabled={actionBusy}
               sx={{ textTransform: 'none', fontWeight: 700, bgcolor: dashboardSemanticColors.success, '&:hover': { bgcolor: '#16a34a' }, borderRadius: '8px', fontSize: '.75rem', py: 0.4 }}>
               Start
             </Button>
           )}
-          {canStop && (
+          {canStop && can('project.edit') && (
             <Button size="small" variant="outlined" startIcon={actionBusy ? <CircularProgress size={12} /> : <StopIcon sx={{ fontSize: '.9rem' }} />}
               onClick={handleStop} disabled={actionBusy}
               sx={{ textTransform: 'none', fontWeight: 700, borderColor: dashboardSemanticColors.warning, color: dashboardSemanticColors.warning, borderRadius: '8px', fontSize: '.75rem', py: 0.4, '&:hover': { bgcolor: 'rgba(251,191,36,.1)' } }}>
               Stop
             </Button>
           )}
-          {canRestart && (
+          {canRestart && can('project.edit') && (
             <Button size="small" variant="outlined" startIcon={actionBusy ? <CircularProgress size={12} /> : <RefreshIcon sx={{ fontSize: '.9rem' }} />}
               onClick={handleRestart} disabled={actionBusy}
               sx={{ textTransform: 'none', fontWeight: 700, borderColor: t.border, color: t.textSecondary, borderRadius: '8px', fontSize: '.75rem', py: 0.4, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>

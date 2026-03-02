@@ -194,11 +194,11 @@ backend/
 ### Golden rule for view code
 
 ```python
-# ✅ CORRECT — workspace-scoped connection
+# [YES] CORRECT — workspace-scoped connection
 binding = WorkspaceService.resolve(workspace_id, environment)
 conn    = WorkspaceService.get_connection(binding)
 
-# ❌ WRONG — ignores workspace isolation
+# [NO] WRONG — ignores workspace isolation
 from infrastructure.openstack_conn import get_connection
 conn = get_connection()
 ```
@@ -339,11 +339,11 @@ Authentication: `Authorization: Token <token>`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `workspace_id` | string | ✅ | Workspace slug |
-| `environment_id` | string | ✅ | `dev` / `staging` / `prod` |
-| `name` | string | ✅ | Server name |
-| `flavor_id` | string | ✅ | OpenStack flavor UUID |
-| `image_id` | string | ✅ | OpenStack image UUID |
+| `workspace_id` | string | [YES] | Workspace slug |
+| `environment_id` | string | [YES] | `dev` / `staging` / `prod` |
+| `name` | string | [YES] | Server name |
+| `flavor_id` | string | [YES] | OpenStack flavor UUID |
+| `image_id` | string | [YES] | OpenStack image UUID |
 | `network_id` | string | — | Attach to network |
 | `key_name` | string | — | SSH keypair name |
 | `user_data` | string | — | cloud-init script |
@@ -352,19 +352,19 @@ Authentication: `Authorization: Token <token>`
 
 | Field | Type | Required |
 |---|---|---|
-| `workspace_id` | string | ✅ |
-| `environment_id` | string | ✅ |
-| `name` | string | ✅ |
-| `size_gb` | integer | ✅ |
+| `workspace_id` | string | [YES] |
+| `environment_id` | string | [YES] |
+| `name` | string | [YES] |
+| `size_gb` | integer | [YES] |
 | `volume_type` | string | — |
 
 ### POST `/api/services/provision/network/`
 
 | Field | Type | Required |
 |---|---|---|
-| `workspace_id` | string | ✅ |
-| `environment_id` | string | ✅ |
-| `name` | string | ✅ |
+| `workspace_id` | string | [YES] |
+| `environment_id` | string | [YES] |
+| `name` | string | [YES] |
 | `subnet_cidr` | string | — |
 | `subnet_name` | string | — |
 
@@ -372,11 +372,11 @@ Authentication: `Authorization: Token <token>`
 
 | Field | Type | Required |
 |---|---|---|
-| `workspace_id` | string | ✅ |
-| `environment_id` | string | ✅ |
-| `name` | string | ✅ |
-| `cluster_template_id` | string | ✅ |
-| `node_count` | integer | ✅ |
+| `workspace_id` | string | [YES] |
+| `environment_id` | string | [YES] |
+| `name` | string | [YES] |
+| `cluster_template_id` | string | [YES] |
+| `node_count` | integer | [YES] |
 | `master_count` | integer | — |
 | `keypair` | string | — |
 
@@ -384,8 +384,8 @@ Authentication: `Authorization: Token <token>`
 
 | Field | Type | Required |
 |---|---|---|
-| `workspace_id` | string | ✅ |
-| `environment_id` | string | ✅ |
+| `workspace_id` | string | [YES] |
+| `environment_id` | string | [YES] |
 | `network_name` | string | — | Default: `"public"` |
 | `server_id` | string | — | Auto-associate |
 | `port_id` | string | — | Associate with port |
@@ -394,7 +394,7 @@ Authentication: `Authorization: Token <token>`
 
 | Query param | Required |
 |---|---|
-| `workspace_id` | ✅ |
+| `workspace_id` | [YES] |
 | `environment_id` | — |
 
 ### GET `/api/services/workspaces/`

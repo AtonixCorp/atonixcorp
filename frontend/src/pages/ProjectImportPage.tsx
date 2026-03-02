@@ -394,7 +394,7 @@ const ProjectImportPage: React.FC = () => {
               <Divider sx={{ borderColor: t.border, my: 3 }} />
 
               <Typography sx={{ color: t.textTertiary, fontSize: '.78rem' }}>
-                🔒 Your token is used only for this session and is never stored on our servers.
+                [Secure] Your token is used only for this session and is never stored on our servers.
               </Typography>
             </CardContent>
           </Card>

@@ -93,16 +93,16 @@ const VISIBILITY_COLORS: Record<string, string> = {
 };
 
 const CONFIG_TYPE_ICONS: Record<string, string> = {
-  dockerfile:    '🐋',
-  pipeline_yaml: '⚙️',
-  k8s_manifest:  '☸️',
-  helm_chart:    '⛵',
-  terraform:     '🏗️',
-  env_template:  '📄',
-  buildpack:     '📦',
-  ansible:       '🤖',
-  compose:       '🐙',
-  config_generic:'📝',
+  dockerfile:    'docker',
+  pipeline_yaml: 'ci',
+  k8s_manifest:  'k8s',
+  helm_chart:    'helm',
+  terraform:     'tf',
+  env_template:  'file',
+  buildpack:     'pkg',
+  ansible:       'bot',
+  compose:       'compose',
+  config_generic:'cfg',
 };
 
 // ── Sidebar section definitions ────────────────────────────────────────────────
@@ -939,7 +939,7 @@ const RightPanel: React.FC<{
             {configFiles.slice(0, 8).map((cf) => (
               <Stack key={cf.id} direction="row" alignItems="center" spacing={1}
                 sx={{ px: 1, py: 0.6, borderRadius: 1, bgcolor: t.surface, border: `1px solid ${t.border}`, '&:hover': { borderColor: BP } }}>
-                <Typography sx={{ fontSize: '.9rem' }}>{CONFIG_TYPE_ICONS[cf.file_type] ?? '📄'}</Typography>
+                <Typography sx={{ fontSize: '.9rem' }}>{CONFIG_TYPE_ICONS[cf.file_type] ?? 'file'}</Typography>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontFamily: FONT, fontSize: '.76rem', fontWeight: 600, color: t.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {cf.file_name}

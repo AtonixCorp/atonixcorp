@@ -1380,7 +1380,7 @@ const EnvironmentDetailPage: React.FC = () => {
           )}
           <Box sx={{ flex: 1 }} />
           <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: t.textTertiary }}>
-            {env.region && `📍 ${env.region}`}
+            {env.region && ` ${env.region}`}
           </Typography>
           <Tooltip title="Refresh">
             <IconButton size="small" onClick={load} sx={{ color: t.textSecondary }}>
