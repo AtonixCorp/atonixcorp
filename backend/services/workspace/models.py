@@ -176,6 +176,27 @@ class DevWorkspace(models.Model):
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
 
+    # ── Unified setup connections ─────────────────────────────────────────────
+    # Stores IDs / slugs of resources attached via the Setup Wizard.
+    # Kept as plain char fields for portability (no hard FK across apps).
+    connected_project_id   = models.CharField(max_length=64, blank=True, default='',
+        help_text='Project ID / key connected to this workspace.')
+    connected_project_name = models.CharField(max_length=200, blank=True, default='')
+    connected_env_id       = models.CharField(max_length=64, blank=True, default='',
+        help_text='Environment ID connected to this workspace.')
+    connected_env_name     = models.CharField(max_length=200, blank=True, default='')
+    connected_group_id     = models.CharField(max_length=64, blank=True, default='')
+    connected_group_name   = models.CharField(max_length=200, blank=True, default='')
+    connected_container_ids = models.JSONField(default=list, blank=True,
+        help_text='List of container IDs attached to this workspace.')
+    # Pipeline tracking (populated when a pipeline is triggered from this workspace)
+    pipeline_last_run      = models.DateTimeField(null=True, blank=True)
+    pipeline_last_success  = models.DateTimeField(null=True, blank=True)
+    pipeline_last_failure  = models.DateTimeField(null=True, blank=True)
+    pipeline_last_status   = models.CharField(max_length=32, blank=True, default='')
+    # Flexible extra metadata supplied by setup wizard
+    setup_metadata         = models.JSONField(default=dict, blank=True)
+
     class Meta:
         ordering = ['-created_at']
 

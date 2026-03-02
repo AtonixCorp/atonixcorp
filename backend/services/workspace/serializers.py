@@ -55,11 +55,21 @@ class DevWorkspaceSerializer(serializers.ModelSerializer):
             'status', 'region', 'image', 'ide', 'editor_url',
             'cpu_percent', 'ram_percent', 'containers', 'volumes',
             'terminal_ws_url', 'started_at', 'created_at', 'updated_at',
+            # Setup-wizard connections
+            'connected_project_id', 'connected_project_name',
+            'connected_env_id', 'connected_env_name',
+            'connected_group_id', 'connected_group_name',
+            'connected_container_ids',
+            'pipeline_last_run', 'pipeline_last_success',
+            'pipeline_last_failure', 'pipeline_last_status',
+            'setup_metadata',
         ]
         read_only_fields = [
             'id', 'owner', 'status', 'editor_url',
             'cpu_percent', 'ram_percent', 'containers', 'volumes',
             'terminal_ws_url', 'started_at', 'created_at', 'updated_at',
+            'pipeline_last_run', 'pipeline_last_success',
+            'pipeline_last_failure',
         ]
 
 
@@ -69,3 +79,69 @@ class DevWorkspaceCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DevWorkspace
         fields = ['workspace_id', 'display_name', 'region', 'image', 'ide']
+
+
+class WorkspaceSetupSerializer(serializers.Serializer):
+    """
+    Accepts the full unified-setup payload from the wizard.
+
+    Each section is optional — clients only submit what the user filled in.
+    """
+
+    # ── Project ──────────────────────────────────────────────────────────────
+    project_action        = serializers.ChoiceField(
+        choices=['create', 'connect', 'skip'], default='skip')
+    project_name          = serializers.CharField(max_length=200,  required=False, allow_blank=True)
+    project_description   = serializers.CharField(max_length=2000, required=False, allow_blank=True)
+    project_repo_option   = serializers.ChoiceField(
+        choices=['empty', 'github', 'gitlab', 'bitbucket'], default='empty', required=False)
+    project_repo_url      = serializers.URLField(required=False, allow_blank=True)
+    project_auto_cicd     = serializers.BooleanField(default=False, required=False)
+    project_id            = serializers.CharField(max_length=64,  required=False, allow_blank=True,
+        help_text='ID of an existing project to connect.')
+    project_auto_sync     = serializers.BooleanField(default=False, required=False)
+    project_auto_pipeline = serializers.BooleanField(default=False, required=False)
+
+    # ── Container ────────────────────────────────────────────────────────────
+    container_action       = serializers.ChoiceField(
+        choices=['create', 'connect', 'skip'], default='skip')
+    container_name         = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    container_type         = serializers.ChoiceField(
+        choices=['app', 'worker', 'cron', 'api', 'custom'], default='app', required=False)
+    container_runtime_size = serializers.ChoiceField(
+        choices=['s', 'm', 'l', 'xl'], default='m', required=False)
+    container_scaling_mode = serializers.ChoiceField(
+        choices=['manual', 'auto'], default='manual', required=False)
+    container_attach_project  = serializers.BooleanField(default=False, required=False)
+    container_connect_repo    = serializers.BooleanField(default=False, required=False)
+    container_connect_pipeline= serializers.BooleanField(default=False, required=False)
+    container_id           = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    container_attach_env      = serializers.BooleanField(default=False, required=False)
+
+    # ── Environment ──────────────────────────────────────────────────────────
+    environment_action     = serializers.ChoiceField(
+        choices=['create', 'connect', 'skip'], default='skip')
+    environment_name       = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    environment_type       = serializers.ChoiceField(
+        choices=['dev', 'stage', 'prod'], default='dev', required=False)
+    environment_region     = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    environment_auto_deploy= serializers.BooleanField(default=False, required=False)
+    environment_id         = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    environment_sync_vars  = serializers.BooleanField(default=False, required=False)
+    environment_sync_secrets = serializers.BooleanField(default=False, required=False)
+
+    # ── Group ────────────────────────────────────────────────────────────────
+    group_action           = serializers.ChoiceField(
+        choices=['create', 'connect', 'skip'], default='skip')
+    group_name             = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    group_description      = serializers.CharField(max_length=2000, required=False, allow_blank=True)
+    group_members          = serializers.ListField(
+        child=serializers.CharField(), required=False, default=list)
+    group_id               = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    group_role             = serializers.ChoiceField(
+        choices=['owner', 'maintainer', 'developer', 'viewer'],
+        default='developer', required=False)
+
+    # ── Pipeline ─────────────────────────────────────────────────────────────
+    pipeline_id            = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    pipeline_auto_trigger  = serializers.BooleanField(default=False, required=False)

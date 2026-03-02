@@ -6,10 +6,14 @@ import {
   Alert, Avatar, Box, Button, Chip, CircularProgress,
   Dialog, DialogContent, DialogTitle,
   Divider, IconButton, LinearProgress, List, ListItemButton, ListItemText,
-  Snackbar, Stack, TextField, Tooltip, Typography,
+  MenuItem, Snackbar, Stack, TextField, Tooltip, Typography,
 } from '@mui/material';
 import AccountTreeIcon         from '@mui/icons-material/AccountTree';
 import AddIcon                from '@mui/icons-material/Add';
+import AppsIcon               from '@mui/icons-material/Apps';
+import CloudIcon              from '@mui/icons-material/Cloud';
+import DnsIcon                from '@mui/icons-material/Dns';
+import GroupsIcon             from '@mui/icons-material/Groups';
 import ArrowBackIcon          from '@mui/icons-material/ArrowBack';
 import ArticleIcon            from '@mui/icons-material/Article';
 import BarChartIcon           from '@mui/icons-material/BarChart';
@@ -49,11 +53,19 @@ import {
   restartDevWorkspace, deleteDevWorkspace, updateDevWorkspace,
   type DevWorkspace,
 } from '../services/devWorkspaceApi';
+import WorkspaceSetupWizard, { type WorkspaceSetupWizardResult } from '../components/Workspace/WorkspaceSetupWizard';
 import {
   listProjects, listProjectRepos,
   type BackendProject, type BackendRepository,
 } from '../services/projectsApi';
-import { listEnvironments, type ApiEnvironment } from '../services/environmentsApi';
+import {
+  listEnvironments, createEnvironment,
+  type ApiEnvironment, type CreateEnvironmentPayload,
+} from '../services/environmentsApi';
+import {
+  listGroups, createGroup,
+  type Group,
+} from '../services/groupsApi';
 
 const FONT = dashboardTokens.typography.fontFamily;
 const t    = dashboardTokens.colors;
@@ -64,6 +76,8 @@ type Section =
   | 'deployments' | 'metrics' | 'logs' | 'secrets'
   | 'env-vars' | 'settings'
   | 'sessions' | 'tools'
+  | 'containers' | 'kubernetes' | 'groups' | 'environments' | 'projects'
+  | 'workspace-setup'
   | 'connect-project' | 'connect-env' | 'trigger-pipeline';
 
 const SIDEBAR_ITEMS: { id: Section; label: string; icon: React.ReactNode; dividerBefore?: boolean }[] = [
@@ -72,7 +86,12 @@ const SIDEBAR_ITEMS: { id: Section; label: string; icon: React.ReactNode; divide
   { id: 'terminal',          label: 'Terminal',            icon: <TerminalIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'sessions',          label: 'Sessions',            icon: <DevicesIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'tools',             label: 'Tools',               icon: <TuneIcon sx={{ fontSize: '1.1rem' }} /> },
-  { id: 'pipelines',         label: 'Pipelines',           icon: <PlayCircleOutlineIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'projects',          label: 'Projects',            icon: <FolderOpenIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'pipelines',         label: 'CI/CD Pipelines',     icon: <PlayCircleOutlineIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'containers',        label: 'Containers',          icon: <AppsIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'kubernetes',        label: 'Kubernetes',          icon: <CloudIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'environments',      label: 'Environments',        icon: <DnsIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'groups',            label: 'Groups',              icon: <GroupsIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'deployments',       label: 'Deployments',         icon: <RocketLaunchIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'metrics',           label: 'Metrics',             icon: <BarChartIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'logs',              label: 'Logs',                icon: <ArticleIcon sx={{ fontSize: '1.1rem' }} /> },
@@ -80,7 +99,8 @@ const SIDEBAR_ITEMS: { id: Section; label: string; icon: React.ReactNode; divide
   { id: 'env-vars',          label: 'Environment Vars',    icon: <LayersIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'settings',          label: 'Settings',            icon: <SettingsIcon sx={{ fontSize: '1.1rem' }} /> },
   // ── Integration flow ────────────────────────────────────────────────────
-  { id: 'connect-project',   label: 'Connect Project',     icon: <AccountTreeIcon sx={{ fontSize: '1.1rem' }} />, dividerBefore: true },
+  { id: 'workspace-setup',   label: 'Workspace Setup',     icon: <TuneIcon sx={{ fontSize: '1.1rem' }} />, dividerBefore: true },
+  { id: 'connect-project',   label: 'Connect Project',     icon: <AccountTreeIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'connect-env',       label: 'Connect Environment', icon: <LinkIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'trigger-pipeline',  label: 'Trigger Pipeline',    icon: <ViewTimelineIcon sx={{ fontSize: '1.1rem' }} /> },
 ];
@@ -785,6 +805,44 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [projectModalOpen, setProjectModalOpen]   = useState(false);
   const [envModalOpen, setEnvModalOpen]           = useState(false);
   const [pipelineModalOpen, setPipelineModalOpen] = useState(false);
+  const [setupWizardOpen, setSetupWizardOpen]     = useState(false);
+
+  // ── Kubernetes create form state ──────────────────────────────────────
+  const [k8sView, setK8sView]                     = useState<'list' | 'create'>('list');
+  const [k8sName, setK8sName]                     = useState('');
+  const [k8sProvider, setK8sProvider]             = useState<'atonix' | 'aws' | 'gcp' | 'azure' | 'bare-metal'>('atonix');
+  const [k8sRegion, setK8sRegion]                 = useState('us-east-1');
+  const [k8sVersion, setK8sVersion]               = useState('1.29');
+  const [k8sNodeCount, setK8sNodeCount]           = useState('3');
+  const [k8sNodeSize, setK8sNodeSize]             = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
+  const [k8sNamespace, setK8sNamespace]           = useState('');
+  const [k8sBusy, setK8sBusy]                     = useState(false);
+  const [k8sClusters, setK8sClusters]             = useState<{ name: string; provider: string; region: string; nodes: string; status: string; version: string }[]>([
+    { name: 'atonix-prod',    provider: 'atonix',  region: 'us-east-1',    nodes: '3/3',  status: 'healthy', version: 'v1.29' },
+    { name: 'atonix-staging', provider: 'atonix',  region: 'eu-west-1',    nodes: '2/2',  status: 'healthy', version: 'v1.28' },
+  ]);
+
+  // ── Groups create form state ──────────────────────────────────────────
+  const [groupsView, setGroupsView]               = useState<'list' | 'create'>('list');
+  const [grpName, setGrpName]                     = useState('');
+  const [grpDescription, setGrpDescription]       = useState('');
+  const [grpVisibility, setGrpVisibility]         = useState<'private' | 'internal' | 'public'>('private');
+  const [grpType, setGrpType]                     = useState<'developer' | 'production' | 'marketing' | 'data' | 'custom'>('developer');
+  const [grpMembers, setGrpMembers]               = useState('');
+  const [grpBusy, setGrpBusy]                     = useState(false);
+  const [groupsList, setGroupsList]               = useState<Group[]>([]);
+  const [groupsLoaded, setGroupsLoaded]           = useState(false);
+
+  // ── Environments create form state ────────────────────────────────────
+  const [envsView, setEnvsView]                   = useState<'list' | 'create'>('list');
+  const [envName, setEnvName]                     = useState('');
+  const [envType, setEnvType]                     = useState<'dev' | 'stage' | 'prod'>('dev');
+  const [envRegion, setEnvRegion]                 = useState('us-east-1');
+  const [envAutoDeploy, setEnvAutoDeploy]         = useState(true);
+  const [envApproval, setEnvApproval]             = useState(false);
+  const [envBusy, setEnvBusy]                     = useState(false);
+  const [envsList, setEnvsList]                   = useState<ApiEnvironment[]>([]);
+  const [envsLoaded, setEnvsLoaded]               = useState(false);
 
   // ── Integration action handlers ────────────────────────────────────────────
   const handleConnectProject = (p: BackendProject) => {
@@ -824,6 +882,96 @@ const WorkspaceDashboardPage: React.FC = () => {
         navigate('/developer/Dashboard/cicd');
       }
     }, 1600);
+  };
+
+  const handleSetupCompleted = (updated: DevWorkspace, result: WorkspaceSetupWizardResult) => {
+    setWs(updated);
+    if (result.project) {
+      setConnectedProject(result.project);
+      lsSet('project', result.project);
+    }
+    if (result.environment) {
+      setConnectedEnv(result.environment);
+      lsSet('env', result.environment);
+    }
+    if (result.pipeline) {
+      setActivePipeline(result.pipeline);
+      lsSet('pipeline', result.pipeline);
+    }
+    setSection('overview');
+    setRightOpen(true);
+    setToast('Workspace setup completed.');
+  };
+
+  // ── slugify helper ─────────────────────────────────────────────────────
+  const slugify = (v: string) => v.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
+
+  // ── create handlers ───────────────────────────────────────────────────
+  const handleCreateK8sCluster = async () => {
+    if (!k8sName.trim()) { setToast('Cluster name is required.'); return; }
+    setK8sBusy(true);
+    try {
+      // Optimistic add — real projects would call a k8s cluster API
+      await new Promise<void>((r) => setTimeout(r, 900));
+      setK8sClusters((prev) => [...prev, {
+        name: k8sName.trim(),
+        provider: k8sProvider,
+        region: k8sRegion,
+        nodes: `0/${k8sNodeCount}`,
+        status: 'provisioning',
+        version: `v${k8sVersion}`,
+      }]);
+      setToast(`Cluster "${k8sName.trim()}" provisioning started.`);
+      setK8sName(''); setK8sNamespace(''); setK8sView('list');
+    } catch { setToast('Failed to create cluster.'); }
+    finally { setK8sBusy(false); }
+  };
+
+  const handleCreateGroup = async () => {
+    if (!grpName.trim()) { setToast('Group name is required.'); return; }
+    setGrpBusy(true);
+    try {
+      const g = await createGroup({
+        name: grpName.trim(),
+        handle: slugify(grpName),
+        description: grpDescription.trim(),
+        visibility: grpVisibility,
+        group_type: grpType,
+      });
+      setGroupsList((prev) => [g, ...prev]);
+      setToast(`Group "${g.name}" created.`);
+      setGrpName(''); setGrpDescription(''); setGroupsView('list');
+    } catch { setToast('Failed to create group.'); }
+    finally { setGrpBusy(false); }
+  };
+
+  const handleCreateEnvironment = async () => {
+    if (!envName.trim()) { setToast('Environment name is required.'); return; }
+    if (!connectedProject) { setToast('Connect a project first before creating an environment.'); return; }
+    setEnvBusy(true);
+    try {
+      const payload: CreateEnvironmentPayload = {
+        name: envName.trim(),
+        region: envRegion.trim() || 'us-east-1',
+        description: `${envType.toUpperCase()} environment`,
+        project: connectedProject.id,
+        auto_deploy: envAutoDeploy,
+        deployment_strategy: 'rolling',
+        require_approval: envApproval,
+        is_protected: envType === 'prod',
+        notify_email: '',
+      };
+      const created = await createEnvironment(payload);
+      setEnvsList((prev) => [created, ...prev]);
+      setToast(`Environment "${created.name}" created.`);
+      const asConnected: ConnectedEnv = {
+        id: String(created.id), name: created.name, health: 'healthy',
+        version: '—', lastDeploy: '—', errorRate: '—',
+      };
+      setConnectedEnv(asConnected); lsSet('env', asConnected);
+      setEnvName(''); setEnvsView('list');
+    } catch { setToast('Failed to create environment.'); }
+    finally { setEnvBusy(false); }
   };
 
   const openPipelineModal = () => {
@@ -1622,6 +1770,442 @@ const WorkspaceDashboardPage: React.FC = () => {
         </Box>
       );
 
+      // ── Projects ──────────────────────────────────────────────────────────
+      case 'projects': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Projects</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Projects connected to this workspace.</Typography>
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" size="small" endIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
+                onClick={() => navigate('/developer/Dashboard/projects')}
+                sx={{ textTransform: 'none', borderColor: t.border, color: t.textSecondary, borderRadius: '8px', fontWeight: 600 }}>
+                All Projects
+              </Button>
+              <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+                onClick={() => setSetupWizardOpen(true)}
+                sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+                Add Project
+              </Button>
+            </Stack>
+          </Stack>
+
+          {/* Connected project card */}
+          {connectedProject ? (
+            <Box sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${t.brandPrimary}30`, bgcolor: 'rgba(21,61,117,.05)', mb: 2 }}>
+              <Stack direction="row" alignItems="flex-start" justifyContent="space-between" mb={1.5}>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: t.brandPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#fff' }}>{connectedProject.name[0]?.toUpperCase()}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 800, fontSize: '.95rem', color: t.textPrimary }}>{connectedProject.name}</Typography>
+                    <Typography sx={{ fontSize: '.72rem', color: t.textTertiary, fontFamily: 'monospace' }}>{connectedProject.project_key}</Typography>
+                  </Box>
+                </Stack>
+                <Chip icon={<Box component="span" sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.success, ml: '6px !important' }} />}
+                  label="active" size="small"
+                  sx={{ fontWeight: 700, fontSize: '.7rem', bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success }} />
+              </Stack>
+              {connectedProject.description && (
+                <Typography sx={{ fontSize: '.8rem', color: t.textSecondary, mb: 1.5, lineHeight: 1.55 }}>{connectedProject.description}</Typography>
+              )}
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mb: 1.5 }}>
+                <Box>
+                  <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>Repositories</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{connectedProject.repo_count}</Typography>
+                </Box>
+                {connectedProject.last_activity && (
+                  <Box>
+                    <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>Last Activity</Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{connectedProject.last_activity}</Typography>
+                  </Box>
+                )}
+              </Box>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Button size="small" variant="outlined" startIcon={<OpenInNewIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={() => navigate(`/developer/Dashboard/projects/${connectedProject.id}`)}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Open Project
+                </Button>
+                <Button size="small" variant="outlined" startIcon={<PlayCircleOutlineIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={() => setSection('pipelines')}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Pipelines
+                </Button>
+                <Button size="small" variant="outlined" startIcon={<RocketLaunchIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={() => setSection('deployments')}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Deployments
+                </Button>
+                <Button size="small" variant="outlined" startIcon={<BarChartIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={() => setSection('metrics')}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Metrics
+                </Button>
+                <Button size="small" variant="outlined" startIcon={<ArticleIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={() => setSection('logs')}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Logs
+                </Button>
+                <Button size="small" variant="outlined"
+                  onClick={() => { setProjectModalOpen(true); }}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>
+                  Switch
+                </Button>
+                <Button size="small" variant="outlined"
+                  onClick={() => { setConnectedProject(null); lsSet('project', null); setConnectedEnv(null); lsSet('env', null); setActivePipeline(null); lsSet('pipeline', null); }}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', borderColor: `${dashboardSemanticColors.danger}50`, color: dashboardSemanticColors.danger }}>
+                  Disconnect
+                </Button>
+              </Stack>
+            </Box>
+          ) : (
+            <Box sx={{ p: 4, borderRadius: '14px', border: `2px dashed ${t.border}`, textAlign: 'center', mb: 2 }}>
+              <FolderOpenIcon sx={{ fontSize: '2.5rem', color: t.textTertiary, mb: 1 }} />
+              <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 0.75 }}>No project connected</Typography>
+              <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2 }}>
+                Connect a project to enable pipelines, deployments, logs, and metrics from this workspace.
+              </Typography>
+              <Stack direction="row" spacing={1} justifyContent="center">
+                <Button variant="contained" startIcon={<AccountTreeIcon />} onClick={() => setProjectModalOpen(true)}
+                  sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '10px' }}>
+                  Browse Projects
+                </Button>
+                <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setSetupWizardOpen(true)}
+                  sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', borderColor: t.border, color: t.textSecondary }}>
+                  Create New
+                </Button>
+              </Stack>
+            </Box>
+          )}
+
+          {/* Project quick-nav shortcuts */}
+          <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.5 }}>Quick Navigation</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+              {[
+                { label: 'Code & Repository', icon: <CodeIcon sx={{ fontSize: '1rem' }} />, section: 'ide' as Section },
+                { label: 'CI/CD Pipelines',   icon: <PlayCircleOutlineIcon sx={{ fontSize: '1rem' }} />, section: 'pipelines' as Section },
+                { label: 'Deployments',        icon: <RocketLaunchIcon sx={{ fontSize: '1rem' }} />, section: 'deployments' as Section },
+                { label: 'Logs',               icon: <ArticleIcon sx={{ fontSize: '1rem' }} />, section: 'logs' as Section },
+                { label: 'Metrics',            icon: <BarChartIcon sx={{ fontSize: '1rem' }} />, section: 'metrics' as Section },
+                { label: 'Containers',         icon: <AppsIcon sx={{ fontSize: '1rem' }} />, section: 'containers' as Section },
+              ].map((item) => (
+                <Box key={item.label}
+                  onClick={() => setSection(item.section)}
+                  sx={{ p: 1.5, borderRadius: '8px', border: `1px solid ${t.border}`, bgcolor: t.surfaceSubtle, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 1, '&:hover': { borderColor: t.brandPrimary, bgcolor: 'rgba(21,61,117,.06)' } }}>
+                  <Box sx={{ color: t.textTertiary }}>{item.icon}</Box>
+                  <Typography sx={{ fontSize: '.78rem', color: t.textPrimary, fontWeight: 600 }}>{item.label}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      );
+
+      // ── Containers ────────────────────────────────────────────────────────
+      case 'containers': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Containers</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Runtime containers attached to this workspace.</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+              onClick={() => setSetupWizardOpen(true)}
+              sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+              Add Container
+            </Button>
+          </Stack>
+
+          {[
+            { name: 'api-server',   type: 'API',    status: 'running', cpu: 22, ram: 38, size: 'M',  uptime: '3h 12m' },
+            { name: 'worker-1',     type: 'Worker', status: 'running', cpu: 8,  ram: 14, size: 'S',  uptime: '3h 12m' },
+            { name: 'cron-cleanup', type: 'Cron',   status: 'stopped', cpu: 0,  ram: 0,  size: 'S',  uptime: '—' },
+          ].map((c) => (
+            <Box key={c.name} sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 1.5 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <AppsIcon sx={{ fontSize: '1.1rem', color: c.status === 'running' ? dashboardSemanticColors.success : t.textTertiary }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: 700, fontSize: '.88rem', color: t.textPrimary, fontFamily: 'monospace' }}>{c.name}</Typography>
+                    <Stack direction="row" spacing={0.75} alignItems="center">
+                      <Chip label={c.type} size="small" sx={{ height: 16, fontSize: '.6rem', bgcolor: t.surfaceSubtle, color: t.textSecondary, border: `1px solid ${t.border}`, '& .MuiChip-label': { px: 0.6 } }} />
+                      <Chip label={`Size: ${c.size}`} size="small" sx={{ height: 16, fontSize: '.6rem', bgcolor: t.surfaceSubtle, color: t.textSecondary, border: `1px solid ${t.border}`, '& .MuiChip-label': { px: 0.6 } }} />
+                      <Typography sx={{ fontSize: '.7rem', color: t.textTertiary }}>Uptime: {c.uptime}</Typography>
+                    </Stack>
+                  </Box>
+                </Stack>
+                <Chip label={c.status} size="small"
+                  sx={{ fontWeight: 700, fontSize: '.72rem',
+                    bgcolor: c.status === 'running' ? 'rgba(34,197,94,.12)' : t.surfaceSubtle,
+                    color:   c.status === 'running' ? dashboardSemanticColors.success : t.textTertiary }} />
+              </Stack>
+              {c.status === 'running' && (
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                  <MetricBar label="CPU" value={c.cpu} />
+                  <MetricBar label="RAM" value={c.ram} />
+                </Box>
+              )}
+              <Stack direction="row" spacing={1} mt={1.5}>
+                <Button size="small" variant="outlined" startIcon={<ArticleIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => setSection('logs')}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Logs</Button>
+                <Button size="small" variant="outlined" startIcon={<BarChartIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => setSection('metrics')}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Metrics</Button>
+                {c.status === 'running'
+                  ? <Button size="small" variant="outlined" startIcon={<StopIcon sx={{ fontSize: '.8rem' }} />}
+                      sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: `${dashboardSemanticColors.danger}50`, color: dashboardSemanticColors.danger, borderRadius: '7px' }}>Stop</Button>
+                  : <Button size="small" variant="outlined" startIcon={<PlayArrowIcon sx={{ fontSize: '.8rem' }} />}
+                      sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: `${dashboardSemanticColors.success}50`, color: dashboardSemanticColors.success, borderRadius: '7px' }}>Start</Button>
+                }
+              </Stack>
+            </Box>
+          ))}
+        </Box>
+      );
+
+      // ── Kubernetes ─────────────────────────────────────────────────────────
+      case 'kubernetes': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Kubernetes</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Cluster resources and workloads for this workspace.</Typography>
+            </Box>
+            <Button size="small" variant="outlined" endIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
+              onClick={() => navigate('/developer/Dashboard/kubernetes')}
+              sx={{ textTransform: 'none', borderColor: t.border, color: t.textSecondary, borderRadius: '8px', fontWeight: 600 }}>
+              Full Dashboard
+            </Button>
+          </Stack>
+
+          {/* Cluster health */}
+          <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 2 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.5 }}>Cluster Health</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+              {[
+                { label: 'Nodes',     value: '3 / 3',  ok: true },
+                { label: 'Pods',      value: '14 / 14', ok: true },
+                { label: 'Services',  value: '6',       ok: true },
+              ].map((s) => (
+                <Box key={s.label} sx={{ p: 1.5, borderRadius: '8px', bgcolor: t.surfaceSubtle, border: `1px solid ${t.border}` }}>
+                  <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>{s.label}</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: s.ok ? dashboardSemanticColors.success : dashboardSemanticColors.danger }}>{s.value}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Workloads */}
+          <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 2 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.25 }}>Deployments</Typography>
+            <Stack spacing={1}>
+              {[
+                { name: 'atonixcorp-api',      replicas: '3/3',  image: 'api:v1.4.2',  status: 'healthy' },
+                { name: 'atonixcorp-worker',   replicas: '2/2',  image: 'worker:v1.4.2', status: 'healthy' },
+                { name: 'atonixcorp-frontend', replicas: '1/1',  image: 'frontend:v1.4.2', status: 'healthy' },
+              ].map((d) => (
+                <Stack key={d.name} direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 0.75, borderTop: `1px solid ${t.border}` }}>
+                  <Box>
+                    <Typography sx={{ fontSize: '.82rem', color: t.textPrimary, fontFamily: 'monospace', fontWeight: 600 }}>{d.name}</Typography>
+                    <Typography sx={{ fontSize: '.7rem', color: t.textTertiary, fontFamily: 'monospace' }}>{d.image} · replicas: {d.replicas}</Typography>
+                  </Box>
+                  <Chip label={d.status} size="small"
+                    sx={{ fontWeight: 700, fontSize: '.7rem', bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success }} />
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+
+          {/* Namespaces */}
+          <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.25 }}>Namespaces</Typography>
+            <Stack spacing={0.75}>
+              {['default', 'atonixcorp-prod', 'atonixcorp-staging', 'monitoring', 'ingress-nginx'].map((ns) => (
+                <Stack key={ns} direction="row" alignItems="center" spacing={1}>
+                  <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: dashboardSemanticColors.info, flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: '.82rem', color: t.textPrimary, fontFamily: 'monospace' }}>{ns}</Typography>
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+      );
+
+      // ── Groups ─────────────────────────────────────────────────────────────
+      case 'groups': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Groups</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Teams and groups connected to this workspace.</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+              onClick={() => setSetupWizardOpen(true)}
+              sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+              Connect Group
+            </Button>
+          </Stack>
+
+          {ws.connected_group_name ? (
+            <Box sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${t.brandPrimary}30`, bgcolor: 'rgba(21,61,117,.05)', mb: 2 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Box sx={{ width: 38, height: 38, borderRadius: '10px', bgcolor: t.brandPrimary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <GroupsIcon sx={{ fontSize: '1.1rem', color: '#fff' }} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{ws.connected_group_name}</Typography>
+                    <Typography sx={{ fontSize: '.72rem', color: t.textTertiary, fontFamily: 'monospace' }}>ID: {ws.connected_group_id}</Typography>
+                  </Box>
+                </Stack>
+                <Chip label="connected" size="small" sx={{ fontWeight: 700, fontSize: '.7rem', bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success }} />
+              </Stack>
+              <Stack direction="row" spacing={1}>
+                <Button size="small" variant="outlined" endIcon={<OpenInNewIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => navigate(`/developer/Dashboard/groups/${ws.connected_group_id}`)}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>View Group</Button>
+                <Button size="small" variant="outlined" onClick={() => setSetupWizardOpen(true)}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Change</Button>
+              </Stack>
+            </Box>
+          ) : (
+            <Box sx={{ p: 4, borderRadius: '14px', border: `2px dashed ${t.border}`, textAlign: 'center' }}>
+              <GroupsIcon sx={{ fontSize: '2.5rem', color: t.textTertiary, mb: 1 }} />
+              <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 0.75 }}>No group connected</Typography>
+              <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2 }}>Connect a group to manage permissions and collaborate with your team.</Typography>
+              <Button variant="contained" startIcon={<GroupsIcon />} onClick={() => setSetupWizardOpen(true)}
+                sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '10px' }}>
+                Connect Group
+              </Button>
+            </Box>
+          )}
+
+          {/* Members preview */}
+          <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: t.surface, border: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '.78rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.25 }}>Team Members</Typography>
+            <Stack spacing={0.75}>
+              {[
+                { name: 'you@atonixcorp.com', role: 'Owner' },
+                { name: 'teammate@atonixcorp.com', role: 'Developer' },
+                { name: 'reviewer@atonixcorp.com', role: 'Viewer' },
+              ].map((m) => (
+                <Stack key={m.name} direction="row" alignItems="center" justifyContent="space-between">
+                  <Stack direction="row" spacing={1.25} alignItems="center">
+                    <Avatar sx={{ width: 26, height: 26, fontSize: '.7rem', bgcolor: t.brandPrimary }}>{m.name[0].toUpperCase()}</Avatar>
+                    <Typography sx={{ fontSize: '.82rem', color: t.textPrimary }}>{m.name}</Typography>
+                  </Stack>
+                  <Chip label={m.role} size="small" sx={{ height: 18, fontSize: '.65rem', fontWeight: 700, bgcolor: t.surfaceSubtle, color: t.textSecondary, border: `1px solid ${t.border}` }} />
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+      );
+
+      // ── Environments ───────────────────────────────────────────────────────
+      case 'environments': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Environments</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Deployment environments linked to this workspace.</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+              onClick={() => setSetupWizardOpen(true)}
+              sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+              Add Environment
+            </Button>
+          </Stack>
+
+          {/* Connected env summary */}
+          {connectedEnv && (
+            <Box sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${dashboardSemanticColors.success}30`, bgcolor: `${dashboardSemanticColors.success}08`, mb: 2 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: dashboardSemanticColors.success, flexShrink: 0 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{connectedEnv.name}</Typography>
+                </Stack>
+                <Chip label="active" size="small" sx={{ fontWeight: 700, fontSize: '.7rem', bgcolor: 'rgba(34,197,94,.12)', color: dashboardSemanticColors.success }} />
+              </Stack>
+              <Stack direction="row" spacing={2.5}>
+                <Box>
+                  <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>Health</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '.82rem', color: t.textPrimary }}>{connectedEnv.health}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>Last Deploy</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '.82rem', color: t.textPrimary }}>{connectedEnv.lastDeploy}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: '.68rem', color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em' }}>Error Rate</Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: '.82rem', color: t.textPrimary }}>{connectedEnv.errorRate}</Typography>
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} mt={1.5}>
+                <Button size="small" variant="outlined"
+                  onClick={() => navigate(`/developer/Dashboard/environment/${connectedEnv.id}`)}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Open Dashboard</Button>
+                <Button size="small" variant="outlined" startIcon={<RocketLaunchIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => setSection('deployments')}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: t.border, color: t.textSecondary, borderRadius: '7px' }}>Deployments</Button>
+                <Button size="small" variant="outlined"
+                  onClick={() => { setConnectedEnv(null); lsSet('env', null); }}
+                  sx={{ textTransform: 'none', fontSize: '.75rem', borderColor: `${dashboardSemanticColors.danger}50`, color: dashboardSemanticColors.danger, borderRadius: '7px' }}>Disconnect</Button>
+              </Stack>
+            </Box>
+          )}
+
+          {[
+            { name: 'Production',  type: 'prod',  health: 'healthy',  lastDeploy: '2 days ago',errorRate: '0.01%', color: dashboardSemanticColors.success },
+            { name: 'Staging',     type: 'stage', health: 'healthy',  lastDeploy: '1 hr ago',  errorRate: '0.12%', color: dashboardSemanticColors.success },
+            { name: 'Development', type: 'dev',   health: 'degraded', lastDeploy: '5 min ago', errorRate: '1.4%',  color: dashboardSemanticColors.warning },
+          ].map((env) => (
+            <Box key={env.name} sx={{ p: 2, borderRadius: '10px', bgcolor: t.surface, border: `1px solid ${t.border}`, mb: 1.25 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.75}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: env.color, flexShrink: 0 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '.85rem', color: t.textPrimary }}>{env.name}</Typography>
+                  <Chip label={env.type} size="small" sx={{ height: 16, fontSize: '.6rem', bgcolor: t.surfaceSubtle, color: t.textSecondary, border: `1px solid ${t.border}`, '& .MuiChip-label': { px: 0.6 } }} />
+                </Stack>
+                <Chip label={env.health} size="small"
+                  sx={{ fontWeight: 700, fontSize: '.7rem',
+                    bgcolor: env.health === 'healthy' ? 'rgba(34,197,94,.12)' : 'rgba(251,191,36,.12)',
+                    color: env.color }} />
+              </Stack>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0.5 }}>
+                <Typography sx={{ fontSize: '.72rem', color: t.textTertiary }}>Last deploy: {env.lastDeploy}</Typography>
+                <Typography sx={{ fontSize: '.72rem', color: t.textTertiary }}>Errors: {env.errorRate}</Typography>
+              </Box>
+              <Stack direction="row" spacing={1} mt={1}>
+                <Button size="small" variant="outlined"
+                  sx={{ textTransform: 'none', fontSize: '.73rem', borderColor: t.border, color: t.textSecondary, borderRadius: '6px' }}
+                  onClick={() => { setEnvModalOpen(true); }}>Connect</Button>
+                <Button size="small" variant="outlined" startIcon={<RocketLaunchIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => setSection('deployments')}
+                  sx={{ textTransform: 'none', fontSize: '.73rem', borderColor: t.border, color: t.textSecondary, borderRadius: '6px' }}>Deploy</Button>
+                <Button size="small" variant="outlined" startIcon={<ArticleIcon sx={{ fontSize: '.8rem' }} />}
+                  onClick={() => setSection('logs')}
+                  sx={{ textTransform: 'none', fontSize: '.73rem', borderColor: t.border, color: t.textSecondary, borderRadius: '6px' }}>Logs</Button>
+              </Stack>
+            </Box>
+          ))}
+        </Box>
+      );
+
+      // ── Workspace Setup ────────────────────────────────────────────────────
+      case 'workspace-setup': {
+        setSetupWizardOpen(true);
+        setSection('overview');
+        return null;
+      }
+
       default: return null;
     }
   };
@@ -1711,6 +2295,24 @@ const WorkspaceDashboardPage: React.FC = () => {
 
         {/* Quick actions spacer */}
         <Box sx={{ flex: 1 }} />
+
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<TuneIcon sx={{ fontSize: '.85rem' }} />}
+          onClick={() => setSetupWizardOpen(true)}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 700,
+            borderRadius: '8px',
+            borderColor: t.border,
+            color: t.textSecondary,
+            fontSize: '.73rem',
+            '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary },
+          }}
+        >
+          Setup
+        </Button>
 
         {/* Quick actions */}
         {isRunning && (
@@ -2025,6 +2627,12 @@ const WorkspaceDashboardPage: React.FC = () => {
       <ProjectSelectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} onSelect={handleConnectProject} />
       <EnvSelectModal open={envModalOpen} project={connectedProject} onClose={() => setEnvModalOpen(false)} onSelect={handleConnectEnv} />
       <TriggerPipelineModal open={pipelineModalOpen} project={connectedProject} onClose={() => setPipelineModalOpen(false)} onTriggered={handleTriggerPipeline} />
+      <WorkspaceSetupWizard
+        open={setupWizardOpen}
+        workspace={ws}
+        onClose={() => setSetupWizardOpen(false)}
+        onCompleted={handleSetupCompleted}
+      />
     </Box>
   );
 };
