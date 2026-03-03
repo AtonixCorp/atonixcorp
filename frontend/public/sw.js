@@ -8,7 +8,7 @@ const isLocalhost = Boolean(
     )
 );
 
-const CACHE_NAME = 'atonixcorp-v1';
+const CACHE_NAME = 'atonixcorp-v2';
 
 // Install event - skip waiting so the SW activates immediately
 self.addEventListener('install', (event) => {

@@ -78,6 +78,7 @@ import ProjectImportPage          from './pages/ProjectImportPage';
 import ProjectCreatePage          from './pages/ProjectCreatePage';
 import ProjectDashboardPage       from './pages/ProjectDashboardPage';
 import RepoSetupPage              from './pages/RepoSetupPage';
+import RepositoryPage             from './pages/RepositoryPage';
 import DevEnvironmentPage         from './pages/DevEnvironmentPage';
 import EnvironmentDetailPage      from './pages/EnvironmentDetailPage';
 import DevOperationalPage         from './pages/DevOperationalPage'
@@ -105,6 +106,7 @@ import DevIaCPage                from './pages/DevIaCPage';
 import DevCatalogPage            from './pages/DevCatalogPage';
 import DevSandboxPage            from './pages/DevSandboxPage';
 import DevWebhooksPage           from './pages/DevWebhooksPage';
+import DevRepositoriesPage       from './pages/DevRepositoriesPage';
 
 // Redirect /developer/Dashboard/groups/:groupId → /groups/:groupId
 const RedirectToGroupPage: React.FC = () => {
@@ -133,6 +135,8 @@ const AppShell: React.FC = () => {
   const isEnvironmentDetailPage = /^\/developer\/Dashboard\/environment\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
   const isOperationalPage = location.pathname === '/developer/Dashboard/operational';
+  const isRepositoriesPage   = location.pathname === '/developer/Dashboard/repositories';
+  const isStandaloneRepoPage  = location.pathname.startsWith('/developer/Dashboard/repo/');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
@@ -221,12 +225,36 @@ const AppShell: React.FC = () => {
     );
   }
 
+  if (isStandaloneRepoPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="developer">
+          <Routes>
+            <Route path="/developer/Dashboard/repo/:repoId" element={<RepositoryPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isRepositoriesPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="developer">
+          <Routes>
+            <Route path="/developer/Dashboard/repositories" element={<DevRepositoriesPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isDeveloperDashboard) {
     return (
       <ProtectedRoute>
         <DashboardLayout dashboardMode="developer">
           <Routes>
-            <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
+            <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/repositories" replace />} />
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/developer/Dashboard/projects"  element={<DevProjectsPage />} />
@@ -250,7 +278,7 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/catalog"   element={<DevCatalogPage />} />
             <Route path="/developer/Dashboard/sandbox"   element={<DevSandboxPage />} />
             <Route path="/developer/Dashboard/webhooks"  element={<DevWebhooksPage />} />
-            <Route path="/developer/Dashboard/*" element={<Navigate to="/developer/Dashboard/deployments" replace />} />
+            <Route path="/developer/Dashboard/*" element={<Navigate to="/developer/Dashboard/repositories" replace />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>
@@ -302,7 +330,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/domains"                  element={<DomainPage />} />
             <Route path="/dashboard/domains/:id"              element={<DomainPage />} />
             <Route path="/dashboard/email-marketing"          element={<Navigate to="/marketing-dashboard/campaigns" replace />} />
-            <Route path="/dashboard/developer-tools"          element={<Navigate to="/developer/Dashboard/deployments" replace />} />
+            <Route path="/dashboard/developer-tools"          element={<Navigate to="/developer/Dashboard/repositories" replace />} />
             <Route path="/dashboard/marketing-tools"          element={<Navigate to="/marketing-dashboard/analytics" replace />} />
             <Route path="/dashboard/monitoring"               element={<Navigate to="/monitor-dashboard/dashboards" replace />} />
             <Route path="/dashboard/load-balancers"           element={<LoadBalancersPage />} />
@@ -327,6 +355,7 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/firewall"                element={<FirewallPage />} />
             <Route path="/dashboard/dns"                     element={<DNSPage />} />
             <Route path="/dashboard/organization"            element={<OrganizationPage />} />
+            <Route path="/dashboard/deployments"             element={<DevDeploymentsPage />} />
             <Route path="/dashboard/governance"              element={<GovernancePage />} />
             <Route path="/dashboard/*"                       element={<EnterpriseOverviewDashboard />} />
           </Routes>

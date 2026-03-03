@@ -73,13 +73,22 @@ export async function getProjectStats(projectId: string): Promise<ProjectStats> 
 
 export interface BackendRepository {
   id:             string;
-  project:        string;
-  project_name?:  string;
+  project:        string | null;
+  project_name?:  string | null;
   provider:       string;
   repo_name:      string;
+  repo_description?: string;
+  visibility?:    'private' | 'public' | 'team';
   default_branch: string;
   created_at?:    string;
   updated_at?:    string;
+}
+
+export interface CreateStandaloneRepoPayload {
+  repo_name:        string;
+  repo_description?: string;
+  visibility:       'private' | 'public';
+  default_branch:   string;
 }
 
 export async function listProjectRepos(projectId: string): Promise<BackendRepository[]> {
@@ -88,6 +97,27 @@ export async function listProjectRepos(projectId: string): Promise<BackendReposi
   );
   const d = response.data;
   return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function listAllRepos(): Promise<BackendRepository[]> {
+  const response = await apiClient.get<BackendRepository[] | { results: BackendRepository[] }>(
+    `/api/services/pipelines/repositories/`,
+  );
+  const d = response.data;
+  return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function createStandaloneRepo(payload: CreateStandaloneRepoPayload): Promise<BackendRepository> {
+  const { data } = await apiClient.post<BackendRepository>(
+    `/api/services/pipelines/repositories/`,
+    { ...payload, project: null },
+  );
+  return data;
+}
+
+export async function getRepo(repoId: string): Promise<BackendRepository> {
+  const { data } = await apiClient.get<BackendRepository>(`/api/services/pipelines/repositories/${repoId}/`);
+  return data;
 }
 
 export async function updateRepo(repoId: string, payload: Partial<Pick<BackendRepository, 'repo_name' | 'default_branch'>>): Promise<BackendRepository> {

@@ -159,6 +159,7 @@ const CLOUD_NAV: NavItem[] = [
     label: 'Enterprise',
     icon: <GroupsIcon {...I()} />,
     children: [
+      { label: 'Deployments',  icon: <ComputerIcon {...I('.95rem')} />, path: '/dashboard/deployments'                 },
       { label: 'Organization', icon: <TeamIcon    {...I('.95rem')} />, path: '/dashboard/organization' },
       { label: 'Governance',   icon: <GppGoodIcon {...I('.95rem')} />, path: '/dashboard/governance'   },
       { label: 'Marketing',    icon: <CampaignIcon {...I('.95rem')} />, path: '/marketing-dashboard/analytics' },
@@ -168,7 +169,6 @@ const CLOUD_NAV: NavItem[] = [
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
-  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/developer/Dashboard/deployments'   },
   { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'       },
   { label: 'Repositories',  icon: <SourceIcon     {...I()} />, path: '/developer/Dashboard/repositories'   },
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },

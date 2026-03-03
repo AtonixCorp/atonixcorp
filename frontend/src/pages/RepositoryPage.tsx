@@ -51,6 +51,7 @@ import {
   getRepoDiff,
   searchRepo,
   initProjectRepo,
+  getRepo,
   type BackendProject,
   type BackendRepository,
   type TreeNode,
@@ -226,7 +227,7 @@ const RepoSettingsPanel: React.FC<{ repo: BackendRepository; project: BackendPro
 
 const RepositoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { id }   = useParams<{ id: string }>();
+  const { id, repoId } = useParams<{ id?: string; repoId?: string }>();
 
   // ─ Core data
   const [project, setProject]   = useState<BackendProject | null>(null);
@@ -281,10 +282,31 @@ const RepositoryPage: React.FC = () => {
   // ─── Initial load ──────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!id) { setError('No project ID'); setLoading(false); return; }
-
     const init = async () => {
       try {
+        // ── Standalone repo path: /developer/Dashboard/repo/:repoId ──────────
+        if (repoId) {
+          const r = await getRepo(repoId);
+          setRepo(r);
+          setCurrentBranch(r.default_branch || 'main');
+          loadedRepoRef.current = r.id;
+          setTreeLoading(true);
+          setBranchesLoading(true);
+          const [tree, branchList] = await Promise.allSettled([
+            getRepoTree(r.id),
+            getRepoBranches(r.id),
+          ]);
+          if (tree.status === 'fulfilled')       setTreeNodes(tree.value);
+          if (branchList.status === 'fulfilled') setBranches(branchList.value);
+          setTreeLoading(false);
+          setBranchesLoading(false);
+          setLoading(false);
+          return;
+        }
+
+        // ── Project-linked repo path: /developer/Dashboard/projects/:id/repo ─
+        if (!id) { setError('No project ID'); setLoading(false); return; }
+
         const proj  = await getProject(id);
         setProject(proj);
 
@@ -301,7 +323,6 @@ const RepositoryPage: React.FC = () => {
         setCurrentBranch(r.default_branch || 'main');
         loadedRepoRef.current = r.id;
 
-        // Load tree + branches in parallel
         setTreeLoading(true);
         setBranchesLoading(true);
 
@@ -310,7 +331,7 @@ const RepositoryPage: React.FC = () => {
           getRepoBranches(r.id),
         ]);
 
-        if (tree.status === 'fulfilled')     setTreeNodes(tree.value);
+        if (tree.status === 'fulfilled')       setTreeNodes(tree.value);
         if (branchList.status === 'fulfilled') setBranches(branchList.value);
 
         setTreeLoading(false);
@@ -323,7 +344,7 @@ const RepositoryPage: React.FC = () => {
     };
 
     init();
-  }, [id]);
+  }, [id, repoId]);
 
   // ─── Branch switch ─────────────────────────────────────────────────────────
 
