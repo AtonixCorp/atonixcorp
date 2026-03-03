@@ -4,6 +4,7 @@ from rest_framework import serializers
 from .models import (
     ServiceHealth, MetricSnapshot, AlertRule, MonitoringAlert, Incident, IncidentUpdate,
     ServiceLevelObjective, TraceSpan, DDoSProtectionRule, DDoSAttackEvent,
+    ComponentStatus, RunningProcess,
 )
 
 
@@ -161,3 +162,42 @@ class DDoSAttackEventSerializer(serializers.ModelSerializer):
             'started_at', 'ended_at', 'rule_matched', 'created_at',
         ]
         read_only_fields = '__all__'
+
+
+# ── Component Status ──────────────────────────────────────────────────────────
+
+class ComponentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ComponentStatus
+        fields = ['service', 'region', 'status', 'uptime_pct',
+                  'latency_ms', 'error_rate', 'note', 'updated_at']
+
+
+class ComponentStatusWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ComponentStatus
+        fields = ['service', 'region', 'status', 'uptime_pct',
+                  'latency_ms', 'error_rate', 'note']
+
+
+# ── Running Process ───────────────────────────────────────────────────────────
+
+class RunningProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = RunningProcess
+        fields = [
+            'id', 'process_type', 'name', 'status', 'region', 'cluster',
+            'environment', 'resource_id', 'resource_ref', 'progress_pct',
+            'logs_url', 'metrics_url', 'started_at', 'finished_at', 'meta',
+        ]
+        read_only_fields = ['id', 'started_at']
+
+
+class RunningProcessCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = RunningProcess
+        fields = [
+            'process_type', 'name', 'status', 'region', 'cluster',
+            'environment', 'resource_id', 'resource_ref', 'progress_pct',
+            'logs_url', 'metrics_url', 'meta',
+        ]

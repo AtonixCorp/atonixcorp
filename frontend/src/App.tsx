@@ -70,7 +70,7 @@ import TeamsPage                  from './pages/TeamsPage';
 import DevGroupsPage              from './pages/DevGroupsPage';
 import GroupCreatePage            from './pages/GroupCreatePage';
 import GroupDashboardPage         from './pages/GroupDashboardPage';
-import GroupPipelineDetailPage    from './pages/GroupPipelineDetailPage';
+import GroupPipelineDashboardPage from './pages/GroupPipelineDashboardPage';
 import DevProjectsPage            from './pages/DevProjectsPage';
 import DevProjectDetailPage       from './pages/DevProjectDetailPage';
 import ProjectEntryPage           from './pages/ProjectEntryPage';
@@ -132,6 +132,7 @@ const AppShell: React.FC = () => {
   const isWorkspaceDashboard = /^\/developer\/Dashboard\/workspace\/[^\/]+/.test(location.pathname);
   const isEnvironmentDetailPage = /^\/developer\/Dashboard\/environment\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
+  const isOperationalPage = location.pathname === '/developer/Dashboard/operational';
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
@@ -161,12 +162,12 @@ const AppShell: React.FC = () => {
     return (
       <ProtectedRoute>
         <Routes>
-          <Route path="/groups/new"                               element={<GroupCreatePage />} />
-          <Route path="/groups/:groupId/pipelines/:pipelineId"    element={<GroupPipelineDetailPage />} />
-          <Route path="/groups/:groupId"                          element={<GroupDashboardPage />} />
-          <Route path="/groups/:groupId/:section"                 element={<GroupDashboardPage />} />
-          <Route path="/groups/:groupId/:section/:sub"            element={<GroupDashboardPage />} />
-          <Route path="/groups/*"                                 element={<Navigate to="/developer/Dashboard/groups" replace />} />
+          <Route path="/groups/new"                                   element={<GroupCreatePage />} />
+          <Route path="/groups/:groupId/pipelines/:pipelineId"        element={<GroupPipelineDashboardPage />} />
+          <Route path="/groups/:groupId"                              element={<GroupDashboardPage />} />
+          <Route path="/groups/:groupId/:section"                     element={<GroupDashboardPage />} />
+          <Route path="/groups/:groupId/:section/:sub"                element={<GroupDashboardPage />} />
+          <Route path="/groups/*"                                     element={<Navigate to="/developer/Dashboard/groups" replace />} />
         </Routes>
       </ProtectedRoute>
     );
@@ -198,6 +199,7 @@ const AppShell: React.FC = () => {
     );
   }
 
+<<<<<<< HEAD
   if (isCicdPage) {
     return (
       <ProtectedRoute>
@@ -205,6 +207,13 @@ const AppShell: React.FC = () => {
           <Route path="/developer/Dashboard/cicd/builder"         element={<PipelineBuilderPage />} />
           <Route path="/developer/Dashboard/cicd/runs/:runId"      element={<PipelineExecutionPage />} />
           <Route path="/developer/Dashboard/cicd/runs"             element={<PipelineExecutionPage />} />
+=======
+  if (isOperationalPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
+>>>>>>> 6908e3d9e38f18fb0225795e21b5fd3f098cf390
         </Routes>
       </ProtectedRoute>
     );
@@ -232,7 +241,6 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/groups/:groupId" element={<RedirectToGroupPage />} />
             <Route path="/developer/Dashboard/groups/:groupId/:section" element={<RedirectToGroupPage />} />
             <Route path="/developer/Dashboard/environment" element={<DevEnvironmentPage />} />
-            <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
             <Route path="/developer/Dashboard/sections" element={<DashboardSectionsPage dashboardMode="developer" />} />
             <Route path="/developer/Dashboard/settings/*" element={<DevSettingsPage />} />
             <Route path="/developer/Dashboard/sdks"      element={<DevSDKsPage />} />

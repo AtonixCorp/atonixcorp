@@ -404,3 +404,160 @@ class DDoSAttackEventViewSet(viewsets.ReadOnlyModelViewSet):
         return DDoSAttackEvent.objects.filter(owner=self.request.user)
 
 
+# ── Operational Status ────────────────────────────────────────────────────────
+
+class OperationalStatusViewSet(viewsets.ViewSet):
+    """
+    Central data provider for the Operational Page.
+
+    GET  /operational/                 → global banner + service health + region health
+    GET  /operational/health-grid/     → service × region ComponentStatus matrix
+    GET  /operational/running/         → active running processes
+    POST /operational/running/         → register a new process (from CI workers)
+    GET  /operational/running/{id}/    → detail for one process
+    PATCH /operational/running/{id}/   → update progress/status
+    GET  /operational/summary/         → counts only (for polling)
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    # ────────────────────────────────────
+    def list(self, request):
+        """GET /operational/ – global banner, service health, region list."""
+        from ..regions.models import CloudRegion
+        from ..regions.serializers import CloudRegionSerializer
+        from django.utils import timezone
+
+        # Service health
+        service_health = ServiceHealth.objects.all()
+        if not service_health.exists():
+            service_health = svc.get_service_health(request.user)
+            health_data = service_health
+        else:
+            health_data = ServiceHealthSerializer(service_health, many=True).data
+
+        # Active incidents
+        active_incidents = Incident.objects.filter(
+            status__in=['open', 'investigating', 'identified', 'monitoring']
+        ).order_by('-detected_at')[:10]
+        incidents_data = IncidentListSerializer(active_incidents, many=True).data
+
+        # Regions
+        regions = CloudRegion.objects.filter(status='active').order_by('continent', 'code')
+        regions_data = CloudRegionSerializer(regions, many=True).data
+
+        # Running processes count
+        running_count = RunningProcess.objects.filter(
+            owner=request.user,
+            status__in=['running', 'queued']
+        ).count()
+
+        # Global banner
+        has_major = Incident.objects.filter(status__in=['open', 'investigating'], severity='sev1').exists()
+        has_partial = Incident.objects.filter(status__in=['open', 'investigating']).exists()
+        if has_major:
+            banner = {'level': 'major_incident', 'message': 'Major Incident Detected'}
+        elif has_partial:
+            banner = {'level': 'partial_outage', 'message': 'Partial Outage in Progress'}
+        else:
+            banner = {'level': 'operational', 'message': 'All Systems Operational'}
+
+        return Response({
+            'banner': banner,
+            'service_health': health_data,
+            'regions': regions_data,
+            'active_incidents': incidents_data,
+            'running_count': running_count,
+            'generated_at': timezone.now().isoformat(),
+        })
+
+    # ────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='health-grid')
+    def health_grid(self, request):
+        """GET /operational/health-grid/ – service × region matrix."""
+        from ..regions.models import CloudRegion
+
+        qs = ComponentStatus.objects.all().order_by('service', 'region')
+        regions = CloudRegion.objects.filter(status__in=['active', 'degraded', 'maintenance']).values_list('code', flat=True)
+
+        # Build grid: {service: {region: status_obj}}
+        grid: dict = {}
+        for item in ComponentStatusSerializer(qs, many=True).data:
+            grid.setdefault(item['service'], {})
+            grid[item['service']][item['region']] = item
+
+        return Response({
+            'services': [s for s, _ in ComponentStatus.SERVICE_CHOICES],
+            'regions': list(regions),
+            'grid': grid,
+        })
+
+    @action(detail=False, methods=['post'], url_path='health-grid/update')
+    def update_health_grid(self, request):
+        """POST /operational/health-grid/update/ – upsert a cell."""
+        ser = ComponentStatusWriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        obj, _ = ComponentStatus.objects.update_or_create(
+            service=ser.validated_data['service'],
+            region=ser.validated_data['region'],
+            defaults={k: v for k, v in ser.validated_data.items()
+                      if k not in ('service', 'region')},
+        )
+        return Response(ComponentStatusSerializer(obj).data)
+
+    # ────────────────────────────────────
+    @action(detail=False, methods=['get', 'post'], url_path='running')
+    def running_processes(self, request):
+        """GET/POST /operational/running/"""
+        if request.method == 'GET':
+            proc_type = request.query_params.get('type')
+            status_filter = request.query_params.get('status', 'running,queued')
+            statuses = [s.strip() for s in status_filter.split(',')]
+            qs = RunningProcess.objects.filter(
+                owner=request.user,
+                status__in=statuses,
+            )
+            if proc_type:
+                qs = qs.filter(process_type=proc_type)
+            qs = qs.order_by('-started_at')[:50]
+            return Response(RunningProcessSerializer(qs, many=True).data)
+
+        # POST – register/update a process
+        ser = RunningProcessCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        proc = ser.save(owner=request.user)
+        return Response(RunningProcessSerializer(proc).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get', 'patch'], url_path=r'running/(?P<proc_id>[^/.]+)')
+    def running_process_detail(self, request, proc_id=None):
+        """GET/PATCH /operational/running/{id}/"""
+        try:
+            proc = RunningProcess.objects.get(id=proc_id, owner=request.user)
+        except RunningProcess.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if request.method == 'PATCH':
+            for field in ('status', 'progress_pct', 'finished_at', 'meta'):
+                if field in request.data:
+                    setattr(proc, field, request.data[field])
+            proc.save()
+        return Response(RunningProcessSerializer(proc).data)
+
+    # ────────────────────────────────────
+    @action(detail=False, methods=['get'], url_path='summary')
+    def summary(self, request):
+        """GET /operational/summary/ – lightweight count payload for polling."""
+        active_inc = Incident.objects.filter(
+            status__in=['open', 'investigating', 'identified']
+        ).count()
+        running = RunningProcess.objects.filter(
+            owner=request.user, status__in=['running', 'queued']
+        ).count()
+        sev1 = Incident.objects.filter(
+            status__in=['open', 'investigating'], severity='sev1'
+        ).count()
+        return Response({
+            'active_incidents': active_inc,
+            'sev1_incidents': sev1,
+            'running_processes': running,
+        })
+
+
