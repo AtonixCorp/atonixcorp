@@ -197,3 +197,29 @@ export const dashboardSecondaryButtonSx = {
   color: dashboardTokens.colors.textPrimary,
   textTransform: 'none',
 } as const;
+
+/**
+ * AtonixCorp Cloud Tokens — IBM Carbon White theme-aligned
+ *
+ * Use these `var(--ac-*)` references in MUI `sx` props wherever you need
+ * canonical background, layer, or text colours that track the Carbon spec.
+ * The CSS custom properties themselves are defined in:
+ *   - `styles/professional.css`  (standalone CSS fallback)
+ *   - `contexts/ThemeContext.tsx` (injected via MuiCssBaseline for both themes)
+ */
+export const acCloudTokens = {
+  // Backgrounds
+  bgPrimary:     'var(--ac-bg-primary)',    // Carbon White 0  / Gray 100 dark
+  bgSecondary:   'var(--ac-bg-secondary)',  // Carbon Gray 10  / Gray 90  dark
+  bgTertiary:    'var(--ac-bg-tertiary)',   // Carbon Gray 20  / Gray 80  dark
+
+  // Layers
+  layer01:       'var(--ac-layer-01)',
+  layer02:       'var(--ac-layer-02)',
+  layer03:       'var(--ac-layer-03)',
+
+  // Text
+  textPrimary:   'var(--ac-text-primary)',   // Carbon Gray 100 / Gray 10  dark
+  textSecondary: 'var(--ac-text-secondary)', // Carbon Gray 70  / Gray 40  dark
+  textInverse:   'var(--ac-text-inverse)',   // text on dark/light surfaces
+} as const;

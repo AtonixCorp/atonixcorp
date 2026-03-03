@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
+import './styles/professional.css';
 
 // Context
 import { CustomThemeProvider } from './contexts/ThemeContext';

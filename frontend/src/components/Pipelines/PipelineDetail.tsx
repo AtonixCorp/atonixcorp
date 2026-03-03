@@ -109,6 +109,8 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
     );
   }
 
+  if (!pipeline) return null;
+
   const pipelineCfg = STATUS_CONFIG[pipeline.status as keyof typeof STATUS_CONFIG];
 
   // Map BackendPipeline fields to display labels
@@ -213,9 +215,9 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
               <TableBody>
                 {jobs.map((job) => {
                   const cfg = STATUS_CONFIG[job.status as keyof typeof STATUS_CONFIG];
-                  const duration = job.finishedAt && job.startedAt ?
-                    Math.round((new Date(job.finishedAt).getTime() - new Date(job.startedAt).getTime()) / 1000) + 's' :
-                    job.startedAt ? 'Running...' : '—';
+                  const duration = job.finished_at && job.started_at ?
+                    Math.round((new Date(job.finished_at).getTime() - new Date(job.started_at).getTime()) / 1000) + 's' :
+                    job.started_at ? 'Running...' : '—';
 
                   return (
                     <TableRow key={job.id} sx={{ '& td': { borderColor: t.border } }}>

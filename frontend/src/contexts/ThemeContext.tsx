@@ -161,7 +161,7 @@ const ___lightTheme = createTheme({
         styleOverrides: {
           root: {
             // Default typography color should use the theme's primary text color
-            color: '#111827',
+            color: '#161616',   // aligned to Carbon Gray 100
           },
         },
       },
@@ -178,15 +178,25 @@ const ___lightTheme = createTheme({
           '--color-surface': '#111827',
           '--dashboard-background': '#FFFFFF',
           '--dashboard-surface': '#FFFFFF',
-          '--dashboard-surface-subtle': '#F5F5F5',
+          '--dashboard-surface-subtle': '#F4F4F4',   // aligned to Carbon Gray 10
           '--dashboard-surface-hover': '#F0F0F0',
           '--dashboard-border': '#E5E7EB',
           '--dashboard-border-strong': '#D1D5DB',
-          '--dashboard-text-primary': '#111827',
-          '--dashboard-text-secondary': '#6B7280',
+          '--dashboard-text-primary': '#161616',     // aligned to Carbon Gray 100
+          '--dashboard-text-secondary': '#525252',   // aligned to Carbon Gray 70
           '--dashboard-text-tertiary': '#9CA3AF',
           '--radius-small': '2px',
           '--radius-none': '0px',
+          // AtonixCorp Cloud Tokens — IBM Carbon White theme
+          '--ac-bg-primary':   '#FFFFFF',
+          '--ac-bg-secondary': '#F4F4F4',
+          '--ac-bg-tertiary':  '#E0E0E0',
+          '--ac-layer-01': '#FFFFFF',
+          '--ac-layer-02': '#F4F4F4',
+          '--ac-layer-03': '#E0E0E0',
+          '--ac-text-primary':   '#161616',
+          '--ac-text-secondary': '#525252',
+          '--ac-text-inverse':   '#F4F4F4',
         },
         '*': {
           boxSizing: 'border-box',
@@ -196,7 +206,7 @@ const ___lightTheme = createTheme({
         },
         body: {
           backgroundColor: '#FFFFFF',
-          color: '#111827',
+          color: '#161616',
           fontFamily: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
@@ -509,6 +519,16 @@ const ___darkTheme = createTheme({
           '--dashboard-text-tertiary': '#FFFFFF',
           '--radius-small': '2px',
           '--radius-none': '0px',
+          // AtonixCorp Cloud Tokens — dark mode
+          '--ac-bg-primary':   '#161616',   // Carbon Gray 100
+          '--ac-bg-secondary': '#262626',   // Carbon Gray 90
+          '--ac-bg-tertiary':  '#393939',   // Carbon Gray 80
+          '--ac-layer-01': '#1C1C1C',
+          '--ac-layer-02': '#262626',
+          '--ac-layer-03': '#393939',
+          '--ac-text-primary':   '#F4F4F4', // Carbon Gray 10
+          '--ac-text-secondary': '#A8A8A8', // Carbon Gray 40
+          '--ac-text-inverse':   '#161616',
         },
         '*': {
           boxSizing: 'border-box',
