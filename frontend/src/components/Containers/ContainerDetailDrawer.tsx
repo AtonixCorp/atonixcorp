@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -28,6 +28,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import LinkIcon from '@mui/icons-material/Link';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
 import type { ContainerResource } from './CreateContainerWizard';
+import apiClient from '../../services/apiClient';
 
 const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
@@ -46,20 +47,6 @@ const DEPLOYMENT_TIMELINE = [
   { label: 'Image pushed to registry', time: '-1m 55s', done: true },
   { label: 'Deployment triggered',   time: '-1m 02s', done: true },
   { label: 'Pods rolled out (2/2)',   time: '0s',      done: true },
-];
-
-const MOCK_LOGS = [
-  '[00:00.001] INFO  Starting container billing-api-prod',
-  '[00:00.104] INFO  Connecting to database…',
-  '[00:00.315] INFO  Database connected (52ms)',
-  '[00:00.412] INFO  Redis connected (12ms)',
-  '[00:00.501] INFO  Registering service routes',
-  '[00:00.602] INFO  Listening on :3000',
-  '[00:01.210] INFO  GET /health → 200 (1ms)',
-  '[00:01.840] INFO  POST /api/invoice → 201 (38ms)',
-  '[00:02.110] INFO  GET /api/usage → 200 (16ms)',
-  '[00:02.502] INFO  Background job: invoice-worker started',
-  '[00:03.001] INFO  GET /health → 200 (1ms)',
 ];
 
 interface MetricRow {
@@ -120,23 +107,27 @@ const ContainerDetailDrawer: React.FC<Props> = ({ open, container, onClose, onRe
     return () => clearInterval(interval);
   }, [open, container?.status]);
 
-  // Stream logs when tab 1 is selected
-  useEffect(() => {
-    if (tab !== 1 || !open) return;
+  // Fetch logs when tab 1 is selected
+  const fetchLogs = useCallback(async (containerId: string) => {
     setLogsLoading(true);
     setLogLines([]);
-    let idx = 0;
-    const interval = setInterval(() => {
-      if (idx < MOCK_LOGS.length) {
-        setLogLines(prev => [...prev, MOCK_LOGS[idx]]);
-        idx++;
-      } else {
-        setLogsLoading(false);
-        clearInterval(interval);
-      }
-    }, 90);
-    return () => clearInterval(interval);
-  }, [tab, open]);
+    try {
+      const { data } = await apiClient.get<{ lines: string[] }>(
+        `/api/services/containers/${containerId}/logs/`,
+      );
+      setLogLines(data.lines ?? []);
+    } catch {
+      setLogLines(['[error] Failed to fetch logs from server.']);
+    } finally {
+      setLogsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === 1 && open && container) {
+      fetchLogs(container.id);
+    }
+  }, [tab, open, container, fetchLogs]);
 
   if (!container) return null;
 

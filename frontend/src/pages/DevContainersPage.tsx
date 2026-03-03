@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -6,6 +6,7 @@ import {
   CardContent,
   Chip,
   IconButton,
+  Skeleton,
   Snackbar,
   Stack,
   Table,
@@ -23,6 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ReplayIcon from '@mui/icons-material/Replay';
 import StopIcon from '@mui/icons-material/Stop';
 import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
@@ -32,6 +34,7 @@ import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDes
 import CreateContainerWizard from '../components/Containers/CreateContainerWizard';
 import ContainerDetailDrawer from '../components/Containers/ContainerDetailDrawer';
 import type { ContainerResource } from '../components/Containers/CreateContainerWizard';
+import { listContainers, deployContainer, stopContainer } from '../services/containersApi';
 
 const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
@@ -52,8 +55,6 @@ const TYPE_CONFIG: Record<string, { color: string; label: string }> = {
   oneoff:  { color: '#6B7280',                       label: 'One-off' },
 };
 
-const INITIAL_CONTAINERS: ContainerResource[] = [];
-
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
   if (diff < 60) return `${Math.round(diff)}s ago`;
@@ -63,13 +64,28 @@ function timeAgo(iso: string) {
 }
 
 const DevContainersPage: React.FC = () => {
-  const [containers, setContainers] = useState<ContainerResource[]>(INITIAL_CONTAINERS);
+  const [containers, setContainers] = useState<ContainerResource[]>([]);
+  const [loading, setLoading] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [detailContainer, setDetailContainer] = useState<ContainerResource | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<ContainerStatus | 'all'>('all');
   const [snack, setSnack] = useState<string | null>(null);
+
+  const fetchContainers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const items = await listContainers();
+      setContainers(items);
+    } catch {
+      // silently fail — data stays as-is
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchContainers(); }, [fetchContainers]);
 
   const filtered = useMemo(() => {
     return containers.filter(c => {
@@ -97,17 +113,27 @@ const DevContainersPage: React.FC = () => {
     setDrawerOpen(true);
   };
 
-  const handleRedeploy = (id: string) => {
+  const handleRedeploy = useCallback(async (id: string) => {
     setContainers(prev => prev.map(c => c.id === id ? { ...c, status: 'deploying', lastDeployed: new Date().toISOString() } : c));
     setDrawerOpen(false);
     setSnack('Redeployment triggered.');
-  };
+    try {
+      await deployContainer(id);
+    } catch {
+      setSnack('Redeployment request failed.');
+    }
+  }, []);
 
-  const handleStop = (id: string) => {
+  const handleStop = useCallback(async (id: string) => {
     setContainers(prev => prev.map(c => c.id === id ? { ...c, status: 'stopped' } : c));
     setDrawerOpen(false);
     setSnack('Container stopped.');
-  };
+    try {
+      await stopContainer(id);
+    } catch {
+      setSnack('Stop request failed.');
+    }
+  }, []);
 
   const STATS = [
     { label: 'Total',     value: summary.total,     color: t.textPrimary },
@@ -129,6 +155,12 @@ const DevContainersPage: React.FC = () => {
             Build, deploy, and manage containerised services linked to projects and pipelines.
           </Typography>
         </Box>
+        <Tooltip title="Refresh">
+          <IconButton onClick={fetchContainers} size="small"
+            sx={{ color: t.textSecondary, mr: 1, '&:hover': { bgcolor: t.surfaceHover } }}>
+            <RefreshIcon sx={{ fontSize: '1.1rem' }} />
+          </IconButton>
+        </Tooltip>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setWizardOpen(true)}
           sx={{ bgcolor: t.brandPrimary, color: '#FFFFFF', fontWeight: 700, fontSize: '.8rem', borderRadius: '6px', textTransform: 'none', boxShadow: 'none', fontFamily: FONT, '&:hover': { bgcolor: t.brandPrimaryHover, boxShadow: 'none' } }}>
           Create Container
@@ -192,10 +224,20 @@ const DevContainersPage: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 9 }).map((__, j) => (
+                      <TableCell key={j} sx={{ borderColor: t.border, py: 1.5 }}>
+                        <Skeleton variant="text" width={j === 0 ? 120 : j === 8 ? 60 : 80} height={16} sx={{ bgcolor: t.surfaceSubtle }} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align="center" sx={{ py: 5, color: t.textTertiary, fontFamily: FONT, fontSize: '.82rem' }}>
-                    No containers match your filter.
+                    {containers.length === 0 ? 'No containers yet — create your first one.' : 'No containers match your filter.'}
                   </TableCell>
                 </TableRow>
               ) : filtered.map(container => {

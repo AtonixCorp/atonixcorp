@@ -47,6 +47,7 @@ import SyncIcon           from '@mui/icons-material/Sync';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import apiClient from '../services/apiClient';
 import {
   getEnvironment, updateEnvironment, deleteEnvironment,
   getEnvHealth, getEnvDeployments, rollbackDeployment, promoteEnvironment,
@@ -782,36 +783,57 @@ const SecretsPanel: React.FC<{ envId: string }> = ({ envId }) => {
 };
 
 // ── Logs ──────────────────────────────────────────────────────────────────────
-const MOCK_LOGS = [
-  { ts: '14:32:01', level: 'INFO',  svc: 'api-gateway',  msg: '200 GET /api/health 8ms' },
-  { ts: '14:32:03', level: 'INFO',  svc: 'worker',       msg: 'Job #4821 completed in 1.2s' },
-  { ts: '14:32:05', level: 'WARN',  svc: 'auth-service', msg: 'Token near expiry for user #9901' },
-  { ts: '14:32:07', level: 'INFO',  svc: 'api-gateway',  msg: '200 POST /api/pipelines 42ms' },
-  { ts: '14:32:09', level: 'INFO',  svc: 'worker',       msg: 'Job #4822 completed in 0.4s' },
-  { ts: '14:32:12', level: 'INFO',  svc: 'api-gateway',  msg: '200 GET /api/environments 11ms' },
-  { ts: '14:32:15', level: 'ERROR', svc: 'api-gateway',  msg: '500 POST /api/deploy — timeout after 30s' },
-  { ts: '14:32:17', level: 'INFO',  svc: 'worker',       msg: 'Retrying job #4823' },
-  { ts: '14:32:20', level: 'INFO',  svc: 'api-gateway',  msg: '200 GET /dashboard/health 5ms' },
-  { ts: '14:32:22', level: 'INFO',  svc: 'worker',       msg: 'Job #4823 completed in 2.1s' },
-];
-const LEVEL_C: Record<string, string> = { INFO: '#8b949e', WARN: '#F59E0B', ERROR: sc.danger, DEBUG: '#6B7280' };
+interface LogEntry { ts: string; level: string; svc: string; msg: string; }
+const LEVEL_C: Record<string, string> = { INFO: '#8b949e', WARN: '#F59E0B', WARNING: '#F59E0B', ERROR: sc.danger, DEBUG: '#6B7280' };
 
 const LogsPanel: React.FC<{ envId: string }> = ({ envId: _ }) => {
   const [query, setQuery] = useState('');
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logsLoading, setLogsLoading] = useState(true);
   const logRef = useRef<HTMLDivElement>(null);
-  const filtered = query.trim() ? MOCK_LOGS.filter(l => `${l.svc} ${l.msg} ${l.level}`.toLowerCase().includes(query.toLowerCase())) : MOCK_LOGS;
+
+  const loadLogs = useCallback(async (search?: string) => {
+    setLogsLoading(true);
+    try {
+      const { data } = await apiClient.get<{ logs: any[] }>(
+        '/api/services/logs/',
+        { params: { search: search ?? '', limit: 50 } },
+      );
+      const items = data.logs ?? [];
+      setLogs(items.map((l: any) => ({
+        ts:    l.timestamp ? l.timestamp.slice(11, 19) : '',
+        level: l.level === 'WARNING' ? 'WARN' : (l.level ?? 'INFO'),
+        svc:   l.service ?? '',
+        msg:   l.message ?? '',
+      })));
+    } catch { /* silent */ } finally {
+      setLogsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadLogs(); }, [loadLogs]);
+
+  const filtered = query.trim()
+    ? logs.filter(l => `${l.svc} ${l.msg} ${l.level}`.toLowerCase().includes(query.toLowerCase()))
+    : logs;
 
   return (
     <Box>
       <SectionHead title="Log Stream" sub="Real-time aggregated logs across all services in this environment." />
 
       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
-        <TextField size="small" placeholder="Filter…" value={query} onChange={e => setQuery(e.target.value)} sx={{ width: 240, '& input': { fontFamily: 'monospace', fontSize: '.78rem' } }} />
+        <TextField size="small" placeholder="Filter…" value={query}
+          onChange={e => { setQuery(e.target.value); loadLogs(e.target.value); }}
+          sx={{ width: 240, '& input': { fontFamily: 'monospace', fontSize: '.78rem' } }} />
         <Chip label="LIVE" size="small" sx={{ bgcolor: 'rgba(34,197,94,.15)', color: sc.success, fontWeight: 700, fontSize: '.7rem', height: 20 }} />
       </Stack>
 
       <Box ref={logRef} sx={{ bgcolor: '#0d1117', border: `1px solid ${t.border}`, borderRadius: '8px', p: 2, minHeight: 340, maxHeight: 480, overflowY: 'auto' }}>
-        {filtered.map((l, i) => (
+        {logsLoading ? (
+          <Box sx={{ color: '#8b949e', fontFamily: 'monospace', fontSize: '.75rem' }}>Loading logs…</Box>
+        ) : filtered.length === 0 ? (
+          <Box sx={{ color: '#8b949e', fontFamily: 'monospace', fontSize: '.75rem' }}>No log entries found.</Box>
+        ) : filtered.map((l, i) => (
           <Box key={i} sx={{ display: 'flex', gap: 1.5, lineHeight: 1.75, fontFamily: 'monospace', fontSize: '.75rem' }}>
             <span style={{ color: '#6B7280', flexShrink: 0 }}>2026-03-02 {l.ts}</span>
             <span style={{ color: LEVEL_C[l.level], flexShrink: 0, width: 40 }}>{l.level}</span>

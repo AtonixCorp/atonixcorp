@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -24,60 +24,11 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
+import { listProjects, listProjectRepos, getRepoBranches, type BackendProject, type BackendRepository } from '../../services/projectsApi';
+import { listDefinitions, triggerDefinition, type PipelineDefinition } from '../../services/pipelinesApi';
 
 const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
-
-// Mock API data
-const MOCK_PROJECTS = [
-  { id: 'proj_123', name: 'atonix-api', description: 'API backend', createdAt: '2026-01-01T12:00:00Z' },
-  { id: 'proj_124', name: 'atonix-web', description: 'Frontend application', createdAt: '2026-01-15T09:30:00Z' },
-];
-
-const MOCK_REPOS: Record<string, { id: string; provider: string; name: string; defaultBranch: string }[]> = {
-  proj_123: [
-    { id: 'repo_456', provider: 'github', name: 'atonix-api', defaultBranch: 'main' },
-    { id: 'repo_457', provider: 'gitlab', name: 'atonix-api-mobile', defaultBranch: 'develop' },
-  ],
-  proj_124: [
-    { id: 'repo_458', provider: 'github', name: 'atonix-web', defaultBranch: 'main' },
-  ],
-};
-
-const MOCK_PIPELINE_FILES: Record<string, { id: string; path: string; type: string }[]> = {
-  repo_456: [
-    { id: 'file_789', path: '.atonix/pipeline.yaml', type: 'atonix' },
-    { id: 'file_790', path: '.atonix/pipelines/deploy.yaml', type: 'atonix' },
-  ],
-  repo_457: [
-    { id: 'file_791', path: '.atonix/pipeline.yaml', type: 'atonix' },
-  ],
-  repo_458: [
-    { id: 'file_792', path: '.atonix/pipeline.yaml', type: 'atonix' },
-  ],
-};
-
-const MOCK_PIPELINES: Record<string, { name: string; stages: string[]; file: string }[]> = {
-  file_789: [
-    { name: 'build', stages: ['install', 'build', 'test'], file: '.atonix/pipeline.yaml' },
-    { name: 'deploy', stages: ['deploy'], file: '.atonix/pipeline.yaml' },
-  ],
-  file_790: [
-    { name: 'deploy-prod', stages: ['deploy'], file: '.atonix/pipelines/deploy.yaml' },
-  ],
-  file_791: [
-    { name: 'build', stages: ['install', 'build', 'test'], file: '.atonix/pipeline.yaml' },
-  ],
-  file_792: [
-    { name: 'build-deploy', stages: ['install', 'build', 'test', 'deploy'], file: '.atonix/pipeline.yaml' },
-  ],
-};
-
-const MOCK_BRANCHES: Record<string, string[]> = {
-  repo_456: ['main', 'develop', 'feature/login'],
-  repo_457: ['develop', 'main'],
-  repo_458: ['main', 'staging'],
-};
 
 const PROVIDER_ICON: Record<string, React.ReactNode> = {
   github: <GitHubIcon sx={{ fontSize: '1.2rem' }} />,
@@ -91,7 +42,7 @@ interface RunPipelineModalProps {
   onPipelineStarted: (pipelineId: string) => void;
 }
 
-type Step = 'project' | 'repo' | 'files' | 'pipeline' | 'branch' | 'confirm';
+type Step = 'project' | 'repo' | 'pipeline' | 'branch' | 'confirm';
 
 const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPipelineStarted }) => {
   const [step, setStep] = useState<Step>('project');
@@ -99,117 +50,111 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
   const [search, setSearch] = useState('');
 
   // Selection state
-  const [selectedProject, setSelectedProject] = useState<any>(null);
-  const [selectedRepo, setSelectedRepo] = useState<any>(null);
-  const [_selectedFile, setSelectedFile] = useState<any>(null);
-  const [selectedPipeline, setSelectedPipeline] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<BackendProject | null>(null);
+  const [selectedRepo, setSelectedRepo] = useState<BackendRepository | null>(null);
+  const [selectedPipeline, setSelectedPipeline] = useState<PipelineDefinition | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string>('');
 
   // Data state
-  const [projects, setProjects] = useState<any[]>([]);
-  const [repos, setRepos] = useState<any[]>([]);
-  const [files, setFiles] = useState<any[]>([]);
-  const [pipelines, setPipelines] = useState<any[]>([]);
+  const [projects, setProjects] = useState<BackendProject[]>([]);
+  const [repos, setRepos] = useState<BackendRepository[]>([]);
+  const [pipelines, setPipelines] = useState<PipelineDefinition[]>([]);
   const [branches, setBranches] = useState<string[]>([]);
+
+  const reset = useCallback(() => {
+    setStep('project');
+    setSelectedProject(null);
+    setSelectedRepo(null);
+    setSelectedPipeline(null);
+    setSelectedBranch('');
+    setSearch('');
+  }, []);
+
+  const loadProjects = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await listProjects();
+      setProjects(data);
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadRepos = useCallback(async (projectId: string) => {
+    setLoading(true);
+    try {
+      const data = await listProjectRepos(projectId);
+      setRepos(data);
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadPipelines = useCallback(async (projectId: string) => {
+    setLoading(true);
+    try {
+      const data = await listDefinitions({ project: projectId });
+      setPipelines(data);
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadBranches = useCallback(async (repoId: string) => {
+    setLoading(true);
+    try {
+      const data = await getRepoBranches(repoId);
+      const names = data.map((b: any) => b.name ?? b);
+      setBranches(names);
+      setSelectedBranch(names[0] ?? '');
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (open) {
       reset();
       loadProjects();
     }
-  }, [open]);
+  }, [open, reset, loadProjects]);
 
-  const reset = () => {
-    setStep('project');
-    setSelectedProject(null);
-    setSelectedRepo(null);
-    setSelectedFile(null);
-    setSelectedPipeline(null);
-    setSelectedBranch('');
-    setSearch('');
-  };
-
-  const loadProjects = async () => {
-    setLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      setProjects(MOCK_PROJECTS);
-      setLoading(false);
-    }, 500);
-  };
-
-  const loadRepos = async (projectId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setRepos(MOCK_REPOS[projectId] || []);
-      setLoading(false);
-    }, 500);
-  };
-
-  const loadPipelineFiles = async (repoId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setFiles(MOCK_PIPELINE_FILES[repoId] || []);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const loadPipelines = async (fileId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setPipelines(MOCK_PIPELINES[fileId] || []);
-      setLoading(false);
-    }, 500);
-  };
-
-  const loadBranches = async (repoId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      const repoBranches = MOCK_BRANCHES[repoId] || [];
-      setBranches(repoBranches);
-      setSelectedBranch(repoBranches[0] || '');
-      setLoading(false);
-    }, 500);
-  };
-
-  const handleProjectSelect = (project: any) => {
+  const handleProjectSelect = (project: BackendProject) => {
     setSelectedProject(project);
     setStep('repo');
     loadRepos(project.id);
   };
 
-  const handleRepoSelect = (repo: any) => {
+  const handleRepoSelect = (repo: BackendRepository) => {
     setSelectedRepo(repo);
-    setStep('files');
-    loadPipelineFiles(repo.id);
-  };
-
-  const handleFileSelect = (file: any) => {
-    setSelectedFile(file);
     setStep('pipeline');
-    loadPipelines(file.id);
+    loadPipelines(selectedProject!.id);
   };
 
-  const handlePipelineSelect = (pipeline: any) => {
+  const handlePipelineSelect = (pipeline: PipelineDefinition) => {
     setSelectedPipeline(pipeline);
     setStep('branch');
-    loadBranches(selectedRepo.id);
+    loadBranches(selectedRepo!.id);
   };
 
   const handleRun = async () => {
+    if (!selectedPipeline) return;
     setLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      const pipelineId = `pipe_${Date.now()}`;
-      onPipelineStarted(pipelineId);
+    try {
+      const run = await triggerDefinition(selectedPipeline.id, {
+        branch: selectedBranch,
+        repo:   selectedRepo?.id ?? null,
+      });
+      onPipelineStarted(run.id);
       onClose();
+    } catch { /* silent — caller handles feedback */ } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const filteredProjects = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.description.toLowerCase().includes(search.toLowerCase())
+    (p.description ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   const renderStepContent = () => {
@@ -265,39 +210,11 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
                   <ListItem key={repo.id} disablePadding>
                     <ListItemButton onClick={() => handleRepoSelect(repo)}>
                       <ListItemIcon>
-                        {PROVIDER_ICON[repo.provider]}
+                        {PROVIDER_ICON[repo.provider ?? 'other'] ?? <GitHubIcon sx={{ fontSize: '1.2rem' }} />}
                       </ListItemIcon>
                       <ListItemText
-                        primary={repo.name}
-                        secondary={`Default: ${repo.defaultBranch}`}
-                      />
-                      <ArrowForwardIcon sx={{ color: t.textSecondary }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-        );
-
-      case 'files':
-        return (
-          <Box>
-            <Typography variant="h6" sx={{ mb: 2, fontFamily: FONT, fontWeight: 600 }}>
-              {loading ? 'Scanning repository for pipeline files...' : 'Select Pipeline File'}
-            </Typography>
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : (
-              <List>
-                {files.map((file) => (
-                  <ListItem key={file.id} disablePadding>
-                    <ListItemButton onClick={() => handleFileSelect(file)}>
-                      <ListItemText
-                        primary={file.path}
-                        secondary={`Type: ${file.type}`}
+                        primary={repo.repo_name ?? repo.id}
+                        secondary={`Default: ${repo.default_branch ?? 'main'}`}
                       />
                       <ArrowForwardIcon sx={{ color: t.textSecondary }} />
                     </ListItemButton>
@@ -318,14 +235,18 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                 <CircularProgress />
               </Box>
+            ) : pipelines.length === 0 ? (
+              <Typography sx={{ color: t.textSecondary, fontFamily: FONT, py: 2 }}>
+                No pipeline definitions found for this project. Create one first.
+              </Typography>
             ) : (
               <List>
-                {pipelines.map((pipeline, index) => (
-                  <ListItem key={index} disablePadding>
+                {pipelines.map((pipeline) => (
+                  <ListItem key={pipeline.id} disablePadding>
                     <ListItemButton onClick={() => handlePipelineSelect(pipeline)}>
                       <ListItemText
                         primary={pipeline.name}
-                        secondary={`Stages: ${pipeline.stages.join(' → ')}`}
+                        secondary={`${pipeline.stages.length} stage(s)`}
                       />
                       <ArrowForwardIcon sx={{ color: t.textSecondary }} />
                     </ListItemButton>
@@ -382,7 +303,7 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ fontFamily: FONT, color: t.textSecondary }}>Repository:</Typography>
-                    <Typography sx={{ fontFamily: FONT, fontWeight: 600 }}>{selectedRepo?.name}</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 600 }}>{selectedRepo?.repo_name ?? selectedRepo?.id}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ fontFamily: FONT, color: t.textSecondary }}>Pipeline:</Typography>
@@ -394,7 +315,7 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ fontFamily: FONT, color: t.textSecondary }}>Stages:</Typography>
-                    <Typography sx={{ fontFamily: FONT, fontWeight: 600 }}>{selectedPipeline?.stages.join(' → ')}</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontWeight: 600 }}>{selectedPipeline?.stages.map((s: any) => s.name ?? s).join(' → ')}</Typography>
                   </Box>
                 </Stack>
               </CardContent>
@@ -428,7 +349,6 @@ const RunPipelineModal: React.FC<RunPipelineModalProps> = ({ open, onClose, onPi
     switch (step) {
       case 'project': return 'Run Pipeline - Select Project';
       case 'repo': return 'Run Pipeline - Select Repository';
-      case 'files': return 'Run Pipeline - Detect Pipeline Files';
       case 'pipeline': return 'Run Pipeline - Select Pipeline';
       case 'branch': return 'Run Pipeline - Select Branch';
       case 'confirm': return 'Run Pipeline - Confirm';

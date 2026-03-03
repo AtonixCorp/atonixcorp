@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   Chip,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -22,6 +23,7 @@ import {
   Divider,
 } from '@mui/material';
 import { dashboardCardSx, dashboardPrimaryButtonSx, dashboardTokens } from '../styles/dashboardDesignSystem';
+import apiClient from '../services/apiClient';
 
 type NewDeploymentPayload = {
   appName: string;
@@ -50,6 +52,31 @@ interface DeploymentItem {
   vulnerabilities: Array<{ severity: 'Low' | 'Medium' | 'High' | 'Critical'; title: string }>;
 }
 
+function deploymentStatusFromBackend(s: string): DeploymentStatus {
+  if (s === 'done') return 'running';
+  if (s === 'failed') return 'failed';
+  return 'building'; // draft | planning | planned | confirmed | deploying
+}
+
+function fromBackendDeployment(d: any): DeploymentItem {
+  return {
+    id:           String(d.id),
+    appName:      d.app_name      ?? d.new_project_name ?? 'Unnamed App',
+    status:       deploymentStatusFromBackend(d.status ?? ''),
+    environment:  (d.target_environments?.[0] ?? 'dev') as DeploymentItem['environment'],
+    lastDeployed: d.updated_at    ? d.updated_at.slice(0, 16).replace('T', ' ') : '',
+    hostname:     '',
+    image:        d.backend?.image ?? '',
+    branch:       d.git_branch    ?? '',
+    owner:        d.owner?.username ?? '',
+    createdAt:    d.created_at    ? d.created_at.slice(0, 16).replace('T', ' ') : '',
+    cpu:          '—',
+    memory:       '—',
+    errors:       0,
+    vulnerabilities: [],
+  };
+}
+
 const INITIAL_DEPLOYMENTS: DeploymentItem[] = [];
 
 const statusColor = (status: DeploymentStatus) => {
@@ -69,9 +96,25 @@ const DevDeploymentsPage: React.FC = () => {
   const [selected,    setSelected]   = useState<DeploymentItem | null>(null);
   const [tab,         setTab]        = useState(0);
   const [deployments, setDeployments] = useState<DeploymentItem[]>(INITIAL_DEPLOYMENTS);
+  const [loading,     setLoading]    = useState(true);
   const [newItemId,   setNewItemId]  = useState<string | null>(null);
 
+  const fetchDeployments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await apiClient.get<any>('/api/services/deploy/requests/');
+      const items: any[] = Array.isArray(data) ? data : (data?.results ?? []);
+      setDeployments(items.map(fromBackendDeployment));
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Pick up a newly deployed app when navigating back from the deploy wizard
+  useEffect(() => {
+    fetchDeployments();
+  }, [fetchDeployments]);
+
   useEffect(() => {
     const raw = localStorage.getItem('ATONIX_NEW_DEPLOY');
     if (!raw) return;
@@ -149,7 +192,21 @@ const DevDeploymentsPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {deployments.map((item) => (
+                {loading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 5 }).map((__, j) => (
+                        <TableCell key={j}><Skeleton variant="text" width={j === 0 ? 120 : 80} height={16} /></TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : deployments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                      No deployments yet.
+                    </TableCell>
+                  </TableRow>
+                ) : deployments.map((item) => (
                   <TableRow
                     key={item.id}
                     hover

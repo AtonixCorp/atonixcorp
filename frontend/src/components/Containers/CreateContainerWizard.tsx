@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -32,6 +32,9 @@ import LinkIcon from '@mui/icons-material/Link';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import AddIcon from '@mui/icons-material/Add';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
+import { listProjects as fetchProjectsApi } from '../../services/projectsApi';
+import { listDefinitions } from '../../services/pipelinesApi';
+import { createContainer } from '../../services/containersApi';
 
 const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
@@ -47,17 +50,8 @@ const CONTAINER_TYPES: { type: ContainerType; label: string; desc: string; icon:
   { type: 'oneoff', label: 'One-off Task', desc: 'Single execution for migrations or scripts', icon: <FlashOnIcon sx={{ fontSize: '1.5rem' }} /> },
 ];
 
-const MOCK_PROJECTS = [
-  { id: 'proj_123', name: 'atonix-api', env: 'production', owner: 'samuel' },
-  { id: 'proj_124', name: 'atonix-web', env: 'production', owner: 'jordan' },
-  { id: 'proj_125', name: 'atonix-worker', env: 'staging', owner: 'samuel' },
-];
-
-const MOCK_PIPELINES = [
-  { id: 'pipe_001', name: 'payments-release', project: 'proj_123', status: 'success', lastRun: '2h ago' },
-  { id: 'pipe_002', name: 'frontend-ci', project: 'proj_124', status: 'running', lastRun: '10min ago' },
-  { id: 'pipe_003', name: 'api-deploy', project: 'proj_123', status: 'success', lastRun: '1d ago' },
-];
+interface WizardProject { id: string; name: string; env: string; owner: string; }
+interface WizardPipeline { id: string; name: string; project: string; status: string; lastRun: string; }
 
 const PIPELINE_TEMPLATES = [
   { id: 'node', label: 'Node.js', image: 'node:20-alpine' },
@@ -125,12 +119,44 @@ const CreateContainerWizard: React.FC<Props> = ({ open, onClose, onCreated }) =>
   // Step 1
   const [containerType, setContainerType] = useState<ContainerType>('runtime');
 
+  // Live data
+  const [projects, setProjects] = useState<WizardProject[]>([]);
+  const [pipelines, setPipelines] = useState<WizardPipeline[]>([]);
+
+  const loadWizardData = useCallback(async () => {
+    try {
+      const [projs, defs] = await Promise.allSettled([
+        fetchProjectsApi(),
+        listDefinitions(),
+      ]);
+      if (projs.status === 'fulfilled') {
+        setProjects(projs.value.map(p => ({
+          id:    p.id,
+          name:  p.name,
+          env:   p.namespace || 'production',
+          owner: p.owner_username ?? p.created_by_username ?? '',
+        })));
+      }
+      if (defs.status === 'fulfilled') {
+        setPipelines(defs.value.map(d => ({
+          id:      d.id,
+          name:    d.name,
+          project: d.project ?? '',
+          status:  d.is_active ? 'success' : 'stopped',
+          lastRun: d.created_at ?? '',
+        })));
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { if (open) loadWizardData(); }, [open, loadWizardData]);
+
   // Step 2
-  const [selectedProject, setSelectedProject] = useState<typeof MOCK_PROJECTS[0] | null>(null);
+  const [selectedProject, setSelectedProject] = useState<WizardProject | null>(null);
 
   // Step 3
   const [pipelineMode, setPipelineMode] = useState<PipelineMode>('existing');
-  const [selectedPipeline, setSelectedPipeline] = useState<typeof MOCK_PIPELINES[0] | null>(null);
+  const [selectedPipeline, setSelectedPipeline] = useState<WizardPipeline | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<typeof PIPELINE_TEMPLATES[0] | null>(PIPELINE_TEMPLATES[0]);
 
   // Step 4
@@ -170,8 +196,8 @@ const CreateContainerWizard: React.FC<Props> = ({ open, onClose, onCreated }) =>
     ? `${selectedProject.name}-${selectedProject.env}-${containerType}`
     : `my-service-${containerType}`;
 
-  const filteredPipelines = MOCK_PIPELINES.filter(p =>
-    !selectedProject || p.project === selectedProject.id
+  const filteredPipelines = pipelines.filter(p =>
+    !selectedProject || p.project === selectedProject.id || p.project === ''
   );
 
   const yamlPreview = `container:
@@ -202,45 +228,48 @@ const CreateContainerWizard: React.FC<Props> = ({ open, onClose, onCreated }) =>
     true, // step 3
   ];
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     setCreating(true);
-    setTimeout(() => {
-      const container: ContainerResource = {
-        id: `con_${Date.now()}`,
-        name: generatedName,
-        type: containerType,
-        project: selectedProject?.name ?? 'unknown',
-        projectId: selectedProject?.id ?? '',
-        pipeline: pipelineMode === 'existing'
-          ? (selectedPipeline?.name ?? 'none')
+    try {
+      const payload = {
+        name:          generatedName,
+        container_type: containerType,
+        project_id:    selectedProject?.id   ?? '',
+        project_name:  selectedProject?.name ?? '',
+        pipeline:      pipelineMode === 'existing'
+          ? (selectedPipeline?.name ?? '')
           : `${selectedTemplate?.label ?? 'custom'}-pipeline`,
         image: `registry.atonix.io/${selectedProject?.name ?? 'org'}/${generatedName}`,
-        tag: 'latest',
+        image_tag:     'latest',
+        commit_sha:    '',
         cpu,
         memory,
         replicas,
         autoscaling,
-        autoscaleMin,
-        autoscaleMax,
-        autoscaleCpu,
+        autoscale_min: autoscaleMin,
+        autoscale_max: autoscaleMax,
+        autoscale_cpu: autoscaleCpu,
         expose,
         port,
         domain,
-        status: 'deploying',
-        lastDeployed: new Date().toISOString(),
-        commitSha: 'abc1234',
       };
-      setCreating(false);
+      const container = await createContainer(payload);
       reset();
       onCreated(container);
-    }, 1800);
+    } catch (err: any) {
+      // surface error without crashing the wizard
+      console.error('Container creation failed:', err?.response?.data ?? err);
+    } finally {
+      setCreating(false);
+    }
   };
 
   const statusPill = (s: string) => {
     const map: Record<string, string> = { success: dashboardSemanticColors.success, running: dashboardSemanticColors.info, failed: dashboardSemanticColors.danger };
+    const color = map[s] ?? '#6B7280';
     return (
       <Chip label={s} size="small"
-        sx={{ bgcolor: `${map[s] ?? '#6B7280'}22`, color: map[s] ?? '#6B7280', fontWeight: 700, fontSize: '.65rem', height: 18, border: `1px solid ${map[s] ?? '#6B7280'}44` }} />
+        sx={{ bgcolor: `${color}22`, color, fontWeight: 700, fontSize: '.65rem', height: 18, border: `1px solid ${color}44` }} />
     );
   };
 
@@ -339,7 +368,7 @@ const CreateContainerWizard: React.FC<Props> = ({ open, onClose, onCreated }) =>
                 The container inherits the project's environment, region, and secrets.
               </Typography>
               <Stack spacing={1.25}>
-                {MOCK_PROJECTS.map(proj => {
+                {projects.map(proj => {
                   const selected = selectedProject?.id === proj.id;
                   return (
                     <Card key={proj.id} onClick={() => setSelectedProject(proj)} sx={{

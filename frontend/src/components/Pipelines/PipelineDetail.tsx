@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -22,46 +22,13 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import StopIcon from '@mui/icons-material/Stop';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
+import {
+  getPipeline, listPipelineJobs, getJobLogs, cancelPipeline,
+  type BackendPipeline, type BackendPipelineJob,
+} from '../../services/pipelinesApi';
 
 const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
-
-// Mock data
-const MOCK_PIPELINE = {
-  pipelineId: 'pipe_001',
-  status: 'running',
-  branch: 'main',
-  triggeredBy: 'samuel',
-  startedAt: '2026-02-25T10:00:00Z',
-  project: 'atonix-api',
-  repo: 'atonix-api',
-  pipelineName: 'deploy',
-};
-
-const MOCK_JOBS = [
-  { id: 'job_001', name: 'install', status: 'success', startedAt: '2026-02-25T10:00:00Z', finishedAt: '2026-02-25T10:02:00Z' },
-  { id: 'job_002', name: 'build', status: 'running', startedAt: '2026-02-25T10:02:00Z' },
-  { id: 'job_003', name: 'test', status: 'pending' },
-  { id: 'job_004', name: 'deploy', status: 'pending' },
-];
-
-const MOCK_LOGS = `Installing dependencies...
-go: downloading github.com/gofiber/fiber v2.51.0
-go: downloading github.com/golang-jwt/jwt v4.5.0
-OK Dependencies installed
-
-Building binary...
-go build -o bin/gateway ./cmd/gateway
-OK Build successful (7.4 MB)
-
-Running tests...
---- PASS: TestAuth (0.03s)
---- PASS: TestRateLimit (0.07s)
---- PASS: TestRouting (0.12s)
-OK All tests passed (38/38)
-
-Deploying to production...
-Waiting for rollout...`;
 
 const STATUS_CONFIG = {
   success: { color: dashboardSemanticColors.success, bg: 'rgba(34,197,94,.12)', label: 'Success', icon: <CheckCircleIcon sx={{ fontSize: '1rem' }} /> },
@@ -77,43 +44,54 @@ interface PipelineDetailProps {
 }
 
 const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClose }) => {
-  const [pipeline, setPipeline] = useState<any>(null);
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [pipeline, setPipeline] = useState<BackendPipeline | null>(null);
+  const [jobs, setJobs] = useState<BackendPipelineJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [logsOpen, setLogsOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<BackendPipelineJob | null>(null);
+  const [jobLogs, setJobLogs] = useState<string>('');
+  const [logsLoading, setLogsLoading] = useState(false);
+
+  const loadPipeline = useCallback(async () => {
+    if (!pipelineId) return;
+    setLoading(true);
+    try {
+      const [pipe, jobList] = await Promise.all([
+        getPipeline(pipelineId),
+        listPipelineJobs(pipelineId),
+      ]);
+      setPipeline(pipe);
+      setJobs(jobList);
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
+  }, [pipelineId]);
 
   useEffect(() => {
-    if (open && pipelineId) {
-      loadPipeline();
-      loadJobs();
-    }
-  }, [open, pipelineId]);
+    if (open && pipelineId) loadPipeline();
+  }, [open, pipelineId, loadPipeline]);
 
-  const loadPipeline = async () => {
-    setLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      setPipeline(MOCK_PIPELINE);
-      setLoading(false);
-    }, 500);
-  };
-
-  const loadJobs = async () => {
-    // Mock API call
-    setTimeout(() => {
-      setJobs(MOCK_JOBS);
-    }, 500);
-  };
-
-  const handleViewLogs = (job: any) => {
+  const handleViewLogs = async (job: BackendPipelineJob) => {
     setSelectedJob(job);
     setLogsOpen(true);
+    setLogsLoading(true);
+    setJobLogs('');
+    try {
+      const logs = await getJobLogs(job.id);
+      setJobLogs(logs.map((l: any) => l.log || l.log_output || '').join('\n'));
+    } catch {
+      setJobLogs('[error] Could not load job logs.');
+    } finally {
+      setLogsLoading(false);
+    }
   };
 
   const handleCancel = async () => {
-    // Mock API call
-    alert('Pipeline cancelled');
+    if (!pipelineId) return;
+    try {
+      await cancelPipeline(pipelineId);
+      loadPipeline();
+    } catch { /* silent */ }
   };
 
   if (loading) {
@@ -133,6 +111,18 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
 
   const pipelineCfg = STATUS_CONFIG[pipeline.status as keyof typeof STATUS_CONFIG];
 
+  // Map BackendPipeline fields to display labels
+  const pipelineDisplay = {
+    pipelineId: pipeline.id,
+    status:     pipeline.status,
+    branch:     pipeline.branch,
+    triggeredBy: pipeline.triggered_by,
+    startedAt:  pipeline.started_at,
+    project:    pipeline.project,
+    repo:       pipeline.repo,
+    pipelineName: pipeline.pipeline_name,
+  };
+
   return (
     <>
       <Drawer
@@ -145,7 +135,7 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
             <Typography sx={{ fontWeight: 800, fontSize: '1.25rem', color: t.textPrimary }}>
-              Pipeline {pipeline.pipelineId}
+              Pipeline {pipelineDisplay.pipelineId}
             </Typography>
             <IconButton onClick={onClose}>
               <CloseIcon />
@@ -161,33 +151,33 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
                   <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: pipelineCfg.color }}>
                     {pipelineCfg.label}
                   </Typography>
-                  <Chip label={pipeline.status} size="small" sx={{ bgcolor: pipelineCfg.bg, color: pipelineCfg.color, fontWeight: 600 }} />
+                  <Chip label={pipelineDisplay.status} size="small" sx={{ bgcolor: pipelineCfg.bg, color: pipelineCfg.color, fontWeight: 600 }} />
                 </Box>
 
                 <Stack spacing={1}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Project:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{pipeline.project}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{pipelineDisplay.project}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Repository:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{pipeline.repo}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{pipelineDisplay.repo}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Branch:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{pipeline.branch}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{pipelineDisplay.branch}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Pipeline:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{pipeline.pipelineName}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{pipelineDisplay.pipelineName}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Triggered by:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{pipeline.triggeredBy}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{pipelineDisplay.triggeredBy}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography sx={{ color: t.textSecondary }}>Started:</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{new Date(pipeline.startedAt).toLocaleString()}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{new Date(pipelineDisplay.startedAt).toLocaleString()}</Typography>
                   </Box>
                 </Stack>
               </Stack>
@@ -278,8 +268,8 @@ const PipelineDetail: React.FC<PipelineDetailProps> = ({ pipelineId, open, onClo
           </IconButton>
         </Box>
         <Box sx={{ p: 2, fontFamily: 'monospace', fontSize: '.78rem', color: '#e6edf3', lineHeight: 1.8, whiteSpace: 'pre-wrap', overflow: 'auto', flex: 1 }}>
-          {MOCK_LOGS}
-          <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#153d75', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />
+          {logsLoading ? 'Loading logs…' : (jobLogs || '— No log output available —')}
+          {!logsLoading && <Box component="span" sx={{ display: 'inline-block', width: 8, height: '1em', bgcolor: '#153d75', animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />}
         </Box>
       </Drawer>
     </>
