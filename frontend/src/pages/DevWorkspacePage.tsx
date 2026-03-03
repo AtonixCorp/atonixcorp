@@ -120,6 +120,7 @@ interface CreateDialogProps {
   onCreated: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function CreateDialog({ open, onClose, onCreated }: CreateDialogProps) {
   const [busy, setBusy] = useState(false);
   const [err,  setErr]  = useState<string | null>(null);

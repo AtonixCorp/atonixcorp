@@ -23,7 +23,6 @@ import { dashboardTokens } from '../../styles/dashboardDesignSystem';
 import type { RepoBranch } from '../../services/projectsApi';
 
 const t    = dashboardTokens.colors;
-const FONT = dashboardTokens.typography.fontFamily;
 
 interface RepoBranchSelectorProps {
   currentBranch:  string;

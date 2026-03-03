@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import HomeIcon         from '@mui/icons-material/Home';
-import CallSplitIcon    from '@mui/icons-material/CallSplit';
 import { dashboardTokens } from '../../styles/dashboardDesignSystem';
 import { FileBadge }    from '../FileTreeExplorer';
 import { RepoReadme }   from './RepoReadme';

@@ -11,7 +11,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Chip,
@@ -21,7 +20,6 @@ import {
   Popover,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import AccountTreeIcon   from '@mui/icons-material/AccountTree';
@@ -32,14 +30,12 @@ import ExpandMoreIcon    from '@mui/icons-material/ExpandMore';
 import BugReportIcon     from '@mui/icons-material/BugReport';
 import CallSplitIcon     from '@mui/icons-material/CallSplit';
 import CheckCircleIcon   from '@mui/icons-material/CheckCircle';
-import FolderZipIcon     from '@mui/icons-material/FolderZip';
 import LockIcon          from '@mui/icons-material/Lock';
 import LocalOfferIcon    from '@mui/icons-material/LocalOffer';
 import MergeIcon         from '@mui/icons-material/MergeType';
 import MenuBookIcon      from '@mui/icons-material/MenuBook';
 import PlayCircleIcon    from '@mui/icons-material/PlayCircle';
 import RocketLaunchIcon  from '@mui/icons-material/RocketLaunch';
-import SettingsIcon      from '@mui/icons-material/Settings';
 import StarIcon          from '@mui/icons-material/Star';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -115,7 +111,7 @@ const BranchListPanel: React.FC<{
   currentBranch: string;
   onSwitch:      (b: string) => void;
   onViewDiff?:   (b: RepoBranch) => void;
-}> = ({ branches, loading, currentBranch, onSwitch, onViewDiff }) => {
+}> = ({ branches, loading, currentBranch, onSwitch, onViewDiff: _onViewDiff }) => {
   if (loading) return <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress sx={{ color: t.brandPrimary }} /></Box>;
 
   return (
@@ -289,7 +285,7 @@ const RepositoryPage: React.FC = () => {
   const [copyDone,    setCopyDone]    = useState(false);
 
   // Track last loaded branch/repo to avoid redundant fetches
-  const loadedBranchRef = useRef<string>('');
+  const _loadedBranchRef = useRef<string>('');
   const loadedRepoRef   = useRef<string>('');
 
   // ─── Initial load ──────────────────────────────────────────────────────────

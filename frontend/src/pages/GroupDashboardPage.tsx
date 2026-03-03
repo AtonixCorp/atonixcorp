@@ -10,7 +10,6 @@ import {
   MenuItem, Paper, Select, Snackbar, Stack, Table, TableBody, TableCell, TableHead, TableRow,
   TextField, Tooltip, Typography,
 } from '@mui/material';
-import AccountTreeIcon         from '@mui/icons-material/AccountTree';
 import AppsIcon               from '@mui/icons-material/Apps';
 import ArrowBackIcon          from '@mui/icons-material/ArrowBack';
 import ArticleIcon            from '@mui/icons-material/Article';
@@ -20,7 +19,6 @@ import ChevronRightIcon       from '@mui/icons-material/ChevronRight';
 import CheckCircleIcon        from '@mui/icons-material/CheckCircle';
 import ErrorIcon              from '@mui/icons-material/Error';
 import CloudQueueIcon         from '@mui/icons-material/CloudQueue';
-import CodeIcon               from '@mui/icons-material/Code';
 import DashboardIcon          from '@mui/icons-material/Dashboard';
 import DeleteIcon             from '@mui/icons-material/Delete';
 import DevicesIcon            from '@mui/icons-material/Devices';
@@ -41,17 +39,16 @@ import RocketLaunchIcon       from '@mui/icons-material/RocketLaunch';
 import SettingsIcon           from '@mui/icons-material/Settings';
 import ShieldIcon             from '@mui/icons-material/Shield';
 import TimelineIcon           from '@mui/icons-material/Timeline';
-import TuneIcon               from '@mui/icons-material/Tune';
 import WarningAmberIcon       from '@mui/icons-material/WarningAmber';
 import WorkspacesIcon         from '@mui/icons-material/Workspaces';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getGroup, listMembers, listAuditLogs, removeMember, deleteGroup,
   getGroupResources, listGroupConfigFiles, listGroupWorkspaces,
-  getGroupSidebar, triggerGroupDiscovery,
+  triggerGroupDiscovery,
   inviteToGroup, listInvitations, cancelInvitation, updateMemberRole,
   Group, GroupMember, GroupAuditLog, GroupRole, GroupInvitation,
-  GroupResourceBundle, GroupConfigFile, GroupWorkspaceSummary, GroupSidebarSection,
+  GroupResourceBundle, GroupConfigFile, GroupWorkspaceSummary,
 } from '../services/groupsApi';
 import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth } from '../services/environmentsApi';
 import { createStandaloneRepo, listReposByGroup, type BackendRepository } from '../services/projectsApi';
@@ -239,7 +236,7 @@ const OverviewSection: React.FC<{
   workspaces: GroupWorkspaceSummary[];
   groupId: string;
   onNavigate: (section: string) => void;
-}> = ({ group, bundle, environments, workspaces, groupId, onNavigate }) => {
+}> = ({ group, bundle, environments, workspaces, groupId: _groupId, onNavigate }) => {
   const enabledResources = Object.entries(group.resources || {}).filter(([, v]) => v).map(([k]) => k.replace(/_/g, ' '));
   const counts = bundle?.resource_counts ?? {};
 
@@ -729,6 +726,7 @@ const WorkspacesSection: React.FC<{ workspaces: GroupWorkspaceSummary[]; navigat
 
 // ── Pipelines section ────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PipelinesSection: React.FC<{
   groupId: string;
   pipelines: GroupPipeline[];
@@ -1269,7 +1267,7 @@ const RightPanel: React.FC<{
 const GroupDashboardPage: React.FC = () => {
   const { groupId, section } = useParams<{ groupId: string; section?: string }>();
   const navigate = useNavigate();
-  const { can: canGroup } = useGroupPermissions(groupId);
+  const { can: _canGroup } = useGroupPermissions(groupId);
 
   const activeSection: SectionId = (SIDEBAR_ITEMS.some(s => s.id === section) ? section : 'overview') as SectionId;
 
@@ -1285,8 +1283,8 @@ const GroupDashboardPage: React.FC = () => {
   const [error,        setError]        = useState('');
   const [rightOpen,    setRightOpen]    = useState(true);
   const [discovering,  setDiscovering]  = useState(false);
-  const [groupPipelines, setGroupPipelines] = useState<GroupPipeline[]>([]);
-  const [loadingPipelines, setLoadingPipelines] = useState(false);
+  const [_groupPipelines, setGroupPipelines] = useState<GroupPipeline[]>([]);
+  const [_loadingPipelines, setLoadingPipelines] = useState(false);
 
   // ── Group repos state
   const [grRepos, setGrRepos]               = useState<BackendRepository[]>([]);

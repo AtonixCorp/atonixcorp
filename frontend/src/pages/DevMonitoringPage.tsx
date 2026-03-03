@@ -11,7 +11,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Stack, Typography, Chip, Card, CardContent, CardHeader,
-  Tabs, Tab, CircularProgress, LinearProgress, Tooltip,
+  CircularProgress, LinearProgress, Tooltip,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, IconButton, Select, MenuItem, FormControl, InputLabel,
   Alert, Divider,

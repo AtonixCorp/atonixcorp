@@ -94,7 +94,7 @@ interface PipelineCardProps {
 }
 
 const PipelineCard: React.FC<PipelineCardProps> = ({
-  pipeline, groupId, canRun, canEdit, canDelete, onRun, onDelete,
+  pipeline, groupId, canRun, canEdit: _canEdit, canDelete, onRun, onDelete,
 }) => {
   const navigate = useNavigate();
   const BP = t.brandPrimary;
@@ -332,7 +332,6 @@ interface GroupPipelinesPanelProps {
 }
 
 const GroupPipelinesPanel: React.FC<GroupPipelinesPanelProps> = ({ groupId }) => {
-  const navigate = useNavigate();
   const { can } = useGroupPermissions(groupId);
 
   const [pipelines, setPipelines]   = useState<GroupPipeline[]>([]);

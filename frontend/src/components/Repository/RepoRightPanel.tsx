@@ -12,7 +12,6 @@ import {
   Typography,
 } from '@mui/material';
 import AccountTreeIcon    from '@mui/icons-material/AccountTree';
-import BugReportIcon      from '@mui/icons-material/BugReport';
 import CallSplitIcon      from '@mui/icons-material/CallSplit';
 import CheckCircleIcon    from '@mui/icons-material/CheckCircle';
 import CodeIcon           from '@mui/icons-material/Code';

@@ -22,7 +22,8 @@ type DiffMode = 'inline' | 'split';
 
 // ─── Line number helper ────────────────────────────────────────────────────────
 
-const LineNum: React.FC<{ n?: number }> = ({ n }) => (
+// LineNum kept for future split-mode use
+const _LineNum: React.FC<{ n?: number }> = ({ n }) => (
   <Box
     component="span"
     sx={{
@@ -43,13 +44,7 @@ const LineNum: React.FC<{ n?: number }> = ({ n }) => (
 
 // ─── Single diff line ──────────────────────────────────────────────────────────
 
-interface DiffLineRowProps {
-  line:    DiffLine;
-  oldNum?: number;
-  newNum?: number;
-  mode:    DiffMode;
-  half?:   'old' | 'new'; // used in split mode
-}
+
 
 const LINE_COLORS: Record<DiffLine['type'], { bg: string; text: string; marker: string }> = {
   added:   { bg: 'rgba(34,197,94,.1)',  text: '#22C55E', marker: '+' },
@@ -91,7 +86,7 @@ const InlineLine: React.FC<{ line: DiffLine; oldNum?: number; newNum?: number }>
 
 // ─── File diff block ───────────────────────────────────────────────────────────
 
-const FileDiffBlock: React.FC<{ file: DiffFile; mode: DiffMode }> = ({ file, mode }) => {
+const FileDiffBlock: React.FC<{ file: DiffFile; mode: DiffMode }> = ({ file, mode: _mode }) => {
   const [expanded, setExpanded] = useState(true);
 
   let oldLineNo = 1;

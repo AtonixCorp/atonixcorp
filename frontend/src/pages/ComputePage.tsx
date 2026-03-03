@@ -5,7 +5,7 @@ import {
   Box, Typography, Stack, Button, Chip,
   TextField,
   Stepper, Step, StepLabel, StepConnector,
-  stepConnectorClasses, CircularProgress,
+  stepConnectorClasses,
   Divider, Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
