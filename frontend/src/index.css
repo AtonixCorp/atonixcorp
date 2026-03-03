@@ -31,7 +31,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #FFFFFF;
-  color: #1e293b;
+  color: #161616;
   line-height: 1.6;
   font-feature-settings: "cv11", "ss01";
   font-variation-settings: "opsz" 32;
@@ -165,12 +165,12 @@ code {
 /* Selection styling */
 ::selection {
   background: rgba(59, 130, 246, 0.2);
-  color: #1e293b;
+  color: #161616;
 }
 
 ::-moz-selection {
   background: rgba(59, 130, 246, 0.2);
-  color: #1e293b;
+  color: #161616;
 }
 
 /* Focus visible for better accessibility */

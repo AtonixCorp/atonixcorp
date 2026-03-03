@@ -6,9 +6,11 @@ export const dashboardTokens = {
     surfaceHover: 'var(--dashboard-surface-hover)',
     border: 'var(--dashboard-border)',
     borderStrong: 'var(--dashboard-border-strong)',
-    textPrimary: 'var(--dashboard-text-primary)',
-    textSecondary: 'var(--dashboard-text-secondary)',
-    textTertiary: 'var(--dashboard-text-tertiary)',
+    // IBM Carbon-aligned text tokens (resolved at runtime via CSS vars per theme)
+    textPrimary: 'var(--dashboard-text-primary)',     // #161616 light / #f4f4f4 dark
+    textSecondary: 'var(--dashboard-text-secondary)', // #525252 light / #c6c6c6 dark
+    textTertiary: 'var(--dashboard-text-tertiary)',   // #A8A8A8 light / #8d8d8d dark
+    textPlaceholder: 'var(--dashboard-text-placeholder)', // #A8A8A8 light / #8d8d8d dark
     brandPrimary: '#153d75',
     brandPrimaryHover: '#0f2d5a',
     white: '#FFFFFF',
@@ -157,6 +159,26 @@ export const computeUiTokens = {
   neutralMuted: '#9CA3AF',
   surfaceSubtle: '#FAFAFA',
   borderHover: '#94A3B8',
+} as const;
+
+// ── IBM Carbon text tokens ─────────────────────────────────────────────────
+// Matches IBM Carbon Design System neutral-gray text hierarchy.
+// Rule: never use #000000 or #FFFFFF for text — always use these tokens.
+export const carbonTextTokens = {
+  light: {
+    primary:     '#161616', // Gray 100 — body text, labels, table cells
+    secondary:   '#525252', // Gray 70  — captions, helper text
+    placeholder: '#A8A8A8', // Gray 40  — input placeholders
+    disabled:    '#C6C6C6', // Gray 30  — disabled state text
+    onColor:     '#FFFFFF', // White    — text on filled colored backgrounds
+  },
+  dark: {
+    primary:     '#f4f4f4', // Gray 10  — body text, labels, table cells
+    secondary:   '#c6c6c6', // Gray 30  — captions, helper text
+    placeholder: '#8d8d8d', // Gray 50  — input placeholders
+    disabled:    '#6f6f6f', // Gray 60  — disabled state text
+    onColor:     '#161616', // Gray 100 — text on light colored backgrounds
+  },
 } as const;
 
 export const atonixBrandTokens = {

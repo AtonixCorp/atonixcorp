@@ -41,9 +41,9 @@ const ___lightTheme = createTheme({
       paper: '#FFFFFF',
     },
     text: {
-      // Darken default text colors for improved contrast across the app
-      primary: '#111827',
-      secondary: '#475569',
+      // IBM Carbon Gray 100 / Gray 70 — enterprise text hierarchy
+      primary: '#161616',   // Carbon Gray 100
+      secondary: '#525252', // Carbon Gray 70
     },
     grey: {
       50: '#f8fafc',
@@ -181,10 +181,10 @@ const ___lightTheme = createTheme({
           '--dashboard-surface-subtle': '#F4F4F4',   // aligned to Carbon Gray 10
           '--dashboard-surface-hover': '#F0F0F0',
           '--dashboard-border': '#E5E7EB',
-          '--dashboard-border-strong': '#D1D5DB',
-          '--dashboard-text-primary': '#161616',     // aligned to Carbon Gray 100
-          '--dashboard-text-secondary': '#525252',   // aligned to Carbon Gray 70
-          '--dashboard-text-tertiary': '#9CA3AF',
+          '--dashboard-text-primary': '#161616',   /* IBM Carbon Gray 100 */
+          '--dashboard-text-secondary': '#525252',  /* IBM Carbon Gray 70  */
+          '--dashboard-text-tertiary': '#A8A8A8',   /* IBM Carbon Gray 40  */
+          '--dashboard-text-placeholder': '#A8A8A8',/* IBM Carbon Gray 40  */
           '--radius-small': '2px',
           '--radius-none': '0px',
           // AtonixCorp Cloud Tokens — IBM Carbon White theme
@@ -206,7 +206,7 @@ const ___lightTheme = createTheme({
         },
         body: {
           backgroundColor: '#FFFFFF',
-          color: '#161616',
+          color: '#161616', /* IBM Carbon Gray 100 */
           fontFamily: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
@@ -382,8 +382,9 @@ const ___darkTheme = createTheme({
       paper:   '#111827',
     },
     text: {
-      primary:   '#ffffff',
-      secondary: 'rgba(255,255,255,0.75)',
+      // IBM Carbon Gray 10 / Gray 30 — enterprise dark text hierarchy
+      primary:   '#f4f4f4', // Carbon Gray 10
+      secondary: '#c6c6c6', // Carbon Gray 30
     },
     grey: {
       50: '#f8fafc',
@@ -514,9 +515,10 @@ const ___darkTheme = createTheme({
           '--dashboard-surface-hover': '#334155',
           '--dashboard-border': '#334155',
           '--dashboard-border-strong': '#475569',
-          '--dashboard-text-primary': '#FFFFFF',
-          '--dashboard-text-secondary': '#FFFFFF',
-          '--dashboard-text-tertiary': '#FFFFFF',
+          '--dashboard-text-primary': '#f4f4f4',   /* IBM Carbon Gray 10  */
+          '--dashboard-text-secondary': '#c6c6c6',  /* IBM Carbon Gray 30  */
+          '--dashboard-text-tertiary': '#8d8d8d',   /* IBM Carbon Gray 50  */
+          '--dashboard-text-placeholder': '#8d8d8d',/* IBM Carbon Gray 50  */
           '--radius-small': '2px',
           '--radius-none': '0px',
           // AtonixCorp Cloud Tokens — dark mode
@@ -546,8 +548,8 @@ const ___darkTheme = createTheme({
       MuiTypography: {
         styleOverrides: {
           root: {
-            // Use light color for typography in dark theme
-            color: '#f1f5f9',
+            // IBM Carbon Gray 10 — dark theme body text
+            color: '#f4f4f4',
           },
         },
       },
