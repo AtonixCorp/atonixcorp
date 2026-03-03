@@ -171,6 +171,7 @@ const CLOUD_NAV: NavItem[] = [
 const DEVELOPER_NAV: NavItem[] = [
   { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'       },
   { label: 'Repositories',  icon: <SourceIcon     {...I()} />, path: '/developer/Dashboard/repositories'   },
+  { label: 'SSH Keys',       icon: <KeyIcon        {...I()} />, path: '/developer/Dashboard/ssh-keys'          },
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
   { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
   { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },

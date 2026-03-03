@@ -72,16 +72,23 @@ export async function getProjectStats(projectId: string): Promise<ProjectStats> 
 }
 
 export interface BackendRepository {
-  id:             string;
-  project:        string | null;
-  project_name?:  string | null;
-  provider:       string;
-  repo_name:      string;
+  id:              string;
+  project:         string | null;
+  project_name?:   string | null;
+  owner?:          string | null;
+  owner_username?: string | null;
+  provider:        string;
+  repo_name:       string;
   repo_description?: string;
-  visibility?:    'private' | 'public' | 'team';
-  default_branch: string;
-  created_at?:    string;
-  updated_at?:    string;
+  visibility?:     'private' | 'public' | 'team';
+  default_branch:  string;
+  is_bare?:        boolean;
+  disk_path?:      string;
+  storage_bucket?: string;
+  clone_https_url?: string;
+  clone_ssh_url?:   string;
+  created_at?:     string;
+  updated_at?:     string;
 }
 
 export interface CreateStandaloneRepoPayload {
@@ -293,4 +300,74 @@ export async function initProjectRepo(
     repoName ? { repo_name: repoName } : {},
   );
   return data;
+}
+
+
+// ---------------------------------------------------------------------------
+// Clone URLs
+// ---------------------------------------------------------------------------
+
+export interface CloneUrls {
+  https:     string;
+  ssh:       string;
+  repo_name: string;
+}
+
+export async function getRepoCloneUrls(repoId: string): Promise<CloneUrls> {
+  const { data } = await apiClient.get<CloneUrls>(
+    `${REPO_BASE(repoId)}/clone-urls/`,
+  );
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// Import repository from external source (GitHub, GitLab, Bitbucket)
+// ---------------------------------------------------------------------------
+
+export interface ImportRepoPayload {
+  source_url:   string;
+  repo_name?:   string;
+  project_id?:  string;
+  description?: string;
+  visibility?:  'private' | 'public' | 'team';
+}
+
+export async function importRepo(payload: ImportRepoPayload): Promise<BackendRepository> {
+  const { data } = await apiClient.post<BackendRepository>(
+    '/api/services/pipelines/repositories/import/',
+    payload,
+  );
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// SSH Keys
+// ---------------------------------------------------------------------------
+
+export interface SSHKey {
+  id:          string;
+  title:       string;
+  public_key:  string;
+  fingerprint: string;
+  last_used:   string | null;
+  created_at:  string;
+  updated_at:  string;
+}
+
+export async function listSSHKeys(): Promise<SSHKey[]> {
+  const response = await apiClient.get<SSHKey[] | { results: SSHKey[] }>('/api/services/ssh-keys/');
+  const d = response.data;
+  return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function addSSHKey(title: string, publicKey: string): Promise<SSHKey> {
+  const { data } = await apiClient.post<SSHKey>('/api/services/ssh-keys/', {
+    title,
+    public_key: publicKey,
+  });
+  return data;
+}
+
+export async function deleteSSHKey(keyId: string): Promise<void> {
+  await apiClient.delete(`/api/services/ssh-keys/${keyId}/`);
 }

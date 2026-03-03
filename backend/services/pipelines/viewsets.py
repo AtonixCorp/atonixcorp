@@ -12,4 +12,5 @@ from .views import (
     PipelineDefinitionViewSet,
     PipelineRunViewSet,
     PipelineRunNodeViewSet,
+    SSHKeyViewSet,
 )

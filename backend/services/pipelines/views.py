@@ -7,6 +7,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
 import uuid
+import os
+import subprocess
 
 
 def _build_scaffold(project_name: str, repo_name: str, username: str) -> list:
@@ -36,6 +38,7 @@ def _build_scaffold(project_name: str, repo_name: str, username: str) -> list:
 from .models import (
     Project,
     Repository,
+    SSHKey,
     PipelineFile,
     Pipeline,
     PipelineJob,
@@ -84,6 +87,7 @@ from .serializers import (
     PipelineRunListSerializer,
     PipelineRunNodeSerializer,
     TriggerPipelineRunSerializer,
+    SSHKeySerializer,
 )
 
 
@@ -197,7 +201,12 @@ class RepositoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Repository.objects.filter(project__owner=self.request.user)
+        user = self.request.user
+        # Include project-linked repos the user owns AND standalone repos owned directly
+        from django.db.models import Q
+        qs = Repository.objects.filter(
+            Q(project__owner=user) | Q(owner=user)
+        ).distinct()
         project = self.request.query_params.get('project')
         if project:
             qs = qs.filter(project=project)
@@ -205,14 +214,16 @@ class RepositoryViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         instance = serializer.save()
-        instance.project.last_activity = timezone.now()
-        instance.project.save(update_fields=['last_activity'])
+        if instance.project is not None:
+            instance.project.last_activity = timezone.now()
+            instance.project.save(update_fields=['last_activity'])
 
     def perform_destroy(self, instance):
         project = instance.project
         instance.delete()
-        project.last_activity = timezone.now()
-        project.save(update_fields=['last_activity'])
+        if project is not None:
+            project.last_activity = timezone.now()
+            project.save(update_fields=['last_activity'])
 
     def perform_create(self, serializer):
         import uuid as _uuid
@@ -232,9 +243,15 @@ class RepositoryViewSet(viewsets.ModelViewSet):
             {"name": "requirements.txt","type": "file", "path": "requirements.txt", "content": "# Add your dependencies here\n"},
         ]
         tree = default_tree if init_readme else []
-        repo = serializer.save(id=repo_id, tree_data=tree)
-        repo.project.last_activity = timezone.now()
-        repo.project.save(update_fields=['last_activity'])
+        project_id = self.request.data.get('project')
+        # For standalone repos (no project) assign the requesting user as owner
+        extra = {}
+        if not project_id:
+            extra['owner'] = self.request.user
+        repo = serializer.save(id=repo_id, tree_data=tree, **extra)
+        if repo.project is not None:
+            repo.project.last_activity = timezone.now()
+            repo.project.save(update_fields=['last_activity'])
 
     @action(detail=True, methods=['get'])
     def tree(self, request, pk=None):
@@ -505,6 +522,66 @@ class RepositoryViewSet(viewsets.ModelViewSet):
         ]
         repository.save(update_fields=['tree_data'])
         return Response(repository.tree_data)
+
+
+    @action(detail=True, methods=['get'], url_path='clone-urls')
+    def clone_urls(self, request, pk=None):
+        """Return HTTPS and SSH clone URLs for this repository."""
+        repo = self.get_object()
+        return Response({
+            'https': repo.clone_https_url,
+            'ssh':   repo.clone_ssh_url,
+            'repo_name': repo.repo_name,
+        })
+
+    @action(detail=False, methods=['post'], url_path='import')
+    def import_repo(self, request):
+        """Mirror-clone an external repository into AtonixCorp storage."""
+        source_url  = request.data.get('source_url', '').strip()
+        repo_name   = request.data.get('repo_name', '').strip()
+        project_id  = request.data.get('project_id')
+        description = request.data.get('description', '')
+        visibility  = request.data.get('visibility', 'private')
+
+        if not source_url:
+            return Response({'error': 'source_url is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not repo_name:
+            repo_name = source_url.rstrip('/').split('/')[-1].replace('.git', '')
+
+        repo_id   = f"repo-{uuid.uuid4().hex[:12]}"
+        repos_root = getattr(__import__('django.conf', fromlist=['settings']).settings, 'GIT_REPOS_ROOT', '/repos')
+        disk_path  = os.path.join(repos_root, f"{repo_id}.git")
+
+        # Mirror-clone in background (non-blocking for API response; a real impl would use a Celery task)
+        try:
+            os.makedirs(repos_root, exist_ok=True)
+            subprocess.run(
+                ['git', 'clone', '--mirror', source_url, disk_path],
+                capture_output=True, timeout=120,
+            )
+        except Exception as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        project = None
+        if project_id:
+            try:
+                project = Project.objects.get(pk=project_id)
+            except Project.DoesNotExist:
+                pass
+
+        repo = Repository.objects.create(
+            id=repo_id,
+            project=project,
+            owner=request.user if not project else None,
+            provider='atonix',
+            repo_name=repo_name,
+            repo_description=description,
+            visibility=visibility,
+            is_bare=True,
+            disk_path=disk_path,
+        )
+        return Response(RepositorySerializer(repo).data, status=status.HTTP_201_CREATED)
+
 
 
 class PipelineFileViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1191,3 +1268,20 @@ class PipelineRunNodeViewSet(viewsets.ReadOnlyModelViewSet):
         if run_id:
             qs = qs.filter(run_id=run_id)
         return qs.order_by('order')
+
+
+class SSHKeyViewSet(viewsets.ModelViewSet):
+    """CRUD for user SSH public keys."""
+    serializer_class   = SSHKeySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names  = ['get', 'post', 'delete', 'head', 'options']
+
+    def get_queryset(self):
+        return SSHKey.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        from django.utils import timezone as tz
+        serializer.save(
+            id=f"key-{uuid.uuid4().hex[:12]}",
+            user=self.request.user,
+        )

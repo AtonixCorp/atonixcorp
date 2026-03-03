@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import (
     Project,
     Repository,
+    SSHKey,
     PipelineFile,
     Pipeline,
     PipelineJob,
@@ -61,14 +62,42 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class RepositorySerializer(serializers.ModelSerializer):
     """Serializer for Repository model."""
-    project_name = serializers.CharField(source='project.name', read_only=True)
+    project_name    = serializers.CharField(source='project.name', read_only=True, default=None)
+    owner_username  = serializers.CharField(source='owner.username', read_only=True, default=None)
+    clone_https_url = serializers.SerializerMethodField()
+    clone_ssh_url   = serializers.SerializerMethodField()
+
+    def get_clone_https_url(self, obj):
+        return obj.clone_https_url
+
+    def get_clone_ssh_url(self, obj):
+        return obj.clone_ssh_url
 
     class Meta:
         model = Repository
-        fields = '__all__'
+        fields = [
+            'id', 'project', 'project_name', 'owner', 'owner_username',
+            'provider', 'repo_name', 'repo_description', 'default_branch',
+            'visibility', 'is_bare', 'disk_path', 'storage_bucket',
+            'clone_https_url', 'clone_ssh_url',
+            'tree_data', 'created_at', 'updated_at',
+        ]
         extra_kwargs = {
-            # id is generated server-side in perform_create; never required on input
-            'id': {'required': False},
+            'id':    {'required': False},
+            'owner': {'required': False},
+        }
+
+
+class SSHKeySerializer(serializers.ModelSerializer):
+    """Serializer for SSH public keys."""
+
+    class Meta:
+        model = SSHKey
+        fields = ['id', 'title', 'public_key', 'fingerprint', 'last_used', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'id':          {'required': False},
+            'fingerprint': {'read_only': True},
+            'last_used':   {'read_only': True},
         }
 
 

@@ -69,6 +69,7 @@ from .pipelines.viewsets import (
     PipelineDefinitionViewSet,
     PipelineRunViewSet,
     PipelineRunNodeViewSet,
+    SSHKeyViewSet,
 )
 from .kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 from .deployments.viewsets import (
@@ -225,6 +226,7 @@ router.register(r'billing/credits',         CreditViewSet,           basename='c
 # ============================================================================
 router.register(r'pipelines/projects',         ProjectViewSet,             basename='pipeline-project')
 router.register(r'pipelines/repositories',     RepositoryViewSet,          basename='pipeline-repository')
+router.register(r'ssh-keys', SSHKeyViewSet, basename='ssh-key')
 router.register(r'pipelines/files',            PipelineFileViewSet,        basename='pipeline-file')
 router.register(r'pipelines/runs',             PipelineViewSet,            basename='pipeline-run')
 router.register(r'pipelines/jobs',             PipelineJobViewSet,         basename='pipeline-job')

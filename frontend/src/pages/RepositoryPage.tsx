@@ -17,6 +17,8 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  IconButton,
+  Popover,
   Stack,
   TextField,
   Tooltip,
@@ -24,6 +26,8 @@ import {
 } from '@mui/material';
 import AccountTreeIcon   from '@mui/icons-material/AccountTree';
 import ArrowBackIcon     from '@mui/icons-material/ArrowBack';
+import ContentCopyIcon   from '@mui/icons-material/ContentCopy';
+import ExpandMoreIcon    from '@mui/icons-material/ExpandMore';
 import BugReportIcon     from '@mui/icons-material/BugReport';
 import CallSplitIcon     from '@mui/icons-material/CallSplit';
 import CheckCircleIcon   from '@mui/icons-material/CheckCircle';
@@ -52,6 +56,8 @@ import {
   searchRepo,
   initProjectRepo,
   getRepo,
+  getRepoCloneUrls,
+  type CloneUrls,
   type BackendProject,
   type BackendRepository,
   type TreeNode,
@@ -275,6 +281,12 @@ const RepositoryPage: React.FC = () => {
   const [repoNameInput,  setRepoNameInput]  = useState('');
   const [initError,      setInitError]      = useState<string | null>(null);
 
+  // Clone URLs state
+  const [cloneUrls,   setCloneUrls]   = useState<CloneUrls | null>(null);
+  const [cloneTab,    setCloneTab]    = useState<'https' | 'ssh'>('https');
+  const [cloneAnchor, setCloneAnchor] = useState<HTMLElement | null>(null);
+  const [copyDone,    setCopyDone]    = useState(false);
+
   // Track last loaded branch/repo to avoid redundant fetches
   const loadedBranchRef = useRef<string>('');
   const loadedRepoRef   = useRef<string>('');
@@ -301,6 +313,7 @@ const RepositoryPage: React.FC = () => {
           setTreeLoading(false);
           setBranchesLoading(false);
           setLoading(false);
+          getRepoCloneUrls(r.id).then(setCloneUrls).catch(() => {});
           return;
         }
 

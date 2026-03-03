@@ -207,7 +207,10 @@ urlpatterns = [
         'api/graphql/',
         GraphQLView.as_view(graphiql=settings.DEBUG) if GraphQLView else graphql_unavailable,
     ),
-    path('api/services/', include('services.api.urls')),
+    # Git smart-HTTP endpoint — handles clone / fetch / push
+    re_path(r'^repos/(?P<repo_path>.+)$',
+            __import__('services.pipelines.git_http', fromlist=['git_http_backend_view']).git_http_backend_view),
+        path('api/services/', include('services.api.urls')),
 ]
 
 # Gunicorn does not serve static files. For local demos/dev we serve /static/

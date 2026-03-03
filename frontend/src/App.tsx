@@ -107,6 +107,7 @@ import DevCatalogPage            from './pages/DevCatalogPage';
 import DevSandboxPage            from './pages/DevSandboxPage';
 import DevWebhooksPage           from './pages/DevWebhooksPage';
 import DevRepositoriesPage       from './pages/DevRepositoriesPage';
+import DevSSHKeysPage            from './pages/DevSSHKeysPage';
 
 // Redirect /developer/Dashboard/groups/:groupId → /groups/:groupId
 const RedirectToGroupPage: React.FC = () => {
@@ -136,6 +137,7 @@ const AppShell: React.FC = () => {
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
   const isOperationalPage = location.pathname === '/developer/Dashboard/operational';
   const isRepositoriesPage   = location.pathname === '/developer/Dashboard/repositories';
+  const isSSHKeysPage        = location.pathname === '/developer/Dashboard/ssh-keys';
   const isStandaloneRepoPage  = location.pathname.startsWith('/developer/Dashboard/repo/');
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
@@ -243,6 +245,18 @@ const AppShell: React.FC = () => {
         <DashboardLayout dashboardMode="developer">
           <Routes>
             <Route path="/developer/Dashboard/repositories" element={<DevRepositoriesPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isSSHKeysPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="developer">
+          <Routes>
+            <Route path="/developer/Dashboard/ssh-keys" element={<DevSSHKeysPage />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

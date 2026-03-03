@@ -46,28 +46,94 @@ class Project(TimeStampedModel):
 
 
 class Repository(TimeStampedModel):
-    """Represents a connected repository (GitHub, GitLab, Bitbucket)."""
+    """Represents a source repository — AtonixCorp-hosted or externally connected."""
     id = models.CharField(max_length=50, primary_key=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='repositories')
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='repositories',
+        null=True, blank=True,
+    )
     provider = models.CharField(max_length=20, choices=[
-        ('github', 'GitHub'),
-        ('gitlab', 'GitLab'),
+        ('github',    'GitHub'),
+        ('gitlab',    'GitLab'),
         ('bitbucket', 'Bitbucket'),
-        ('atonix', 'Atonix'),
-    ])
-    repo_name = models.CharField(max_length=100)
-    default_branch = models.CharField(max_length=100, default='main')
+        ('atonix',    'AtonixCorp'),
+    ], default='atonix')
+    repo_name        = models.CharField(max_length=100)
+    repo_description = models.TextField(blank=True, default='')
+    default_branch   = models.CharField(max_length=100, default='main')
+    visibility       = models.CharField(max_length=10, choices=[
+        ('private', 'Private'),
+        ('public',  'Public'),
+        ('team',    'Team'),
+    ], default='private')
+    # Git storage on disk (for AtonixCorp-hosted repos)
+    is_bare          = models.BooleanField(default=True)
+    disk_path        = models.CharField(max_length=500, blank=True, default='')
+    storage_bucket   = models.CharField(max_length=200, blank=True, default='')
+    # Owner (used when repo is not linked to a project)
+    owner            = models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='repositories',
+        null=True, blank=True,
+    )
     tree_data = models.JSONField(default=list, blank=True)
 
     class Meta:
         db_table = 'repositories'
-        unique_together = ['project', 'provider', 'repo_name']
         indexes = [
             models.Index(fields=['project', 'provider']),
+            models.Index(fields=['owner']),
         ]
+
+    @property
+    def clone_https_url(self):
+        from django.conf import settings
+        base = getattr(settings, 'GIT_BASE_URL', 'https://cloud.atonixcorp.com')
+        ns = self.project.project_key if self.project else (
+            self.owner.username if self.owner else 'repos'
+        )
+        return f"{base}/{ns}/{self.repo_name}.git"
+
+    @property
+    def clone_ssh_url(self):
+        from django.conf import settings
+        host = getattr(settings, 'GIT_SSH_HOST', 'cloud.atonixcorp.com')
+        ns = self.project.project_key if self.project else (
+            self.owner.username if self.owner else 'repos'
+        )
+        return f"git@{host}:{ns}/{self.repo_name}.git"
 
     def __str__(self):
         return f"{self.provider}/{self.repo_name}"
+
+
+class SSHKey(TimeStampedModel):
+    """User-uploaded SSH public key for Git authentication."""
+    id         = models.CharField(max_length=50, primary_key=True)
+    user       = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='ssh_keys')
+    title      = models.CharField(max_length=200)
+    public_key = models.TextField()
+    fingerprint = models.CharField(max_length=200, blank=True)
+    last_used  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'ssh_keys'
+        unique_together = ['user', 'fingerprint']
+
+    def save(self, *args, **kwargs):
+        if self.public_key and not self.fingerprint:
+            import hashlib, base64
+            try:
+                parts = self.public_key.strip().split()
+                key_b64 = parts[1] if len(parts) >= 2 else parts[0]
+                raw = base64.b64decode(key_b64)
+                digest = hashlib.md5(raw).digest()
+                self.fingerprint = ':'.join(f'{b:02x}' for b in digest)
+            except Exception:
+                self.fingerprint = hashlib.sha256(self.public_key.encode()).hexdigest()[:40]
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username}: {self.title}"
 
 
 class PipelineFile(TimeStampedModel):
