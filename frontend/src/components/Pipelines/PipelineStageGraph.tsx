@@ -4,7 +4,7 @@
  * Pure SVG-positioned boxes — no extra dependencies.
  */
 import React, { useState } from 'react';
-import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import CheckCircleIcon       from '@mui/icons-material/CheckCircle';
 import ErrorIcon             from '@mui/icons-material/Error';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
@@ -54,7 +54,7 @@ function StatusIcon({ status, size = 14 }: { status?: string; size?: number }) {
 
 // ── Step card ─────────────────────────────────────────────────────────────────
 
-const StepCard: React.FC<{ step: PipelineStep; index: number }> = ({ step, index }) => {
+const StepCard: React.FC<{ step: PipelineStep; index: number }> = ({ step, index: _index }) => {
   const color = STATUS_COLOR[step.status ?? 'pending'];
   const bg    = STATUS_BG[step.status ?? 'pending'];
   return (

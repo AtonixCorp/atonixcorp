@@ -17,9 +17,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Alert, Box, Button, Chip, CircularProgress,
+  Alert, Box, Chip, CircularProgress,
   Collapse, Divider, IconButton, LinearProgress,
-  List, ListItemButton, ListItemIcon, ListItemText,
+  ListItemButton, ListItemIcon, ListItemText,
   Stack, Table, TableBody, TableCell, TableHead, TableRow,
   Tooltip, Typography,
 } from '@mui/material';
@@ -30,7 +30,6 @@ import BoltIcon              from '@mui/icons-material/Bolt';
 import CheckCircleIcon       from '@mui/icons-material/CheckCircle';
 import ChevronRightIcon      from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon       from '@mui/icons-material/ChevronLeft';
-import CloudQueueIcon        from '@mui/icons-material/CloudQueue';
 import CodeIcon              from '@mui/icons-material/Code';
 import DashboardIcon         from '@mui/icons-material/Dashboard';
 import DevicesIcon           from '@mui/icons-material/Devices';
@@ -57,7 +56,7 @@ import SyncIcon              from '@mui/icons-material/Sync';
 import WarningIcon           from '@mui/icons-material/Warning';
 
 import {
-  dashboardCardSx, dashboardPrimaryButtonSx,
+  dashboardCardSx,
   dashboardSemanticColors, dashboardTokens,
 } from '../styles/dashboardDesignSystem';
 import {
@@ -829,7 +828,7 @@ const DevOperationalPage: React.FC = () => {
   const [processes,     setProcesses]    = useState<RunningProcess[]>([]);
   const [allIncidents,  setAllIncidents] = useState<Incident[]>([]);
   const [ovLoading,     setOvLoading]    = useState(true);
-  const [gridLoading,   setGridLoading]  = useState(true);
+  const [_gridLoading,  setGridLoading]  = useState(true);
   const [procLoading,   setProcLoading]  = useState(true);
   const [incLoading,    setIncLoading]   = useState(true);
   const [summary, setSummary] = useState({ active_incidents: 0, running_processes: 0, sev1_incidents: 0 });

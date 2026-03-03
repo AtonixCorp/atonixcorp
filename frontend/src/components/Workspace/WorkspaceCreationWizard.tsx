@@ -44,7 +44,6 @@ import {
   Stepper,
   Switch,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material'
 import DnsIcon from '@mui/icons-material/Dns'
@@ -926,7 +925,7 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1 }}>
               {containerTemplates.map(tpl => {
-                const resolvedImage = tpl.id === 'custom'
+                const _resolvedImage = tpl.id === 'custom'
                   ? (state.customImageUrl.trim() || 'enter image below')
                   : tpl.image
                 return (

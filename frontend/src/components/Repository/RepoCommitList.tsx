@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import AccountTreeIcon  from '@mui/icons-material/AccountTree';
 import CallSplitIcon    from '@mui/icons-material/CallSplit';
-import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
+import { dashboardTokens } from '../../styles/dashboardDesignSystem';
 import type { RepoCommit } from '../../services/projectsApi';
 
 const t    = dashboardTokens.colors;

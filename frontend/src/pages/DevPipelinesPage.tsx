@@ -37,7 +37,6 @@ import { useNavigate } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 import {
   listDefinitions,
-  createDefinition,
   deleteDefinition,
   triggerDefinition,
   listPipelineRuns,
@@ -51,8 +50,6 @@ import {
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
-
-type RunStatus = NodeStatus | 'pending' | 'success' | 'failed' | 'cancelled' | 'skipped' | 'queued';
 
 const STATUS_CFG: Record<string, { color: string; bg: string; label: string; icon: React.ReactNode }> = {
   pending:   { color: '#6B7280', bg: 'rgba(107,114,128,.12)', label: 'Pending',   icon: <HourglassEmptyIcon sx={{ fontSize: 14 }} /> },

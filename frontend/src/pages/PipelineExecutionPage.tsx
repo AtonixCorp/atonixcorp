@@ -13,7 +13,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Alert, Box, Button, Card, CardContent, Chip, CircularProgress,
-  Divider, IconButton, Stack, Tab, Tabs, TextField, Tooltip, Typography,
+  IconButton, Stack, Tab, Tabs, TextField, Tooltip, Typography,
 } from '@mui/material';
 import PlayArrowIcon    from '@mui/icons-material/PlayArrow';
 import StopIcon         from '@mui/icons-material/Stop';
@@ -30,12 +30,12 @@ import BugReportIcon    from '@mui/icons-material/BugReport';
 import FolderZipIcon    from '@mui/icons-material/FolderZip';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  dashboardCardSx, dashboardPrimaryButtonSx,
+  dashboardCardSx,
   dashboardSemanticColors, dashboardTokens,
 } from '../styles/dashboardDesignSystem';
 import {
   getPipelineRun, getRunGraph, getRunNodeLogs, cancelPipelineRun,
-  getRunArtifacts, listPipelineRuns, triggerDefinition,
+  getRunArtifacts, triggerDefinition,
   type PipelineRun, type PipelineRunNode, type PipelineRunArtifact, type NodeStatus,
 } from '../services/pipelinesApi';
 
@@ -487,7 +487,7 @@ const PipelineExecutionPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, definitionId]);
 
-  // live polling while run is active
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!run) return;
     const isLive = ['pending', 'running', 'waiting'].includes(run.status);

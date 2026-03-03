@@ -3,8 +3,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert, Avatar, Box, Button, Checkbox, Chip, CircularProgress,
-  Dialog, DialogActions, DialogContent, DialogTitle,
+  Alert, Avatar, Box, Button, Chip, CircularProgress,
+  Dialog, DialogContent, DialogTitle,
   Divider, FormControl, FormControlLabel, IconButton, InputLabel,
   LinearProgress, List, ListItemButton, ListItemText,
   MenuItem, Select, Snackbar, Stack, Switch, TextField, Tooltip, Typography,
@@ -309,7 +309,7 @@ function InteractiveTerminal({ workspaceId, image, ide, region, isRunning, onSta
   const [input, setInput]       = useState('');
   const [cwd, setCwd]           = useState('/workspace');
   const [history, setHistory]   = useState<string[]>([]);
-  const [histIdx, setHistIdx]   = useState(-1);
+  const [_histIdx, setHistIdx]   = useState(-1);
   const [focused, setFocused]   = useState(false);
   const inputRef                = useRef<HTMLInputElement>(null);
   const scrollRef               = useRef<HTMLDivElement>(null);
@@ -823,12 +823,12 @@ const WorkspaceDashboardPage: React.FC = () => {
   // ── Kubernetes create form state ──────────────────────────────────────
   const [k8sView, setK8sView]                     = useState<'list' | 'create'>('list');
   const [k8sName, setK8sName]                     = useState('');
-  const [k8sProvider, setK8sProvider]             = useState<'atonix' | 'aws' | 'gcp' | 'azure' | 'bare-metal'>('atonix');
+  const [_k8sProvider, _setK8sProvider]             = useState<'atonix' | 'aws' | 'gcp' | 'azure' | 'bare-metal'>('atonix');
   const [k8sRegion, setK8sRegion]                 = useState('us-east-1');
   const [k8sVersion, setK8sVersion]               = useState('1.29');
   const [k8sNodeCount, setK8sNodeCount]           = useState('3');
-  const [k8sNodeSize, setK8sNodeSize]             = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
-  const [k8sNamespace, setK8sNamespace]           = useState('');
+  const [_k8sNodeSize, _setK8sNodeSize]             = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
+  const [_k8sNamespace, setK8sNamespace]            = useState('');
   const [k8sBusy, setK8sBusy]                     = useState(false);
   const [k8sClusters, setK8sClusters]             = useState<{ name: string; provider: string; region: string; nodes: string; status: string; version: string; resource_id?: string }[]>([]);
 
@@ -838,7 +838,7 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [grpDescription, setGrpDescription]       = useState('');
   const [grpVisibility, setGrpVisibility]         = useState<'private' | 'internal' | 'public'>('private');
   const [grpType, setGrpType]                     = useState<GroupType>('developer');
-  const [grpMembers, setGrpMembers]               = useState('');
+  const [_grpMembers, _setGrpMembers]               = useState('');
   const [grpBusy, setGrpBusy]                     = useState(false);
   const [groupsList, setGroupsList]               = useState<Group[]>([]);
   const [groupsLoaded, setGroupsLoaded]           = useState(false);
@@ -852,7 +852,7 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [envApproval, setEnvApproval]             = useState(false);
   const [envBusy, setEnvBusy]                     = useState(false);
   const [envsList, setEnvsList]                   = useState<ApiEnvironment[]>([]);
-  const [envsLoaded, setEnvsLoaded]               = useState(false);
+  const [_envsLoaded, _setEnvsLoaded]               = useState(false);
 
   // ── Integration action handlers ────────────────────────────────────────────
   const handleConnectProject = (p: BackendProject) => {

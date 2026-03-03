@@ -21,7 +21,6 @@ import EditIcon       from '@mui/icons-material/Edit';
 import PlayArrowIcon  from '@mui/icons-material/PlayArrow';
 import CodeIcon       from '@mui/icons-material/Code';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import SettingsIcon    from '@mui/icons-material/Settings';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon       from '@mui/icons-material/Error';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
