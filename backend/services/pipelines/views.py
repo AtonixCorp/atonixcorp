@@ -217,20 +217,30 @@ class RepositoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # Include project-linked repos the user owns AND standalone repos owned directly
         from django.db.models import Q
+
+        workspace_id = self.request.query_params.get('workspace_id')
+        group_id     = self.request.query_params.get('group_id')
+        project      = self.request.query_params.get('project')
+
+        # Workspace-scoped: return only that workspace's repos (no ownership check —
+        # permission is enforced at the workspace level)
+        if workspace_id:
+            return Repository.objects.filter(workspace_id=workspace_id).distinct()
+
+        # Group-scoped: same pattern
+        if group_id:
+            return Repository.objects.filter(group_id=group_id).distinct()
+
+        # Default (Developer Dashboard): project-linked or standalone repos that
+        # belong to the user, but EXCLUDE anything scoped to a workspace or group.
         qs = Repository.objects.filter(
             Q(project__owner=user) | Q(owner=user)
-        ).distinct()
-        project = self.request.query_params.get('project')
+        ).filter(workspace_id='', group_id='').distinct()
+
         if project:
             qs = qs.filter(project=project)
-        workspace_id = self.request.query_params.get('workspace_id')
-        if workspace_id:
-            qs = Repository.objects.filter(workspace_id=workspace_id).distinct()
-        group_id = self.request.query_params.get('group_id')
-        if group_id:
-            qs = Repository.objects.filter(group_id=group_id).distinct()
+
         return qs
 
     def perform_update(self, serializer):
