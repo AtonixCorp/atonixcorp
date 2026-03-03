@@ -45,6 +45,8 @@ import NetworkPage               from './pages/NetworkPage';
 import OrchestrationPage         from './pages/OrchestrationPage';
 import DevDeploymentsPage        from './pages/DevDeploymentsPage';
 import DevPipelinesPage          from './pages/DevPipelinesPage';
+import PipelineBuilderPage       from './pages/PipelineBuilderPage';
+import PipelineExecutionPage     from './pages/PipelineExecutionPage';
 import DevContainersPage        from './pages/DevContainersPage';
 import DevKubernetesPage        from './pages/DevKubernetesPage';
 import KubernetesSetupPage      from './pages/KubernetesSetupPage';
@@ -158,11 +160,11 @@ const AppShell: React.FC = () => {
     return (
       <ProtectedRoute>
         <Routes>
-          <Route path="/groups/new"                      element={<GroupCreatePage />} />
+          <Route path="/groups/new"                                   element={<GroupCreatePage />} />
+          <Route path="/groups/:groupId/pipelines/:pipelineId"        element={<GroupPipelineDashboardPage />} />
           <Route path="/groups/:groupId"                              element={<GroupDashboardPage />} />
           <Route path="/groups/:groupId/:section"                     element={<GroupDashboardPage />} />
           <Route path="/groups/:groupId/:section/:sub"                element={<GroupDashboardPage />} />
-          <Route path="/groups/:groupId/pipelines/:pipelineId"        element={<GroupPipelineDashboardPage />} />
           <Route path="/groups/*"                                     element={<Navigate to="/developer/Dashboard/groups" replace />} />
         </Routes>
       </ProtectedRoute>
@@ -214,6 +216,9 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/developer/Dashboard/projects"  element={<DevProjectsPage />} />
+            <Route path="/developer/Dashboard/cicd/builder"        element={<PipelineBuilderPage />} />
+            <Route path="/developer/Dashboard/cicd/runs/:runId"     element={<PipelineExecutionPage />} />
+            <Route path="/developer/Dashboard/cicd/runs"            element={<PipelineExecutionPage />} />
             <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/developer/Dashboard/cloud-manage" element={<DevCloudManagePage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />

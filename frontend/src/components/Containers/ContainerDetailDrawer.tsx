@@ -258,7 +258,7 @@ const ContainerDetailDrawer: React.FC<Props> = ({ open, container, onClose, onRe
                     <Row label="CPU" value={`${container.cpu} vCPU`} />
                     <Row label="Memory" value={container.memory >= 1024 ? `${container.memory / 1024}Gi` : `${container.memory}Mi`} />
                     <Row label="Replicas" value={String(container.replicas)} />
-                    <Row label="Autoscaling" value={container.autoscaling ? `✓ enabled (${container.autoscaleMin}–${container.autoscaleMax}, CPU ${container.autoscaleCpu}%)` : 'Disabled'} />
+                    <Row label="Autoscaling" value={container.autoscaling ? `OK enabled (${container.autoscaleMin}–${container.autoscaleMax}, CPU ${container.autoscaleCpu}%)` : 'Disabled'} />
                     <Row label="Expose" value={container.expose} />
                     {container.port && container.type === 'runtime' && <Row label="Port" value={String(container.port)} mono />}
                     {container.domain && <Row label="Domain" value={container.domain} mono accent />}

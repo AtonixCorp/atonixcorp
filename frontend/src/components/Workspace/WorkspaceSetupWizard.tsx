@@ -556,7 +556,7 @@ export default function WorkspaceSetupWizard({ open, workspace, onClose, onCompl
                 <Stack key={item.label} direction="row" spacing={1} alignItems="center">
                   <CheckCircleIcon sx={{ fontSize: '.95rem', color: item.ok ? S.success : T.textTertiary }} />
                   <Typography sx={{ fontFamily: FONT, fontSize: '.82rem', color: item.ok ? T.textPrimary : T.textSecondary }}>{item.label}</Typography>
-                  {item.ok && <Chip label="✔" size="small" sx={{ height: 16, fontSize: '.6rem', bgcolor: 'rgba(34,197,94,.12)', color: S.success }} />}
+                  {item.ok && <Chip label="OK" size="small" sx={{ height: 16, fontSize: '.6rem', bgcolor: 'rgba(34,197,94,.12)', color: S.success }} />}
                 </Stack>
               ))}
             </Stack>

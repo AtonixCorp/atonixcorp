@@ -303,7 +303,7 @@ function InvoicesTab() {
                 <StatusChip label={selected.status} color={INVOICE_STATUS_COLOR[selected.status]} />
                 <Chip label={selected.currency} size="small" sx={{ color: t.sub, bgcolor: 'transparent', border: `1px solid ${t.border}` }} />
               </Box>}
-              action={<IconButton size="small" onClick={() => setSelected(null)} sx={{ color: t.sub }}>✕</IconButton>}
+              action={<IconButton size="small" onClick={() => setSelected(null)} sx={{ color: t.sub }}>x</IconButton>}
             />
             <CardContent sx={{ pt: 0 }}>
               <Typography variant="caption" sx={{ color: t.sub }}>Period: {selected.period_start} – {selected.period_end}</Typography>

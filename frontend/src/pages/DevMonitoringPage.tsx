@@ -633,18 +633,18 @@ const DevMonitoringPage: React.FC = () => {
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">Pipelines (7d)</Typography>
                 <Typography variant="body2">
-                  <span style={{ color: '#4caf50' }}>✓ {p.pipeline_success}</span>
+                  <span style={{ color: '#4caf50' }}>OK {p.pipeline_success}</span>
                   {' / '}
-                  <span style={{ color: '#f44336' }}>✗ {p.pipeline_failed}</span>
+                  <span style={{ color: '#f44336' }}>FAIL {p.pipeline_failed}</span>
                   {' · '}{p.pipelines_7d} total
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">Deployments (7d)</Typography>
                 <Typography variant="body2">
-                  <span style={{ color: '#4caf50' }}>✓ {p.deploy_success}</span>
+                  <span style={{ color: '#4caf50' }}>OK {p.deploy_success}</span>
                   {' / '}
-                  <span style={{ color: '#f44336' }}>✗ {p.deploy_failed}</span>
+                  <span style={{ color: '#f44336' }}>FAIL {p.deploy_failed}</span>
                   {' · '}{p.deploys_7d} total
                 </Typography>
               </Box>
@@ -1168,9 +1168,9 @@ const DevMonitoringPage: React.FC = () => {
                 <Box>
                   <Typography variant="caption" color="text.secondary">Syncs (24h)</Typography>
                   <Typography variant="body2">
-                    <span style={{ color: '#4caf50' }}>✓ {k.total_syncs_24h - k.failed_syncs_24h}</span>
+                    <span style={{ color: '#4caf50' }}>OK {k.total_syncs_24h - k.failed_syncs_24h}</span>
                     {' / '}
-                    <span style={{ color: '#f44336' }}>✗ {k.failed_syncs_24h}</span>
+                    <span style={{ color: '#f44336' }}>FAIL {k.failed_syncs_24h}</span>
                   </Typography>
                 </Box>
                 <Box>

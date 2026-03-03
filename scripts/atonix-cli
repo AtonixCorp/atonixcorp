@@ -175,9 +175,9 @@ See `atonix.yaml` for configuration options.
         with open("README.md", "w") as f:
             f.write(readme_content)
         
-        logger.info(f"✓ Initialized AtonixCorp service: {service_name}")
-        logger.info("✓ Created atonix.yaml, Dockerfile, README.md")
-        logger.info(f"✓ Created directories: {', '.join(directories)}")
+        logger.info(f"OK Initialized AtonixCorp service: {service_name}")
+        logger.info("OK Created atonix.yaml, Dockerfile, README.md")
+        logger.info(f"OK Created directories: {', '.join(directories)}")
     
     def build(self, args):
         """Build the service docker image."""
@@ -195,7 +195,7 @@ See `atonix.yaml` for configuration options.
         )
         
         if result.returncode == 0:
-            logger.info(f"✓ Built {tag}")
+            logger.info(f"OK Built {tag}")
         else:
             logger.error("Build failed")
             sys.exit(1)
@@ -252,7 +252,7 @@ See `atonix.yaml` for configuration options.
                 cwd=Path.cwd()
             )
             if result.returncode == 0:
-                logger.info(f"✓ Deployed to {environment}")
+                logger.info(f"OK Deployed to {environment}")
             else:
                 logger.error("Deployment failed")
                 sys.exit(1)
@@ -371,7 +371,7 @@ See `atonix.yaml` for configuration options.
         with open(creds_file, "w") as f:
             json.dump(credentials, f)
         
-        logger.info("✓ Authenticated successfully")
+        logger.info("OK Authenticated successfully")
     
     def status(self, args):
         """Check platform and service status."""
@@ -385,9 +385,9 @@ See `atonix.yaml` for configuration options.
         )
         
         if result.returncode == 0:
-            logger.info("✓ Kubernetes cluster connected")
+            logger.info("OK Kubernetes cluster connected")
         else:
-            logger.error("✗ Kubernetes cluster not accessible")
+            logger.error("FAIL Kubernetes cluster not accessible")
         
         # Check services
         result = subprocess.run(

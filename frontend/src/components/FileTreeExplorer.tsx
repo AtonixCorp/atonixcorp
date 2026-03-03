@@ -199,7 +199,7 @@ export const FileViewer: React.FC<FileViewerProps> = ({ node, onClose }) => (
           '&:hover': { bgcolor: t.surfaceHover, color: t.textPrimary },
         }}
       >
-        ✕ close
+        x close
       </Box>
     </Stack>
 

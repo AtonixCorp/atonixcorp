@@ -197,30 +197,30 @@ task :health do
 
   # Check database
   if database_connected?
-    puts '✓ Database connection OK'
+    puts 'OK Database connection OK'
   else
-    puts '✗ Database connection FAILED'
+    puts 'FAIL Database connection FAILED'
   end
 
   # Check Redis
   if redis_connected?
-    puts '✓ Redis connection OK'
+    puts 'OK Redis connection OK'
   else
-    puts '✗ Redis connection FAILED'
+    puts 'FAIL Redis connection FAILED'
   end
 
   # Check Puma
   if system('pgrep -f puma > /dev/null')
-    puts '✓ Puma is running'
+    puts 'OK Puma is running'
   else
-    puts '✗ Puma is not running'
+    puts 'FAIL Puma is not running'
   end
 
   # Check Sidekiq
   if system('pgrep -f sidekiq > /dev/null')
-    puts '✓ Sidekiq is running'
+    puts 'OK Sidekiq is running'
   else
-    puts '✗ Sidekiq is not running'
+    puts 'FAIL Sidekiq is not running'
   end
 
   puts 'Health check complete'

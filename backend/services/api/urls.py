@@ -65,6 +65,9 @@ from ..pipelines.viewsets import (
     PipelineRuleViewSet,
     EnvironmentViewSet,
     PipelineArtifactViewSet,
+    PipelineDefinitionViewSet,
+    PipelineRunViewSet,
+    PipelineRunNodeViewSet,
 )
 from ..kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 from ..apim.viewsets import (
@@ -193,6 +196,9 @@ router.register(r'pipelines/approvals',        PipelineApprovalViewSet, basename
 router.register(r'pipelines/rules',            PipelineRuleViewSet,    basename='pipeline-rule')
 router.register(r'pipelines/environments',     EnvironmentViewSet,     basename='pipeline-environment')
 router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename='pipeline-artifact')
+router.register(r'pipelines/definitions',      PipelineDefinitionViewSet, basename='pipeline-definition')
+router.register(r'pipelines/pipeline-runs',    PipelineRunViewSet,        basename='pipeline-run-v2')
+router.register(r'pipelines/run-nodes',        PipelineRunNodeViewSet,    basename='pipeline-run-node')
 
 # ============================================================================
 # KUBERNETES INTEGRATION ENDPOINTS

@@ -88,7 +88,7 @@ const FileRow: React.FC<{
               <Box sx={{ bgcolor: 'warning.50', px: 3, py: 1 }}>
                 {file.warnings.map((w, i) => (
                   <Typography key={i} variant="caption" display="block" color="warning.dark">
-                    ⚠ {w}
+                    [WARN] {w}
                   </Typography>
                 ))}
               </Box>
@@ -520,7 +520,7 @@ const KubernetesSetupPage: React.FC = () => {
                       {syncRun.governance_issues.length} governance issues recorded:
                     </Typography>
                     {syncRun.governance_issues.slice(0, 5).map((w, i) => (
-                      <Typography key={i} variant="caption" display="block">⚠ {w}</Typography>
+                      <Typography key={i} variant="caption" display="block">[WARN] {w}</Typography>
                     ))}
                     {syncRun.governance_issues.length > 5 && (
                       <Typography variant="caption">+ {syncRun.governance_issues.length - 5} more…</Typography>

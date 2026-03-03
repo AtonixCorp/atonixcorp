@@ -369,7 +369,7 @@ function PermissionsTab({ team, reload }: { team: Team; reload: () => void }) {
             <Button size="small" variant="contained" startIcon={saving ? <CircularProgress size={13} color="inherit" /> : <SaveIcon />}
               onClick={handleSave} disabled={saving}
               sx={{ ...dashboardPrimaryButtonSx, textTransform: 'none', fontSize: '.78rem' }}>
-              {saved ? 'Saved ✓' : 'Save Changes'}
+              {saved ? 'Saved OK' : 'Save Changes'}
             </Button>
           </Stack>
         )}
@@ -807,7 +807,7 @@ function SettingsTab({ team, reload }: { team: Team; reload: () => void }) {
                   <Button variant="contained" startIcon={saving ? <CircularProgress size={14} color="inherit" /> : <SaveIcon />}
                     onClick={handleSave} disabled={saving || !name.trim()}
                     sx={{ ...dashboardPrimaryButtonSx, textTransform: 'none' }}>
-                    {saved ? 'Saved ✓' : 'Save Changes'}
+                    {saved ? 'Saved OK' : 'Save Changes'}
                   </Button>
                 </Box>
               )}

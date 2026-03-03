@@ -170,7 +170,7 @@ openstack volume snapshot list --all-projects | awk '/available/{print $2}' | \
   while read id; do openstack volume snapshot delete "$id"; done
 ```
 
-**⚠ If cluster is at 100%: all writes will be paused.**
+**[WARN] If cluster is at 100%: all writes will be paused.**
 ```bash
 # Temporarily allow over-full writes (USE WITH EXTREME CARE)
 ceph osd set nofullstop

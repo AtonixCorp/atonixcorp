@@ -528,8 +528,8 @@ function StepReview({ osId, flavorId, netConfig, isDark }: {
     ['Network',      netConfig.network],
     ['Backups',      netConfig.backups ? 'Enabled' : 'Disabled'],
     ['IPv6',         netConfig.ipv6    ? 'Enabled' : 'Disabled'],
-    ['SSH Key',      netConfig.sshKey  ? '✓ Provided'  : 'None'],
-    ['Root password',netConfig.password? '✓ Set'        : 'None'],
+    ['SSH Key',      netConfig.sshKey  ? 'OK Provided'  : 'None'],
+    ['Root password',netConfig.password? 'OK Set'        : 'None'],
   ];
 
   const monthlyCost = (fl?.price_mo ?? 0) * (netConfig.backups ? 1.2 : 1);
@@ -623,7 +623,7 @@ const ComputePage: React.FC = () => {
           <Box sx={{ width: 72, height: 72, bgcolor: 'rgba(16,185,129,.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5 }}>
             <RocketLaunchIcon sx={{ fontSize: '2rem', color: dashboardSemanticColors.success }} />
           </Box>
-          <Typography fontWeight={800} fontSize="1.5rem" color={isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary} mb={.75}>Server Deployed! 🎉</Typography>
+          <Typography fontWeight={800} fontSize="1.5rem" color={isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary} mb={.75}>Server Deployed!</Typography>
           <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,.5)' : dashboardTokens.colors.textSecondary, mb: 3 }}>
             <strong style={{ color: isDark ? dashboardTokens.colors.white : dashboardTokens.colors.textPrimary }}>{netConfig.hostname || 'your-server'}</strong> is provisioning and will be ready in ~45 seconds.
           </Typography>
