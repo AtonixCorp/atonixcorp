@@ -199,7 +199,6 @@ const AppShell: React.FC = () => {
     );
   }
 
-<<<<<<< HEAD
   if (isCicdPage) {
     return (
       <ProtectedRoute>
@@ -207,13 +206,16 @@ const AppShell: React.FC = () => {
           <Route path="/developer/Dashboard/cicd/builder"         element={<PipelineBuilderPage />} />
           <Route path="/developer/Dashboard/cicd/runs/:runId"      element={<PipelineExecutionPage />} />
           <Route path="/developer/Dashboard/cicd/runs"             element={<PipelineExecutionPage />} />
-=======
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
   if (isOperationalPage) {
     return (
       <ProtectedRoute>
         <Routes>
           <Route path="/developer/Dashboard/operational" element={<DevOperationalPage />} />
->>>>>>> 6908e3d9e38f18fb0225795e21b5fd3f098cf390
         </Routes>
       </ProtectedRoute>
     );
