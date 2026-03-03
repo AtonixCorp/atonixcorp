@@ -441,3 +441,112 @@ class DDoSAttackEvent(TimeStampedModel):
     def __str__(self):
         return f'{self.attack_type} attack on {self.target_resource} ({self.status})'
 
+
+# ── Component Status (Service × Region) ──────────────────────────────────────
+
+class ComponentStatus(TimeStampedModel):
+    """
+    Operational health for a single service within a specific region.
+    Drives the Service × Region health grid on the Operational Page.
+    """
+
+    SERVICE_CHOICES = [
+        ('compute',           'Compute Engine'),
+        ('container_runtime', 'Container Runtime'),
+        ('ci_cd',             'CI/CD Pipelines'),
+        ('registry',          'Container Registry'),
+        ('networking',        'Networking'),
+        ('storage',           'Storage'),
+        ('monitoring',        'Monitoring'),
+        ('edge_robotics',     'Edge & Robotics'),
+        ('database',          'Database'),
+        ('dns',               'DNS'),
+        ('cdn',               'CDN'),
+        ('email',             'Email'),
+        ('kubernetes',        'Kubernetes'),
+        ('gpu_nodes',         'GPU Nodes'),
+    ]
+
+    STATUS_CHOICES = [
+        ('operational',    'Operational'),
+        ('degraded',       'Degraded Performance'),
+        ('partial_outage', 'Partial Outage'),
+        ('major_outage',   'Major Outage'),
+        ('maintenance',    'Under Maintenance'),
+    ]
+
+    service    = models.CharField(max_length=64, choices=SERVICE_CHOICES, db_index=True)
+    region     = models.CharField(max_length=64, db_index=True,
+                                  help_text='Region code, e.g. us-east-1')
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='operational', db_index=True)
+    uptime_pct = models.FloatField(default=100.0)
+    latency_ms = models.FloatField(default=0.0)
+    error_rate = models.FloatField(default=0.0)
+    note       = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('service', 'region')
+        ordering = ['service', 'region']
+        verbose_name = 'Component Status'
+        verbose_name_plural = 'Component Statuses'
+
+    def __str__(self):
+        return f'{self.service}/{self.region} – {self.status}'
+
+
+# ── Running Process ───────────────────────────────────────────────────────────
+
+class RunningProcess(TimeStampedModel):
+    """
+    Tracks actively-running platform processes (deployments, pipelines,
+    automation tasks, GPU jobs, edge workloads) surfaced on the
+    Operational Page's live-processes right sidebar.
+    """
+
+    PROCESS_TYPE_CHOICES = [
+        ('deployment',  'Deployment'),
+        ('pipeline',    'CI/CD Pipeline'),
+        ('automation',  'Automation Task'),
+        ('gpu_job',     'GPU Job'),
+        ('edge_task',   'Edge / Robotics Task'),
+        ('background',  'Background Task'),
+        ('sync',        'Kubernetes Sync'),
+    ]
+
+    STATUS_CHOICES = [
+        ('queued',     'Queued'),
+        ('running',    'Running'),
+        ('succeeded',  'Succeeded'),
+        ('failed',     'Failed'),
+        ('cancelled',  'Cancelled'),
+    ]
+
+    owner        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='running_processes')
+    process_type = models.CharField(max_length=20, choices=PROCESS_TYPE_CHOICES, db_index=True)
+    name         = models.CharField(max_length=255)
+    status       = models.CharField(max_length=16, choices=STATUS_CHOICES, default='running', db_index=True)
+    region       = models.CharField(max_length=64, blank=True)
+    cluster      = models.CharField(max_length=128, blank=True)
+    environment  = models.CharField(max_length=64, blank=True)
+    resource_id  = models.CharField(max_length=64, blank=True, db_index=True)
+    resource_ref = models.CharField(max_length=255, blank=True,
+                                    help_text='Human-readable resource name or path')
+    progress_pct = models.IntegerField(default=0, help_text='0-100')
+    logs_url     = models.CharField(max_length=512, blank=True)
+    metrics_url  = models.CharField(max_length=512, blank=True)
+    started_at   = models.DateTimeField(auto_now_add=True)
+    finished_at  = models.DateTimeField(null=True, blank=True)
+    meta         = models.JSONField(default=dict, blank=True,
+                                    help_text='Extra metadata (branch, commit, etc.)')
+
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['owner', 'status']),
+            models.Index(fields=['process_type', 'status']),
+        ]
+
+    def __str__(self):
+        return f'{self.process_type}: {self.name} [{self.status}]'
+

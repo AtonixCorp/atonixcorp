@@ -53,6 +53,7 @@ import {
 import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth } from '../services/environmentsApi';
 import { useGroupPermissions } from '../hooks/useGroupPermissions';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import GroupPipelinesPanel from '../components/Pipelines/GroupPipelinesPanel';
 
 const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const t    = dashboardTokens.colors;
@@ -1117,7 +1118,7 @@ const GroupDashboardPage: React.FC = () => {
     switch (activeSection) {
       case 'overview':     return <OverviewSection group={group} bundle={bundle} environments={environments} workspaces={workspaces} groupId={groupId!} onNavigate={(s) => navigate(`/groups/${groupId}/${s}`)} />;
       case 'projects':     return <ResourceTable rows={bundle?.projects ?? []} emptyIcon={<FolderOpenIcon />} emptyMsg="No projects linked" />;
-      case 'pipelines':    return <ResourceTable rows={bundle?.pipelines ?? []} emptyIcon={<PlayCircleOutlineIcon />} emptyMsg="No pipelines linked" />;
+      case 'pipelines':    return <GroupPipelinesPanel groupId={groupId!} />;
       case 'environments': return <EnvironmentsSection environments={environments} navigate={navigate} />;
       case 'containers':   return <ResourceTable rows={bundle?.containers ?? []} emptyIcon={<AppsIcon />} emptyMsg="No containers linked" />;
       case 'kubernetes':   return <ResourceTable rows={bundle?.k8s_clusters ?? []} emptyIcon={<CloudQueueIcon />} emptyMsg="No Kubernetes clusters linked" />;

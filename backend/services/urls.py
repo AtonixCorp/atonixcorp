@@ -46,6 +46,7 @@ from .monitoring.viewsets import (
     IncidentViewSet, LogViewSet,
     DevMonitoringViewSet,
     SLOViewSet, TraceViewSet, DDoSRuleViewSet, DDoSAttackEventViewSet,
+    OperationalStatusViewSet,
 )
 from .orchestration.viewsets import OrchestrationViewSet
 from .compliance.viewsets import ComplianceViewSet
@@ -209,6 +210,7 @@ router.register(r'slos',                  SLOViewSet,              basename='slo
 router.register(r'traces',                TraceViewSet,            basename='trace')
 router.register(r'ddos/rules',            DDoSRuleViewSet,         basename='ddos-rule')
 router.register(r'ddos/attacks',          DDoSAttackEventViewSet,  basename='ddos-attack')
+router.register(r'operational',           OperationalStatusViewSet, basename='operational')
 
 # ── Billing ─────────────────────────────────────────────────────────────────
 router.register(r'billing/overview',        BillingOverviewViewSet,  basename='billing-overview')
