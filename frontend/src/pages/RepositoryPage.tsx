@@ -15,13 +15,19 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   Popover,
+  Snackbar,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import DeleteOutlineIcon  from '@mui/icons-material/DeleteOutline';
 import AccountTreeIcon   from '@mui/icons-material/AccountTree';
 import SearchIcon        from '@mui/icons-material/Search';
 import ArrowBackIcon     from '@mui/icons-material/ArrowBack';
@@ -54,6 +60,7 @@ import {
   initProjectRepo,
   getRepo,
   getRepoCloneUrls,
+  deleteRepo,
   type CloneUrls,
   type BackendProject,
   type BackendRepository,
@@ -200,31 +207,101 @@ const TagListPanel: React.FC<{ tags: RepoTag[]; loading: boolean }> = ({ tags, l
 
 // ─── Repo Settings inline panel ────────────────────────────────────────────────
 
-const RepoSettingsPanel: React.FC<{ repo: BackendRepository; project: BackendProject; onBack: () => void }> = ({ repo, project, onBack }) => (
-  <Box sx={{ flex: 1, p: 3, overflowY: 'auto' }}>
-    <Button size="small" startIcon={<ArrowBackIcon />} onClick={onBack}
-      sx={{ textTransform: 'none', color: t.textSecondary, mb: 2, '&:hover': { color: t.textPrimary } }}>
-      Back to Files
-    </Button>
-    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: t.textPrimary, mb: 0.5 }}>Repository Settings</Typography>
-    <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2.5 }}>{repo.repo_name}</Typography>
-    <Box sx={{ maxWidth: 560 }}>
-      {[
-        { label: 'Repository ID',    value: repo.id },
-        { label: 'Repository Name',  value: repo.repo_name },
-        { label: 'Provider',         value: repo.provider },
-        { label: 'Default Branch',   value: repo.default_branch },
-        { label: 'Project',          value: project.name },
-        { label: 'Created',          value: repo.created_at ? new Date(repo.created_at).toLocaleString() : '—' },
-      ].map(row => (
-        <Box key={row.label} sx={{ mb: 1.5, pb: 1.5, borderBottom: `1px solid ${t.border}` }}>
-          <Typography sx={{ fontSize: '.72rem', fontWeight: 700, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em', mb: 0.25 }}>{row.label}</Typography>
-          <Typography sx={{ fontFamily: MONO, fontSize: '.82rem', color: t.textPrimary }}>{row.value}</Typography>
+const RepoSettingsPanel: React.FC<{
+  repo: BackendRepository;
+  project: BackendProject | null;
+  onBack: () => void;
+  onDeleted: () => void;
+}> = ({ repo, project, onBack, onDeleted }) => {
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [confirmName, setConfirmName] = React.useState('');
+  const [deleting,    setDeleting]    = React.useState(false);
+  const [toast,       setToast]       = React.useState<string | null>(null);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteRepo(repo.id);
+      onDeleted();
+    } catch (e: any) {
+      setToast(e?.response?.data?.detail ?? e?.message ?? 'Failed to delete repository.');
+      setDeleting(false);
+      setConfirmOpen(false);
+    }
+  };
+
+  return (
+    <Box sx={{ flex: 1, p: 3, overflowY: 'auto' }}>
+      <Button size="small" startIcon={<ArrowBackIcon />} onClick={onBack}
+        sx={{ textTransform: 'none', color: t.textSecondary, mb: 2, '&:hover': { color: t.textPrimary } }}>
+        Back to Files
+      </Button>
+      <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: t.textPrimary, mb: 0.5 }}>Repository Settings</Typography>
+      <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2.5 }}>{repo.repo_name}</Typography>
+      <Box sx={{ maxWidth: 560 }}>
+        {[
+          { label: 'Repository ID',    value: repo.id },
+          { label: 'Repository Name',  value: repo.repo_name },
+          { label: 'Provider',         value: repo.provider },
+          { label: 'Default Branch',   value: repo.default_branch },
+          { label: 'Project',          value: project?.name ?? '—' },
+          { label: 'Created',          value: repo.created_at ? new Date(repo.created_at).toLocaleString() : '—' },
+        ].map(row => (
+          <Box key={row.label} sx={{ mb: 1.5, pb: 1.5, borderBottom: `1px solid ${t.border}` }}>
+            <Typography sx={{ fontSize: '.72rem', fontWeight: 700, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.05em', mb: 0.25 }}>{row.label}</Typography>
+            <Typography sx={{ fontFamily: MONO, fontSize: '.82rem', color: t.textPrimary }}>{row.value}</Typography>
+          </Box>
+        ))}
+
+        {/* Danger zone */}
+        <Box sx={{ mt: 4, p: 2.5, borderRadius: '12px', border: '1px solid rgba(239,68,68,.35)', bgcolor: 'rgba(239,68,68,.04)' }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '.82rem', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '.06em', mb: 1 }}>Danger Zone</Typography>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Box>
+              <Typography sx={{ fontWeight: 600, fontSize: '.88rem', color: t.textPrimary }}>Delete this repository</Typography>
+              <Typography sx={{ fontSize: '.78rem', color: t.textSecondary }}>Permanently removes the repository and all its data.</Typography>
+            </Box>
+            <Button variant="outlined" size="small" startIcon={<DeleteOutlineIcon />}
+              onClick={() => { setConfirmName(''); setConfirmOpen(true); }}
+              sx={{ textTransform: 'none', fontWeight: 700, borderColor: '#ef4444', color: '#ef4444', borderRadius: '8px',
+                '&:hover': { bgcolor: 'rgba(239,68,68,.08)' }, flexShrink: 0, ml: 2 }}>
+              Delete
+            </Button>
+          </Stack>
         </Box>
-      ))}
+      </Box>
+
+      {/* Confirm delete dialog */}
+      <Dialog open={confirmOpen} onClose={() => !deleting && setConfirmOpen(false)} maxWidth="xs" fullWidth
+        PaperProps={{ sx: { borderRadius: '16px' } }}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Delete repository?</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: '.88rem', color: t.textSecondary, mb: 2 }}>
+            This action <strong>cannot be undone</strong>. Type <strong>{repo.repo_name}</strong> to confirm.
+          </Typography>
+          <TextField
+            autoFocus fullWidth size="small"
+            placeholder={repo.repo_name}
+            value={confirmName}
+            onChange={(e) => setConfirmName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmOpen(false)} disabled={deleting} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={handleDelete} variant="contained" disabled={confirmName !== repo.repo_name || deleting}
+            sx={{ textTransform: 'none', fontWeight: 700, bgcolor: '#ef4444', '&:hover': { bgcolor: '#dc2626' }, borderRadius: '8px' }}>
+            {deleting ? <CircularProgress size={16} color="inherit" /> : 'Delete Repository'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={!!toast} autoHideDuration={4000} onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert severity="error" onClose={() => setToast(null)}>{toast}</Alert>
+      </Snackbar>
     </Box>
-  </Box>
-);
+  );
+};
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
@@ -705,6 +782,22 @@ const RepositoryPage: React.FC = () => {
   // TypeScript narrowing: repo is guaranteed non-null past the gate above
   if (!repo) return null;
 
+  // Context-aware back navigation: workspace > group > project > repositories
+  const backPath  = repo.workspace_id
+    ? `/developer/Dashboard/workspaces/${repo.workspace_id}`
+    : repo.group_id
+      ? `/groups/${repo.group_id}`
+      : id
+        ? `/developer/Dashboard/projects/${id}`
+        : '/developer/Dashboard/repositories';
+  const backLabel = repo.workspace_id
+    ? 'Workspace'
+    : repo.group_id
+      ? 'Group'
+      : id
+        ? 'Project'
+        : 'Repositories';
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: t.background, fontFamily: FONT }}>
 
@@ -715,11 +808,9 @@ const RepositoryPage: React.FC = () => {
         gap: 1.5, flexShrink: 0, flexWrap: 'wrap',
       }}>
         <Button size="small" startIcon={<ArrowBackIcon />}
-          onClick={() => repoId
-            ? navigate('/developer/Dashboard/repositories')
-            : navigate(`/developer/Dashboard/projects/${id}`)}
+          onClick={() => navigate(backPath)}
           sx={{ textTransform: 'none', color: t.textSecondary, '&:hover': { color: t.textPrimary }, minWidth: 0 }}>
-          {repoId ? 'Repositories' : 'Project'}
+          {backLabel}
         </Button>
         <Typography sx={{ color: t.textTertiary, fontSize: '.8rem' }}>/</Typography>
 
@@ -964,8 +1055,13 @@ const RepositoryPage: React.FC = () => {
           )}
 
           {/* Settings */}
-          {section === 'settings' && project && (
-            <RepoSettingsPanel repo={repo} project={project} onBack={() => setSection('files')} />
+          {section === 'settings' && (
+            <RepoSettingsPanel
+              repo={repo}
+              project={project}
+              onBack={() => setSection('files')}
+              onDeleted={() => navigate(backPath)}
+            />
           )}
         </Box>
 

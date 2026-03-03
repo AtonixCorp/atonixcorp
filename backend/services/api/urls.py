@@ -69,6 +69,7 @@ from ..pipelines.viewsets import (
     PipelineRunViewSet,
     PipelineRunNodeViewSet,
 )
+from ..pipelines.views import SSHKeyViewSet
 from ..kubernetes_integration.viewsets import KubeConfigViewSet, KubeSyncRunViewSet
 from ..apim.viewsets import (
     ApimOverviewViewSet, ApiDefinitionViewSet, ApiGatewayViewSet,
@@ -199,6 +200,7 @@ router.register(r'pipelines/artifacts',        PipelineArtifactViewSet, basename
 router.register(r'pipelines/definitions',      PipelineDefinitionViewSet, basename='pipeline-definition')
 router.register(r'pipelines/pipeline-runs',    PipelineRunViewSet,        basename='pipeline-run-v2')
 router.register(r'pipelines/run-nodes',        PipelineRunNodeViewSet,    basename='pipeline-run-node')
+router.register(r'pipelines/ssh-keys',         SSHKeyViewSet,             basename='pipeline-ssh-key')
 
 # ============================================================================
 # KUBERNETES INTEGRATION ENDPOINTS

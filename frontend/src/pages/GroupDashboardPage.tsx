@@ -1475,7 +1475,7 @@ const GroupDashboardPage: React.FC = () => {
             <Stack spacing={1.5}>
               {grRepos.map((r) => (
                 <Box key={r.id}
-                  onClick={() => navigate(`/developer/Dashboard/repositories/${r.id}`)}
+                  onClick={() => navigate(`/developer/Dashboard/repo/${r.id}`)}
                   sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${t.border}`, bgcolor: t.surface, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     '&:hover': { borderColor: BP, bgcolor: 'rgba(21,61,117,.04)' } }}>

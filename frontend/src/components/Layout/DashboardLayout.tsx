@@ -166,7 +166,7 @@ const CLOUD_NAV: NavItem[] = [
       { label: 'Marketing',    icon: <CampaignIcon {...I('.95rem')} />, path: '/marketing-dashboard/analytics' },
     ],
   },
-  { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/deployments' },
+  { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/repositories' },
 ];
 
 const DEVELOPER_NAV: NavItem[] = [

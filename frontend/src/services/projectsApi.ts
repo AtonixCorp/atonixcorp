@@ -395,13 +395,13 @@ export interface SSHKey {
 }
 
 export async function listSSHKeys(): Promise<SSHKey[]> {
-  const response = await apiClient.get<SSHKey[] | { results: SSHKey[] }>('/api/services/ssh-keys/');
+  const response = await apiClient.get<SSHKey[] | { results: SSHKey[] }>('/api/services/pipelines/ssh-keys/');
   const d = response.data;
   return Array.isArray(d) ? d : (d as any).results ?? [];
 }
 
 export async function addSSHKey(title: string, publicKey: string): Promise<SSHKey> {
-  const { data } = await apiClient.post<SSHKey>('/api/services/ssh-keys/', {
+  const { data } = await apiClient.post<SSHKey>('/api/services/pipelines/ssh-keys/', {
     title,
     public_key: publicKey,
   });
@@ -409,5 +409,5 @@ export async function addSSHKey(title: string, publicKey: string): Promise<SSHKe
 }
 
 export async function deleteSSHKey(keyId: string): Promise<void> {
-  await apiClient.delete(`/api/services/ssh-keys/${keyId}/`);
+  await apiClient.delete(`/api/services/pipelines/ssh-keys/${keyId}/`);
 }

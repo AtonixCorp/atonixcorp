@@ -243,6 +243,21 @@ class RepositoryViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def get_object(self):
+        """For detail endpoints (retrieve/update/destroy) allow access to any repo
+        the user owns or created — regardless of workspace/group scope."""
+        from django.shortcuts import get_object_or_404
+        from django.db.models import Q
+        user = self.request.user
+        pk   = self.kwargs.get(self.lookup_field)
+        obj  = get_object_or_404(
+            Repository,
+            Q(pk=pk),
+            Q(project__owner=user) | Q(owner=user) | Q(created_by=user),
+        )
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def perform_update(self, serializer):
         instance = serializer.save()
         if instance.project is not None:

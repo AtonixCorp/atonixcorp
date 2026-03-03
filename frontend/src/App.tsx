@@ -269,7 +269,7 @@ const AppShell: React.FC = () => {
           <Routes>
             <Route path="/developer/Dashboard" element={<Navigate to="/developer/Dashboard/repositories" replace />} />
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
-            <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
+            <Route path="/developer/Dashboard/deployments" element={<Navigate to="/developer/Dashboard/workspace" replace />} />
             <Route path="/developer/Dashboard/projects"  element={<DevProjectsPage />} />
             <Route path="/developer/Dashboard/cloud-manage" element={<DevCloudManagePage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />
