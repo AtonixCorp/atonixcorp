@@ -32,7 +32,7 @@ Following IBM Carbon Design System for enterprise-grade dark theme:
 **Primary Background:** `#262626` (Gray 90)
 - Used for main pages, dashboards, and full-screen backgrounds
 
-**Elevated Surfaces:** `#161616` (Gray 100)  
+**Elevated Surfaces:** `#161616` (Gray 100)
 - Used for cards, modals, drawers, and any raised surface
 
 **Secondary Background:** `#393939` (Gray 80)
