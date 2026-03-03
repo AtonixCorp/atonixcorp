@@ -254,3 +254,13 @@ export async function initRepo(repoId: string): Promise<TreeNode[]> {
   const { data } = await apiClient.post<TreeNode[]>(`${REPO_BASE(repoId)}/init/`);
   return data;
 }
+export async function initProjectRepo(
+  projectId: string,
+  repoName?: string,
+): Promise<BackendRepository> {
+  const { data } = await apiClient.post<BackendRepository>(
+    `/api/services/pipelines/projects/${projectId}/init-repo/`,
+    repoName ? { repo_name: repoName } : {},
+  );
+  return data;
+}

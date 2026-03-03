@@ -65,6 +65,7 @@ import TrackChangesIcon      from '@mui/icons-material/TrackChanges';
 import SecurityIcon          from '@mui/icons-material/Security';
 import VerifiedUserIcon      from '@mui/icons-material/VerifiedUser';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import SourceIcon              from '@mui/icons-material/Source';
 import ShieldIcon            from '@mui/icons-material/Shield';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
@@ -167,8 +168,9 @@ const CLOUD_NAV: NavItem[] = [
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
-  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/developer/Dashboard/deployments' },
-  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'   },
+  { label: 'Deployments',   icon: <ComputerIcon   {...I()} />, path: '/developer/Dashboard/deployments'   },
+  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'       },
+  { label: 'Repositories',  icon: <SourceIcon     {...I()} />, path: '/developer/Dashboard/repositories'   },
   { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
   { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
   { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },

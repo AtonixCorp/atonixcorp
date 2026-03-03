@@ -469,6 +469,22 @@ const ProjectDashboardPage: React.FC = () => {
           />
         </Stack>
         <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+          <Button
+            size="small"
+            variant={project?.has_repo ? 'contained' : 'outlined'}
+            startIcon={<AccountTreeIcon sx={{ fontSize: '.85rem' }} />}
+            onClick={() => navigate(`/developer/Dashboard/projects/${id ?? ''}/repo`)}
+            sx={{
+              textTransform: 'none',
+              ...(project?.has_repo
+                ? { bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover } }
+                : { color: t.textSecondary, borderColor: t.border, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }
+              ),
+              borderRadius: '8px', fontWeight: 700, fontSize: '.75rem', py: 0.4,
+            }}
+          >
+            {project?.has_repo ? 'Repository' : 'Set up Repo'}
+          </Button>
           {QUICK_ACTIONS.map((a) => (
             <Button key={a.label} size="small" variant="outlined" startIcon={a.icon} onClick={() => navigate(a.path)}
               sx={{ textTransform: 'none', color: t.textSecondary, borderColor: t.border, borderRadius: '8px', fontWeight: 600, fontSize: '.75rem', py: 0.4, '&:hover': { borderColor: t.brandPrimary, color: t.brandPrimary } }}>
@@ -713,9 +729,15 @@ const ProjectDashboardPage: React.FC = () => {
 
           <Box sx={{ p: 1.5 }}>
             <Button fullWidth variant="outlined" startIcon={<GitHubIcon sx={{ fontSize: '1rem' }} />}
-              onClick={() => navigate(`/developer/Dashboard/projects/repo/setup?project=${id ?? ''}&mode=${project?.has_repo ? 'import' : 'create'}`)}
-              sx={{ textTransform: 'none', color: t.textPrimary, borderColor: t.border, borderRadius: '10px', fontWeight: 600, fontSize: '.8rem', bgcolor: t.surfaceSubtle, justifyContent: 'flex-start', py: 1, '&:hover': { borderColor: t.brandPrimary, bgcolor: 'rgba(21,61,117,.06)' } }}>
-              {project?.has_repo ? 'View Repository' : 'Connect Repository'}
+              onClick={() => {
+                if (project?.has_repo) {
+                  navigate(`/developer/Dashboard/projects/${id ?? ''}/repo`);
+                } else {
+                  navigate(`/developer/Dashboard/projects/repo/setup?project=${id ?? ''}&mode=create`);
+                }
+              }}
+              sx={{ textTransform: 'none', color: project?.has_repo ? t.brandPrimary : t.textPrimary, borderColor: project?.has_repo ? t.brandPrimary : t.border, borderRadius: '10px', fontWeight: 600, fontSize: '.8rem', bgcolor: project?.has_repo ? 'rgba(21,61,117,.06)' : t.surfaceSubtle, justifyContent: 'flex-start', py: 1, '&:hover': { borderColor: t.brandPrimary, bgcolor: 'rgba(21,61,117,.09)' } }}>
+              {project?.has_repo ? 'Open Repository' : 'Connect Repository'}
             </Button>
             {project?.has_repo && repo && (
               <Button fullWidth variant="text" startIcon={<AccountTreeIcon sx={{ fontSize: '.9rem' }} />}

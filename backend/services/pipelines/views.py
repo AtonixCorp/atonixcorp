@@ -7,6 +7,32 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
 import uuid
+
+
+def _build_scaffold(project_name: str, repo_name: str, username: str) -> list:
+    """Return a full default file tree for a new AtonixCorp repository."""
+    return [
+        {'name': 'README.md', 'type': 'file', 'path': 'README.md',
+         'content': f'# {project_name}\n\nWelcome to **{project_name}** \u2014 powered by AtonixCorp Cloud.\n\n## Getting Started\n\n```bash\ngit clone <repo-url>\ncd {repo_name}\n```\n\n## CI/CD\n\nThis repository is connected to AtonixCorp Pipelines.\nEvery push to `main` or `develop` triggers a build automatically.\n\n## Structure\n\n```\nsrc/          # Application source\ntests/        # Test suite\npipeline.yaml # CI/CD definition\natonixcorp.yaml # Platform config\n```\n'},
+        {'name': '.gitignore', 'type': 'file', 'path': '.gitignore',
+         'content': '__pycache__/\n*.py[cod]\n.env\n.venv/\ndist/\nbuild/\n*.egg-info/\n.DS_Store\nnode_modules/\n.idea/\n.vscode/\n'},
+        {'name': 'atonixcorp.yaml', 'type': 'file', 'path': 'atonixcorp.yaml',
+         'content': f'project: {repo_name}\nversion: "1.0"\nruntime: python312\nregion: us-east-1\nowner: {username}\n'},
+        {'name': 'pipeline.yaml', 'type': 'file', 'path': 'pipeline.yaml',
+         'content': 'name: CI\non:\n  push:\n    branches: [main, develop]\n  pull_request:\n    branches: [main]\njobs:\n  build:\n    runs-on: atonix-runner\n    steps:\n      - uses: atonix/checkout@v2\n      - name: Install dependencies\n        run: pip install -r requirements.txt\n      - name: Run tests\n        run: pytest\n'},
+        {'name': 'src', 'type': 'dir', 'path': 'src', 'children': [
+            {'name': '__init__.py', 'type': 'file', 'path': 'src/__init__.py', 'content': ''},
+            {'name': 'main.py', 'type': 'file', 'path': 'src/main.py',
+             'content': f'def main():\n    print("Hello from {project_name}!")\n\n\nif __name__ == "__main__":\n    main()\n'},
+        ]},
+        {'name': 'tests', 'type': 'dir', 'path': 'tests', 'children': [
+            {'name': '__init__.py',  'type': 'file', 'path': 'tests/__init__.py', 'content': ''},
+            {'name': 'test_main.py', 'type': 'file', 'path': 'tests/test_main.py',
+             'content': 'def test_placeholder():\n    assert True\n'},
+        ]},
+        {'name': 'requirements.txt', 'type': 'file', 'path': 'requirements.txt',
+         'content': '# Add your dependencies here\n# Example:\n# requests>=2.31\n# fastapi>=0.110\n'},
+    ]
 from .models import (
     Project,
     Repository,
@@ -82,12 +108,26 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         namespace = f"{self.request.user.username}-{key or base_id}"
 
-        serializer.save(
+        project = serializer.save(
             owner=self.request.user,
             id=project_id,
             project_key=key,
             namespace=namespace[:80],
         )
+
+        # ── Auto-create AtonixCorp repository ──────────────────────────────
+        repo_id   = f"repo-{uuid.uuid4().hex[:12]}"
+        repo_name = key or base_id or slugify(name)[:40] or 'repository'
+        Repository.objects.create(
+            id=repo_id,
+            project=project,
+            provider='atonix',
+            repo_name=repo_name,
+            default_branch='main',
+            tree_data=_build_scaffold(name, repo_name, self.request.user.username),
+        )
+        project.last_activity = timezone.now()
+        project.save(update_fields=['last_activity'])
 
     def perform_update(self, serializer):
         serializer.save(last_activity=timezone.now())
@@ -100,6 +140,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK,
             )
         return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post'], url_path='init-repo')
+    def init_repo(self, request, pk=None):
+        """Initialize an AtonixCorp repository for a project that doesn't have one.
+        If an existing repo is found, re-runs the scaffold and returns it.
+        """
+        project = self.get_object()
+        name     = request.data.get('repo_name', '') or project.project_key or slugify(project.name)
+        name     = slugify(name)[:40] or 'repository'
+
+        existing = project.repositories.first()
+        if existing:
+            # Re-scaffold if tree is empty
+            if not existing.tree_data:
+                existing.tree_data = _build_scaffold(project.name, name, request.user.username)
+                existing.save(update_fields=['tree_data'])
+            return Response(RepositorySerializer(existing).data)
+
+        repo_id = f"repo-{uuid.uuid4().hex[:12]}"
+        repo = Repository.objects.create(
+            id=repo_id,
+            project=project,
+            provider='atonix',
+            repo_name=name,
+            default_branch='main',
+            tree_data=_build_scaffold(project.name, name, request.user.username),
+        )
+        project.last_activity = timezone.now()
+        project.save(update_fields=['last_activity'])
+        return Response(RepositorySerializer(repo).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['get'])
     def repositories(self, request, pk=None):

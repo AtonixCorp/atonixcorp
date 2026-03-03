@@ -59,6 +59,7 @@ interface Project {
   members: string[];
   tags: string[];
   provider: 'github' | 'gitlab' | 'bitbucket';
+  has_repo: boolean;
 }
 
 const mapBackendProject = (project: BackendProject): Project => ({
@@ -75,6 +76,7 @@ const mapBackendProject = (project: BackendProject): Project => ({
   members: ['Y'],
   tags: ['server-backed'],
   provider: 'github',
+  has_repo: project.has_repo ?? false,
 });
 
 const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: string }> = {
@@ -423,6 +425,42 @@ const DevProjectsPage: React.FC = () => {
 
                   </CardContent>
                 </CardActionArea>
+                <Box
+                  sx={{
+                    px: 2, pb: 1.25, pt: 0,
+                    borderTop: `1px solid ${t.border}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  }}
+                >
+                  <Button
+                    size="small"
+                    variant="text"
+                    startIcon={<GitBranchIcon sx={{ fontSize: '.75rem' }} />}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/developer/Dashboard/projects/${project.id}/repo`); }}
+                    sx={{
+                      textTransform: 'none', fontWeight: 700, fontSize: '.75rem',
+                      color: project.has_repo ? dashboardTokens.colors.brandPrimary : t.textSecondary,
+                      fontFamily: FONT,
+                      px: 0.75, py: 0.5, mt: 0.75,
+                      borderRadius: '6px',
+                      '&:hover': { bgcolor: 'rgba(21,61,117,.08)', color: dashboardTokens.colors.brandPrimary },
+                    }}
+                  >
+                    {project.has_repo ? 'Open Repository' : 'Set up Repository'}
+                  </Button>
+                  <Chip
+                    label={project.has_repo ? 'Repo' : 'No Repo'}
+                    size="small"
+                    sx={{
+                      mt: 0.75,
+                      bgcolor: project.has_repo ? 'rgba(21,61,117,.10)' : t.surfaceSubtle,
+                      color: project.has_repo ? dashboardTokens.colors.brandPrimary : t.textTertiary,
+                      fontWeight: 700, fontSize: '.65rem', height: 18,
+                      border: `1px solid ${project.has_repo ? dashboardTokens.colors.brandPrimary + '44' : t.border}`,
+                      '& .MuiChip-label': { px: 0.7 },
+                    }}
+                  />
+                </Box>
                 <Tooltip title="Delete project">
                   <IconButton
                     className="proj-del"
