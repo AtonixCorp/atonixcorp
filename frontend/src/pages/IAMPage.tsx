@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Stack, Typography } from '@mui/material';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { dashboardTokens } from '../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
 
 const IAMPage: React.FC = () => {

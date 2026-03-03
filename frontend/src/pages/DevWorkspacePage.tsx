@@ -50,7 +50,7 @@ import {
 } from '../services/devWorkspaceApi';
 import WorkspaceCreationWizard from '../components/Workspace/WorkspaceCreationWizard';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
 
 // ── Options ───────────────────────────────────────────────────────────────────

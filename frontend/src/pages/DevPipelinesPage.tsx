@@ -48,7 +48,7 @@ import {
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 const STATUS_CFG: Record<string, { color: string; bg: string; label: string; icon: React.ReactNode }> = {

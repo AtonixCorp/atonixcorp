@@ -61,7 +61,7 @@ import { useGroupPermissions } from '../hooks/useGroupPermissions';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 import GroupPipelinesPanel from '../components/Pipelines/GroupPipelinesPanel';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const t    = dashboardTokens.colors;
 const sc   = dashboardSemanticColors;
 const BP   = t.brandPrimary;

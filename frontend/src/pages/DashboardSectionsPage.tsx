@@ -47,7 +47,7 @@ interface DashboardSectionsPageProps {
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const ACCENT = dashboardTokens.colors.brandPrimary;
 
 const ICON_SZ = { fontSize: '1rem' };

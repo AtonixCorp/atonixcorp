@@ -39,7 +39,7 @@ import {
   type PipelineRun, type PipelineRunNode, type PipelineRunArtifact, type NodeStatus,
 } from '../services/pipelinesApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
 const t    = dashboardTokens.colors;
 
 const POLL_INTERVAL = 3000; // ms

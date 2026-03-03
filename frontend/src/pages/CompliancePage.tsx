@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import GppGoodIcon from '@mui/icons-material/GppGood';
 import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
 
 const CompliancePage: React.FC = () => {

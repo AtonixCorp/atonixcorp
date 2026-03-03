@@ -33,7 +33,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import AddIcon from '@mui/icons-material/Add';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 type ContainerType = 'runtime' | 'worker' | 'cron' | 'oneoff';

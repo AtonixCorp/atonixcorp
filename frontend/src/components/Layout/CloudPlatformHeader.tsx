@@ -373,7 +373,7 @@ const CloudPlatformHeader: React.FC = () => {
         top: 0,
         zIndex: (muiTheme) => muiTheme.zIndex.appBar + 2,
         borderBottom: `1px solid ${CLOUD_SILVER}`,
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: '"IBM Plex Sans", sans-serif',
       }}
       onMouseLeave={() => {
         if (!isMobile) {

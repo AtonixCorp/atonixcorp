@@ -77,7 +77,7 @@ import RightActivityPanel, { RightPanelExpandTab } from './RightActivityPanel';
 
 const SIDEBAR_WIDTH = 260;
 const SIDEBAR_COLLAPSED_WIDTH = 76;
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // ── AtonixCorp unified design tokens ──────────────────────────────────────────
 // Sidebar / shell — Neutral enterprise palette

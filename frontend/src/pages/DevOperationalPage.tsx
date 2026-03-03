@@ -70,7 +70,7 @@ import {
 } from '../services/operationalApi';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const t    = dashboardTokens.colors;
 const sc   = dashboardSemanticColors;
 const LEFT_W  = 260;

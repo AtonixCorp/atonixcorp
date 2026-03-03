@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 import { createProject as createProjectApi } from '../services/projectsApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 const STORAGE_KEY = 'atonix:project-create:v2';
 

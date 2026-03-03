@@ -16,7 +16,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 import { getProject, type BackendProject } from '../services/projectsApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 const DevProjectDetailPage: React.FC = () => {

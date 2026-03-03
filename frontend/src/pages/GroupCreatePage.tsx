@@ -38,7 +38,7 @@ import {
 import GroupProjectCreateModal from '../components/Groups/GroupProjectCreateModal';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // ─── Design tokens shorthand ──────────────────────────────────────────────────
 const useT = () => dashboardTokens.colors;

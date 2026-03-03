@@ -29,7 +29,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
 import type { ContainerResource } from './CreateContainerWizard';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 const STATUS_CONFIG = {

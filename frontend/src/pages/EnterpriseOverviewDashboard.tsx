@@ -49,7 +49,7 @@ const SUCCESS  = dashboardSemanticColors.success;
 const WARNING  = dashboardSemanticColors.warning;
 const DANGER   = dashboardSemanticColors.danger;
 const PURPLE   = dashboardSemanticColors.purple;
-const FONT     = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT     = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function statusColor(s: string) {
@@ -178,23 +178,24 @@ function KpiCard({
         bgcolor: SURFACE,
         border: `1px solid ${BORDER}`,
         borderRadius: 1,
-        p: 2.5,
+        p: { xs: 1.5, sm: 2, xl: 2.5 },
         cursor: onClick ? 'pointer' : 'default',
         transition: 'border-color 0.15s',
         '&:hover': onClick ? { borderColor: accent } : {},
         minWidth: 0,
+        height: '100%',
       }}
     >
       <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: MUTED, fontWeight: 500, mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <Typography noWrap sx={{ fontFamily: FONT, fontSize: '0.72rem', color: MUTED, fontWeight: 500, mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {label}
           </Typography>
-          <Typography sx={{ fontFamily: FONT, fontSize: '1.6rem', fontWeight: 800, color: TEXT, lineHeight: 1.1 }}>
+          <Typography sx={{ fontFamily: FONT, fontSize: { xs: '1.3rem', sm: '1.45rem', xl: '1.6rem' }, fontWeight: 800, color: TEXT, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {value}
           </Typography>
           {sub && (
-            <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: MUTED, mt: 0.5 }}>
+            <Typography noWrap sx={{ fontFamily: FONT, fontSize: '0.72rem', color: MUTED, mt: 0.5 }}>
               {sub}
             </Typography>
           )}
@@ -260,24 +261,26 @@ function RegionCard({ r }: { r: RegionHealth }) {
         </Stack>
         <StatusBadge status={r.status} />
       </Stack>
-      <Grid container spacing={1}>
+      <Grid container spacing={1} sx={{ mt: 0.5 }}>
         {[
           { label: 'Workloads', value: r.workloads },
           { label: 'Incidents', value: r.incidents, warn: r.incidents > 0 },
           { label: 'Zones', value: `${r.zones_healthy}/${r.zones}` },
         ].map(({ label, value, warn }: any) => (
           <Grid size={{ xs: 4 }} key={label}>
-            <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: MUTED, mb: 0.2 }}>{label}</Typography>
-            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '0.9rem', color: warn ? DANGER : TEXT }}>
-              {value}
-            </Typography>
+            <Box sx={{ bgcolor: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 1, p: 1, textAlign: 'center' }}>
+              <Typography sx={{ fontFamily: FONT, fontSize: '0.6rem', color: MUTED, mb: 0.3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</Typography>
+              <Typography sx={{ fontFamily: FONT, fontWeight: 800, fontSize: '0.95rem', color: warn ? DANGER : TEXT, lineHeight: 1 }}>
+                {value}
+              </Typography>
+            </Box>
           </Grid>
         ))}
       </Grid>
-      <Box sx={{ mt: 1.5 }}>
-        <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-          <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: MUTED }}>Capacity</Typography>
-          <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', fontWeight: 600, color: TEXT }}>{r.capacity_pct}%</Typography>
+      <Box sx={{ mt: 1.5, bgcolor: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 1, p: 1.2 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
+          <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: MUTED, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Capacity</Typography>
+          <Typography sx={{ fontFamily: FONT, fontSize: '0.78rem', fontWeight: 700, color: TEXT }}>{r.capacity_pct}%</Typography>
         </Stack>
         <UsageBar value={r.capacity_pct} />
       </Box>
@@ -465,8 +468,14 @@ const EnterpriseOverviewDashboard: React.FC = () => {
           py: 2.5,
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack spacing={0.3}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          justifyContent="space-between"
+          flexWrap="wrap"
+          gap={1.5}
+        >
+          <Stack spacing={0.3} sx={{ minWidth: 0 }}>
             <Typography sx={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.1rem', color: TEXT }}>
               Cloud Overview
             </Typography>
@@ -474,7 +483,7 @@ const EnterpriseOverviewDashboard: React.FC = () => {
               Enterprise infrastructure health — updated {lastRefresh.toLocaleTimeString()}
             </Typography>
           </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1}>
             {criticalIncidents > 0 && (
               <Chip
                 icon={<ErrorIcon sx={{ fontSize: 14, color: DANGER + ' !important' }} />}
@@ -514,7 +523,7 @@ const EnterpriseOverviewDashboard: React.FC = () => {
               { label: 'Monthly Spend',     value: stats?.monthly_spend ? `$${(stats.monthly_spend / 1000).toFixed(1)}k` : '$14.2k', sub: 'projected $17.1k', icon: <AttachMoneyIcon />, color: WARNING, path: '/dashboard/billing', trend: { value: 8.4, label: 'MoM' } },
               { label: 'Team Members',      value: stats?.team_count || 24, sub: '6 active now',  icon: <PeopleIcon />,        color: '#06B6D4', path: '/dashboard/teams' },
             ].map(item => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }} key={item.label}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4, xl: 2 }} key={item.label}>
                 <KpiCard
                   label={item.label}
                   value={item.value}
@@ -529,7 +538,7 @@ const EnterpriseOverviewDashboard: React.FC = () => {
           </Grid>
 
           {/* ── Live Metrics ─────────────────────────────────────────────── */}
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 1, p: 3, mb: 4 }}>
             <SectionTitle
               icon={<SpeedIcon fontSize="small" />}
               title="Live Platform Metrics"
@@ -750,27 +759,36 @@ const EnterpriseOverviewDashboard: React.FC = () => {
               title="Cluster Resource Utilization"
               sub="CPU · RAM · Storage · GPU across all regions"
             />
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {[
-                { label: 'CPU',     used: 62, total: 100, unit: '%',    color: BRAND  },
-                { label: 'Memory',  used: 71, total: 100, unit: '%',    color: PURPLE },
-                { label: 'Storage', used: 58, total: 480, unit: ' TB',  color: SUCCESS },
-                { label: 'GPU',     used: 84, total: 100, unit: '%',    color: '#EC4899' },
-                { label: 'Network', used: 4.8, total: 10, unit: ' Gbps', color: '#06B6D4' },
+                { label: 'CPU',     used: 62,  total: 100, unit: '%',     color: BRAND     },
+                { label: 'Memory',  used: 71,  total: 100, unit: '%',     color: PURPLE    },
+                { label: 'Storage', used: 58,  total: 480, unit: ' TB',   color: SUCCESS   },
+                { label: 'GPU',     used: 84,  total: 100, unit: '%',     color: '#EC4899' },
+                { label: 'Network', used: 4.8, total: 10,  unit: ' Gbps', color: '#06B6D4' },
               ].map(r => (
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 12/5 }} key={r.label}>
-                  <Box>
-                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
-                      <Typography sx={{ fontFamily: FONT, fontSize: '0.78rem', color: TEXT, fontWeight: 600 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 12/5 as any }} key={r.label}>
+                  <Box sx={{ bgcolor: SURFACE2, border: `1px solid ${BORDER}`, borderRadius: 1, p: 2, height: '100%' }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                      <Typography sx={{ fontFamily: FONT, fontSize: '0.8rem', color: TEXT, fontWeight: 700 }}>
                         {r.label}
                       </Typography>
-                      <Typography sx={{ fontFamily: FONT, fontSize: '0.78rem', color: MUTED }}>
-                        {r.used}{r.unit} / {r.total}{r.unit}
-                      </Typography>
+                      <Chip
+                        label={`${((r.used / r.total) * 100).toFixed(0)}%`}
+                        size="small"
+                        sx={{
+                          bgcolor: `${r.color}1a`,
+                          color: r.color,
+                          border: `1px solid ${r.color}33`,
+                          fontWeight: 800,
+                          fontSize: '0.72rem',
+                          height: 22,
+                        }}
+                      />
                     </Stack>
                     <UsageBar value={r.used} max={r.total} color={r.color} />
-                    <Typography sx={{ fontFamily: FONT, fontSize: '0.68rem', color: MUTED, mt: 0.4, textAlign: 'right' }}>
-                      {((r.used / r.total) * 100).toFixed(0)}% utilized
+                    <Typography sx={{ fontFamily: FONT, fontSize: '0.72rem', color: MUTED, mt: 1 }}>
+                      {r.used}{r.unit} / {r.total}{r.unit}
                     </Typography>
                   </Box>
                 </Grid>
@@ -779,46 +797,58 @@ const EnterpriseOverviewDashboard: React.FC = () => {
           </Box>
 
           {/* ── Quick Links ───────────────────────────────────────────────── */}
-          <Box>
-            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '0.85rem', color: MUTED, mb: 2, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Quick Access
-            </Typography>
+          <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 1, p: 3 }}>
+            <SectionTitle
+              icon={<OpenInNewIcon fontSize="small" />}
+              title="Quick Access"
+              sub="Navigate directly to any platform service"
+            />
             <Grid container spacing={1.5}>
               {[
-                { label: 'Compute',         path: '/dashboard/compute',            icon: <ComputerIcon sx={{ fontSize: 18 }} />,   color: BRAND  },
-                { label: 'Kubernetes',      path: '/dashboard/kubernetes',         icon: <RouterIcon sx={{ fontSize: 18 }} />,    color: '#06B6D4' },
-                { label: 'Storage',         path: '/dashboard/storage',            icon: <StorageIcon sx={{ fontSize: 18 }} />,   color: SUCCESS },
-                { label: 'Networking',      path: '/dashboard/network',            icon: <RouterIcon sx={{ fontSize: 18 }} />,    color: WARNING },
-                { label: 'IAM',             path: '/dashboard/iam',                icon: <PeopleIcon sx={{ fontSize: 18 }} />,    color: PURPLE },
-                { label: 'Monitoring',      path: '/monitor-dashboard/overview',   icon: <MonitorHeartIcon sx={{ fontSize: 18 }} />, color: '#EC4899' },
-                { label: 'Billing',         path: '/dashboard/billing',            icon: <AttachMoneyIcon sx={{ fontSize: 18 }} />, color: WARNING },
-                { label: 'Compliance',      path: '/dashboard/compliance',         icon: <CheckCircleIcon sx={{ fontSize: 18 }} />, color: SUCCESS },
-                { label: 'Secrets Vault',   path: '/dashboard/secrets',            icon: <SpeedIcon sx={{ fontSize: 18 }} />,     color: DANGER },
-                { label: 'KMS',             path: '/dashboard/kms',                icon: <SpeedIcon sx={{ fontSize: 18 }} />,     color: '#F97316' },
-                { label: 'GPU Workloads',   path: '/dashboard/gpu',                icon: <MemoryIcon sx={{ fontSize: 18 }} />,    color: '#EC4899' },
-                { label: 'Zero-Trust',      path: '/dashboard/zero-trust',         icon: <SpeedIcon sx={{ fontSize: 18 }} />,     color: '#8B5CF6' },
+                { label: 'Compute',       path: '/dashboard/compute',          icon: <ComputerIcon sx={{ fontSize: 18 }} />,     color: BRAND     },
+                { label: 'Kubernetes',    path: '/dashboard/kubernetes',       icon: <RouterIcon sx={{ fontSize: 18 }} />,       color: '#06B6D4' },
+                { label: 'Storage',       path: '/dashboard/storage',          icon: <StorageIcon sx={{ fontSize: 18 }} />,      color: SUCCESS   },
+                { label: 'Networking',    path: '/dashboard/network',          icon: <RouterIcon sx={{ fontSize: 18 }} />,       color: WARNING   },
+                { label: 'IAM',           path: '/dashboard/iam',              icon: <PeopleIcon sx={{ fontSize: 18 }} />,       color: PURPLE    },
+                { label: 'Monitoring',    path: '/monitor-dashboard/overview', icon: <MonitorHeartIcon sx={{ fontSize: 18 }} />, color: '#EC4899' },
+                { label: 'Billing',       path: '/dashboard/billing',          icon: <AttachMoneyIcon sx={{ fontSize: 18 }} />,  color: WARNING   },
+                { label: 'Compliance',    path: '/dashboard/compliance',       icon: <CheckCircleIcon sx={{ fontSize: 18 }} />,  color: SUCCESS   },
+                { label: 'Secrets Vault', path: '/dashboard/secrets',          icon: <SpeedIcon sx={{ fontSize: 18 }} />,        color: DANGER    },
+                { label: 'KMS',           path: '/dashboard/kms',              icon: <SpeedIcon sx={{ fontSize: 18 }} />,        color: '#F97316' },
+                { label: 'GPU Workloads', path: '/dashboard/gpu',              icon: <MemoryIcon sx={{ fontSize: 18 }} />,       color: '#EC4899' },
+                { label: 'Zero-Trust',    path: '/dashboard/zero-trust',       icon: <SpeedIcon sx={{ fontSize: 18 }} />,        color: '#8B5CF6' },
               ].map(q => (
                 <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={q.label}>
                   <Box
                     onClick={() => navigate(q.path)}
                     sx={{
-                      bgcolor: SURFACE,
+                      bgcolor: SURFACE2,
                       border: `1px solid ${BORDER}`,
                       borderRadius: 1,
                       p: 1.5,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 1,
+                      gap: 1.2,
                       cursor: 'pointer',
-                      transition: 'border-color 0.15s',
-                      '&:hover': { borderColor: q.color },
+                      transition: 'border-color 0.15s, background 0.15s',
+                      '&:hover': { borderColor: q.color, bgcolor: `${q.color}0d` },
+                      height: '100%',
                     }}
                   >
-                    <Box sx={{ color: q.color }}>{q.icon}</Box>
-                    <Typography sx={{ fontFamily: FONT, fontSize: '0.8rem', color: TEXT, fontWeight: 600, flex: 1 }}>
+                    <Box
+                      sx={{
+                        width: 32, height: 32, borderRadius: 1,
+                        bgcolor: `${q.color}18`, color: q.color,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {q.icon}
+                    </Box>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '0.8rem', color: TEXT, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {q.label}
                     </Typography>
-                    <OpenInNewIcon sx={{ fontSize: 12, color: MUTED }} />
+                    <OpenInNewIcon sx={{ fontSize: 12, color: MUTED, flexShrink: 0 }} />
                   </Box>
                 </Grid>
               ))}

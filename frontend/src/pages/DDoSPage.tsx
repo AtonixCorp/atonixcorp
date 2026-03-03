@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t = dashboardTokens.colors;
 
 const DDoSPage: React.FC = () => {

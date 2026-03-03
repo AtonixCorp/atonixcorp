@@ -57,7 +57,7 @@ import {
 } from '../services/environmentsApi';
 import { listProjects, type BackendProject } from '../services/projectsApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const t    = dashboardTokens.colors;
 const sc   = dashboardSemanticColors;
 

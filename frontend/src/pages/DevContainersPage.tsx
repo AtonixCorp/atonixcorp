@@ -33,7 +33,7 @@ import CreateContainerWizard from '../components/Containers/CreateContainerWizar
 import ContainerDetailDrawer from '../components/Containers/ContainerDetailDrawer';
 import type { ContainerResource } from '../components/Containers/CreateContainerWizard';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 type ContainerStatus = 'running' | 'deploying' | 'failed' | 'stopped';

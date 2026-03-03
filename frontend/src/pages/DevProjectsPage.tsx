@@ -39,7 +39,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 import { listProjects as listProjectsApi, deleteProject as deleteProjectApi, type BackendProject } from '../services/projectsApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const t = dashboardTokens.colors;
 
 type ProjectStatus = 'active' | 'in-progress' | 'completed' | 'archived';

@@ -34,7 +34,7 @@ import {
 } from '../../services/groupsApi';
 import { useGroupPermissions } from '../../hooks/useGroupPermissions';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 const t    = dashboardTokens.colors;
 const sc   = dashboardSemanticColors;
 

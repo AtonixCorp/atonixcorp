@@ -36,7 +36,7 @@ import {
   type PipelineDefinition, type BackendProject, type BackendRepository,
 } from '../services/pipelinesApi';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
 const t    = dashboardTokens.colors;
 
 /* ───────────── status helpers ─────────────────────────────────────── */

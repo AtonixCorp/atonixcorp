@@ -5,12 +5,13 @@
  * current route. Shows live process summaries, resource status and
  * quick actions relevant to the active module.
  */
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Chip,
   Divider,
   IconButton,
+  Skeleton,
   Stack,
   Tooltip,
   Typography,
@@ -37,6 +38,8 @@ import ViewInArIcon          from '@mui/icons-material/ViewInAr';
 import WarningAmberIcon      from '@mui/icons-material/WarningAmber';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
+import { listProjects, listAllRepos } from '../../services/projectsApi';
+import apiClient from '../../services/apiClient';
 
 const t    = dashboardTokens.colors;
 const FONT = dashboardTokens.typography.fontFamily;
@@ -68,7 +71,15 @@ interface PanelDef {
   icon:     React.ReactNode;
   items:    ProcessItem[];
   actions:  QuickAction[];
-  metrics?: { label: string; value: string | number; color?: string }[];
+  metrics?: { label: string; value: string | number; color?: string; loading?: boolean }[];
+}
+
+interface LiveCounts {
+  projects:   number | null;
+  repos:      number | null;
+  pipelines:  number | null;
+  containers: number | null;
+  loading:    boolean;
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
@@ -97,7 +108,7 @@ const StatusIcon: React.FC<{ status: Status }> = ({ status }) => {
 
 // ── Panel definitions per route ────────────────────────────────────────────────
 
-function usePanelDef(pathname: string): PanelDef {
+function usePanelDef(pathname: string, live: LiveCounts): PanelDef {
   const navigate = useNavigate();
 
   if (pathname.includes('/repositories') || pathname.includes('/repo/')) {
@@ -247,9 +258,9 @@ function usePanelDef(pathname: string): PanelDef {
       title: 'Project Activity',
       icon:  <FolderOpenIcon sx={{ fontSize: '1rem', color: t.brandPrimary }} />,
       metrics: [
-        { label: 'Active',  value: 3, color: dashboardSemanticColors.success },
-        { label: 'Stalled', value: 1, color: dashboardSemanticColors.warning },
-        { label: 'Repos',   value: 4, color: t.textPrimary },
+        { label: 'Projects', value: live.projects  ?? '—', color: dashboardSemanticColors.success, loading: live.loading },
+        { label: 'Repos',    value: live.repos      ?? '—', color: t.textPrimary,                   loading: live.loading },
+        { label: 'Pipelines',value: live.pipelines  ?? '—', color: STATUS_COLOR.running,             loading: live.loading },
       ],
       items: [
         { id: '1', label: 'atonixcorp',   sub: 'Last activity 43m ago', status: 'success' },
@@ -257,8 +268,8 @@ function usePanelDef(pathname: string): PanelDef {
         { id: '3', label: 'infra-tools',  sub: 'Last activity 1d ago',  status: 'idle'    },
       ],
       actions: [
-        { label: 'New Project',   icon: <FolderOpenIcon sx={{ fontSize: '.85rem' }} />, onClick: () => navigate('/developer/Dashboard/projects/create') },
-        { label: 'Import Repo',   icon: <AccountTreeIcon sx={{ fontSize: '.85rem' }} />, onClick: () => navigate('/developer/Dashboard/projects/import') },
+        { label: 'New Project',   icon: <FolderOpenIcon   sx={{ fontSize: '.85rem' }} />, onClick: () => navigate('/developer/Dashboard/projects/create') },
+        { label: 'Import Repo',   icon: <AccountTreeIcon  sx={{ fontSize: '.85rem' }} />, onClick: () => navigate('/developer/Dashboard/projects/import') },
       ],
     };
   }
@@ -268,10 +279,10 @@ function usePanelDef(pathname: string): PanelDef {
     title: 'Recent Activity',
     icon:  <CircleIcon sx={{ fontSize: '1rem', color: t.brandPrimary }} />,
     metrics: [
-      { label: 'Projects',    value: 3, color: t.textPrimary },
-      { label: 'Repos',       value: 4, color: t.textPrimary },
-      { label: 'Pipelines',   value: 2, color: STATUS_COLOR.running },
-      { label: 'Containers',  value: 4, color: dashboardSemanticColors.success },
+      { label: 'Projects',   value: live.projects   ?? '—', color: t.textPrimary,                   loading: live.loading },
+      { label: 'Repos',      value: live.repos       ?? '—', color: t.textPrimary,                   loading: live.loading },
+      { label: 'Pipelines',  value: live.pipelines   ?? '—', color: STATUS_COLOR.running,             loading: live.loading },
+      { label: 'Containers', value: live.containers  ?? '—', color: dashboardSemanticColors.success,  loading: live.loading },
     ],
     items: [
       { id: '1', label: 'Pipeline #142 running',    sub: '3m ago',  status: 'running' },
@@ -296,7 +307,37 @@ interface RightActivityPanelProps {
 
 const RightActivityPanel: React.FC<RightActivityPanelProps> = ({ collapsed, onToggle }) => {
   const { pathname } = useLocation();
-  const panel = usePanelDef(pathname);
+
+  // ── Live counts fetched from backend ───────────────────────────────────────
+  const [live, setLive] = useState<LiveCounts>({
+    projects: null, repos: null, pipelines: null, containers: null, loading: true,
+  });
+
+  const fetchCounts = useCallback(async () => {
+    setLive(prev => ({ ...prev, loading: true }));
+    try {
+      const [projectsRes, reposRes, pipelinesRes, containersRes] = await Promise.allSettled([
+        listProjects(),
+        listAllRepos(),
+        apiClient.get<any[]>('/api/services/pipelines/definitions/'),
+        apiClient.get<any[]>('/api/services/containers/'),
+      ]);
+
+      setLive({
+        projects:   projectsRes.status   === 'fulfilled' ? projectsRes.value.length       : null,
+        repos:      reposRes.status      === 'fulfilled' ? reposRes.value.length          : null,
+        pipelines:  pipelinesRes.status  === 'fulfilled' ? (pipelinesRes.value.data ?? []).length : null,
+        containers: containersRes.status === 'fulfilled' ? (containersRes.value.data ?? []).length : null,
+        loading: false,
+      });
+    } catch {
+      setLive(prev => ({ ...prev, loading: false }));
+    }
+  }, []);
+
+  useEffect(() => { fetchCounts(); }, [fetchCounts]);
+
+  const panel = usePanelDef(pathname, live);
 
   if (collapsed) return null;
 
@@ -326,8 +367,8 @@ const RightActivityPanel: React.FC<RightActivityPanelProps> = ({ collapsed, onTo
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.25}>
             <Tooltip title="Refresh">
-              <IconButton size="small" sx={{ color: t.textTertiary, '&:hover': { color: t.brandPrimary }, p: 0.4 }}>
-                <RefreshIcon sx={{ fontSize: '.85rem' }} />
+              <IconButton size="small" onClick={fetchCounts} disabled={live.loading} sx={{ color: t.textTertiary, '&:hover': { color: t.brandPrimary }, p: 0.4 }}>
+                <RefreshIcon sx={{ fontSize: '.85rem', ...(live.loading ? { animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } } : {}) }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Collapse panel">
@@ -353,9 +394,13 @@ const RightActivityPanel: React.FC<RightActivityPanelProps> = ({ collapsed, onTo
                 <Typography sx={{ fontSize: '.62rem', fontWeight: 700, color: t.textTertiary, textTransform: 'uppercase', letterSpacing: '.06em', fontFamily: FONT }}>
                   {m.label}
                 </Typography>
-                <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: m.color ?? t.textPrimary, lineHeight: 1.2, fontFamily: FONT }}>
-                  {m.value}
-                </Typography>
+                {m.loading ? (
+                  <Skeleton variant="text" width={32} height={22} sx={{ bgcolor: `${t.border}` }} />
+                ) : (
+                  <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: m.color ?? t.textPrimary, lineHeight: 1.2, fontFamily: FONT }}>
+                    {m.value}
+                  </Typography>
+                )}
               </Box>
             ))}
           </Box>

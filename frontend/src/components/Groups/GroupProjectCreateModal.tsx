@@ -32,7 +32,7 @@ import {
 } from '../../services/groupsApi';
 import { dashboardTokens, dashboardSemanticColors } from '../../styles/dashboardDesignSystem';
 
-const FONT = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const FONT = '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 const LANGUAGES: { value: ProjectLang; label: string; color: string }[] = [
   { value: 'TypeScript', label: 'TypeScript', color: '#3178c6' },
