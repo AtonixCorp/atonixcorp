@@ -127,6 +127,7 @@ const AppShell: React.FC = () => {
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
   const isProjectPage = location.pathname.startsWith('/developer/Dashboard/projects/');
+  const isCicdPage = location.pathname.startsWith('/developer/Dashboard/cicd');
   const isWorkspaceDashboard = /^\/developer\/Dashboard\/workspace\/[^\/]+/.test(location.pathname);
   const isEnvironmentDetailPage = /^\/developer\/Dashboard\/environment\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
@@ -196,6 +197,19 @@ const AppShell: React.FC = () => {
     );
   }
 
+  if (isCicdPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/developer/Dashboard/cicd/builder"        element={<PipelineBuilderPage />} />
+          <Route path="/developer/Dashboard/cicd/runs/:runId"     element={<PipelineExecutionPage />} />
+          <Route path="/developer/Dashboard/cicd/runs"            element={<PipelineExecutionPage />} />
+          <Route path="/developer/Dashboard/cicd"                 element={<DevPipelinesPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
   if (isDeveloperDashboard) {
     return (
       <ProtectedRoute>
@@ -205,10 +219,6 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/deploy-app"  element={<DevDeployAppPage />} />
             <Route path="/developer/Dashboard/deployments" element={<DevDeploymentsPage />} />
             <Route path="/developer/Dashboard/projects"  element={<DevProjectsPage />} />
-            <Route path="/developer/Dashboard/cicd/builder"        element={<PipelineBuilderPage />} />
-            <Route path="/developer/Dashboard/cicd/runs/:runId"     element={<PipelineExecutionPage />} />
-            <Route path="/developer/Dashboard/cicd/runs"            element={<PipelineExecutionPage />} />
-            <Route path="/developer/Dashboard/cicd" element={<DevPipelinesPage />} />
             <Route path="/developer/Dashboard/cloud-manage" element={<DevCloudManagePage />} />
             <Route path="/developer/Dashboard/containers" element={<DevContainersPage />} />
             <Route path="/developer/Dashboard/kubernetes" element={<DevKubernetesPage />} />
