@@ -181,7 +181,7 @@ const LoadBalancersPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: isDark ? '#0D1826' : '#F9FAFB', minHeight: '100%' }}>
+    <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="h5" fontWeight={700}>Load Balancers</Typography>
@@ -194,13 +194,13 @@ const LoadBalancersPage: React.FC = () => {
       </Stack>
 
       <Stack direction="row" spacing={2} mb={2}>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Total</Typography><Typography variant="h4">{totals.total}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Active</Typography><Typography variant="h4">{totals.active}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Internal</Typography><Typography variant="h4">{totals.internal}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Total</Typography><Typography variant="h4">{totals.total}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Active</Typography><Typography variant="h4">{totals.active}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Internal</Typography><Typography variant="h4">{totals.internal}</Typography></CardContent></Card>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, gap: 2 }}>
-        <Card>
+        <Card sx={{ bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography fontWeight={600} mb={1}>Balancers</Typography>
             <List sx={{ p: 0 }}>
@@ -209,7 +209,7 @@ const LoadBalancersPage: React.FC = () => {
                   key={lb.resource_id}
                   selected={selected?.resource_id === lb.resource_id}
                   onClick={() => setSelected(lb)}
-                  sx={{ borderRadius: 1, mb: 0.5 }}
+                  sx={{ borderRadius: 1, mb: 0.5, '&.Mui-selected': { bgcolor: 'grey.700' } }}
                 >
                   <ListItemText primary={lb.name} secondary={`${lb.lb_type} • ${lb.scheme}`} />
                   <Chip size="small" label={lb.status} color={statusColor(lb.status)} />
@@ -219,7 +219,7 @@ const LoadBalancersPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card sx={{ bgcolor: 'background.paper' }}>
           <CardContent>
             {!selected ? (
               <Typography color="text.secondary">Select a load balancer to view details.</Typography>
@@ -243,7 +243,7 @@ const LoadBalancersPage: React.FC = () => {
 
                 {tab === 0 && (
                   <Stack spacing={2}>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Routing Algorithm</Typography>
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField select size="small" value={algorithm} onChange={event => setAlgorithm(event.target.value as any)}>
@@ -256,7 +256,7 @@ const LoadBalancersPage: React.FC = () => {
                       </Stack>
                     </CardContent></Card>
 
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Health Check</Typography>
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField size="small" label="Path" value={healthPath} onChange={event => setHealthPath(event.target.value)} />
@@ -273,7 +273,7 @@ const LoadBalancersPage: React.FC = () => {
                       <Button size="small" variant="contained" onClick={() => setOpenTargetGroup(true)}>Add Target Group</Button>
                     </Stack>
                     {targetGroups.map(tg => (
-                      <Card key={tg.tg_id} variant="outlined">
+                      <Card key={tg.tg_id} variant="outlined" sx={{ bgcolor: 'background.paper' }}>
                         <CardContent>
                           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                             <Typography fontWeight={600}>{tg.name} ({tg.protocol}:{tg.port})</Typography>
@@ -295,7 +295,7 @@ const LoadBalancersPage: React.FC = () => {
 
                 {tab === 2 && (
                   <Stack spacing={2}>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">TLS / SSL Termination</Typography>
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField fullWidth size="small" label="Certificate ARN" value={certificateArn} onChange={event => setCertificateArn(event.target.value)} />
@@ -303,7 +303,7 @@ const LoadBalancersPage: React.FC = () => {
                       </Stack>
                     </CardContent></Card>
 
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">CDN Integration</Typography>
                       <Button variant="outlined" sx={{ mt: 1 }} onClick={async () => {
                         if (!selected) return;
@@ -318,10 +318,10 @@ const LoadBalancersPage: React.FC = () => {
 
                 {tab === 3 && (
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 1 }}>
-                    <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">P50 Latency</Typography><Typography variant="h6">{metrics?.latency_ms_p50 ?? 0} ms</Typography></CardContent></Card>
-                    <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">P95 Latency</Typography><Typography variant="h6">{metrics?.latency_ms_p95 ?? 0} ms</Typography></CardContent></Card>
-                    <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">RPS</Typography><Typography variant="h6">{metrics?.request_rate_rps ?? 0}</Typography></CardContent></Card>
-                    <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Errors</Typography><Typography variant="h6">{metrics?.error_rate_percent ?? 0}%</Typography></CardContent></Card>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">P50 Latency</Typography><Typography variant="h6">{metrics?.latency_ms_p50 ?? 0} ms</Typography></CardContent></Card>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">P95 Latency</Typography><Typography variant="h6">{metrics?.latency_ms_p95 ?? 0} ms</Typography></CardContent></Card>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">RPS</Typography><Typography variant="h6">{metrics?.request_rate_rps ?? 0}</Typography></CardContent></Card>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Errors</Typography><Typography variant="h6">{metrics?.error_rate_percent ?? 0}%</Typography></CardContent></Card>
                   </Box>
                 )}
               </>

@@ -154,10 +154,20 @@ const TerminalPanel: React.FC<TerminalPanelProps> = ({ wsUrl, isOpen, onClose })
 
     connectWs(result.term, result.fitAddon)
 
-    const ro = new ResizeObserver(() => result.fitAddon.fit())
+    let resizeTimeout: number
+    const ro = new ResizeObserver(() => {
+      // Debounce resize events to prevent loops
+      cancelAnimationFrame(resizeTimeout)
+      resizeTimeout = requestAnimationFrame(() => {
+        if (result.fitAddon) {
+          result.fitAddon.fit()
+        }
+      })
+    })
     if (containerRef.current) ro.observe(containerRef.current)
 
     return () => {
+      cancelAnimationFrame(resizeTimeout)
       ro.disconnect()
       wsRef.current?.close(1000)
       xtermRef.current?.dispose()

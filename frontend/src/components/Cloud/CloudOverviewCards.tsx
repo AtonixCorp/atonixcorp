@@ -64,7 +64,7 @@ function buildCards(stats: DashboardStats | null): CardDef[] {
       title: 'Storage',
       subtitle: 'Block & Object Storage',
       icon: <StorageIcon />,
-      iconColor: '#3b82f6',
+      iconColor: '#153d75',
       iconBg: 'rgba(59,130,246,.12)',
       borderColor: 'rgba(59,130,246,.2)',
       rows: [

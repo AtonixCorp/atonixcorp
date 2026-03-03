@@ -740,7 +740,7 @@ function ActivityTab({ teamId }: { teamId: string }) {
 
 // ─── Tab 6: Settings ──────────────────────────────────────────────────────────
 
-const AVATAR_COLORS_SETTINGS = ['#153d75', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'];
+const AVATAR_COLORS_SETTINGS = ['#153d75', '#A855F7', '#22C55E', '#F59E0B', '#EF4444', '#153d75', '#EC4899'];
 
 function SettingsTab({ team, reload }: { team: Team; reload: () => void }) {
   const navigate = useNavigate();

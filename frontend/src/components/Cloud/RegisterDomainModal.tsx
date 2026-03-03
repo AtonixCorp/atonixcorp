@@ -25,12 +25,12 @@ const RegisterDomainModal: React.FC<Props> = ({ open, onClose, onCreated }) => {
   const isDark = theme.palette.mode === 'dark';
 
   const t = {
-    bg:        isDark ? '#0D1826' : '#FFFFFF',
-    card:      isDark ? '#132336' : '#F9FAFB',
-    border:    isDark ? '#1E3A5F' : '#E5E7EB',
-    text:      isDark ? '#e0e9f4' : '#111827',
-    muted:     isDark ? '#6b8aab' : '#6B7280',
-    brand:     '#111827',
+    bg:        isDark ? '#262626' : '#FFFFFF', // Carbon Gray 90
+    card:      isDark ? '#161616' : '#F9FAFB', // Carbon Gray 100
+    border:    isDark ? '#525252' : '#E5E7EB', // Carbon Gray 70
+    text:      isDark ? '#f4f4f4' : '#111827', // Carbon Gray 10
+    muted:     isDark ? '#c6c6c6' : '#6B7280', // Carbon Gray 30
+    brand:     '#153d75', // AtonixCorp brand
     available: isDark ? '#1a3d2e' : '#DCFCE7',
     taken:     isDark ? '#3d1a1a' : '#FEE2E2',
   };

@@ -412,7 +412,7 @@ const DevProjectsPage: React.FC = () => {
                           <Chip
                             label={project.workspace_name ? `WS: ${project.workspace_name}` : 'Workspace'}
                             size="small"
-                            sx={{ bgcolor: 'rgba(99,102,241,.1)', color: '#6366F1', border: '1px solid rgba(99,102,241,.25)', fontWeight: 700, fontSize: '.6rem', height: 18, '& .MuiChip-label': { px: 0.7 } }}
+                            sx={{ bgcolor: 'rgba(21,61,117,.1)', color: '#153d75', border: '1px solid rgba(21,61,117,.25)', fontWeight: 700, fontSize: '.6rem', height: 18, '& .MuiChip-label': { px: 0.7 } }}
                           />
                         </Tooltip>
                       ) : project.context === 'group' && project.group_id ? (

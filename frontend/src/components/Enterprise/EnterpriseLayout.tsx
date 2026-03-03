@@ -92,7 +92,7 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Avatar sx={{ bgcolor: '#3b82f6' }}>{enterpriseId?.slice(-2)}</Avatar>
+          <Avatar sx={{ bgcolor: '#153d75' }}>{enterpriseId?.slice(-2)}</Avatar>
           <Box>
             <Typography fontWeight={700}>Enterprise</Typography>
             <Typography variant="caption" color="text.secondary">{enterpriseId}</Typography>
@@ -147,7 +147,7 @@ const EnterpriseLayout: React.FC<Props> = ({ children, enterpriseId }) => {
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid #e2e8f0',
-          color: '#1e293b',
+          color: '#f4f4f4',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
         }}
       >

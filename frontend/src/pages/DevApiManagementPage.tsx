@@ -178,7 +178,7 @@ function OverviewTab({ overview, audit }: { overview: ApimOverview | null; audit
             {i > 0 && <Divider />}
             <Box display="flex" alignItems="center" gap={2} px={2} py={1}>
               <Chip label={ACTION_LABEL[e.action] ?? e.action} size="small"
-                sx={{ bgcolor: '#1e293b', color: '#94a3b8', fontWeight: 600, fontSize: 10 }} />
+                sx={{ bgcolor: '#393939', color: '#c6c6c6', fontWeight: 600, fontSize: 10 }} />
               <Typography variant="body2" fontWeight={500}>{e.entity_name}</Typography>
               <Typography variant="caption" color="text.secondary">by {e.actor}</Typography>
               <Box flexGrow={1} />
@@ -464,7 +464,7 @@ function ConsumersTab({ environment }: { environment: string }) {
                 <Typography variant="caption" color="text.secondary">{c.consumer_type} · {c.environment}</Typography>
               </Box>
               <Box flexGrow={1} />
-              <Chip label={fmtNum(c.total_requests)} size="small" sx={{ bgcolor: '#1e293b' }} />
+              <Chip label={fmtNum(c.total_requests)} size="small" sx={{ bgcolor: '#393939' }} />
             </Box>
           </Paper>
         ))}
@@ -746,7 +746,7 @@ function AnalyticsTab() {
                   {i > 0 && <Divider />}
                   <Box display="flex" gap={1.5} py={0.75} alignItems="center">
                     <Chip label={ACTION_LABEL[e.action] ?? e.action} size="small"
-                      sx={{ bgcolor: '#1e293b', color: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
+                      sx={{ bgcolor: '#393939', color: '#c6c6c6', fontSize: 10, fontWeight: 600 }} />
                     <Typography variant="body2">{e.entity_name}</Typography>
                     <Typography variant="caption" color="text.secondary">· {e.actor}</Typography>
                     <Box flexGrow={1} />

@@ -30,6 +30,7 @@ from .models import (
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer for Project model."""
     owner_username   = serializers.CharField(source='owner.username', read_only=True)
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
     repo_count       = serializers.SerializerMethodField()
     pipeline_count   = serializers.SerializerMethodField()
     has_repo         = serializers.SerializerMethodField()

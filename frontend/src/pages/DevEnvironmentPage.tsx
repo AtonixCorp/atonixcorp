@@ -79,7 +79,7 @@ function stageOf(name: string): Stage {
 }
 
 const STAGE_CFG: Record<Stage, { label: string; color: string; bg: string }> = {
-  dev:   { label: 'Development', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  dev:   { label: 'Development', color: '#153d75', bg: 'rgba(21,61,117,.12)'  },
   stage: { label: 'Staging',     color: '#F59E0B', bg: 'rgba(245,158,11,.12)'  },
   prod:  { label: 'Production',  color: sc.success, bg: 'rgba(34,197,94,.12)'  },
 };
@@ -338,7 +338,7 @@ const DevEnvironmentPage: React.FC = () => {
           { label: 'Total',       value: envs.length, color: t.textPrimary },
           { label: 'Production',  value: prodCount,   color: sc.success },
           { label: 'Staging',     value: stageCount,  color: '#F59E0B' },
-          { label: 'Development', value: devCount,    color: '#6366f1' },
+          { label: 'Development', value: devCount,    color: '#153d75' },
         ].map(s => (
           <Card key={s.label} sx={dashboardCardSx}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>

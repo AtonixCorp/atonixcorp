@@ -212,7 +212,7 @@ const CDNPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3, minHeight: '100%' }}>
+    <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="h5" fontWeight={700}>CDN</Typography>
@@ -225,13 +225,13 @@ const CDNPage: React.FC = () => {
       </Stack>
 
       <Stack direction="row" spacing={2} mb={2}>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Total</Typography><Typography variant="h4">{totals.total}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Active</Typography><Typography variant="h4">{totals.active}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">HTTPS Enforced</Typography><Typography variant="h4">{totals.secure}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Total</Typography><Typography variant="h4">{totals.total}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Active</Typography><Typography variant="h4">{totals.active}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">HTTPS Enforced</Typography><Typography variant="h4">{totals.secure}</Typography></CardContent></Card>
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, gap: 2 }}>
-        <Card>
+        <Card sx={{ bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography fontWeight={600} mb={1}>Distributions</Typography>
             <List sx={{ p: 0 }}>
@@ -240,7 +240,7 @@ const CDNPage: React.FC = () => {
                   key={item.resource_id}
                   selected={selected?.resource_id === item.resource_id}
                   onClick={() => setSelected(item)}
-                  sx={{ borderRadius: 1, mb: 0.5 }}
+                  sx={{ borderRadius: 1, mb: 0.5, '&.Mui-selected': { bgcolor: 'grey.700' } }}
                 >
                   <ListItemText primary={item.name} secondary={item.origin_domain} />
                   <Chip size="small" label={item.status} color={statusColor(item.status)} />
@@ -251,7 +251,7 @@ const CDNPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card sx={{ bgcolor: 'background.paper' }}>
           <CardContent>
             {!selected ? (
               <Typography color="text.secondary">Select a CDN distribution to view details.</Typography>
@@ -278,15 +278,15 @@ const CDNPage: React.FC = () => {
 
                 {tab === 0 && (
                   <Stack spacing={1.5}>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Origin</Typography>
                       <Typography variant="body2" color="text.secondary">{selected.origin_domain}{selected.origin_path || '/'}</Typography>
                     </CardContent></Card>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Custom Domains</Typography>
                       <Typography variant="body2" color="text.secondary">{(selected.domain_names || []).join(', ') || 'None configured'}</Typography>
                     </CardContent></Card>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Provider</Typography>
                       <Typography variant="body2" color="text.secondary">{selected.metadata?.provider || 'simulated'}</Typography>
                     </CardContent></Card>
@@ -295,7 +295,7 @@ const CDNPage: React.FC = () => {
 
                 {tab === 1 && (
                   <Stack spacing={2}>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Cache Policy</Typography>
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField size="small" type="number" label="Static TTL" value={cacheForm.static_ttl_seconds} onChange={event => setCacheForm(prev => ({ ...prev, static_ttl_seconds: Number(event.target.value) }))} sx={{ width: 130 }} />
@@ -308,7 +308,7 @@ const CDNPage: React.FC = () => {
                       <Button sx={{ mt: 1 }} variant="contained" onClick={applyCachePolicy}>Apply Cache Policy</Button>
                     </CardContent></Card>
 
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">Cache Invalidation</Typography>
                       <Stack direction="row" spacing={1} mt={1}>
                         <TextField fullWidth size="small" label="Paths (comma separated)" value={purgePaths} onChange={event => setPurgePaths(event.target.value)} />
@@ -320,7 +320,7 @@ const CDNPage: React.FC = () => {
 
                 {tab === 2 && (
                   <Stack spacing={2}>
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2">TLS / WAF</Typography>
                       <Stack spacing={1} mt={1}>
                         <FormControlLabel control={<Switch checked={securityForm.require_https} onChange={event => setSecurityForm(prev => ({ ...prev, require_https: event.target.checked }))} />} label="Require HTTPS" />
@@ -339,7 +339,7 @@ const CDNPage: React.FC = () => {
                 )}
 
                 {tab === 3 && (
-                  <Card variant="outlined"><CardContent>
+                  <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                     <Typography variant="subtitle2">Edge Performance</Typography>
                     <Stack spacing={1} mt={1}>
                       <FormControlLabel control={<Switch checked={performanceForm.http2_enabled} onChange={event => setPerformanceForm(prev => ({ ...prev, http2_enabled: event.target.checked }))} />} label="Enable HTTP/2" />
@@ -358,14 +358,14 @@ const CDNPage: React.FC = () => {
                 {tab === 4 && (
                   <Stack spacing={2}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, minmax(0, 1fr))' }, gap: 1 }}>
-                      <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Requests</Typography><Typography variant="h6">{metrics?.requests ?? 0}</Typography></CardContent></Card>
-                      <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Hit Ratio</Typography><Typography variant="h6">{metrics?.cache_hit_ratio_percent ?? 0}%</Typography></CardContent></Card>
-                      <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Avg Latency</Typography><Typography variant="h6">{metrics?.avg_edge_latency_ms ?? 0} ms</Typography></CardContent></Card>
-                      <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Origin Egress</Typography><Typography variant="h6">{metrics?.origin_egress_gb ?? 0} GB</Typography></CardContent></Card>
-                      <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Bandwidth Saved</Typography><Typography variant="h6">{metrics?.bandwidth_saved_percent ?? 0}%</Typography></CardContent></Card>
+                      <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Requests</Typography><Typography variant="h6">{metrics?.requests ?? 0}</Typography></CardContent></Card>
+                      <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Hit Ratio</Typography><Typography variant="h6">{metrics?.cache_hit_ratio_percent ?? 0}%</Typography></CardContent></Card>
+                      <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Avg Latency</Typography><Typography variant="h6">{metrics?.avg_edge_latency_ms ?? 0} ms</Typography></CardContent></Card>
+                      <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Origin Egress</Typography><Typography variant="h6">{metrics?.origin_egress_gb ?? 0} GB</Typography></CardContent></Card>
+                      <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Bandwidth Saved</Typography><Typography variant="h6">{metrics?.bandwidth_saved_percent ?? 0}%</Typography></CardContent></Card>
                     </Box>
 
-                    <Card variant="outlined"><CardContent>
+                    <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                       <Typography variant="subtitle2" mb={1}>Edge Status</Typography>
                       <List sx={{ p: 0 }}>
                         {edges.map(edge => (

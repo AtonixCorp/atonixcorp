@@ -486,7 +486,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         </Box>
         {!collapsed && (
           <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#111827', lineHeight: 1.15, letterSpacing: '-.02em', fontFamily: FONT }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#f4f4f4', lineHeight: 1.15, letterSpacing: '-.02em', fontFamily: FONT }}>
               AtonixCorp
             </Typography>
             <Typography sx={{ fontSize: '.67rem', color: TEXT_SECONDARY, lineHeight: 1, fontFamily: FONT, letterSpacing: '.02em' }}>

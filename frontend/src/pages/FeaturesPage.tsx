@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 
 const FeaturesPage: React.FC = () => {
-  const primaryBlue = '#111827';
+  const primaryBlue = '#153d75'; // AtonixCorp brand color
   const accentCyan = '#153d75';
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';

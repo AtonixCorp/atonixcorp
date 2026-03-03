@@ -231,8 +231,8 @@ p  { color: var(--text-muted); }
 .card-icon svg { width: 22px; height: 22px; }
 .card-icon--teal   { background: rgba(20,184,166,.12);  color: var(--teal); }
 .card-icon--cyan   { background: rgba(6,182,212,.12);   color: #06b6d4; }
-.card-icon--blue   { background: rgba(59,130,246,.12);  color: #3b82f6; }
-.card-icon--indigo { background: rgba(99,102,241,.12);  color: #6366f1; }
+.card-icon--blue   { background: rgba(21,61,117,.12);  color: #153d75; }
+.card-icon--indigo { background: rgba(21,61,117,.12);  color: #153d75; }
 .card-icon--violet { background: rgba(139,92,246,.12);  color: #8b5cf6; }
 .card-icon--emerald{ background: rgba(16,185,129,.12);  color: #10b981; }
 .card-icon--rose   { background: rgba(244,63,94,.12);   color: #f43f5e; }

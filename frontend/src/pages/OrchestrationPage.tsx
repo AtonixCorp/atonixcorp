@@ -160,7 +160,7 @@ const OrchestrationPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3, minHeight: '100%' }}>
+    <Box sx={{ p: 3, bgcolor: 'background.default', minHeight: '100%' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
           <Typography variant="h5" fontWeight={700}>Orchestration</Typography>
@@ -170,13 +170,13 @@ const OrchestrationPage: React.FC = () => {
       </Stack>
 
       <Stack direction="row" spacing={2} mb={2}>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Clusters</Typography><Typography variant="h4">{cards.clusters}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Running</Typography><Typography variant="h4">{cards.running}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">Functions</Typography><Typography variant="h4">{cards.functions}</Typography></CardContent></Card>
-        <Card sx={{ flex: 1 }}><CardContent><Typography color="text.secondary">ASGs</Typography><Typography variant="h4">{cards.asgs}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Clusters</Typography><Typography variant="h4">{cards.clusters}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Running</Typography><Typography variant="h4">{cards.running}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">Functions</Typography><Typography variant="h4">{cards.functions}</Typography></CardContent></Card>
+        <Card sx={{ flex: 1, bgcolor: 'background.paper' }}><CardContent><Typography color="text.secondary">ASGs</Typography><Typography variant="h4">{cards.asgs}</Typography></CardContent></Card>
       </Stack>
 
-      <Card sx={{ mb: 2 }}>
+      <Card sx={{ mb: 2, bgcolor: 'background.paper' }}>
         <CardContent>
           <Typography variant="subtitle2" mb={1}>Target Cluster</Typography>
           <TextField
@@ -193,7 +193,7 @@ const OrchestrationPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card sx={{ bgcolor: 'background.paper' }}>
         <CardContent>
           <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 2 }}>
             <Tab label="IaC" icon={<AutoFixHighIcon />} iconPosition="start" />
@@ -204,7 +204,7 @@ const OrchestrationPage: React.FC = () => {
 
           {tab === 0 && (
             <Stack spacing={2}>
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Terraform Plan / Apply</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField size="small" label="Environment" value={terraformEnv} onChange={(event) => setTerraformEnv(event.target.value)} sx={{ width: 140 }} />
@@ -226,7 +226,7 @@ const OrchestrationPage: React.FC = () => {
 
           {tab === 1 && (
             <Stack spacing={2}>
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Helm Deployment Pipeline</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField size="small" label="Release" value={releaseName} onChange={(event) => setReleaseName(event.target.value)} />
@@ -241,7 +241,7 @@ const OrchestrationPage: React.FC = () => {
                 {deployment && <Chip sx={{ mt: 1 }} size="small" color="success" label={`${deployment.release_name} • ${deployment.strategy} • ${deployment.status}`} />}
               </CardContent></Card>
 
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">GitOps Sync</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField size="small" fullWidth label="Repository" value={gitRepo} onChange={(event) => setGitRepo(event.target.value)} />
@@ -255,7 +255,7 @@ const OrchestrationPage: React.FC = () => {
 
           {tab === 2 && (
             <Stack spacing={2}>
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Autoscaling Guardrails</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField size="small" type="number" label="Min" value={minNodes} onChange={(event) => setMinNodes(Number(event.target.value))} sx={{ width: 100 }} />
@@ -265,7 +265,7 @@ const OrchestrationPage: React.FC = () => {
                 </Stack>
               </CardContent></Card>
 
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Service Mesh & mTLS</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField select size="small" label="Mesh" value={mesh} onChange={(event) => setMesh(event.target.value as any)} sx={{ width: 130 }}>
@@ -277,7 +277,7 @@ const OrchestrationPage: React.FC = () => {
                 </Stack>
               </CardContent></Card>
 
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Disaster Recovery</Typography>
                 <Stack direction="row" spacing={1} mt={1}>
                   <TextField size="small" label="Recovery Region" value={recoveryRegion} onChange={(event) => setRecoveryRegion(event.target.value)} sx={{ width: 160 }} />
@@ -292,14 +292,14 @@ const OrchestrationPage: React.FC = () => {
           {tab === 3 && (
             <Stack spacing={2}>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, minmax(0, 1fr))' }, gap: 1 }}>
-                <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Compliance Score</Typography><Typography variant="h6">{compliance?.score ?? 0}</Typography></CardContent></Card>
-                <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Findings</Typography><Typography variant="h6">{compliance?.findings?.length ?? 0}</Typography></CardContent></Card>
-                <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Prometheus Targets</Typography><Typography variant="h6">{observability?.metrics?.prometheus_targets_up_percent ?? 0}%</Typography></CardContent></Card>
-                <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Events/Min</Typography><Typography variant="h6">{observability?.logs?.events_per_minute ?? 0}</Typography></CardContent></Card>
-                <Card variant="outlined"><CardContent><Typography variant="caption" color="text.secondary">Trace P95</Typography><Typography variant="h6">{observability?.traces?.p95_ms ?? 0} ms</Typography></CardContent></Card>
+                <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Compliance Score</Typography><Typography variant="h6">{compliance?.score ?? 0}</Typography></CardContent></Card>
+                <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Findings</Typography><Typography variant="h6">{compliance?.findings?.length ?? 0}</Typography></CardContent></Card>
+                <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Prometheus Targets</Typography><Typography variant="h6">{observability?.metrics?.prometheus_targets_up_percent ?? 0}%</Typography></CardContent></Card>
+                <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Events/Min</Typography><Typography variant="h6">{observability?.logs?.events_per_minute ?? 0}</Typography></CardContent></Card>
+                <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent><Typography variant="caption" color="text.secondary">Trace P95</Typography><Typography variant="h6">{observability?.traces?.p95_ms ?? 0} ms</Typography></CardContent></Card>
               </Box>
 
-              <Card variant="outlined"><CardContent>
+              <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}><CardContent>
                 <Typography variant="subtitle2">Compliance Findings</Typography>
                 {(compliance?.findings || []).map((item, index) => (
                   <Typography key={`${item.cluster}-${index}`} variant="body2" color="text.secondary">{item.cluster} • {item.severity} • {item.issue}</Typography>

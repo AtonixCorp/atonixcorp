@@ -73,7 +73,7 @@ const CompanyDashboard: React.FC = () => {
         change: '+12%',
         trend: 'up',
         icon: <People sx={{ fontSize: 28 }} />,
-        color: '#3b82f6',
+        color: '#153d75',
       },
       {
         title: 'Active Projects',
@@ -205,14 +205,14 @@ const CompanyDashboard: React.FC = () => {
       {/* Header */}
       <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-          <Business sx={{ fontSize: { xs: 32, sm: 40 }, color: '#3b82f6', mr: 1 }} />
+          <Business sx={{ fontSize: { xs: 32, sm: 40 }, color: '#153d75', mr: 1 }} />
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography
               variant="h4"
               sx={{
                 fontWeight: 800,
                 fontSize: { xs: '1.5rem', sm: '2.125rem' },
-                background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+                background: 'linear-gradient(135deg, #161616 0%, #262626 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -408,7 +408,7 @@ const CompanyDashboard: React.FC = () => {
                       sx={{
                         width: { xs: 40, sm: 48 },
                         height: { xs: 40, sm: 48 },
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
+                        background: 'linear-gradient(135deg, #161616 0%, #262626 100%)',
                       }}
                     >
                       {member.name.split(' ').map(n => n[0]).join('')}
@@ -511,7 +511,7 @@ const CompanyDashboard: React.FC = () => {
                             borderRadius: 2,
                             backgroundColor: '#EEEEEE',
                             '& .MuiLinearProgress-bar': {
-                              backgroundColor: project.status === 'completed' ? '#22c55e' : '#3b82f6',
+                              backgroundColor: project.status === 'completed' ? '#22c55e' : '#153d75',
                               borderRadius: 2,
                             },
                           }}
@@ -552,12 +552,12 @@ const CompanyDashboard: React.FC = () => {
               borderRadius: '12px',
               textTransform: 'none',
               fontWeight: 600,
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1e293b 100%)',
-              color: 'white',
+              background: 'linear-gradient(135deg, #161616 0%, #262626 100%)',
+              color: '#f4f4f4',
               py: { xs: 1.5, sm: 2 },
               fontSize: { xs: '0.8rem', sm: '0.875rem' },
               '&:hover': {
-                background: 'linear-gradient(135deg, #1e293b 0%, #3b82f6 100%)',
+                background: 'linear-gradient(135deg, #262626 0%, #161616 100%)',
               },
             }}
           >

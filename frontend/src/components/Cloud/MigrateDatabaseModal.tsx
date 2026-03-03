@@ -46,7 +46,7 @@ const STRATEGIES: StrategyMeta[] = [
   {
     id: 'data_only', label: 'Data Only',
     desc: 'Copy rows/documents into existing schema on target. Schema must already match.',
-    tag: 'Incremental', tagColor: '#6366F1', icon: '◈',
+    tag: 'Incremental', tagColor: '#153d75', icon: '◈',
   },
   {
     id: 'incremental', label: 'Incremental Sync',

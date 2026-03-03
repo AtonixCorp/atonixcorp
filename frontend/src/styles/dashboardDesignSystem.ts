@@ -136,12 +136,12 @@ export const computeCatalogPalette = {
     recommended: '#10B981',
     latest: '#10B981',
     stable: '#10B981',
-    new: '#6366F1',
-    security: '#6366F1',
+    new: '#153d75', // AtonixCorp brand color
+    security: '#153d75', // AtonixCorp brand color
     enterprise: '#6B7280',
     eol: '#EF4444',
     eolSoon: '#F59E0B',
-    flavorBadge: '#6366F1',
+    flavorBadge: '#153d75', // AtonixCorp brand color
   },
 } as const;
 
@@ -149,16 +149,16 @@ export const computeUiTokens = {
   accentStrong: '#153d75',
   accentSoftLight: 'rgba(21,61,117,.08)',
   accentSoftDark: 'rgba(21,61,117,.18)',
-  darkPanel: '#111827',
+  darkPanel: '#161616', // Carbon Gray 100 - Elevated surfaces
   successStrong: '#10B981',
   successHover: '#059669',
   successSoft: 'rgba(16,185,129,.12)',
   violetSoft: 'rgba(21,61,117,.12)',
-  neutralStrong: '#111827',
-  neutralBody: '#374151',
-  neutralMuted: '#9CA3AF',
-  surfaceSubtle: '#FAFAFA',
-  borderHover: '#94A3B8',
+  neutralStrong: '#262626', // Carbon Gray 90 - Primary background
+  neutralBody: '#c6c6c6', // Carbon Gray 30
+  neutralMuted: '#a8a8a8', // Carbon Gray 40
+  surfaceSubtle: '#393939', // Carbon Gray 80 - Secondary background
+  borderHover: '#737373', // Carbon Gray 60
 } as const;
 
 // ── IBM Carbon text tokens ─────────────────────────────────────────────────
@@ -182,14 +182,14 @@ export const carbonTextTokens = {
 } as const;
 
 export const atonixBrandTokens = {
-  colorPrimary: '#111827',
-  colorPrimaryContrast: '#FFFFFF',
+  colorPrimary: '#262626', // Carbon Gray 90 - Primary background
+  colorPrimaryContrast: '#f4f4f4', // Carbon Gray 10 - Text on dark
   colorAccent: '#153d75',
   colorAccentHover: '#0f2d5a',
-  colorTextPrimary: '#FFFFFF',
-  colorTextSecondary: '#A0A8B5',
-  colorBorder: '#1F2937',
-  colorSurface: '#111827',
+  colorTextPrimary: '#f4f4f4', // Carbon Gray 10
+  colorTextSecondary: '#c6c6c6', // Carbon Gray 30
+  colorBorder: '#525252', // Carbon Gray 70 - Borders/separators
+  colorSurface: '#161616', // Carbon Gray 100 - Elevated surfaces
   radiusSmall: '2px',
   radiusNone: '0px',
 } as const;

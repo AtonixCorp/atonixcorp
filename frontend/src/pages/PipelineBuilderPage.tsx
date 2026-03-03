@@ -700,7 +700,7 @@ const PipelineBuilderPage: React.FC = () => {
                     bgcolor: '#0f172a',
                   }}>
                     <Box sx={{
-                      px: 2, py: 0.75, bgcolor: '#1e293b',
+                      px: 2, py: 0.75, bgcolor: '#393939',
                       borderBottom: `1px solid ${t.border}`,
                       display: 'flex', alignItems: 'center', gap: 1,
                     }}>

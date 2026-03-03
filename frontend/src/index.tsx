@@ -13,6 +13,36 @@ const SUPPRESSED_ERRORS = /ResizeObserver loop (completed with undelivered notif
 (window as any).onerror = (message: string): boolean => {
   return SUPPRESSED_ERRORS.test(String(message));
 };
+
+// Also suppress unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  if (SUPPRESSED_ERRORS.test(String(event.reason))) {
+    event.preventDefault();
+  }
+});
+
+// Override ResizeObserver to prevent loops
+const resizeObserverErrHandler = (err: any) => {
+  if (SUPPRESSED_ERRORS.test(err.message)) {
+    // Ignore ResizeObserver loop error
+    return;
+  }
+  throw err;
+};
+
+const resizeObserver = window.ResizeObserver;
+window.ResizeObserver = class ResizeObserver extends resizeObserver {
+  constructor(callback: ResizeObserverCallback) {
+    const wrappedCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => {
+      try {
+        callback(entries, observer);
+      } catch (err) {
+        resizeObserverErrHandler(err);
+      }
+    };
+    super(wrappedCallback);
+  }
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ____showBootstrapError(message: string): void {

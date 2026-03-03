@@ -40,7 +40,7 @@ const resourceGroups: ResourceGroup[] = [
 ];
 
 const ResourcesPage: React.FC = () => {
-  const primaryBlue = '#111827';
+  const primaryBlue = '#153d75'; // AtonixCorp brand color
   const darkGray = '#1F2937';
   const lightGray = '#F3F4F6';
   const accentCyan = '#153d75';

@@ -90,7 +90,7 @@ const STATUS_COLOR: Record<Status, string> = {
   failed:  dashboardSemanticColors.danger,
   warning: dashboardSemanticColors.warning,
   idle:    t.textTertiary,
-  pending: '#6366F1',
+  pending: '#153d75',
 };
 
 const StatusDot: React.FC<{ status: Status }> = ({ status }) => (
@@ -118,7 +118,7 @@ function usePanelDef(pathname: string, live: LiveCounts): PanelDef {
       metrics: [
         { label: 'Branches',    value: 3,     color: t.textPrimary },
         { label: 'Tags',        value: 2,     color: t.textPrimary },
-        { label: 'Open PRs',    value: 1,     color: '#6366F1'     },
+        { label: 'Open PRs',    value: 1,     color: '#153d75'     },
         { label: 'Open Issues', value: 4,     color: dashboardSemanticColors.warning },
       ],
       items: [
@@ -167,7 +167,7 @@ function usePanelDef(pathname: string, live: LiveCounts): PanelDef {
         { label: 'Running',  value: 2,    color: STATUS_COLOR.running },
         { label: 'Passed',   value: 14,   color: dashboardSemanticColors.success },
         { label: 'Failed',   value: 1,    color: dashboardSemanticColors.danger  },
-        { label: 'Queued',   value: 3,    color: '#6366F1' },
+        { label: 'Queued',   value: 3,    color: '#153d75' },
       ],
       items: [
         { id: '1', label: 'build:main',      sub: 'triggered 3m ago',   status: 'running', meta: '#142' },
@@ -238,7 +238,7 @@ function usePanelDef(pathname: string, live: LiveCounts): PanelDef {
       metrics: [
         { label: 'Stacks',    value: 5,    color: t.textPrimary },
         { label: 'Drifted',   value: 1,    color: dashboardSemanticColors.warning },
-        { label: 'Planned',   value: 2,    color: '#6366F1' },
+        { label: 'Planned',   value: 2,    color: '#153d75' },
       ],
       items: [
         { id: '1', label: 'prod-vpc',        sub: 'Applied 2h ago',      status: 'success' },

@@ -119,7 +119,7 @@ function stageOf(name: string): 'dev' | 'stage' | 'prod' {
   return 'dev';
 }
 const STAGE_CFG = {
-  dev:   { label: 'Development', bg: 'rgba(99,102,241,.12)',  border: '#6366f1', text: '#6366f1' },
+  dev:   { label: 'Development', bg: 'rgba(21,61,117,.12)',  border: '#153d75', text: '#153d75' },
   stage: { label: 'Staging',     bg: 'rgba(245,158,11,.12)', border: '#F59E0B', text: '#F59E0B' },
   prod:  { label: 'Production',  bg: 'rgba(34,197,94,.12)',  border: sc.success, text: sc.success },
 };

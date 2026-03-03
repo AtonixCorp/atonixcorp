@@ -22,7 +22,7 @@ function useDeployPermissions(): Record<string, boolean> {
 const BADGE_COLORS: Record<string, string> = {
   success: '#22C55E',
   warning: '#F59E0B',
-  info:    '#153d75',
+  info:    '#525252', // Carbon Gray 70
   error:   '#EF4444',
 };
 
@@ -44,7 +44,7 @@ const DeployMenuItem: React.FC<{
       alignItems: 'flex-start',
       '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,.06)' : '#F5F7FF' },
       '&.Mui-focusVisible': {
-        outline: `2px solid #153d75`,
+        outline: `2px solid #525252`, // Carbon Gray 70
         outlineOffset: -2,
         bgcolor: isDark ? 'rgba(255,255,255,.06)' : '#F5F7FF',
       },
@@ -55,9 +55,9 @@ const DeployMenuItem: React.FC<{
       sx={{
         width: 30, height: 30, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        bgcolor: isDark ? 'rgba(21,61,117,.35)' : 'rgba(21,61,117,.08)',
+        bgcolor: isDark ? 'rgba(82,82,82,.35)' : 'rgba(82,82,82,.08)', // Carbon Gray 70
         borderRadius: '6px',
-        color: '#153d75',
+        color: '#525252', // Carbon Gray 70
         mt: 0.15,
       }}
     >
@@ -162,7 +162,7 @@ export const DeployButton: React.FC<DeployButtonProps> = ({
   }, [open]);
 
   const border = isDark ? 'rgba(255,255,255,.12)' : '#E2E8F0';
-  const bg     = isDark ? '#1e293b' : '#ffffff';
+  const bg     = isDark ? '#161616' : '#ffffff';
   const isSmall = size === 'small';
 
   return (
@@ -191,14 +191,14 @@ export const DeployButton: React.FC<DeployButtonProps> = ({
           fontWeight: 600,
           fontSize: isSmall ? '.8rem' : '.875rem',
           background: open
-            ? 'linear-gradient(135deg, #245699 0%, #1a4788 60%, #153d75 100%)'
-            : 'linear-gradient(135deg, #1e4d8c 0%, #153d75 60%, #0f2d5a 100%)',
+            ? 'linear-gradient(135deg, #6b6b6b 0%, #525252 60%, #393939 100%)' // Carbon grays
+            : 'linear-gradient(135deg, #737373 0%, #525252 60%, #393939 100%)', // Carbon grays
           color: '#ffffff',
           boxShadow: open
-            ? '0 4px 12px rgba(21,61,117,0.45)'
-            : '0 1px 3px rgba(21,61,117,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
+            ? '0 4px 12px rgba(82,82,82,0.45)' // Carbon Gray 70
+            : '0 1px 3px rgba(82,82,82,0.35), inset 0 1px 0 rgba(255,255,255,0.08)', // Carbon Gray 70
           transition: 'all .15s',
-          '&:focus-visible': { outline: '2px solid #153d75', outlineOffset: 2 },
+          '&:focus-visible': { outline: '2px solid #525252', outlineOffset: 2 }, // Carbon Gray 70
         }}
       >
         {label}
@@ -277,9 +277,9 @@ export const DeployButton: React.FC<DeployButtonProps> = ({
                     sx={{
                       gap: 1.5, py: 0.9, px: 1.5, mx: 0.5, mb: 0.5,
                       borderRadius: '6px',
-                      color: '#153d75',
-                      '&:hover': { bgcolor: isDark ? 'rgba(21,61,117,.2)' : 'rgba(21,61,117,.06)' },
-                      '&.Mui-focusVisible': { outline: '2px solid #153d75', outlineOffset: -2 },
+                      color: '#525252', // Carbon Gray 70
+                      '&:hover': { bgcolor: isDark ? 'rgba(82,82,82,.2)' : 'rgba(82,82,82,.06)' }, // Carbon Gray 70
+                      '&.Mui-focusVisible': { outline: '2px solid #525252', outlineOffset: -2 }, // Carbon Gray 70
                     }}
                   >
                     <OpenInNewIcon sx={{ fontSize: '1rem' }} />

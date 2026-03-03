@@ -11,7 +11,7 @@ const T = dashboardTokens.colors;
 const S = dashboardSemanticColors;
 
 const SDKS = [
-  { lang: 'Python', version: '1.4.2', install: 'pip install atonixcorp', docs: 'https://docs.atonixcorp.com/sdk/python', color: '#3B82F6', badge: 'Stable' },
+  { lang: 'Python', version: '1.4.2', install: 'pip install atonixcorp', docs: 'https://docs.atonixcorp.com/sdk/python', color: '#153d75', badge: 'Stable' },
   { lang: 'Node.js', version: '1.3.0', install: 'npm install @atonixcorp/sdk', docs: 'https://docs.atonixcorp.com/sdk/nodejs', color: '#22C55E', badge: 'Stable' },
   { lang: 'Go', version: '1.2.1', install: 'go get github.com/atonixcorp/sdk-go', docs: 'https://docs.atonixcorp.com/sdk/go', color: '#60A5FA', badge: 'Stable' },
   { lang: 'Java', version: '1.1.0', install: 'implementation "com.atonixcorp:sdk:1.1.0"', docs: 'https://docs.atonixcorp.com/sdk/java', color: '#F59E0B', badge: 'Stable' },

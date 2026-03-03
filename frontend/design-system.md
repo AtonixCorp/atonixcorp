@@ -26,18 +26,36 @@ AtonixCorp Cloud dashboard must deliver a GitHub/GitLab-level experience: clean,
 - **Vertical spacing:** `32px` between sections.
 
 ## 4. Color System
-### 4.1 Neutral Palette
-- Background: `#FFFFFF`
-- Subtle Background: `#F9FAFB`
-- Borders: `#E5E7EB`
-- Text Primary: `#111827`
-- Text Secondary: `#4B5563`
-- Text Muted: `#6B7280`
-- Icons: `#6B7280`
+### 4.1 IBM Carbon Dark Theme (Primary)
+Following IBM Carbon Design System for enterprise-grade dark theme:
 
-### 4.2 Brand Color
+**Primary Background:** `#262626` (Gray 90)
+- Used for main pages, dashboards, and full-screen backgrounds
+
+**Elevated Surfaces:** `#161616` (Gray 100)  
+- Used for cards, modals, drawers, and any raised surface
+
+**Secondary Background:** `#393939` (Gray 80)
+- Used for sidebars, secondary sections, and grouped content
+
+**Borders/Separators:** `#525252` (Gray 70)
+- Used for dividers, outlines, and subtle UI structure
+
+**Text on Dark:** `#f4f4f4` (Gray 10)
+- Used for all primary text on dark backgrounds
+
+### 4.2 Neutral Palette (Dark Theme)
+- Background: `#262626` (Gray 90)
+- Subtle Background: `#393939` (Gray 80)
+- Borders: `#525252` (Gray 70)
+- Text Primary: `#f4f4f4` (Gray 10)
+- Text Secondary: `#c6c6c6` (Gray 30)
+- Text Muted: `#a8a8a8` (Gray 40)
+- Icons: `#a8a8a8` (Gray 40)
+
+### 4.3 Brand Color
 Primary brand color for interactive emphasis:
-- Recommended: `#2563EB` (blue) **or** `#7C3AED` (purple)
+- Recommended: `#153d75` (AtonixCorp Blue)
 
 Use brand color for:
 - Primary buttons

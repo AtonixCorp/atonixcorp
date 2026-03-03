@@ -320,7 +320,7 @@ const ___lightTheme = createTheme({
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid #e2e8f0',
-          color: '#1e293b',
+          color: '#111827',
           boxShadow: 'none',
         },
       },
@@ -366,10 +366,10 @@ const ___darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#153d75',
-      dark: '#0f2d5a',
-      light: '#33a0a0',
-      contrastText: '#FFFFFF',
+      main: '#525252', // Carbon Gray 70 - for buttons/links in dark mode
+      dark: '#393939', // Carbon Gray 80
+      light: '#6b6b6b', // Carbon Gray 60
+      contrastText: '#f4f4f4', // Carbon Gray 10
     },
     secondary: {
       main: '#0f1419',
@@ -378,8 +378,9 @@ const ___darkTheme = createTheme({
       contrastText: '#ffffff',
     },
     background: {
-      default: '#0f1419',
-      paper:   '#111827',
+      // IBM Carbon Dark Theme Colors
+      default: '#262626', // Gray 90 - Primary background
+      paper:   '#161616', // Gray 100 - Elevated surfaces/cards/panels
     },
     text: {
       // IBM Carbon Gray 10 / Gray 30 — enterprise dark text hierarchy
@@ -387,16 +388,17 @@ const ___darkTheme = createTheme({
       secondary: '#c6c6c6', // Carbon Gray 30
     },
     grey: {
-      50: '#f8fafc',
-      100: '#f1f5f9',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#94a3b8',
-      500: '#64748b',
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b',
-      900: '#0f172a',
+      // IBM Carbon Gray Scale for Dark Theme
+      50: '#f4f4f4',   // Gray 10
+      100: '#e0e0e0',  // Gray 20
+      200: '#c6c6c6',  // Gray 30
+      300: '#a8a8a8',  // Gray 40
+      400: '#8d8d8d',  // Gray 50
+      500: '#737373',  // Gray 60
+      600: '#525252',  // Gray 70 - Borders/separators
+      700: '#393939',  // Gray 80 - Secondary background
+      800: '#262626',  // Gray 90 - Primary background
+      900: '#161616',  // Gray 100 - Elevated surfaces
     },
     success: {
       main: '#34d399',
@@ -501,36 +503,40 @@ const ___darkTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         ':root': {
-          '--color-primary': '#0f1419',
-          '--color-primary-contrast': '#FFFFFF',
+          '--color-primary': '#262626', // Carbon Gray 90 - Primary background
+          '--color-primary-contrast': '#f4f4f4', // Carbon Gray 10 - Text on dark
           '--color-accent': '#153d75',
           '--color-accent-hover': '#0f2d5a',
-          '--color-text-primary': '#FFFFFF',
-          '--color-text-secondary': '#A0A8B5',
-          '--color-border': '#1F2937',
-          '--color-surface': '#111827',
-          '--dashboard-background': '#0f1419',
-          '--dashboard-surface': '#111827',
-          '--dashboard-surface-subtle': '#1E293B',
-          '--dashboard-surface-hover': '#334155',
-          '--dashboard-border': '#334155',
-          '--dashboard-border-strong': '#475569',
-          '--dashboard-text-primary': '#f4f4f4',   /* IBM Carbon Gray 10  */
-          '--dashboard-text-secondary': '#c6c6c6',  /* IBM Carbon Gray 30  */
-          '--dashboard-text-tertiary': '#8d8d8d',   /* IBM Carbon Gray 50  */
-          '--dashboard-text-placeholder': '#8d8d8d',/* IBM Carbon Gray 50  */
+          '--color-text-primary': '#f4f4f4', // Carbon Gray 10
+          '--color-text-secondary': '#c6c6c6', // Carbon Gray 30
+          '--color-border': '#525252', // Carbon Gray 70 - Borders/separators
+          '--color-surface': '#161616', // Carbon Gray 100 - Elevated surfaces
+          '--dashboard-background': '#262626', // Carbon Gray 90 - Primary background
+          '--dashboard-surface': '#161616', // Carbon Gray 100 - Elevated surfaces
+          '--dashboard-surface-subtle': '#393939', // Carbon Gray 80 - Secondary background
+          '--dashboard-surface-hover': '#525252', // Carbon Gray 70
+          '--dashboard-border': '#525252', // Carbon Gray 70 - Borders/separators
+          '--dashboard-border-strong': '#737373', // Carbon Gray 60
+          '--dashboard-text-primary': '#f4f4f4',   // IBM Carbon Gray 10
+          '--dashboard-text-secondary': '#c6c6c6',  // IBM Carbon Gray 30
+          '--dashboard-text-tertiary': '#a8a8a8',   // IBM Carbon Gray 40
+          '--dashboard-text-placeholder': '#8d8d8d', // IBM Carbon Gray 50
           '--radius-small': '2px',
           '--radius-none': '0px',
-          // AtonixCorp Cloud Tokens — dark mode
-          '--ac-bg-primary':   '#161616',   // Carbon Gray 100
-          '--ac-bg-secondary': '#262626',   // Carbon Gray 90
-          '--ac-bg-tertiary':  '#393939',   // Carbon Gray 80
-          '--ac-layer-01': '#1C1C1C',
-          '--ac-layer-02': '#262626',
-          '--ac-layer-03': '#393939',
-          '--ac-text-primary':   '#F4F4F4', // Carbon Gray 10
-          '--ac-text-secondary': '#A8A8A8', // Carbon Gray 40
-          '--ac-text-inverse':   '#161616',
+          // AtonixCorp Cloud Tokens — IBM Carbon Dark Theme
+          '--ac-bg-primary':   '#262626',   // Carbon Gray 90 - Primary background
+          '--ac-bg-secondary': '#393939',   // Carbon Gray 80 - Secondary background
+          '--ac-bg-tertiary':  '#525252',   // Carbon Gray 70 - Borders/separators
+          '--ac-bg-elevated':  '#161616',   // Carbon Gray 100 - Elevated surfaces
+          '--ac-layer-01': '#161616', // Carbon Gray 100 - Elevated surfaces
+          '--ac-layer-02': '#262626', // Carbon Gray 90 - Primary background
+          '--ac-layer-03': '#393939', // Carbon Gray 80 - Secondary background
+          '--ac-text-primary':   '#f4f4f4', // Carbon Gray 10 - Text on dark
+          '--ac-text-secondary': '#c6c6c6', // Carbon Gray 30
+          '--ac-text-tertiary':  '#a8a8a8', // Carbon Gray 40
+          '--ac-text-inverse':   '#161616', // Carbon Gray 100
+          '--ac-border':         '#525252', // Carbon Gray 70 - Borders/separators
+          '--ac-border-subtle': '#737373', // Carbon Gray 60
         },
         '*': {
           boxSizing: 'border-box',
@@ -539,7 +545,7 @@ const ___darkTheme = createTheme({
           scrollBehavior: 'smooth',
         },
         body: {
-          backgroundColor: '#0f1419',
+          backgroundColor: '#262626', // Carbon Gray 90 - Primary background
           fontFeatureSettings: '"cv11", "ss01"',
           fontVariationSettings: '"opsz" 32',
         },
@@ -624,7 +630,7 @@ const ___darkTheme = createTheme({
         root: {
           borderRadius: 2,
           border: '1px solid #334155',
-          backgroundColor: '#1e293b',
+          backgroundColor: '#ffffff',
           boxShadow: 'none',
           transition: 'border-color 0.12s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
@@ -637,8 +643,8 @@ const ___darkTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 2,
-          border: '1px solid #334155',
-          backgroundColor: '#1e293b',
+          border: '1px solid #525252', // Carbon Gray 70 - Borders/separators
+          backgroundColor: '#161616', // Carbon Gray 100 - Elevated surfaces
         },
         elevation1: {
           boxShadow: 'none',
@@ -654,10 +660,10 @@ const ___darkTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(30, 41, 59, 0.95)',
+          backgroundColor: '#161616', // Carbon Gray 100 - Elevated surfaces
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid #334155',
-          color: '#f1f5f9',
+          borderBottom: '1px solid #525252', // Carbon Gray 70 - Borders/separators
+          color: '#f4f4f4', // Carbon Gray 10 - Text on dark
           boxShadow: 'none',
         },
       },

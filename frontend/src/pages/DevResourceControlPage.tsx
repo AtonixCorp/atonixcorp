@@ -89,7 +89,7 @@ function statusIcon(s: ResourceStatus, sz = 14) {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  pipeline:              '#6366f1',
+  pipeline:              '#153d75',
   container:             '#0ea5e9',
   kubernetes_pod:        '#8b5cf6',
   kubernetes_deployment: '#7c3aed',
@@ -638,8 +638,8 @@ const DevResourceControlPage: React.FC = () => {
                           label={typeLabel(r.resource_type)}
                           size="small"
                           sx={{
-                            bgcolor: (TYPE_COLOR[r.resource_type] ?? '#6366f1') + '1a',
-                            color:   TYPE_COLOR[r.resource_type] ?? '#6366f1',
+                            bgcolor: (TYPE_COLOR[r.resource_type] ?? '#153d75') + '1a',
+                            color:   TYPE_COLOR[r.resource_type] ?? '#153d75',
                             fontWeight: 700,
                             fontSize: 11,
                             height: 20,
