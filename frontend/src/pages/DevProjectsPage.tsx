@@ -60,6 +60,13 @@ interface Project {
   tags: string[];
   provider: 'github' | 'gitlab' | 'bitbucket';
   has_repo: boolean;
+  context?: 'personal' | 'workspace' | 'group';
+  workspace_id?: string;
+  workspace_name?: string;
+  group_id?: string;
+  group_name?: string;
+  created_by_username?: string | null;
+  owner_username?: string | null;
 }
 
 const mapBackendProject = (project: BackendProject): Project => ({
@@ -77,6 +84,13 @@ const mapBackendProject = (project: BackendProject): Project => ({
   tags: ['server-backed'],
   provider: 'github',
   has_repo: project.has_repo ?? false,
+  context: project.context,
+  workspace_id: project.workspace_id,
+  workspace_name: project.workspace_name,
+  group_id: project.group_id,
+  group_name: project.group_name,
+  created_by_username: project.created_by_username,
+  owner_username: project.owner_username,
 });
 
 const STATUS_CONFIG: Record<ProjectStatus, { color: string; bg: string; label: string }> = {
@@ -329,7 +343,7 @@ const DevProjectsPage: React.FC = () => {
                 }}
               >
                 <CardActionArea
-                  onClick={() => navigate(`/developer/Dashboard/projects/${project.id}`)}
+                  onClick={() => { if (project.id) navigate(`/developer/Dashboard/projects/${project.id}`); }}
                   sx={{ flex: 1, p: 0, borderRadius: '10px', '&:hover': { bgcolor: 'transparent' } }}
                 >
                   <CardContent sx={{ p: '16px !important', display: 'flex', flexDirection: 'column', height: '100%', gap: 1.25 }}>
@@ -392,6 +406,40 @@ const DevProjectsPage: React.FC = () => {
                       {/* Status */}
                       <Chip label={status.label} size="small" sx={{ bgcolor: status.bg, color: status.color, fontWeight: 700, fontSize: '.68rem', height: 18, '& .MuiChip-label': { px: 0.7 } }} />
 
+                      {/* Context badge */}
+                      {project.context === 'workspace' && project.workspace_id ? (
+                        <Tooltip title={`Workspace ID: ${project.workspace_id}`}>
+                          <Chip
+                            label={project.workspace_name ? `WS: ${project.workspace_name}` : 'Workspace'}
+                            size="small"
+                            sx={{ bgcolor: 'rgba(99,102,241,.1)', color: '#6366F1', border: '1px solid rgba(99,102,241,.25)', fontWeight: 700, fontSize: '.6rem', height: 18, '& .MuiChip-label': { px: 0.7 } }}
+                          />
+                        </Tooltip>
+                      ) : project.context === 'group' && project.group_id ? (
+                        <Tooltip title={`Group ID: ${project.group_id}`}>
+                          <Chip
+                            label={project.group_name ? `Group: ${project.group_name}` : 'Group'}
+                            size="small"
+                            sx={{ bgcolor: 'rgba(34,197,94,.1)', color: '#16A34A', border: '1px solid rgba(34,197,94,.25)', fontWeight: 700, fontSize: '.6rem', height: 18, '& .MuiChip-label': { px: 0.7 } }}
+                          />
+                        </Tooltip>
+                      ) : (
+                        <Chip
+                          label="Personal"
+                          size="small"
+                          sx={{ bgcolor: `${t.brandPrimary}10`, color: t.brandPrimary, border: `1px solid ${t.brandPrimary}28`, fontWeight: 700, fontSize: '.6rem', height: 18, '& .MuiChip-label': { px: 0.7 } }}
+                        />
+                      )}
+
+                      {/* Created by (if different from owner) */}
+                      {project.created_by_username && project.created_by_username !== project.owner_username && (
+                        <Tooltip title={`Created by ${project.created_by_username}`}>
+                          <Typography sx={{ fontSize: '.63rem', color: t.textTertiary, fontFamily: FONT, ml: 0.25 }}>
+                            by {project.created_by_username}
+                          </Typography>
+                        </Tooltip>
+                      )}
+
                       {/* Language dot */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
                         <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: LANG_COLOR[project.language] }} />
@@ -436,7 +484,7 @@ const DevProjectsPage: React.FC = () => {
                     size="small"
                     variant="text"
                     startIcon={<GitBranchIcon sx={{ fontSize: '.75rem' }} />}
-                    onClick={(e) => { e.stopPropagation(); navigate(`/developer/Dashboard/projects/${project.id}/repo`); }}
+                    onClick={(e) => { e.stopPropagation(); if (project.id) navigate(`/developer/Dashboard/projects/${project.id}/repo`); }}
                     sx={{
                       textTransform: 'none', fontWeight: 700, fontSize: '.75rem',
                       color: project.has_repo ? dashboardTokens.colors.brandPrimary : t.textSecondary,

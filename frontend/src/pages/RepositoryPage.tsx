@@ -25,6 +25,7 @@ import {
   Typography,
 } from '@mui/material';
 import AccountTreeIcon   from '@mui/icons-material/AccountTree';
+import SearchIcon        from '@mui/icons-material/Search';
 import ArrowBackIcon     from '@mui/icons-material/ArrowBack';
 import ContentCopyIcon   from '@mui/icons-material/ContentCopy';
 import ExpandMoreIcon    from '@mui/icons-material/ExpandMore';
@@ -318,7 +319,7 @@ const RepositoryPage: React.FC = () => {
         }
 
         // ── Project-linked repo path: /developer/Dashboard/projects/:id/repo ─
-        if (!id) { setError('No project ID'); setLoading(false); return; }
+        if (!id || id === 'undefined') { setError('No project ID'); setLoading(false); return; }
 
         const proj  = await getProject(id);
         setProject(proj);
@@ -516,6 +517,18 @@ const RepositoryPage: React.FC = () => {
   const initials = (project?.name ?? 'P')[0].toUpperCase();
   const avatarBg = project?.avatar_color ?? t.brandPrimary;
 
+  // Ctrl+K → open search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        handleSectionChange('search');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleSectionChange]);
+
   // ─── Right panel context ──────────────────────────────────────────────────
 
   const rightCtx = (() => {
@@ -540,12 +553,16 @@ const RepositoryPage: React.FC = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
-        <Button sx={{ mt: 2 }} onClick={() => navigate(`/developer/Dashboard/projects/${id}`)}>← Back to Project</Button>
+        <Button sx={{ mt: 2 }} onClick={() => repoId
+          ? navigate('/developer/Dashboard/repositories')
+          : navigate(`/developer/Dashboard/projects/${id}`)}>
+          {repoId ? '← Back to Repositories' : '← Back to Project'}
+        </Button>
       </Box>
     );
   }
 
-  if (!project?.has_repo || !repo) {
+  if (repoId ? !repo : (!project?.has_repo || !repo)) {
     const defaultName = project?.project_key || project?.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
     const repoName = repoNameInput || defaultName;
 
@@ -578,9 +595,11 @@ const RepositoryPage: React.FC = () => {
         {/* minimal top bar */}
         <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.25, borderBottom: `1px solid ${t.border}`, bgcolor: t.surface, gap: 1 }}>
           <Button size="small" startIcon={<ArrowBackIcon />}
-            onClick={() => navigate(`/developer/Dashboard/projects/${id}`)}
+            onClick={() => repoId
+              ? navigate('/developer/Dashboard/repositories')
+              : navigate(`/developer/Dashboard/projects/${id}`)}
             sx={{ textTransform: 'none', color: t.textSecondary, '&:hover': { color: t.textPrimary }, minWidth: 0 }}>
-            Project
+            {repoId ? 'Repositories' : 'Project'}
           </Button>
           <Typography sx={{ color: t.textTertiary, fontSize: '.8rem' }}>/</Typography>
           <Typography sx={{ fontSize: '.88rem', color: t.textSecondary, fontFamily: MONO }}>Repository</Typography>
@@ -687,6 +706,9 @@ const RepositoryPage: React.FC = () => {
     );
   }
 
+  // TypeScript narrowing: repo is guaranteed non-null past the gate above
+  if (!repo) return null;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: t.background, fontFamily: FONT }}>
 
@@ -697,9 +719,11 @@ const RepositoryPage: React.FC = () => {
         gap: 1.5, flexShrink: 0, flexWrap: 'wrap',
       }}>
         <Button size="small" startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(`/developer/Dashboard/projects/${id}`)}
+          onClick={() => repoId
+            ? navigate('/developer/Dashboard/repositories')
+            : navigate(`/developer/Dashboard/projects/${id}`)}
           sx={{ textTransform: 'none', color: t.textSecondary, '&:hover': { color: t.textPrimary }, minWidth: 0 }}>
-          Project
+          {repoId ? 'Repositories' : 'Project'}
         </Button>
         <Typography sx={{ color: t.textTertiary, fontSize: '.8rem' }}>/</Typography>
 
@@ -732,6 +756,30 @@ const RepositoryPage: React.FC = () => {
             sx={{ height: 18, fontSize: '.62rem', fontWeight: 700, bgcolor: t.surfaceSubtle, color: t.textTertiary, border: `1px solid ${t.border}`, textTransform: 'capitalize', '& .MuiChip-label': { px: 0.75 } }}
           />
         )}
+
+        {/* Search box */}
+        <Box
+          onClick={() => handleSectionChange('search')}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 0.75,
+            px: 1.25, py: 0.55,
+            border: `1px solid ${section === 'search' ? t.brandPrimary : t.border}`,
+            borderRadius: '8px',
+            bgcolor: section === 'search' ? `${t.brandPrimary}08` : t.background,
+            cursor: 'pointer', transition: 'all .14s',
+            minWidth: 200,
+            '&:hover': { borderColor: t.brandPrimary, bgcolor: `${t.brandPrimary}08` },
+          }}
+        >
+          <SearchIcon sx={{ fontSize: '.9rem', color: section === 'search' ? t.brandPrimary : t.textTertiary, flexShrink: 0 }} />
+          <Typography sx={{ fontSize: '.8rem', color: section === 'search' ? t.brandPrimary : t.textTertiary, fontFamily: FONT, flex: 1 }}>
+            Search resources…
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+            <Typography sx={{ fontSize: '.65rem', color: t.textTertiary, bgcolor: t.surfaceSubtle, border: `1px solid ${t.border}`, borderRadius: '4px', px: 0.5, lineHeight: '16px', fontFamily: 'monospace' }}>Ctrl</Typography>
+            <Typography sx={{ fontSize: '.65rem', color: t.textTertiary, bgcolor: t.surfaceSubtle, border: `1px solid ${t.border}`, borderRadius: '4px', px: 0.5, lineHeight: '16px', fontFamily: 'monospace' }}>K</Typography>
+          </Box>
+        </Box>
 
         <Stack direction="row" spacing={0.75} sx={{ ml: 'auto' }}>
           <Button size="small" variant="outlined"

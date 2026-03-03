@@ -189,6 +189,7 @@ const AppShell: React.FC = () => {
           <Route path="/developer/Dashboard/projects/repo/setup"       element={<RepoSetupPage />} />
           <Route path="/developer/Dashboard/projects/:id"              element={<ProjectDashboardPage />} />
           <Route path="/developer/Dashboard/projects/:id/detail"       element={<DevProjectDetailPage />} />
+          <Route path="/developer/Dashboard/projects/:id/repo"         element={<RepositoryPage />} />
           <Route path="/developer/Dashboard/projects/*"                element={<Navigate to="/developer/Dashboard/projects" replace />} />
         </Routes>
       </ProtectedRoute>
@@ -230,11 +231,9 @@ const AppShell: React.FC = () => {
   if (isStandaloneRepoPage) {
     return (
       <ProtectedRoute>
-        <DashboardLayout dashboardMode="developer">
-          <Routes>
-            <Route path="/developer/Dashboard/repo/:repoId" element={<RepositoryPage />} />
-          </Routes>
-        </DashboardLayout>
+        <Routes>
+          <Route path="/developer/Dashboard/repo/:repoId" element={<RepositoryPage />} />
+        </Routes>
       </ProtectedRoute>
     );
   }

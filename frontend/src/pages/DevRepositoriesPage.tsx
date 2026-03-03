@@ -132,9 +132,9 @@ const RepoRow: React.FC<{ repo: BackendRepository }> = ({ repo }) => {
       </Box>
 
       {/* Scope */}
-      <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 0.3 }}>
         {isStandalone ? (
-          <Chip label="Standalone" size="small" sx={{ height: 18, bgcolor: `${t.brandPrimary}14`, color: t.brandPrimary, border: `1px solid ${t.brandPrimary}30`, fontSize: '.6rem', fontWeight: 700, '& .MuiChip-label': { px: 0.75 } }} />
+          <Chip label="Standalone" size="small" sx={{ height: 18, bgcolor: `${t.brandPrimary}14`, color: t.brandPrimary, border: `1px solid ${t.brandPrimary}30`, fontSize: '.6rem', fontWeight: 700, '& .MuiChip-label': { px: 0.75 }, alignSelf: 'flex-start' }} />
         ) : (
           <Stack direction="row" alignItems="center" spacing={0.4}>
             <FolderOpenIcon sx={{ fontSize: '.7rem', color: t.textTertiary }} />
@@ -142,6 +142,13 @@ const RepoRow: React.FC<{ repo: BackendRepository }> = ({ repo }) => {
               {repo.project_name ?? 'Project'}
             </Typography>
           </Stack>
+        )}
+        {repo.created_by_username && (
+          <Tooltip title={`Created by ${repo.created_by_username}`}>
+            <Typography sx={{ fontSize: '.6rem', color: t.textTertiary, fontFamily: FONT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+              by {repo.created_by_username}
+            </Typography>
+          </Tooltip>
         )}
       </Box>
 

@@ -18,7 +18,6 @@ import LocalOfferIcon     from '@mui/icons-material/LocalOffer';
 import MergeIcon          from '@mui/icons-material/MergeType';
 import PlayCircleIcon     from '@mui/icons-material/PlayCircle';
 import RocketLaunchIcon   from '@mui/icons-material/RocketLaunch';
-import SearchIcon         from '@mui/icons-material/Search';
 import SettingsIcon       from '@mui/icons-material/Settings';
 import MenuBookIcon       from '@mui/icons-material/MenuBook';
 import { dashboardTokens } from '../../styles/dashboardDesignSystem';
@@ -56,7 +55,6 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'issues',   label: 'Issues',         icon: <BugReportIcon     sx={{ fontSize: '1rem' }} /> },
   { id: 'wiki',     label: 'Wiki / Docs',    icon: <MenuBookIcon      sx={{ fontSize: '1rem' }} /> },
   { id: 'releases', label: 'Releases',       icon: <RocketLaunchIcon  sx={{ fontSize: '1rem' }} /> },
-  { id: 'search',   label: 'Search',         icon: <SearchIcon        sx={{ fontSize: '1rem' }} /> },
   { id: 'settings', label: 'Settings',       icon: <SettingsIcon      sx={{ fontSize: '1rem' }} /> },
 ];
 

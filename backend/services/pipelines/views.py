@@ -112,11 +112,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         namespace = f"{self.request.user.username}-{key or base_id}"
 
+        # Context: workspace / group / personal
+        ctx           = self.request.data.get('context', 'personal') or 'personal'
+        workspace_id  = self.request.data.get('workspace_id', '') or ''
+        workspace_name = self.request.data.get('workspace_name', '') or ''
+        group_id      = self.request.data.get('group_id', '') or ''
+        group_name    = self.request.data.get('group_name', '') or ''
+
         project = serializer.save(
             owner=self.request.user,
+            created_by=self.request.user,
             id=project_id,
             project_key=key,
             namespace=namespace[:80],
+            context=ctx,
+            workspace_id=workspace_id,
+            workspace_name=workspace_name,
+            group_id=group_id,
+            group_name=group_name,
         )
 
         # ── Auto-create AtonixCorp repository ──────────────────────────────
@@ -125,6 +138,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         Repository.objects.create(
             id=repo_id,
             project=project,
+            owner=self.request.user,
+            created_by=self.request.user,
             provider='atonix',
             repo_name=repo_name,
             default_branch='main',
@@ -210,6 +225,12 @@ class RepositoryViewSet(viewsets.ModelViewSet):
         project = self.request.query_params.get('project')
         if project:
             qs = qs.filter(project=project)
+        workspace_id = self.request.query_params.get('workspace_id')
+        if workspace_id:
+            qs = Repository.objects.filter(workspace_id=workspace_id).distinct()
+        group_id = self.request.query_params.get('group_id')
+        if group_id:
+            qs = Repository.objects.filter(group_id=group_id).distinct()
         return qs
 
     def perform_update(self, serializer):
@@ -248,7 +269,11 @@ class RepositoryViewSet(viewsets.ModelViewSet):
         extra = {}
         if not project_id:
             extra['owner'] = self.request.user
-        repo = serializer.save(id=repo_id, tree_data=tree, **extra)
+        extra['workspace_id']   = self.request.data.get('workspace_id', '')
+        extra['workspace_name'] = self.request.data.get('workspace_name', '')
+        extra['group_id']       = self.request.data.get('group_id', '')
+        extra['group_name']     = self.request.data.get('group_name', '')
+        repo = serializer.save(id=repo_id, tree_data=tree, created_by=self.request.user, **extra)
         if repo.project is not None:
             repo.project.last_activity = timezone.now()
             repo.project.save(update_fields=['last_activity'])

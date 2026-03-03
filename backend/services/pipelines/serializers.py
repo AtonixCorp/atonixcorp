@@ -47,14 +47,20 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'owner', 'owner_username',
+            'created_by', 'created_by_username',
+            'context', 'workspace_id', 'workspace_name',
+            'group_id', 'group_name',
             'name', 'project_key', 'namespace', 'description',
             'visibility', 'avatar_color', 'last_activity',
             'repo_count', 'pipeline_count', 'has_repo',
             'created_at', 'updated_at',
         ]
-        read_only_fields = ('owner', 'owner_username', 'namespace',
-                            'repo_count', 'pipeline_count', 'has_repo',
-                            'created_at', 'updated_at')
+        read_only_fields = (
+            'owner', 'owner_username', 'namespace',
+            'created_by', 'created_by_username',
+            'repo_count', 'pipeline_count', 'has_repo',
+            'created_at', 'updated_at',
+        )
         extra_kwargs = {
             'id': {'required': False, 'allow_blank': True},
         }
@@ -63,8 +69,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 class RepositorySerializer(serializers.ModelSerializer):
     """Serializer for Repository model."""
     project_name    = serializers.CharField(source='project.name', read_only=True, default=None)
-    owner_username  = serializers.CharField(source='owner.username', read_only=True, default=None)
-    clone_https_url = serializers.SerializerMethodField()
+    owner_username       = serializers.CharField(source='owner.username', read_only=True, default=None)
+    created_by_username  = serializers.CharField(source='created_by.username', read_only=True, default=None)
+    clone_https_url      = serializers.SerializerMethodField()
     clone_ssh_url   = serializers.SerializerMethodField()
 
     def get_clone_https_url(self, obj):
@@ -77,14 +84,17 @@ class RepositorySerializer(serializers.ModelSerializer):
         model = Repository
         fields = [
             'id', 'project', 'project_name', 'owner', 'owner_username',
+            'created_by', 'created_by_username',
             'provider', 'repo_name', 'repo_description', 'default_branch',
             'visibility', 'is_bare', 'disk_path', 'storage_bucket',
             'clone_https_url', 'clone_ssh_url',
+            'workspace_id', 'workspace_name', 'group_id', 'group_name',
             'tree_data', 'created_at', 'updated_at',
         ]
         extra_kwargs = {
-            'id':    {'required': False},
-            'owner': {'required': False},
+            'id':         {'required': False},
+            'owner':      {'required': False},
+            'created_by': {'required': False},
         }
 
 

@@ -34,6 +34,29 @@ class Project(TimeStampedModel):
     avatar_color = models.CharField(max_length=20, blank=True, default='#153d75')
     last_activity = models.DateTimeField(null=True, blank=True)
 
+    # Ownership lineage ─────────────────────────────────────────────────────
+    created_by   = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='created_projects',
+        help_text='The user who pressed "Create Project".',
+    )
+    # Context: where was this project created from?
+    CONTEXT_CHOICES = [
+        ('personal',  'Personal'),
+        ('workspace', 'Workspace'),
+        ('group',     'Group'),
+    ]
+    context      = models.CharField(
+        max_length=20, choices=CONTEXT_CHOICES, default='personal',
+        help_text='Creation context for provenance tracking.',
+    )
+    workspace_id   = models.CharField(max_length=64, blank=True, default='',
+        help_text='workspace_id of the DevWorkspace this project was created in.')
+    workspace_name = models.CharField(max_length=200, blank=True, default='')
+    group_id       = models.CharField(max_length=64, blank=True, default='',
+        help_text='Group ID this project belongs to.')
+    group_name     = models.CharField(max_length=200, blank=True, default='')
+
     class Meta:
         db_table = 'projects'
         indexes = [
@@ -75,6 +98,18 @@ class Repository(TimeStampedModel):
         'auth.User', on_delete=models.CASCADE, related_name='repositories',
         null=True, blank=True,
     )
+    created_by       = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='created_repositories',
+        help_text='The user who created this repository.',
+    )
+    # Context: workspace / group this repo was created within
+    workspace_id  = models.CharField(max_length=64, blank=True, default='',
+        help_text='ID of the DevWorkspace this repo was created in.')
+    workspace_name = models.CharField(max_length=200, blank=True, default='')
+    group_id      = models.CharField(max_length=64, blank=True, default='',
+        help_text='ID of the Group this repo was created in.')
+    group_name    = models.CharField(max_length=200, blank=True, default='')
     tree_data = models.JSONField(default=list, blank=True)
 
     class Meta:

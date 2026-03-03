@@ -71,6 +71,7 @@ import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem';
+import RightActivityPanel, { RightPanelExpandTab } from './RightActivityPanel';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -169,23 +170,22 @@ const CLOUD_NAV: NavItem[] = [
 ];
 
 const DEVELOPER_NAV: NavItem[] = [
-  { label: 'Projects',      icon: <FolderOpenIcon {...I()} />, path: '/developer/Dashboard/projects'       },
-  { label: 'Repositories',  icon: <SourceIcon     {...I()} />, path: '/developer/Dashboard/repositories'   },
-  { label: 'SSH Keys',       icon: <KeyIcon        {...I()} />, path: '/developer/Dashboard/ssh-keys'          },
-  { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd' },
-  { label: 'Containers', icon: <ContainerIcon {...I()} />, path: '/developer/Dashboard/containers' },
-  { label: 'Kubernetes', icon: <ClusterIcon {...I()} />, path: '/developer/Dashboard/kubernetes' },
-  { label: 'SDKs & Tools',   icon: <ApiIcon      {...I()} />, path: '/developer/Dashboard/sdks'     },
-  { label: 'Infra as Code',  icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/iac'  },
-  { label: 'Service Catalog',icon: <FolderOpenIcon  {...I()} />, path: '/developer/Dashboard/catalog' },
-  { label: 'Sandbox',        icon: <FunctionsIcon   {...I()} />, path: '/developer/Dashboard/sandbox' },
-  { label: 'Webhooks',       icon: <NetworkIcon     {...I()} />, path: '/developer/Dashboard/webhooks' },
-  { label: 'Sections', icon: <ViewListIcon {...I()} />, path: '/developer/Dashboard/sections' },
-  { label: 'Groups',   icon: <GroupsIcon   {...I()} />, path: '/developer/Dashboard/groups' },
-  { label: 'Resource Control', icon: <NetworkIcon {...I()} />, path: '/developer/Dashboard/resource-control' },
-  { label: 'Workplace',        icon: <PersonIcon  {...I()} />, path: '/developer/Dashboard/workspace'    },
-  { label: 'Environment',      icon: <TuneIcon    {...I()} />, path: '/developer/Dashboard/environment'  },
-  { label: 'Operational',      icon: <GppGoodIcon {...I()} />, path: '/developer/Dashboard/operational'  },
+  { label: 'Projects',        icon: <FolderOpenIcon  {...I()} />, path: '/developer/Dashboard/projects'        },
+  { label: 'Repositories',    icon: <SourceIcon      {...I()} />, path: '/developer/Dashboard/repositories'    },
+  { label: 'SSH Keys',        icon: <KeyIcon         {...I()} />, path: '/developer/Dashboard/ssh-keys'        },
+  { label: 'CI/CD Pipelines', icon: <OrchestrateIcon {...I()} />, path: '/developer/Dashboard/cicd'           },
+  { label: 'Containers',      icon: <ContainerIcon   {...I()} />, path: '/developer/Dashboard/containers'      },
+  { label: 'Kubernetes',      icon: <ClusterIcon     {...I()} />, path: '/developer/Dashboard/kubernetes'      },
+  { label: 'SDKs & Tools',    icon: <ApiIcon         {...I()} />, path: '/developer/Dashboard/sdks'            },
+  { label: 'Infra as Code',   icon: <StorageIcon     {...I()} />, path: '/developer/Dashboard/iac'             },
+  { label: 'Service Catalog', icon: <ViewListIcon    {...I()} />, path: '/developer/Dashboard/catalog'         },
+  { label: 'Sandbox',         icon: <FunctionsIcon   {...I()} />, path: '/developer/Dashboard/sandbox'         },
+  { label: 'Webhooks',        icon: <NetworkIcon     {...I()} />, path: '/developer/Dashboard/webhooks'        },
+  { label: 'Groups',          icon: <GroupsIcon      {...I()} />, path: '/developer/Dashboard/groups'          },
+  { label: 'Resource Control',icon: <TuneIcon        {...I()} />, path: '/developer/Dashboard/resource-control'},
+  { label: 'Workplace',       icon: <PersonIcon      {...I()} />, path: '/developer/Dashboard/workspace'       },
+  { label: 'Environment',     icon: <MemoryIcon      {...I()} />, path: '/developer/Dashboard/environment'     },
+  { label: 'Operational',     icon: <GppGoodIcon     {...I()} />, path: '/developer/Dashboard/operational'     },
 ];
 
 const MARKETING_NAV: NavItem[] = [
@@ -599,6 +599,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
   const isDark             = mode === 'dark';
   const [mobileOpen,    setMobileOpen]    = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [rightCollapsed,   setRightCollapsed]   = useState(false);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
   const routeBase = dashboardMode === 'developer'
@@ -672,6 +673,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
           transition: 'width .2s ease',
         }}
       >
@@ -928,8 +930,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
         </AppBar>
 
         {/* ── Page content ──────────────────────────────────────────────────── */}
-        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: dashboardTokens.colors.background }}>
-          {children}
+        <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+          <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: dashboardTokens.colors.background }}>
+            {children}
+          </Box>
+
+          {/* ── Right activity panel ─────────────────────────────────────────── */}
+          <RightActivityPanel
+            collapsed={rightCollapsed}
+            onToggle={() => setRightCollapsed(true)}
+          />
+          {rightCollapsed && <RightPanelExpandTab onClick={() => setRightCollapsed(false)} />}
         </Box>
       </Box>
     </Box>

@@ -1,21 +1,29 @@
 import apiClient from './apiClient';
 
 export interface BackendProject {
-  id:             string;
-  owner?:         number;
-  owner_username?: string;
-  name:           string;
-  project_key:    string;
-  namespace:      string;
-  description:    string;
-  visibility:     'private' | 'team' | 'public';
-  avatar_color:   string;
-  last_activity:  string | null;
-  repo_count:     number;
-  pipeline_count: number;
-  has_repo:       boolean;
-  created_at?:    string;
-  updated_at?:    string;
+  id:                  string;
+  owner?:              number;
+  owner_username?:     string;
+  created_by?:         number | null;
+  created_by_username?: string | null;
+  name:                string;
+  project_key:         string;
+  namespace:           string;
+  description:         string;
+  visibility:          'private' | 'team' | 'public';
+  avatar_color:        string;
+  last_activity:       string | null;
+  repo_count:          number;
+  pipeline_count:      number;
+  has_repo:            boolean;
+  /** 'personal' | 'workspace' | 'group' */
+  context?:            'personal' | 'workspace' | 'group';
+  workspace_id?:       string;
+  workspace_name?:     string;
+  group_id?:           string;
+  group_name?:         string;
+  created_at?:         string;
+  updated_at?:         string;
 }
 
 export interface ProjectStats {
@@ -26,11 +34,17 @@ export interface ProjectStats {
 }
 
 export interface CreateBackendProjectPayload {
-  name:        string;
-  project_key?: string;
-  description?: string;
-  visibility?:  'private' | 'team' | 'public';
-  avatar_color?: string;
+  name:           string;
+  project_key?:   string;
+  description?:   string;
+  visibility?:    'private' | 'team' | 'public';
+  avatar_color?:  string;
+  /** Where this project is being created from */
+  context?:       'personal' | 'workspace' | 'group';
+  workspace_id?:  string;
+  workspace_name?: string;
+  group_id?:      string;
+  group_name?:    string;
 }
 
 export async function listProjects(): Promise<BackendProject[]> {
@@ -75,9 +89,11 @@ export interface BackendRepository {
   id:              string;
   project:         string | null;
   project_name?:   string | null;
-  owner?:          string | null;
-  owner_username?: string | null;
-  provider:        string;
+  owner?:              string | null;
+  owner_username?:     string | null;
+  created_by?:         string | null;
+  created_by_username?: string | null;
+  provider:            string;
   repo_name:       string;
   repo_description?: string;
   visibility?:     'private' | 'public' | 'team';
@@ -87,6 +103,10 @@ export interface BackendRepository {
   storage_bucket?: string;
   clone_https_url?: string;
   clone_ssh_url?:   string;
+  workspace_id?:    string;
+  workspace_name?:  string;
+  group_id?:        string;
+  group_name?:      string;
   created_at?:     string;
   updated_at?:     string;
 }
@@ -96,6 +116,10 @@ export interface CreateStandaloneRepoPayload {
   repo_description?: string;
   visibility:       'private' | 'public';
   default_branch:   string;
+  workspace_id?:    string;
+  workspace_name?:  string;
+  group_id?:        string;
+  group_name?:      string;
 }
 
 export async function listProjectRepos(projectId: string): Promise<BackendRepository[]> {
@@ -109,6 +133,22 @@ export async function listProjectRepos(projectId: string): Promise<BackendReposi
 export async function listAllRepos(): Promise<BackendRepository[]> {
   const response = await apiClient.get<BackendRepository[] | { results: BackendRepository[] }>(
     `/api/services/pipelines/repositories/`,
+  );
+  const d = response.data;
+  return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function listReposByWorkspace(workspaceId: string): Promise<BackendRepository[]> {
+  const response = await apiClient.get<BackendRepository[] | { results: BackendRepository[] }>(
+    `/api/services/pipelines/repositories/?workspace_id=${workspaceId}`,
+  );
+  const d = response.data;
+  return Array.isArray(d) ? d : (d as any).results ?? [];
+}
+
+export async function listReposByGroup(groupId: string): Promise<BackendRepository[]> {
+  const response = await apiClient.get<BackendRepository[] | { results: BackendRepository[] }>(
+    `/api/services/pipelines/repositories/?group_id=${groupId}`,
   );
   const d = response.data;
   return Array.isArray(d) ? d : (d as any).results ?? [];

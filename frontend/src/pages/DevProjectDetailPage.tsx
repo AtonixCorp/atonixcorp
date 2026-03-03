@@ -31,7 +31,7 @@ const DevProjectDetailPage: React.FC = () => {
     let mounted = true;
 
     const load = async () => {
-      if (!id) {
+      if (!id || id === 'undefined') {
         setError('Project id is missing.');
         setLoading(false);
         return;

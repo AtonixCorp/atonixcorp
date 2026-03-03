@@ -5,8 +5,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Chip, CircularProgress,
+  Dialog, DialogActions, DialogContent, DialogTitle,
   Divider, FormControl, IconButton, InputLabel, LinearProgress, List, ListItemButton,
-  MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
+  MenuItem, Paper, Select, Snackbar, Stack, Table, TableBody, TableCell, TableHead, TableRow,
   TextField, Tooltip, Typography,
 } from '@mui/material';
 import AccountTreeIcon         from '@mui/icons-material/AccountTree';
@@ -53,6 +54,7 @@ import {
   GroupResourceBundle, GroupConfigFile, GroupWorkspaceSummary, GroupSidebarSection,
 } from '../services/groupsApi';
 import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth } from '../services/environmentsApi';
+import { createStandaloneRepo, listReposByGroup, type BackendRepository } from '../services/projectsApi';
 import {
   listGroupPipelines, createGroupPipeline, triggerGroupPipelineRun,
   type GroupPipeline,
@@ -115,7 +117,7 @@ const CONFIG_TYPE_ICONS: Record<string, string> = {
 // ── Sidebar section definitions ────────────────────────────────────────────────
 
 type SectionId =
-  | 'overview' | 'projects' | 'pipelines' | 'environments' | 'containers'
+  | 'overview' | 'projects' | 'repositories' | 'pipelines' | 'environments' | 'containers'
   | 'kubernetes' | 'deployments' | 'metrics' | 'logs' | 'secrets'
   | 'env-vars' | 'access' | 'settings' | 'workspaces' | 'audit';
 
@@ -129,6 +131,7 @@ interface SidebarItem {
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'overview',      label: 'Overview',         icon: <DashboardIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'projects',      label: 'Projects',          icon: <FolderOpenIcon sx={{ fontSize: '1rem' }} /> },
+  { id: 'repositories',  label: 'Repositories',      icon: <AccountTreeIcon sx={{ fontSize: '1rem' }} /> },
   { id: 'pipelines',     label: 'CI/CD Pipelines',   icon: <PlayCircleOutlineIcon sx={{ fontSize: '1rem' }} /> },
   { id: 'environments',  label: 'Environments',      icon: <DevicesIcon sx={{ fontSize: '1rem' }} /> },
   { id: 'containers',    label: 'Containers',        icon: <AppsIcon sx={{ fontSize: '1rem' }} /> },
@@ -1285,6 +1288,18 @@ const GroupDashboardPage: React.FC = () => {
   const [groupPipelines, setGroupPipelines] = useState<GroupPipeline[]>([]);
   const [loadingPipelines, setLoadingPipelines] = useState(false);
 
+  // ── Group repos state
+  const [grRepos, setGrRepos]               = useState<BackendRepository[]>([]);
+  const [grReposLoading, setGrReposLoading] = useState(false);
+  const [grReposLoaded, setGrReposLoaded]   = useState(false);
+  const [grRepoCreateOpen, setGrRepoCreateOpen] = useState(false);
+  const [grRepoName, setGrRepoName]         = useState('');
+  const [grRepoDesc, setGrRepoDesc]         = useState('');
+  const [grRepoBranch, setGrRepoBranch]     = useState('main');
+  const [grRepoVis, setGrRepoVis]           = useState<'private' | 'public'>('private');
+  const [grRepoBusy, setGrRepoBusy]         = useState(false);
+  const [grRepoToast, setGrRepoToast]       = useState<string | null>(null);
+
   const fetchGroupPipelines = useCallback(async () => {
     if (!groupId) return;
     setLoadingPipelines(true);
@@ -1302,6 +1317,42 @@ const GroupDashboardPage: React.FC = () => {
   useEffect(() => {
     if (activeSection === 'pipelines') fetchGroupPipelines();
   }, [activeSection, fetchGroupPipelines]);
+
+  const loadGroupRepos = useCallback(async () => {
+    if (!groupId) return;
+    setGrReposLoading(true);
+    try {
+      const list = await listReposByGroup(groupId);
+      setGrRepos(list);
+      setGrReposLoaded(true);
+    } catch { /* ignore */ }
+    finally { setGrReposLoading(false); }
+  }, [groupId]);
+
+  useEffect(() => {
+    if (activeSection === 'repositories' && !grReposLoaded) loadGroupRepos();
+  }, [activeSection, grReposLoaded, loadGroupRepos]);
+
+  const handleCreateGrRepo = async () => {
+    if (!grRepoName.trim() || !groupId) return;
+    setGrRepoBusy(true);
+    try {
+      const r = await createStandaloneRepo({
+        repo_name: grRepoName.trim(),
+        repo_description: grRepoDesc.trim() || undefined,
+        visibility: grRepoVis,
+        default_branch: grRepoBranch || 'main',
+        group_id: groupId,
+        group_name: group?.name ?? '',
+      });
+      setGrRepos((prev) => [r, ...prev]);
+      setGrRepoCreateOpen(false);
+      setGrRepoName(''); setGrRepoDesc(''); setGrRepoBranch('main'); setGrRepoVis('private');
+      setGrRepoToast(`Repository "${r.repo_name}" created.`);
+    } catch (e: any) {
+      setGrRepoToast(e?.response?.data?.detail ?? e?.message ?? 'Failed to create repository.');
+    } finally { setGrRepoBusy(false); }
+  };
 
   const load = useCallback(async () => {
     if (!groupId) return;
@@ -1397,6 +1448,91 @@ const GroupDashboardPage: React.FC = () => {
     switch (activeSection) {
       case 'overview':     return <OverviewSection group={group} bundle={bundle} environments={environments} workspaces={workspaces} groupId={groupId!} onNavigate={(s) => navigate(`/groups/${groupId}/${s}`)} />;
       case 'projects':     return <ResourceTable rows={bundle?.projects ?? []} emptyIcon={<FolderOpenIcon />} emptyMsg="No projects linked" />;
+      case 'repositories':  return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Repositories</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Code repositories for this group.</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+              onClick={() => setGrRepoCreateOpen(true)}
+              sx={{ textTransform: 'none', fontWeight: 700, bgcolor: BP, '&:hover': { bgcolor: '#0f2d5a' }, borderRadius: '8px' }}>
+              New Repo
+            </Button>
+          </Stack>
+
+          {grReposLoading ? (
+            <CircularProgress size={28} sx={{ display: 'block', mx: 'auto', mt: 4 }} />
+          ) : grRepos.length === 0 ? (
+            <Box sx={{ p: 4, borderRadius: '14px', border: `2px dashed ${t.border}`, textAlign: 'center' }}>
+              <AccountTreeIcon sx={{ fontSize: '2.5rem', color: t.textTertiary, mb: 1 }} />
+              <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 0.5 }}>No repositories yet</Typography>
+              <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2 }}>Create a shared repository for this group.</Typography>
+              <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={() => setGrRepoCreateOpen(true)}
+                sx={{ textTransform: 'none', borderRadius: '8px' }}>Create Repository</Button>
+            </Box>
+          ) : (
+            <Stack spacing={1.5}>
+              {grRepos.map((r) => (
+                <Box key={r.id}
+                  onClick={() => navigate(`/developer/Dashboard/repositories/${r.id}`)}
+                  sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${t.border}`, bgcolor: t.surface, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    '&:hover': { borderColor: BP, bgcolor: 'rgba(21,61,117,.04)' } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <AccountTreeIcon sx={{ fontSize: '1.3rem', color: BP }} />
+                    <Box>
+                      <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{r.repo_name}</Typography>
+                      {r.repo_description && <Typography sx={{ fontSize: '.75rem', color: t.textSecondary }}>{r.repo_description}</Typography>}
+                    </Box>
+                  </Stack>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip label={r.visibility ?? 'private'} size="small" sx={{ fontSize: '.68rem', height: 20 }} />
+                    <Chip label={r.default_branch} size="small" sx={{ fontSize: '.68rem', height: 20, fontFamily: 'monospace' }} />
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
+          )}
+
+          {/* Create repo dialog */}
+          <Dialog open={grRepoCreateOpen} onClose={() => setGrRepoCreateOpen(false)} maxWidth="sm" fullWidth
+            PaperProps={{ sx: { borderRadius: '16px', bgcolor: t.surface } }}>
+            <DialogTitle sx={{ fontWeight: 800, fontFamily: FONT }}>New Group Repository</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ mt: 1 }}>
+                <TextField label="Repository name" value={grRepoName} onChange={(e) => setGrRepoName(e.target.value)}
+                  fullWidth size="small" required />
+                <TextField label="Description (optional)" value={grRepoDesc} onChange={(e) => setGrRepoDesc(e.target.value)}
+                  fullWidth size="small" multiline rows={2} />
+                <TextField label="Default branch" value={grRepoBranch} onChange={(e) => setGrRepoBranch(e.target.value)}
+                  fullWidth size="small" placeholder="main" />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Visibility</InputLabel>
+                  <Select label="Visibility" value={grRepoVis} onChange={(e) => setGrRepoVis(e.target.value as 'private' | 'public')}>
+                    <MenuItem value="private">Private</MenuItem>
+                    <MenuItem value="public">Public</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+              <Button onClick={() => setGrRepoCreateOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
+              <Button onClick={handleCreateGrRepo} variant="contained" disabled={!grRepoName.trim() || grRepoBusy}
+                sx={{ textTransform: 'none', fontWeight: 700, bgcolor: BP, '&:hover': { bgcolor: '#0f2d5a' }, borderRadius: '8px' }}>
+                {grRepoBusy ? <CircularProgress size={16} color="inherit" /> : 'Create'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Toast */}
+          <Snackbar open={!!grRepoToast} autoHideDuration={3500} onClose={() => setGrRepoToast(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+            <Alert onClose={() => setGrRepoToast(null)} severity="success" sx={{ width: '100%' }}>{grRepoToast}</Alert>
+          </Snackbar>
+        </Box>
+      );
       case 'pipelines':    return <GroupPipelinesPanel groupId={groupId!} />;
       case 'environments': return <EnvironmentsSection environments={environments} navigate={navigate} />;
       case 'containers':   return <ResourceTable rows={bundle?.containers ?? []} emptyIcon={<AppsIcon />} emptyMsg="No containers linked" />;

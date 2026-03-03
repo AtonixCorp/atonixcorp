@@ -57,7 +57,7 @@ import {
 } from '../services/devWorkspaceApi';
 import WorkspaceSetupWizard, { type WorkspaceSetupWizardResult } from '../components/Workspace/WorkspaceSetupWizard';
 import {
-  listProjects, listProjectRepos,
+  listProjects, listProjectRepos, createStandaloneRepo, listReposByWorkspace,
   type BackendProject, type BackendRepository,
 } from '../services/projectsApi';
 import {
@@ -87,7 +87,7 @@ type Section =
   | 'deployments' | 'metrics' | 'logs' | 'secrets'
   | 'env-vars' | 'settings'
   | 'sessions' | 'tools'
-  | 'containers' | 'kubernetes' | 'groups' | 'environments' | 'projects'
+  | 'containers' | 'kubernetes' | 'groups' | 'environments' | 'projects' | 'repositories'
   | 'workspace-setup'
   | 'connect-project' | 'connect-env' | 'trigger-pipeline';
 
@@ -98,6 +98,7 @@ const SIDEBAR_ITEMS: { id: Section; label: string; icon: React.ReactNode; divide
   { id: 'sessions',          label: 'Sessions',            icon: <DevicesIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'tools',             label: 'Tools',               icon: <TuneIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'projects',          label: 'Projects',            icon: <FolderOpenIcon sx={{ fontSize: '1.1rem' }} /> },
+  { id: 'repositories',      label: 'Repositories',        icon: <StorageIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'pipelines',         label: 'CI/CD Pipelines',     icon: <PlayCircleOutlineIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'containers',        label: 'Containers',          icon: <AppsIcon sx={{ fontSize: '1.1rem' }} /> },
   { id: 'kubernetes',        label: 'Kubernetes',          icon: <CloudIcon sx={{ fontSize: '1.1rem' }} /> },
@@ -854,6 +855,17 @@ const WorkspaceDashboardPage: React.FC = () => {
   const [envsList, setEnvsList]                   = useState<ApiEnvironment[]>([]);
   const [envsLoaded, setEnvsLoaded]               = useState(false);
 
+  // ── Workspace repos state
+  const [wsRepos, setWsRepos]                     = useState<BackendRepository[]>([]);
+  const [wsReposLoading, setWsReposLoading]       = useState(false);
+  const [wsReposLoaded, setWsReposLoaded]         = useState(false);
+  const [wsRepoCreateOpen, setWsRepoCreateOpen]   = useState(false);
+  const [wsRepoName, setWsRepoName]               = useState('');
+  const [wsRepoDesc, setWsRepoDesc]               = useState('');
+  const [wsRepoBranch, setWsRepoBranch]           = useState('main');
+  const [wsRepoVis, setWsRepoVis]                 = useState<'private' | 'public'>('private');
+  const [wsRepoBusy, setWsRepoBusy]               = useState(false);
+
   // ── Integration action handlers ────────────────────────────────────────────
   const handleConnectProject = (p: BackendProject) => {
     const proj: ConnectedProject = {
@@ -945,6 +957,42 @@ const WorkspaceDashboardPage: React.FC = () => {
   useEffect(() => {
     if (section === 'groups' && !groupsLoaded) loadGroupsList();
   }, [section, groupsLoaded, loadGroupsList]);
+
+  const loadWsRepos = useCallback(async () => {
+    if (!workspaceId) return;
+    setWsReposLoading(true);
+    try {
+      const list = await listReposByWorkspace(workspaceId);
+      setWsRepos(list);
+      setWsReposLoaded(true);
+    } catch { /* ignore */ }
+    finally { setWsReposLoading(false); }
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (section === 'repositories' && !wsReposLoaded) loadWsRepos();
+  }, [section, wsReposLoaded, loadWsRepos]);
+
+  const handleCreateWsRepo = async () => {
+    if (!wsRepoName.trim() || !workspaceId) return;
+    setWsRepoBusy(true);
+    try {
+      const r = await createStandaloneRepo({
+        repo_name: wsRepoName.trim(),
+        repo_description: wsRepoDesc.trim() || undefined,
+        visibility: wsRepoVis,
+        default_branch: wsRepoBranch || 'main',
+        workspace_id: workspaceId,
+        workspace_name: ws?.display_name ?? '',
+      });
+      setWsRepos((prev) => [r, ...prev]);
+      setWsRepoCreateOpen(false);
+      setWsRepoName(''); setWsRepoDesc(''); setWsRepoBranch('main'); setWsRepoVis('private');
+      setToast(`Repository "${r.repo_name}" created.`);
+    } catch (e: any) {
+      setToast(e?.response?.data?.detail ?? e?.message ?? 'Failed to create repository.');
+    } finally { setWsRepoBusy(false); }
+  };
 
   const handleCreateK8sCluster = async () => {
     if (!k8sName.trim()) { setToast('Cluster name is required.'); return; }
@@ -1967,6 +2015,88 @@ const WorkspaceDashboardPage: React.FC = () => {
               ))}
             </Box>
           </Box>
+        </Box>
+      );
+
+      // ── Repositories ───────────────────────────────────────────────────────
+      case 'repositories': return (
+        <Box sx={{ p: 3, overflowY: 'auto', height: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: t.textPrimary }}>Repositories</Typography>
+              <Typography sx={{ color: t.textSecondary, fontSize: '.82rem' }}>Code repositories in this workspace.</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<AddIcon sx={{ fontSize: '.9rem' }} />}
+              onClick={() => setWsRepoCreateOpen(true)}
+              sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+              New Repo
+            </Button>
+          </Stack>
+
+          {wsReposLoading ? (
+            <CircularProgress size={28} sx={{ display: 'block', mx: 'auto', mt: 4 }} />
+          ) : wsRepos.length === 0 ? (
+            <Box sx={{ p: 4, borderRadius: '14px', border: `2px dashed ${t.border}`, textAlign: 'center' }}>
+              <StorageIcon sx={{ fontSize: '2.5rem', color: t.textTertiary, mb: 1 }} />
+              <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary, mb: 0.5 }}>No repositories yet</Typography>
+              <Typography sx={{ fontSize: '.82rem', color: t.textSecondary, mb: 2 }}>Create a repository to store your workspace code.</Typography>
+              <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={() => setWsRepoCreateOpen(true)}
+                sx={{ textTransform: 'none', borderRadius: '8px', borderColor: t.border, color: t.textSecondary }}>Create Repository</Button>
+            </Box>
+          ) : (
+            <Stack spacing={1.5}>
+              {wsRepos.map((r) => (
+                <Box key={r.id}
+                  onClick={() => navigate(`/developer/Dashboard/repositories/${r.id}`)}
+                  sx={{ p: 2.5, borderRadius: '12px', border: `1px solid ${t.border}`, bgcolor: t.surface, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    '&:hover': { borderColor: t.brandPrimary, bgcolor: 'rgba(21,61,117,.04)' } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <StorageIcon sx={{ fontSize: '1.3rem', color: t.brandPrimary }} />
+                    <Box>
+                      <Typography sx={{ fontWeight: 700, fontSize: '.9rem', color: t.textPrimary }}>{r.repo_name}</Typography>
+                      {r.repo_description && <Typography sx={{ fontSize: '.75rem', color: t.textSecondary }}>{r.repo_description}</Typography>}
+                    </Box>
+                  </Stack>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip label={r.visibility ?? 'private'} size="small" sx={{ fontSize: '.68rem', height: 20 }} />
+                    <Chip label={r.default_branch} size="small" sx={{ fontSize: '.68rem', height: 20, fontFamily: 'monospace' }} />
+                    <OpenInNewIcon sx={{ fontSize: '1rem', color: t.textTertiary }} />
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
+          )}
+
+          {/* Create repo dialog */}
+          <Dialog open={wsRepoCreateOpen} onClose={() => setWsRepoCreateOpen(false)} maxWidth="sm" fullWidth
+            PaperProps={{ sx: { borderRadius: '16px', bgcolor: t.surface } }}>
+            <DialogTitle sx={{ fontWeight: 800, fontFamily: FONT }}>New Repository</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ mt: 1 }}>
+                <TextField label="Repository name" value={wsRepoName} onChange={(e) => setWsRepoName(e.target.value)}
+                  fullWidth size="small" required />
+                <TextField label="Description (optional)" value={wsRepoDesc} onChange={(e) => setWsRepoDesc(e.target.value)}
+                  fullWidth size="small" multiline rows={2} />
+                <TextField label="Default branch" value={wsRepoBranch} onChange={(e) => setWsRepoBranch(e.target.value)}
+                  fullWidth size="small" placeholder="main" />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Visibility</InputLabel>
+                  <Select label="Visibility" value={wsRepoVis} onChange={(e) => setWsRepoVis(e.target.value as 'private' | 'public')}>
+                    <MenuItem value="private">Private</MenuItem>
+                    <MenuItem value="public">Public</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+              <Button onClick={() => setWsRepoCreateOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
+              <Button onClick={handleCreateWsRepo} variant="contained" disabled={!wsRepoName.trim() || wsRepoBusy}
+                sx={{ textTransform: 'none', fontWeight: 700, bgcolor: t.brandPrimary, '&:hover': { bgcolor: t.brandPrimaryHover }, borderRadius: '8px' }}>
+                {wsRepoBusy ? <CircularProgress size={16} color="inherit" /> : 'Create'}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       );
 

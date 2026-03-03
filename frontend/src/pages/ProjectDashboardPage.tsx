@@ -378,7 +378,7 @@ const ProjectDashboardPage: React.FC = () => {
   const [error, setError]       = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) { setError('No project ID.'); setLoading(false); return; }
+    if (!id || id === 'undefined') { setError('No project ID.'); setLoading(false); return; }
     if (id === 'new' || id === 'create') {
       navigate('/developer/Dashboard/projects/create', { replace: true });
       return;
