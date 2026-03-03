@@ -213,12 +213,228 @@ class RepositoryViewSet(viewsets.ModelViewSet):
     def branches(self, request, pk=None):
         """Get branches for a repository."""
         repository = self.get_object()
-        branches = [
-            {'name': 'main', 'commit': 'abc123'},
-            {'name': 'develop', 'commit': 'def456'},
-            {'name': 'feature/pipeline-ui', 'commit': 'ghi789'},
+        return Response([
+            {'name': repository.default_branch, 'sha': 'a3f9b2c1d5e8f042', 'protected': True,  'ahead': 0, 'behind': 0, 'last_commit_message': 'chore: update deps', 'last_commit_date': '2026-03-02T09:15:00Z'},
+            {'name': 'develop',                  'sha': 'b7d4e8f200c1a9e3', 'protected': False, 'ahead': 3, 'behind': 1, 'last_commit_message': 'feat: add logging', 'last_commit_date': '2026-03-01T16:40:00Z'},
+            {'name': 'feature/pipeline-ui',      'sha': 'c1a5f9e344b82d71', 'protected': False, 'ahead': 7, 'behind': 0, 'last_commit_message': 'ui: pipeline graph', 'last_commit_date': '2026-02-28T11:00:00Z'},
+        ])
+
+    @action(detail=True, methods=['get'])
+    def tags(self, request, pk=None):
+        """Return list of tags."""
+        return Response([
+            {'name': 'v1.0.0', 'sha': 'a3f9b2c1', 'message': 'First stable release',  'date': '2026-02-28T10:00:00Z'},
+            {'name': 'v0.9.0', 'sha': '9d2e7f3c', 'message': 'Release candidate',      'date': '2026-02-20T08:00:00Z'},
+        ])
+
+    @action(detail=True, methods=['get'])
+    def commits(self, request, pk=None):
+        """Return commit history."""
+        repository = self.get_object()
+        branch = request.query_params.get('branch', repository.default_branch)
+        path   = request.query_params.get('path', '')
+        author_map = {
+            'a3f9b2c1': {'name': 'Alice Dev',   'email': 'alice@atonixcorp.com', 'avatar': 'AD'},
+            'b7d4e8f2': {'name': 'Bob Ops',     'email': 'bob@atonixcorp.com',   'avatar': 'BO'},
+            'c1a5f9e3': {'name': 'CI Robot',    'email': 'ci@atonixcorp.com',    'avatar': 'CI'},
+            'd9f1c6a4': {'name': 'Alice Dev',   'email': 'alice@atonixcorp.com', 'avatar': 'AD'},
+            'e7b3a2d5': {'name': 'Dave Infra',  'email': 'dave@atonixcorp.com',  'avatar': 'DI'},
+        }
+        commit_list = [
+            {'sha': 'c1a5f9e3', 'short_sha': 'c1a5f9e', 'message': 'chore: update dependencies',          'pipeline_status': 'running',  'timestamp': '2026-03-02T09:15:00Z', 'files_changed': 1},
+            {'sha': 'b7d4e8f2', 'short_sha': 'b7d4e8f', 'message': 'feat: add structured logging',       'pipeline_status': 'success',  'timestamp': '2026-03-01T16:40:00Z', 'files_changed': 3},
+            {'sha': 'e7b3a2d5', 'short_sha': 'e7b3a2d', 'message': 'fix: handle empty response in API',  'pipeline_status': 'success',  'timestamp': '2026-03-01T10:00:00Z', 'files_changed': 2},
+            {'sha': 'd9f1c6a4', 'short_sha': 'd9f1c6a', 'message': 'docs: update README with examples',  'pipeline_status': 'success',  'timestamp': '2026-02-28T14:20:00Z', 'files_changed': 1},
+            {'sha': 'a3f9b2c1', 'short_sha': 'a3f9b2c', 'message': 'Initial commit',                     'pipeline_status': 'success',  'timestamp': '2026-02-28T10:00:00Z', 'files_changed': 5},
         ]
-        return Response(branches)
+        for c in commit_list:
+            c['author'] = author_map.get(c['sha'], {'name': 'Unknown', 'email': '', 'avatar': '?'})
+            c['branch'] = branch
+        return Response(commit_list)
+
+    @action(detail=True, methods=['get'])
+    def file(self, request, pk=None):
+        """Return file content for a given path."""
+        repository = self.get_object()
+        path = request.query_params.get('path', '')
+
+        def _find(nodes, target):
+            for node in nodes:
+                if node.get('path') == target:
+                    return node
+                if node.get('type') == 'dir' and node.get('children'):
+                    hit = _find(node['children'], target)
+                    if hit:
+                        return hit
+            return None
+
+        node = _find(repository.tree_data or [], path)
+        if not node:
+            return Response({'detail': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
+        content = node.get('content', '')
+        return Response({
+            'path':    node['path'],
+            'name':    node['name'],
+            'content': content,
+            'size':    len(content.encode('utf-8')),
+            'lines':   len(content.splitlines()),
+            'type':    node.get('type', 'file'),
+            'last_commit': {
+                'sha': 'b7d4e8f2', 'short_sha': 'b7d4e8f',
+                'message': 'feat: add structured logging',
+                'author': 'Alice Dev', 'timestamp': '2026-03-01T16:40:00Z',
+                'pipeline_status': 'success',
+            },
+        })
+
+    @action(detail=True, methods=['get'])
+    def raw(self, request, pk=None):
+        """Return raw file content as plain text."""
+        repository = self.get_object()
+        path = request.query_params.get('path', '')
+
+        def _find(nodes, target):
+            for node in nodes:
+                if node.get('path') == target:
+                    return node
+                if node.get('type') == 'dir' and node.get('children'):
+                    hit = _find(node['children'], target)
+                    if hit:
+                        return hit
+            return None
+
+        node = _find(repository.tree_data or [], path)
+        if not node:
+            return Response({'detail': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
+        from django.http import HttpResponse
+        return HttpResponse(node.get('content', ''), content_type='text/plain; charset=utf-8')
+
+    @action(detail=True, methods=['get'])
+    def blame(self, request, pk=None):
+        """Return blame data for a file."""
+        repository = self.get_object()
+        path = request.query_params.get('path', '')
+
+        def _find(nodes, target):
+            for node in nodes:
+                if node.get('path') == target:
+                    return node.get('content', '')
+                if node.get('type') == 'dir' and node.get('children'):
+                    hit = _find(node['children'], target)
+                    if hit is not None:
+                        return hit
+            return None
+
+        content = _find(repository.tree_data or [], path) or ''
+        lines = content.splitlines()
+        authors = [
+            {'sha': 'a3f9b2c1', 'short_sha': 'a3f9b2c', 'name': 'Alice Dev', 'email': 'alice@atonixcorp.com', 'message': 'Initial commit',               'date': '2026-02-28'},
+            {'sha': 'b7d4e8f2', 'short_sha': 'b7d4e8f', 'name': 'Bob Ops',   'email': 'bob@atonixcorp.com',   'message': 'feat: add structured logging', 'date': '2026-03-01'},
+            {'sha': 'c1a5f9e3', 'short_sha': 'c1a5f9e', 'name': 'CI Robot',  'email': 'ci@atonixcorp.com',    'message': 'chore: update dependencies',   'date': '2026-03-02'},
+        ]
+        hunks = []
+        for i, line in enumerate(lines):
+            a = authors[i % len(authors)]
+            hunks.append({
+                'line_number': i + 1,
+                'content': line,
+                'sha': a['sha'], 'short_sha': a['short_sha'],
+                'author': a['name'], 'email': a['email'],
+                'message': a['message'], 'date': a['date'],
+            })
+        return Response(hunks)
+
+    @action(detail=True, methods=['get'])
+    def diff(self, request, pk=None):
+        """Return diff between base and head (simulated)."""
+        repository = self.get_object()
+        base = request.query_params.get('base', repository.default_branch)
+        head = request.query_params.get('head', 'develop')
+        return Response({
+            'base': base, 'head': head,
+            'total_additions': 17, 'total_deletions': 3,
+            'files': [
+                {
+                    'path': 'src/main.py', 'additions': 5, 'deletions': 2,
+                    'chunks': [{'header': '@@ -1,6 +1,9 @@', 'lines': [
+                        {'type': 'context', 'content': 'def main():'},
+                        {'type': 'removed', 'content': '    print("Hello, world!")'},
+                        {'type': 'added',   'content': '    print("Hello, AtonixCorp!")'},
+                        {'type': 'added',   'content': '    setup_logging()'},
+                        {'type': 'added',   'content': '    run_server()'},
+                        {'type': 'context', 'content': ''},
+                        {'type': 'context', 'content': 'if __name__ == "__main__":'},
+                        {'type': 'context', 'content': '    main()'},
+                    ]}],
+                },
+                {
+                    'path': 'README.md', 'additions': 12, 'deletions': 1,
+                    'chunks': [{'header': '@@ -1,3 +1,14 @@', 'lines': [
+                        {'type': 'context', 'content': '# Repository'},
+                        {'type': 'removed', 'content': 'Welcome to your new repository.'},
+                        {'type': 'added',   'content': 'Welcome to the AtonixCorp repository.'},
+                        {'type': 'added',   'content': ''},
+                        {'type': 'added',   'content': '## Features'},
+                        {'type': 'added',   'content': '- CI/CD integration'},
+                        {'type': 'added',   'content': '- Workspace support'},
+                    ]}],
+                },
+            ],
+        })
+
+    @action(detail=True, methods=['get'])
+    def search(self, request, pk=None):
+        """Search files and code in the repository."""
+        repository = self.get_object()
+        query = request.query_params.get('q', '').lower().strip()
+        search_type = request.query_params.get('type', 'code')
+
+        if not query:
+            return Response([])
+
+        results = []
+
+        def _search(nodes):
+            for node in nodes:
+                name_lower = node.get('name', '').lower()
+                path = node.get('path', '')
+                if search_type == 'file':
+                    if query in name_lower:
+                        results.append({'type': 'file', 'path': path, 'name': node.get('name', ''), 'node_type': node.get('type', 'file')})
+                else:
+                    if node.get('type') == 'file':
+                        content = node.get('content', '')
+                        if query in content.lower() or query in name_lower:
+                            matches = [{'line': i + 1, 'content': l} for i, l in enumerate(content.splitlines()) if query in l.lower()]
+                            results.append({'type': 'code', 'path': path, 'name': node.get('name', ''), 'matches': matches[:5], 'total_matches': len(matches)})
+                if node.get('type') == 'dir' and node.get('children'):
+                    _search(node['children'])
+
+        _search(repository.tree_data or [])
+        return Response(results[:50])
+
+    @action(detail=True, methods=['post'])
+    def init(self, request, pk=None):
+        """Re-initialize repository with full default scaffold."""
+        repository = self.get_object()
+        name = repository.repo_name
+        repository.tree_data = [
+            {'name': 'README.md',        'type': 'file', 'path': 'README.md',        'content': f'# {name}\n\nWelcome to your repository.\n\n## Getting Started\n\nClone and start coding!\n\n## CI/CD\n\nThis repo is connected to AtonixCorp Pipelines.\n'},
+            {'name': '.gitignore',       'type': 'file', 'path': '.gitignore',       'content': '__pycache__/\n*.py[cod]\n.env\n.venv/\ndist/\nbuild/\n*.egg-info/\n.DS_Store\nnode_modules/\n'},
+            {'name': 'atonixcorp.yaml',  'type': 'file', 'path': 'atonixcorp.yaml',  'content': f'project: {name}\nversion: "1.0"\nruntime: python312\nregion: us-east-1\n'},
+            {'name': 'pipeline.yaml',    'type': 'file', 'path': 'pipeline.yaml',    'content': 'name: CI\non:\n  push:\n    branches: [main, develop]\njobs:\n  build:\n    runs-on: atonix-runner\n    steps:\n      - uses: atonix/checkout@v2\n      - run: pip install -r requirements.txt\n      - run: pytest\n'},
+            {'name': 'src', 'type': 'dir', 'path': 'src', 'children': [
+                {'name': '__init__.py', 'type': 'file', 'path': 'src/__init__.py', 'content': ''},
+                {'name': 'main.py',     'type': 'file', 'path': 'src/main.py',     'content': 'def main():\n    print("Hello, world!")\n\nif __name__ == "__main__":\n    main()\n'},
+            ]},
+            {'name': 'tests', 'type': 'dir', 'path': 'tests', 'children': [
+                {'name': '__init__.py',  'type': 'file', 'path': 'tests/__init__.py',  'content': ''},
+                {'name': 'test_main.py', 'type': 'file', 'path': 'tests/test_main.py', 'content': 'def test_placeholder():\n    assert True\n'},
+            ]},
+            {'name': 'requirements.txt', 'type': 'file', 'path': 'requirements.txt', 'content': '# Add your dependencies here\n'},
+        ]
+        repository.save(update_fields=['tree_data'])
+        return Response(repository.tree_data)
 
 
 class PipelineFileViewSet(viewsets.ReadOnlyModelViewSet):

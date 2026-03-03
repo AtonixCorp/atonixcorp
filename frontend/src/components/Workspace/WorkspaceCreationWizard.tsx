@@ -1,16 +1,17 @@
 /**
  * WorkspaceCreationWizard
  *
- * Full 8-step pre-provisioning wizard. Walks the user through:
+ * Full 9-step pre-provisioning wizard. Walks the user through:
  *   1. Basics       — name, description, region/zone
  *   2. Compute      — vCPU / RAM / GPU
- *   3. Storage      — type, size, backup policy
- *   4. Network      — VPC, subnet, firewall, public IP
- *   5. Project &    — attach/create project, container runtime & template
+ *   3. Database     — engine, plan, name, version, storage
+ *   4. Storage      — disk type, size, backup policy
+ *   5. Network      — VPC, subnet, firewall, public IP
+ *   6. Project &    — attach/create project, container runtime & template
  *      Container
- *   6. Environment  — attach/create environment
- *   7. Domain       — optional domain binding
- *   8. Review &     — full summary → Provision Workspace
+ *   7. Environment  — attach/create environment
+ *   8. Domain       — optional domain binding
+ *   9. Review &     — full summary → Provision Workspace
  *      Provision
  */
 
@@ -46,6 +47,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import DnsIcon from '@mui/icons-material/Dns'
 import CloseIcon from '@mui/icons-material/Close'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch'
@@ -66,6 +68,8 @@ import {
   type BackupPolicy,
   type ContainerRuntime,
   type CreateDevWorkspacePayload,
+  type DatabaseEngine,
+  type DatabasePlan,
   type DevWorkspace,
   type FirewallProfile,
   type StorageType,
@@ -83,6 +87,7 @@ const S = dashboardSemanticColors
 const STEPS = [
   'Basics',
   'Compute',
+  'Database',
   'Storage',
   'Network',
   'Project & Container',
@@ -205,7 +210,14 @@ interface WizardState {
   ramGb: number
   gpuEnabled: boolean
 
-  // Step 3 — Storage
+  // Step 3 — Database
+  dbEngine: DatabaseEngine
+  dbPlan: DatabasePlan
+  dbName: string
+  dbVersion: string
+  dbStorageGb: number
+
+  // Step 4 — Storage
   storageType: StorageType
   storageGb: number
   backupPolicy: BackupPolicy
@@ -234,6 +246,9 @@ interface WizardState {
   domainEnabled: boolean
   domain: string
   autoSubdomain: boolean
+
+  // Custom image (when containerTemplate === 'custom')
+  customImageUrl: string
 }
 
 function defaultState(): WizardState {
@@ -246,6 +261,12 @@ function defaultState(): WizardState {
     vcpus: 2,
     ramGb: 4,
     gpuEnabled: false,
+
+    dbEngine: 'postgresql',
+    dbPlan: 'shared',
+    dbName: '',
+    dbVersion: '16',
+    dbStorageGb: 10,
 
     storageType: 'standard',
     storageGb: 20,
@@ -271,6 +292,8 @@ function defaultState(): WizardState {
     domainEnabled: false,
     domain: '',
     autoSubdomain: true,
+
+    customImageUrl: '',
   }
 }
 
@@ -375,6 +398,12 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
         vcpus: state.vcpus,
         ram_gb: state.ramGb,
         gpu_enabled: state.gpuEnabled,
+        // Database
+        db_engine: state.dbEngine,
+        db_plan: state.dbEngine !== 'none' ? state.dbPlan : undefined,
+        db_name: state.dbEngine !== 'none' ? (state.dbName.trim() || undefined) : undefined,
+        db_version: state.dbEngine !== 'none' ? state.dbVersion : undefined,
+        db_storage_gb: state.dbEngine !== 'none' && state.dbEngine !== 'sqlite' ? state.dbStorageGb : undefined,
         // Storage
         storage_type: state.storageType,
         storage_gb: state.storageGb,
@@ -393,15 +422,24 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
 
       // Map container template → base image
       const tplToImage: Record<string, string> = {
-        node:   'atonix/devbox:node20',
-        python: 'atonix/devbox:python312',
-        go:     'atonix/devbox:golang123',
-        php:    'atonix/devbox:php83',
-        java:   'atonix/devbox:java21',
-        rust:   'atonix/devbox:rust',
-        ubuntu: 'atonix/devbox:22.04-lts',
+        node:    'atonix/devbox:node20',
+        python:  'atonix/devbox:python312',
+        go:      'atonix/devbox:golang123',
+        php:     'atonix/devbox:php83',
+        java:    'atonix/devbox:java21',
+        rust:    'atonix/devbox:rust',
+        ubuntu:  'atonix/devbox:22.04-lts',
+        debian:  'debian:bookworm',
+        lxc:     'atonix/devbox:lxc-ubuntu22',
+        nerdctl: 'atonix/devbox:nerdctl-latest',
       }
-      payload.image = tplToImage[state.containerTemplate] ?? 'atonix/devbox:22.04-lts'
+      payload.image = state.containerTemplate === 'custom'
+        ? (state.customImageUrl.trim() || 'atonix/devbox:22.04-lts')
+        : (tplToImage[state.containerTemplate] ?? 'atonix/devbox:22.04-lts')
+      payload.pull_image = true
+      if (state.containerTemplate === 'custom' && state.customImageUrl.trim()) {
+        payload.custom_image_url = state.customImageUrl.trim()
+      }
 
       const ws = await createDevWorkspace(payload)
 
@@ -495,14 +533,17 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
     { id: 'kubernetes', label: 'Kubernetes Pod' },
   ]
   const containerTemplates = catalog?.container_templates ?? [
-    { id: 'node',   label: 'Node.js',   image: '' },
-    { id: 'python', label: 'Python',    image: '' },
-    { id: 'go',     label: 'Go',        image: '' },
-    { id: 'php',    label: 'PHP',       image: '' },
-    { id: 'java',   label: 'Java',      image: '' },
-    { id: 'rust',   label: 'Rust',      image: '' },
-    { id: 'ubuntu', label: 'Ubuntu LTS', image: '' },
-    { id: 'custom', label: 'Custom',     image: '' },
+    { id: 'node',    label: 'Node.js',    image: 'atonix/devbox:node20' },
+    { id: 'python',  label: 'Python',     image: 'atonix/devbox:python312' },
+    { id: 'go',      label: 'Go',         image: 'atonix/devbox:golang123' },
+    { id: 'php',     label: 'PHP',        image: 'atonix/devbox:php83' },
+    { id: 'java',    label: 'Java',       image: 'atonix/devbox:java21' },
+    { id: 'rust',    label: 'Rust',       image: 'atonix/devbox:rust' },
+    { id: 'ubuntu',  label: 'Ubuntu LTS', image: 'atonix/devbox:22.04-lts' },
+    { id: 'debian',  label: 'Debian',     image: 'debian:bookworm' },
+    { id: 'lxc',     label: 'LXC',        image: 'atonix/devbox:lxc-ubuntu22' },
+    { id: 'nerdctl', label: 'Nerdctl',    image: 'atonix/devbox:nerdctl-latest' },
+    { id: 'custom',  label: 'Custom',     image: '' },
   ]
 
   function renderStep() {
@@ -606,8 +647,130 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
       </Box>
     )
 
-    // ── Step 3: Storage ───────────────────────────────────────────────────────
-    if (step === 2) return (
+    // ── Step 3: Database ─────────────────────────────────────────────────────
+    if (step === 2) {
+      const dbEngineOptions: { id: DatabaseEngine; label: string; subtitle: string }[] = [
+        { id: 'postgresql', label: 'PostgreSQL', subtitle: 'Advanced open-source RDBMS' },
+        { id: 'mysql',      label: 'MySQL',      subtitle: 'Popular relational database' },
+        { id: 'sqlite',     label: 'SQLite',     subtitle: 'Embedded file-based DB' },
+        { id: 'mongodb',    label: 'MongoDB',    subtitle: 'Flexible document store' },
+        { id: 'redis',      label: 'Redis',      subtitle: 'In-memory key-value store' },
+        { id: 'none',       label: 'No Database', subtitle: 'Skip database provisioning' },
+      ]
+      const dbPlanOptions: { id: DatabasePlan; label: string; subtitle: string }[] = [
+        { id: 'shared',    label: 'Shared',    subtitle: 'Low cost · shared instance' },
+        { id: 'dedicated', label: 'Dedicated', subtitle: 'Isolated instance resources' },
+        { id: 'managed',   label: 'Managed',   subtitle: 'Cloud-managed with auto-backups' },
+      ]
+      const dbVersionsByEngine: Record<DatabaseEngine, string[]> = {
+        postgresql: ['16', '15', '14', '13'],
+        mysql:      ['8.0', '5.7'],
+        sqlite:     ['3'],
+        mongodb:    ['7.0', '6.0', '5.0'],
+        redis:      ['7.2', '7.0', '6.2'],
+        none:       ['—'],
+      }
+      const versions = dbVersionsByEngine[state.dbEngine] ?? []
+      const showStorage = state.dbEngine !== 'none' && state.dbEngine !== 'sqlite'
+
+      return (
+        <Box>
+          <SectionHeading icon={<DnsIcon />} title="Database"
+            description="Select the database engine and plan for your workspace. All workspace data is recorded in the workspace database." />
+          <Stack spacing={2.5}>
+
+            {/* Engine */}
+            <Box>
+              <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', fontWeight: 700, color: T.textSecondary, mb: 1 }}>
+                Database Engine
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(148px, 1fr))', gap: 1.25 }}>
+                {dbEngineOptions.map(eng => (
+                  <SelectCard key={eng.id}
+                    selected={state.dbEngine === eng.id}
+                    onClick={() => {
+                      set('dbEngine', eng.id)
+                      const versions = dbVersionsByEngine[eng.id]
+                      if (versions.length > 0) set('dbVersion', versions[0])
+                    }}
+                    title={eng.label}
+                    subtitle={eng.subtitle}
+                    icon={<DnsIcon sx={{ fontSize: '1rem' }} />}
+                  />
+                ))}
+              </Box>
+            </Box>
+
+            {/* Plan */}
+            {state.dbEngine !== 'none' && (
+              <Box>
+                <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', fontWeight: 700, color: T.textSecondary, mb: 1 }}>
+                  Database Plan
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.25 }}>
+                  {dbPlanOptions.map(plan => (
+                    <SelectCard key={plan.id}
+                      selected={state.dbPlan === plan.id}
+                      onClick={() => set('dbPlan', plan.id)}
+                      title={plan.label}
+                      subtitle={plan.subtitle}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Details */}
+            {state.dbEngine !== 'none' && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                <TextField label="Database Name" placeholder="workspace_db"
+                  value={state.dbName}
+                  onChange={e => set('dbName', e.target.value)}
+                  size="small" fullWidth sx={inputSx} />
+
+                <FormControl size="small" fullWidth sx={inputSx}>
+                  <InputLabel>Version</InputLabel>
+                  <Select label="Version" value={state.dbVersion}
+                    onChange={e => set('dbVersion', e.target.value)}>
+                    {versions.map(v => <MenuItem key={v} value={v}>{v}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+
+            {/* Storage for DB */}
+            {showStorage && (
+              <Box sx={{ p: 2, borderRadius: '10px', bgcolor: T.surfaceSubtle, border: `1px solid ${T.border}` }}>
+                <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', color: T.textSecondary }}>Database Storage</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', fontWeight: 700, color: T.brandPrimary }}>{state.dbStorageGb} GB</Typography>
+                </Stack>
+                <Slider value={state.dbStorageGb} min={5} max={200} step={5}
+                  marks={[{ value: 5, label: '5' }, { value: 50, label: '50' }, { value: 100, label: '100' }, { value: 200, label: '200' }]}
+                  onChange={(_, v) => set('dbStorageGb', v as number)}
+                  sx={{ color: T.brandPrimary,
+                    '& .MuiSlider-markLabel': { fontSize: '.65rem', color: T.textSecondary } }} />
+              </Box>
+            )}
+
+            {/* Info banner */}
+            {state.dbEngine !== 'none' && (
+              <Box sx={{ p: 1.75, borderRadius: '10px', bgcolor: 'rgba(99,102,241,.08)', border: `1px solid rgba(99,102,241,.25)` }}>
+                <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', color: T.brandPrimary, fontWeight: 600 }}>
+                  Workspace Database
+                </Typography>
+                <Typography sx={{ fontFamily: FONT, fontSize: '.73rem', color: T.textSecondary, mt: .25 }}>
+                  All workspace activity — builds, deployments, logs, and metrics — will be recorded in this database. You can access it directly via the workspace terminal.
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </Box>
+      )
+    }
+
+    // ── Step 4: Storage ───────────────────────────────────────────────────────
+    if (step === 3) return (
       <Box>
         <SectionHeading icon={<StorageIcon />} title="Storage Plan"
           description="Choose storage type, size, and backup policy for your workspace." />
@@ -654,7 +817,7 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
     )
 
     // ── Step 4: Network ───────────────────────────────────────────────────────
-    if (step === 3) return (
+    if (step === 4) return (
       <Box>
         <SectionHeading icon={<NetworkCheckIcon />} title="Network Plan"
           description="Configure VPC, subnet, and firewall settings for your workspace." />
@@ -704,7 +867,7 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
     )
 
     // ── Step 5: Project & Container ───────────────────────────────────────────
-    if (step === 4) return (
+    if (step === 5) return (
       <Box>
         <SectionHeading icon={<FolderOpenIcon />} title="Project & Container"
           description="Attach or create a project, then choose your container runtime and template." />
@@ -761,20 +924,64 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
             <Typography sx={{ fontFamily: FONT, fontSize: '.78rem', fontWeight: 700, color: T.textSecondary, mb: 1 }}>
               Container Template
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1 }}>
-              {containerTemplates.map(tpl => (
-                <SelectCard key={tpl.id} selected={state.containerTemplate === tpl.id}
-                  onClick={() => set('containerTemplate', tpl.id)}
-                  title={tpl.label} />
-              ))}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1 }}>
+              {containerTemplates.map(tpl => {
+                const resolvedImage = tpl.id === 'custom'
+                  ? (state.customImageUrl.trim() || 'enter image below')
+                  : tpl.image
+                return (
+                  <SelectCard key={tpl.id} selected={state.containerTemplate === tpl.id}
+                    onClick={() => set('containerTemplate', tpl.id)}
+                    title={tpl.label}
+                    subtitle={tpl.image ? tpl.image : 'custom registry'}
+                    badge={tpl.image ? 'Pull' : undefined}
+                  />
+                )
+              })}
             </Box>
+
+            {/* Custom image URL input */}
+            {state.containerTemplate === 'custom' && (
+              <TextField
+                label="Image URL" placeholder="registry.example.com/image:tag"
+                value={state.customImageUrl}
+                onChange={e => set('customImageUrl', e.target.value)}
+                size="small" fullWidth sx={{ mt: 1.5, ...inputSx }}
+                helperText="Full image reference — will be pulled from the registry on provision."
+                FormHelperTextProps={{ sx: { color: T.textSecondary, fontSize: '.72rem' } }}
+              />
+            )}
+
+            {/* Image pull info box */}
+            {state.containerTemplate && (() => {
+              const selected = containerTemplates.find(t => t.id === state.containerTemplate)
+              const imageToPull = state.containerTemplate === 'custom'
+                ? state.customImageUrl.trim()
+                : selected?.image
+              if (!imageToPull) return null
+              return (
+                <Box sx={{ mt: 1.5, p: 1.5, borderRadius: '10px',
+                  bgcolor: 'rgba(34,197,94,.07)', border: '1px solid rgba(34,197,94,.25)',
+                  display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#22c55e', mt: .45, flexShrink: 0 }} />
+                  <Box>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', fontWeight: 700, color: '#22c55e' }}>
+                      Image will be pulled on provision
+                    </Typography>
+                    <Typography sx={{ fontFamily: 'monospace', fontSize: '.72rem', color: T.textPrimary, mt: .2 }}>
+                      {imageToPull}
+                    </Typography>
+                  </Box>
+                </Box>
+              )
+            })()}
           </Box>
         </Stack>
       </Box>
     )
 
     // ── Step 6: Environment ───────────────────────────────────────────────────
-    if (step === 5) return (
+    if (step === 6) return (
       <Box>
         <SectionHeading icon={<RocketLaunchIcon />} title="Environment"
           description="Attach an environment to your workspace, or create a new one." />
@@ -825,7 +1032,7 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
     )
 
     // ── Step 7: Domain ────────────────────────────────────────────────────────
-    if (step === 6) return (
+    if (step === 7) return (
       <Box>
         <SectionHeading icon={<LanguageIcon />} title="Domain Binding"
           description="Optionally bind a custom domain or auto-generate a subdomain for this workspace." />
@@ -879,7 +1086,7 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
     )
 
     // ── Step 8: Review & Provision ────────────────────────────────────────────
-    if (step === 7) {
+    if (step === 8) {
       const selectedPlan = computePlans.find(p => p.vcpus === state.vcpus && p.ram_gb === state.ramGb)
       const selectedProject = state.projectMode === 'attach'
         ? projects.find(p => String(p.id) === state.projectId)
@@ -916,6 +1123,23 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
               <ReviewRow label="GPU" value={state.gpuEnabled ? 'Enabled' : 'Disabled'} />
             </Box>
 
+            {/* Database */}
+            <Box sx={{ p: 2, borderRadius: '10px', bgcolor: T.surfaceSubtle, border: `1px solid ${T.border}` }}>
+              <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.75rem', color: T.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.25 }}>
+                Database
+              </Typography>
+              {state.dbEngine === 'none' ? (
+                <ReviewRow label="Database" value="None — skipped" />
+              ) : (
+                <>
+                  <ReviewRow label="Engine" value={`${state.dbEngine.charAt(0).toUpperCase() + state.dbEngine.slice(1)} ${state.dbVersion}`} />
+                  <ReviewRow label="Plan" value={`${state.dbPlan.charAt(0).toUpperCase() + state.dbPlan.slice(1)}`} />
+                  {state.dbName && <ReviewRow label="Name" value={state.dbName} />}
+                  {state.dbEngine !== 'sqlite' && <ReviewRow label="Storage" value={`${state.dbStorageGb} GB`} />}
+                </>
+              )}
+            </Box>
+
             {/* Storage */}
             <Box sx={{ p: 2, borderRadius: '10px', bgcolor: T.surfaceSubtle, border: `1px solid ${T.border}` }}>
               <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.75rem', color: T.textSecondary, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1.25 }}>
@@ -947,6 +1171,14 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
                      : state.projectMode === 'create' ? `New: ${state.projectName}` : 'None'} />
               <ReviewRow label="Runtime" value={containerRuntimes.find(r => r.id === state.containerRuntime)?.label ?? state.containerRuntime} />
               <ReviewRow label="Template" value={containerTemplates.find(t => t.id === state.containerTemplate)?.label ?? state.containerTemplate} />
+              <ReviewRow label="Image" value={
+                <Typography sx={{ fontFamily: 'monospace', fontSize: '.78rem', color: T.brandPrimary }}>
+                  {state.containerTemplate === 'custom'
+                    ? (state.customImageUrl.trim() || '—')
+                    : (containerTemplates.find(t => t.id === state.containerTemplate)?.image || '—')}
+                </Typography>
+              } />
+              <ReviewRow label="Pull on Provision" value="Yes — image will be fetched from registry" />
             </Box>
 
             {/* Environment */}

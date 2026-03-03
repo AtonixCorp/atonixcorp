@@ -113,3 +113,144 @@ export async function getRepoTree(repoId: string): Promise<TreeNode[]> {
   );
   return response.data;
 }
+
+// ─── Repository rich API ──────────────────────────────────────────────────────
+
+export interface RepoAuthor {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export interface RepoCommit {
+  sha: string;
+  short_sha: string;
+  message: string;
+  author: RepoAuthor;
+  timestamp: string;
+  branch: string;
+  pipeline_status: 'success' | 'failure' | 'running' | 'skipped' | 'pending' | '';
+  files_changed: number;
+}
+
+export interface RepoBranch {
+  name: string;
+  sha: string;
+  protected: boolean;
+  ahead: number;
+  behind: number;
+  last_commit_message: string;
+  last_commit_date: string;
+}
+
+export interface RepoTag {
+  name: string;
+  sha: string;
+  message: string;
+  date: string;
+}
+
+export interface BlameHunk {
+  line_number: number;
+  content: string;
+  sha: string;
+  short_sha: string;
+  author: string;
+  email: string;
+  message: string;
+  date: string;
+}
+
+export interface DiffLine {
+  type: 'added' | 'removed' | 'context';
+  content: string;
+}
+
+export interface DiffChunk {
+  header: string;
+  lines: DiffLine[];
+}
+
+export interface DiffFile {
+  path: string;
+  additions: number;
+  deletions: number;
+  chunks: DiffChunk[];
+}
+
+export interface DiffResult {
+  base: string;
+  head: string;
+  total_additions: number;
+  total_deletions: number;
+  files: DiffFile[];
+}
+
+export interface SearchResultMatch {
+  line: number;
+  content: string;
+}
+
+export interface SearchResult {
+  type: 'code' | 'file';
+  path: string;
+  name: string;
+  node_type?: string;
+  matches?: SearchResultMatch[];
+  total_matches?: number;
+}
+
+export interface FileDetail {
+  path: string;
+  name: string;
+  content: string;
+  size: number;
+  lines: number;
+  type: string;
+  last_commit: RepoCommit;
+}
+
+const REPO_BASE = (id: string) => `/api/services/pipelines/repositories/${id}`;
+
+export async function getRepoBranches(repoId: string): Promise<RepoBranch[]> {
+  const { data } = await apiClient.get<RepoBranch[]>(`${REPO_BASE(repoId)}/branches/`);
+  return data;
+}
+
+export async function getRepoTags(repoId: string): Promise<RepoTag[]> {
+  const { data } = await apiClient.get<RepoTag[]>(`${REPO_BASE(repoId)}/tags/`);
+  return data;
+}
+
+export async function getRepoCommits(repoId: string, branch?: string, path?: string): Promise<RepoCommit[]> {
+  const params = new URLSearchParams();
+  if (branch) params.set('branch', branch);
+  if (path)   params.set('path', path);
+  const { data } = await apiClient.get<RepoCommit[]>(`${REPO_BASE(repoId)}/commits/?${params}`);
+  return data;
+}
+
+export async function getRepoFileDetail(repoId: string, path: string): Promise<FileDetail> {
+  const { data } = await apiClient.get<FileDetail>(`${REPO_BASE(repoId)}/file/?path=${encodeURIComponent(path)}`);
+  return data;
+}
+
+export async function getRepoBlame(repoId: string, path: string): Promise<BlameHunk[]> {
+  const { data } = await apiClient.get<BlameHunk[]>(`${REPO_BASE(repoId)}/blame/?path=${encodeURIComponent(path)}`);
+  return data;
+}
+
+export async function getRepoDiff(repoId: string, base: string, head: string): Promise<DiffResult> {
+  const { data } = await apiClient.get<DiffResult>(`${REPO_BASE(repoId)}/diff/?base=${base}&head=${head}`);
+  return data;
+}
+
+export async function searchRepo(repoId: string, query: string, type: 'code' | 'file' = 'code'): Promise<SearchResult[]> {
+  const { data } = await apiClient.get<SearchResult[]>(`${REPO_BASE(repoId)}/search/?q=${encodeURIComponent(query)}&type=${type}`);
+  return data;
+}
+
+export async function initRepo(repoId: string): Promise<TreeNode[]> {
+  const { data } = await apiClient.post<TreeNode[]>(`${REPO_BASE(repoId)}/init/`);
+  return data;
+}

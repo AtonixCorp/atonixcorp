@@ -14,6 +14,8 @@ export type StorageType       = 'standard' | 'high-iops'
 export type BackupPolicy      = 'none' | 'daily' | 'weekly'
 export type FirewallProfile   = 'default' | 'strict' | 'open' | 'custom'
 export type ContainerRuntime  = 'docker' | 'podman' | 'kubernetes'
+export type DatabaseEngine    = 'postgresql' | 'mysql' | 'sqlite' | 'mongodb' | 'redis' | 'none'
+export type DatabasePlan      = 'shared' | 'dedicated' | 'managed'
 
 export interface DevWorkspace {
   id: number
@@ -47,6 +49,15 @@ export interface DevWorkspace {
   container_runtime: ContainerRuntime
   container_template: string
   domain: string
+  // Database
+  db_engine: DatabaseEngine
+  db_plan: DatabasePlan
+  db_name: string
+  db_version: string
+  db_storage_gb: number
+  db_host: string
+  db_port: number | null
+  db_username: string
   // Setup wizard connections
   connected_project_id: string
   connected_project_name: string
@@ -142,30 +153,39 @@ export interface CreateDevWorkspacePayload {
   ram_gb?: number
   gpu_enabled?: boolean
   gpu_model?: string
-  // Step 3 — Storage
+  // Step 3 — Database
+  db_engine?: DatabaseEngine
+  db_plan?: DatabasePlan
+  db_name?: string
+  db_version?: string
+  db_storage_gb?: number
+  // Step 4 — Storage
   storage_type?: StorageType
   storage_gb?: number
   backup_policy?: BackupPolicy
-  // Step 4 — Network
+  // Step 5 — Network
   vpc_name?: string
   subnet_name?: string
   firewall_profile?: FirewallProfile
   public_ip?: boolean
-  // Step 5 — Project & Container
+  // Step 6 — Project & Container
   project_action?: 'create' | 'connect' | 'skip'
   project_name?: string
   project_id?: string
   container_runtime?: ContainerRuntime
   container_template?: string
-  // Step 6 — Environment
+  // Step 7 — Environment
   environment_action?: 'create' | 'connect' | 'skip'
   environment_name?: string
   environment_type?: 'dev' | 'stage' | 'prod'
   environment_id?: string
-  // Step 7 — Domain
+  // Step 8 — Domain
   domain?: string
   auto_subdomain?: boolean
   subdomain_prefix?: string
+  // Image pull
+  pull_image?: boolean
+  custom_image_url?: string
 }
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
