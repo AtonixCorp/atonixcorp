@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Chip, CircularProgress,
   Divider, FormControl, IconButton, InputLabel, LinearProgress, List, ListItemButton,
-  MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
+  MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow,
   TextField, Tooltip, Typography,
 } from '@mui/material';
 import AccountTreeIcon         from '@mui/icons-material/AccountTree';
@@ -32,6 +32,8 @@ import LayersIcon             from '@mui/icons-material/Layers';
 import LockIcon               from '@mui/icons-material/Lock';
 import PeopleIcon             from '@mui/icons-material/People';
 import PersonAddIcon          from '@mui/icons-material/PersonAdd';
+import AddIcon                from '@mui/icons-material/Add';
+import PlayArrowIcon          from '@mui/icons-material/PlayArrow';
 import PlayCircleOutlineIcon  from '@mui/icons-material/PlayCircleOutline';
 import RefreshIcon            from '@mui/icons-material/Refresh';
 import RocketLaunchIcon       from '@mui/icons-material/RocketLaunch';
@@ -51,6 +53,10 @@ import {
   GroupResourceBundle, GroupConfigFile, GroupWorkspaceSummary, GroupSidebarSection,
 } from '../services/groupsApi';
 import { listEnvironments, getEnvHealth, type ApiEnvironment, type EnvHealth } from '../services/environmentsApi';
+import {
+  listGroupPipelines, createGroupPipeline, triggerGroupPipelineRun,
+  type GroupPipeline,
+} from '../services/pipelinesApi';
 import { useGroupPermissions } from '../hooks/useGroupPermissions';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
 
@@ -717,6 +723,259 @@ const WorkspacesSection: React.FC<{ workspaces: GroupWorkspaceSummary[]; navigat
   );
 };
 
+// ── Pipelines section ────────────────────────────────────────────────────────
+
+const PipelinesSection: React.FC<{
+  groupId: string;
+  pipelines: GroupPipeline[];
+  loading: boolean;
+  navigate: ReturnType<typeof useNavigate>;
+  onRefresh: () => void;
+}> = ({ groupId, pipelines, loading, navigate, onRefresh }) => {
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName]       = useState('');
+  const [creating, setCreating]     = useState(false);
+  const [createErr, setCreateErr]   = useState('');
+  const [triggerMsg, setTriggerMsg] = useState('');
+
+  const statusColor = (s: string) => {
+    switch (s) {
+      case 'active':   return sc.success;
+      case 'draft':    return sc.warning;
+      case 'disabled': case 'archived': return t.textSecondary;
+      default:         return t.textSecondary;
+    }
+  };
+
+  const runStatusColor = (s: string) => {
+    if (!s) return t.textSecondary;
+    switch (s) {
+      case 'succeeded':  return sc.success;
+      case 'running':    return sc.info;
+      case 'failed':     return sc.danger;
+      case 'queued': case 'pending': return sc.warning;
+      default:           return t.textSecondary;
+    }
+  };
+
+  const typeLabel = (t2: string) =>
+    ({ ci: 'CI', cd: 'CD', ci_cd: 'CI/CD', build: 'Build', deploy: 'Deploy',
+      release: 'Release', rollback: 'Rollback', scheduled: 'Scheduled', custom: 'Custom' })[t2] ?? t2;
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return;
+    setCreating(true); setCreateErr('');
+    try {
+      const p = await createGroupPipeline(groupId, { name: newName.trim() });
+      setCreateOpen(false);
+      setNewName('');
+      onRefresh();
+      navigate(`/groups/${groupId}/pipelines/${p.id}`);
+    } catch (e: any) {
+      setCreateErr(e.response?.data?.detail || e.response?.data?.name?.[0] || 'Create failed');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleTrigger = async (e: React.MouseEvent, p: GroupPipeline) => {
+    e.stopPropagation();
+    try {
+      await triggerGroupPipelineRun(groupId, p.id);
+      setTriggerMsg(`Run triggered for "${p.name}"`);
+      setTimeout(() => setTriggerMsg(''), 3000);
+      onRefresh();
+    } catch {
+      setTriggerMsg('Trigger failed');
+      setTimeout(() => setTriggerMsg(''), 3000);
+    }
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+        <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '.95rem', color: t.textPrimary }}>
+          CI/CD Pipelines
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <IconButton size="small" onClick={onRefresh}>
+            <RefreshIcon sx={{ fontSize: '1rem' }} />
+          </IconButton>
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
+            sx={{ fontFamily: FONT, textTransform: 'none', bgcolor: BP, fontWeight: 700 }}>
+            New Pipeline
+          </Button>
+        </Stack>
+      </Box>
+
+      {triggerMsg && (
+        <Alert severity="info" sx={{ mb: 2, fontFamily: FONT, py: 0.5 }} onClose={() => setTriggerMsg('')}>
+          {triggerMsg}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={30} /></Box>
+      ) : pipelines.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8, color: t.textSecondary }}>
+          <PlayCircleOutlineIcon sx={{ fontSize: '2.8rem', mb: 1, opacity: 0.35 }} />
+          <Typography sx={{ fontFamily: FONT, fontSize: '.9rem', mb: 1 }}>No pipelines yet</Typography>
+          <Typography sx={{ fontFamily: FONT, fontSize: '.8rem', color: t.textSecondary, mb: 2 }}>
+            Create your first CI/CD pipeline for this group.
+          </Typography>
+          <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
+            sx={{ fontFamily: FONT, textTransform: 'none', borderColor: t.border, color: t.textPrimary }}>
+            Create Pipeline
+          </Button>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 2 }}>
+          {pipelines.map(pipe => (
+            <Paper
+              key={pipe.id}
+              elevation={0}
+              onClick={() => navigate(`/groups/${groupId}/pipelines/${pipe.id}`)}
+              sx={{
+                border: `1px solid ${t.border}`, borderRadius: 2,
+                p: 2.5, cursor: 'pointer', transition: 'border-color 0.15s, box-shadow 0.15s',
+                '&:hover': { borderColor: BP, boxShadow: `0 0 0 2px ${BP}22` },
+                bgcolor: t.surface,
+              }}
+            >
+              {/* Header row */}
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{
+                    fontFamily: FONT, fontWeight: 700, fontSize: '.92rem', color: t.textPrimary,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {pipe.name}
+                  </Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.75rem', color: t.textSecondary, mt: 0.25 }}>
+                    {pipe.slug}
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={0.5} alignItems="center" flexShrink={0}>
+                  <Chip
+                    label={pipe.status}
+                    size="small"
+                    sx={{
+                      fontFamily: FONT, fontSize: '.65rem', fontWeight: 700,
+                      textTransform: 'capitalize', height: 20,
+                      bgcolor: `${statusColor(pipe.status)}18`,
+                      color: statusColor(pipe.status),
+                      border: `1px solid ${statusColor(pipe.status)}44`,
+                    }}
+                  />
+                  <Chip
+                    label={typeLabel(pipe.pipeline_type)}
+                    size="small"
+                    sx={{ fontFamily: FONT, fontSize: '.65rem', height: 20, bgcolor: `${BP}14`, color: BP }}
+                  />
+                </Stack>
+              </Box>
+
+              {/* Stats row */}
+              <Stack direction="row" spacing={2.5} sx={{ mb: 2 }}>
+                <Box>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.68rem', color: t.textSecondary }}>Runs</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.88rem', fontWeight: 700, color: t.textPrimary }}>{pipe.run_count}</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.68rem', color: t.textSecondary }}>Success Rate</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: '.88rem', fontWeight: 700, color: pipe.success_rate >= 80 ? sc.success : pipe.success_rate >= 50 ? sc.warning : sc.danger }}>
+                    {pipe.run_count ? `${pipe.success_rate.toFixed(0)}%` : '—'}
+                  </Typography>
+                </Box>
+                {pipe.last_run_status && (
+                  <Box>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '.68rem', color: t.textSecondary }}>Last Run</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: '.82rem', fontWeight: 600, color: runStatusColor(pipe.last_run_status), textTransform: 'capitalize' }}>
+                      {pipe.last_run_status}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+
+              {/* Tags */}
+              {pipe.tags.length > 0 && (
+                <Stack direction="row" flexWrap="wrap" gap={0.5} mb={1.5}>
+                  {pipe.tags.slice(0, 4).map(tag => (
+                    <Chip key={tag} label={tag} size="small"
+                      sx={{ fontFamily: FONT, fontSize: '.62rem', height: 18, bgcolor: `${BP}0f`, color: t.textSecondary }} />
+                  ))}
+                  {pipe.tags.length > 4 && (
+                    <Chip label={`+${pipe.tags.length - 4}`} size="small"
+                      sx={{ fontFamily: FONT, fontSize: '.62rem', height: 18 }} />
+                  )}
+                </Stack>
+              )}
+
+              {/* Action row */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+                <Typography sx={{ fontFamily: FONT, fontSize: '.72rem', color: t.textSecondary }}>
+                  {pipe.last_run_at ? `Last run ${new Date(pipe.last_run_at).toLocaleDateString()}` : 'Never run'}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<PlayArrowIcon sx={{ fontSize: '.85rem' }} />}
+                  onClick={e => handleTrigger(e, pipe)}
+                  sx={{
+                    fontFamily: FONT, textTransform: 'none', fontSize: '.72rem',
+                    borderColor: `${BP}66`, color: BP, px: 1.2, py: 0.3, minHeight: 0,
+                    '&:hover': { bgcolor: `${BP}14`, borderColor: BP },
+                  }}
+                >
+                  Run
+                </Button>
+              </Box>
+            </Paper>
+          ))}
+        </Box>
+      )}
+
+      {/* Create pipeline dialog */}
+      {createOpen && (
+        <Box sx={{
+          position: 'fixed', inset: 0, zIndex: 1300,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          bgcolor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+        }}
+          onClick={() => { setCreateOpen(false); setNewName(''); setCreateErr(''); }}
+        >
+          <Paper sx={{ p: 3, width: 420, borderRadius: 2, bgcolor: t.surface, border: `1px solid ${t.border}` }}
+            onClick={e => e.stopPropagation()}>
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, fontSize: '1rem', color: t.textPrimary, mb: 2 }}>
+              New Pipeline
+            </Typography>
+            {createErr && <Alert severity="error" sx={{ mb: 1.5, fontFamily: FONT }}>{createErr}</Alert>}
+            <TextField
+              label="Pipeline name" value={newName}
+              onChange={e => setNewName(e.target.value)}
+              fullWidth size="small" autoFocus
+              onKeyDown={e => e.key === 'Enter' && handleCreate()}
+              InputLabelProps={{ sx: { fontFamily: FONT } }}
+              InputProps={{ sx: { fontFamily: FONT } }}
+              sx={{ mb: 2.5, '& .MuiOutlinedInput-root fieldset': { borderColor: t.border } }}
+            />
+            <Stack direction="row" spacing={1} justifyContent="flex-end">
+              <Button onClick={() => { setCreateOpen(false); setNewName(''); setCreateErr(''); }}
+                sx={{ fontFamily: FONT, textTransform: 'none', color: t.textSecondary }}>
+                Cancel
+              </Button>
+              <Button variant="contained" onClick={handleCreate} disabled={creating || !newName.trim()}
+                sx={{ fontFamily: FONT, textTransform: 'none', bgcolor: BP, fontWeight: 700 }}>
+                {creating ? 'Creating…' : 'Create'}
+              </Button>
+            </Stack>
+          </Paper>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 // ── Metrics section ───────────────────────────────────────────────────────────
 
 const MetricsSection: React.FC<{ bundle: GroupResourceBundle | null }> = ({ bundle }) => {
@@ -1022,6 +1281,26 @@ const GroupDashboardPage: React.FC = () => {
   const [error,        setError]        = useState('');
   const [rightOpen,    setRightOpen]    = useState(true);
   const [discovering,  setDiscovering]  = useState(false);
+  const [groupPipelines, setGroupPipelines] = useState<GroupPipeline[]>([]);
+  const [loadingPipelines, setLoadingPipelines] = useState(false);
+
+  const fetchGroupPipelines = useCallback(async () => {
+    if (!groupId) return;
+    setLoadingPipelines(true);
+    try {
+      const pipes = await listGroupPipelines(groupId);
+      setGroupPipelines(pipes);
+    } catch {
+      /* silent — show empty state */
+    } finally {
+      setLoadingPipelines(false);
+    }
+  }, [groupId]);
+
+  // Lazy-load pipelines when that tab is active
+  useEffect(() => {
+    if (activeSection === 'pipelines') fetchGroupPipelines();
+  }, [activeSection, fetchGroupPipelines]);
 
   const load = useCallback(async () => {
     if (!groupId) return;
@@ -1117,7 +1396,7 @@ const GroupDashboardPage: React.FC = () => {
     switch (activeSection) {
       case 'overview':     return <OverviewSection group={group} bundle={bundle} environments={environments} workspaces={workspaces} groupId={groupId!} onNavigate={(s) => navigate(`/groups/${groupId}/${s}`)} />;
       case 'projects':     return <ResourceTable rows={bundle?.projects ?? []} emptyIcon={<FolderOpenIcon />} emptyMsg="No projects linked" />;
-      case 'pipelines':    return <ResourceTable rows={bundle?.pipelines ?? []} emptyIcon={<PlayCircleOutlineIcon />} emptyMsg="No pipelines linked" />;
+      case 'pipelines':    return <PipelinesSection groupId={groupId!} pipelines={groupPipelines} loading={loadingPipelines} navigate={navigate} onRefresh={fetchGroupPipelines} />;
       case 'environments': return <EnvironmentsSection environments={environments} navigate={navigate} />;
       case 'containers':   return <ResourceTable rows={bundle?.containers ?? []} emptyIcon={<AppsIcon />} emptyMsg="No containers linked" />;
       case 'kubernetes':   return <ResourceTable rows={bundle?.k8s_clusters ?? []} emptyIcon={<CloudQueueIcon />} emptyMsg="No Kubernetes clusters linked" />;

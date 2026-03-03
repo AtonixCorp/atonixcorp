@@ -356,3 +356,279 @@ export async function getRunArtifacts(id: string): Promise<PipelineRunArtifact[]
   const response = await apiClient.get<PipelineRunArtifact[]>(`/api/services/pipelines/pipeline-runs/${id}/artifacts/`);
   return Array.isArray(response.data) ? response.data : [];
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Group Pipeline (first-class pipelines owned by a Group)
+   All endpoints live under /api/services/groups/{groupId}/group-pipelines/
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+export type GroupPipelineType =
+  | 'ci' | 'cd' | 'ci_cd' | 'build' | 'deploy'
+  | 'release' | 'rollback' | 'scheduled' | 'custom';
+
+export type GroupPipelineStatus = 'active' | 'disabled' | 'archived' | 'draft';
+
+export type GroupPipelineTriggerSource = 'user' | 'webhook' | 'schedule' | 'api' | 'upstream';
+
+export type GroupPipelineRunStatus =
+  | 'queued' | 'running' | 'succeeded' | 'failed'
+  | 'cancelled' | 'pending' | 'rolled_back';
+
+/* ── Stage / Step shape stored in GroupPipeline.definition ── */
+export interface GroupPipelineStep {
+  id?:              string;
+  name:             string;
+  type:             string;          // script | docker | kubernetes | approval | …
+  script?:          string;
+  config?:          Record<string, unknown>;
+  condition?:       'always' | 'on_success' | 'on_failure';
+  timeout_seconds?: number;
+  retry_count?:     number;
+}
+
+export interface GroupPipelineStage {
+  id?:         string;
+  name:        string;
+  type?:       string;               // build | test | security | deploy | verify | …
+  order?:      number;
+  parallel?:   boolean;
+  condition?:  string;
+  environment?: string;
+  steps:       GroupPipelineStep[];
+}
+
+export interface GroupPipelineDefinition {
+  stages: GroupPipelineStage[];
+}
+
+/* ── Trigger config ── */
+export interface GroupPipelineTrigger {
+  type:            GroupPipelineTriggerSource;
+  branch_pattern?: string;
+  schedule?:       string;           // cron expression
+  enabled?:        boolean;
+}
+
+/* ── Run summary (used in lists) ── */
+export interface GroupPipelineRunSummary {
+  id:           string;
+  status:       GroupPipelineRunStatus;
+  trigger_source: GroupPipelineTriggerSource;
+  branch:       string;
+  commit_sha:   string;
+  started_at:   string | null;
+  finished_at:  string | null;
+  duration_s:   number | null;
+  created_at:   string;
+}
+
+/* ── Full pipeline object ── */
+export interface GroupPipeline {
+  id:                    string;
+  group:                 string;
+  created_by:            number | null;
+  created_by_username?:  string | null;
+  updated_by:            number | null;
+  name:                  string;
+  slug:                  string;
+  description:           string;
+  pipeline_type:         GroupPipelineType;
+  status:                GroupPipelineStatus;
+  project_id:            string;
+  project_name:          string;
+  environment_targets:   string[];
+  definition:            GroupPipelineDefinition;
+  yaml_content:          string;
+  triggers:              GroupPipelineTrigger[];
+  upstream_pipeline_ids: string[];
+  downstream_pipeline_ids: string[];
+  notifications:         Record<string, unknown>;
+  run_count:             number;
+  last_run_status:       string;
+  last_run_at:           string | null;
+  avg_duration_s:        number;
+  success_rate:          number;
+  tags:                  string[];
+  created_at:            string;
+  updated_at:            string;
+  last_run?:             GroupPipelineRunSummary | null;
+}
+
+/* ── Full run object ── */
+export interface GroupPipelineRun {
+  id:               string;
+  pipeline:         string;
+  triggered_by:     number | null;
+  triggered_by_username?: string | null;
+  trigger_source:   GroupPipelineTriggerSource;
+  status:           GroupPipelineRunStatus;
+  branch:           string;
+  commit_sha:       string;
+  commit_message:   string;
+  environment_id:   string;
+  environment_name: string;
+  workspace_id:     string;
+  parameters:       Record<string, unknown>;
+  started_at:       string | null;
+  finished_at:      string | null;
+  duration_s:       number | null;
+  stages_snapshot:  GroupPipelineStage[];
+  artifacts:        Array<{ name: string; url?: string; type?: string }>;
+  log_url:          string;
+  metrics:          Record<string, unknown>;
+  rolled_back_from: string | null;
+  created_at:       string;
+  updated_at:       string;
+}
+
+/* ── Create / update payloads ── */
+export interface GroupPipelineCreatePayload {
+  name:               string;
+  description?:       string;
+  pipeline_type?:     GroupPipelineType;
+  status?:            GroupPipelineStatus;
+  project_id?:        string;
+  project_name?:      string;
+  environment_targets?: string[];
+  definition?:        GroupPipelineDefinition;
+  yaml_content?:      string;
+  triggers?:          GroupPipelineTrigger[];
+  tags?:              string[];
+  notifications?:     Record<string, unknown>;
+}
+
+export interface GroupPipelineRunPayload {
+  branch?:         string;
+  commit_sha?:     string;
+  commit_message?: string;
+  environment_id?: string;
+  workspace_id?:   string;
+  parameters?:     Record<string, unknown>;
+  trigger_source?: GroupPipelineTriggerSource;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   API Functions
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const gpBase = (groupId: string) =>
+  `/api/services/groups/${groupId}/group-pipelines`;
+
+/** List all pipelines for a group. */
+export async function listGroupPipelines(groupId: string): Promise<GroupPipeline[]> {
+  const r = await apiClient.get<GroupPipeline[]>(`${gpBase(groupId)}/`);
+  return Array.isArray(r.data) ? r.data : (r.data as any).results ?? [];
+}
+
+/** Retrieve a single pipeline by its ID. */
+export async function getGroupPipeline(groupId: string, pipelineId: string): Promise<GroupPipeline> {
+  const r = await apiClient.get<GroupPipeline>(`${gpBase(groupId)}/${pipelineId}/`);
+  return r.data;
+}
+
+/** Create a new pipeline inside a group. */
+export async function createGroupPipeline(
+  groupId: string,
+  payload: GroupPipelineCreatePayload,
+): Promise<GroupPipeline> {
+  const r = await apiClient.post<GroupPipeline>(`${gpBase(groupId)}/`, payload);
+  return r.data;
+}
+
+/** Partial-update a pipeline (name, description, status, tags, …). */
+export async function updateGroupPipeline(
+  groupId: string,
+  pipelineId: string,
+  payload: Partial<GroupPipelineCreatePayload>,
+): Promise<GroupPipeline> {
+  const r = await apiClient.patch<GroupPipeline>(`${gpBase(groupId)}/${pipelineId}/`, payload);
+  return r.data;
+}
+
+/** Delete a pipeline. */
+export async function deleteGroupPipeline(groupId: string, pipelineId: string): Promise<void> {
+  await apiClient.delete(`${gpBase(groupId)}/${pipelineId}/`);
+}
+
+/** GET or PUT the structured definition (stages/steps JSON). */
+export async function getGroupPipelineDefinition(
+  groupId: string,
+  pipelineId: string,
+): Promise<GroupPipelineDefinition> {
+  const r = await apiClient.get<{ definition: GroupPipelineDefinition }>(
+    `${gpBase(groupId)}/${pipelineId}/definition/`,
+  );
+  return r.data.definition;
+}
+
+export async function updateGroupPipelineDefinition(
+  groupId: string,
+  pipelineId: string,
+  definition: GroupPipelineDefinition,
+): Promise<GroupPipelineDefinition> {
+  const r = await apiClient.put<{ definition: GroupPipelineDefinition }>(
+    `${gpBase(groupId)}/${pipelineId}/definition/`,
+    { definition },
+  );
+  return r.data.definition;
+}
+
+/** List runs for a pipeline. */
+export async function listGroupPipelineRuns(
+  groupId: string,
+  pipelineId: string,
+): Promise<GroupPipelineRun[]> {
+  const r = await apiClient.get<GroupPipelineRun[]>(
+    `${gpBase(groupId)}/${pipelineId}/runs/`,
+  );
+  return Array.isArray(r.data) ? r.data : (r.data as any).results ?? [];
+}
+
+/** Trigger a new run. */
+export async function triggerGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  payload?: GroupPipelineRunPayload,
+): Promise<GroupPipelineRun> {
+  const r = await apiClient.post<GroupPipelineRun>(
+    `${gpBase(groupId)}/${pipelineId}/runs/`,
+    payload ?? {},
+  );
+  return r.data;
+}
+
+/** Get a single run. */
+export async function getGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const r = await apiClient.get<GroupPipelineRun>(
+    `${gpBase(groupId)}/${pipelineId}/runs/${runId}/`,
+  );
+  return r.data;
+}
+
+/** Cancel a run. */
+export async function cancelGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const r = await apiClient.post<GroupPipelineRun>(
+    `${gpBase(groupId)}/${pipelineId}/runs/${runId}/cancel/`,
+  );
+  return r.data;
+}
+
+/** Rollback a run. */
+export async function rollbackGroupPipelineRun(
+  groupId: string,
+  pipelineId: string,
+  runId: string,
+): Promise<GroupPipelineRun> {
+  const r = await apiClient.post<GroupPipelineRun>(
+    `${gpBase(groupId)}/${pipelineId}/runs/${runId}/rollback/`,
+  );
+  return r.data;
+}
