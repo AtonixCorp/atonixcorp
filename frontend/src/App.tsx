@@ -127,7 +127,8 @@ const AppShell: React.FC = () => {
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isDeveloperDashboard = location.pathname.startsWith('/developer/Dashboard');
   const isProjectPage = location.pathname.startsWith('/developer/Dashboard/projects/');
-  const isCicdPage = location.pathname.startsWith('/developer/Dashboard/cicd');
+  const isCicdPage = location.pathname.startsWith('/developer/Dashboard/cicd/builder') ||
+                     location.pathname.startsWith('/developer/Dashboard/cicd/runs');
   const isWorkspaceDashboard = /^\/developer\/Dashboard\/workspace\/[^\/]+/.test(location.pathname);
   const isEnvironmentDetailPage = /^\/developer\/Dashboard\/environment\/[^\/]+/.test(location.pathname);
   const isDevMonitor = location.pathname.startsWith('/developer/monitor');
@@ -201,10 +202,9 @@ const AppShell: React.FC = () => {
     return (
       <ProtectedRoute>
         <Routes>
-          <Route path="/developer/Dashboard/cicd/builder"        element={<PipelineBuilderPage />} />
-          <Route path="/developer/Dashboard/cicd/runs/:runId"     element={<PipelineExecutionPage />} />
-          <Route path="/developer/Dashboard/cicd/runs"            element={<PipelineExecutionPage />} />
-          <Route path="/developer/Dashboard/cicd"                 element={<DevPipelinesPage />} />
+          <Route path="/developer/Dashboard/cicd/builder"         element={<PipelineBuilderPage />} />
+          <Route path="/developer/Dashboard/cicd/runs/:runId"      element={<PipelineExecutionPage />} />
+          <Route path="/developer/Dashboard/cicd/runs"             element={<PipelineExecutionPage />} />
         </Routes>
       </ProtectedRoute>
     );
@@ -227,6 +227,7 @@ const AppShell: React.FC = () => {
             <Route path="/developer/Dashboard/api-management" element={<DevApiManagementPage />} />
             <Route path="/developer/Dashboard/resource-control" element={<DevResourceControlPage />} />
             <Route path="/developer/Dashboard/workspace" element={<DevWorkspacePage />} />
+            <Route path="/developer/Dashboard/cicd"       element={<DevPipelinesPage />} />
             <Route path="/developer/Dashboard/groups" element={<DevGroupsPage />} />
             <Route path="/developer/Dashboard/groups/:groupId" element={<RedirectToGroupPage />} />
             <Route path="/developer/Dashboard/groups/:groupId/:section" element={<RedirectToGroupPage />} />
