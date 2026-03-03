@@ -206,12 +206,185 @@ Sidebar items:
 - Avoid heavy shadows
 - Keep visuals clean, modern, enterprise-grade
 
-## 16. Development Checklist
-- Typography installed
-- Color system applied
-- Spacing system enforced
-- Layout shell implemented
+## 17. IBM Carbon Structural Styles
+
+### 17.1 Overview
+AtonixCorp Cloud implements IBM Carbon Design System structural styles for consistent, enterprise-grade UI components. These styles provide a foundation for cards, panels, tables, navigation, and form elements.
+
+### 17.2 CSS Implementation
+All structural styles are defined in `src/styles/atonixcorp-carbon.css`. Import this file in your component or globally:
+
+```css
+@import './styles/atonixcorp-carbon.css';
+```
+
+### 17.3 Color Tokens
+```css
+/* IBM Carbon Neutral Palette */
+--ac-gray-10: #f4f4f4;   /* Light backgrounds, text on dark */
+--ac-gray-20: #e0e0e0;   /* Subtle borders, dividers */
+--ac-gray-30: #c6c6c6;   /* Input borders, subtle UI */
+--ac-gray-40: #a8a8a8;   /* Panel borders, secondary text */
+--ac-gray-100: #161616;  /* Primary text, strong accents */
+
+/* Semantic Backgrounds */
+--ac-bg-primary: #ffffff;     /* Main background */
+--ac-bg-secondary: #f4f4f4;   /* Secondary surfaces */
+--ac-bg-tertiary: #e0e0e0;    /* Tertiary surfaces */
+
+/* Text Colors */
+--ac-text-primary: #161616;   /* Primary text */
+--ac-text-secondary: #525252; /* Secondary text */
+```
+
+### 17.4 Spacing Scale
+IBM 2× grid system for consistent spacing:
+```css
+--ac-space-2: 2px;   /* Minimal gaps */
+--ac-space-4: 4px;   /* Icon spacing */
+--ac-space-8: 8px;   /* Small padding */
+--ac-space-12: 12px; /* Input padding, table cells */
+--ac-space-16: 16px; /* Card padding */
+--ac-space-24: 24px; /* Panel padding, section spacing */
+--ac-space-32: 32px; /* Large sections */
+--ac-space-48: 48px; /* Page margins */
+--ac-space-64: 64px; /* Hero sections */
+```
+
+### 17.5 Component Classes
+
+#### Cards (Layer-01)
+```html
+<div class="ac-card">
+  <!-- Card content -->
+</div>
+```
+- **Background:** Primary white
+- **Border:** 1px Gray 30
+- **Border Radius:** 2px
+- **Padding:** 16px
+
+#### Panels (Secondary Surfaces)
+```html
+<div class="ac-panel">
+  <!-- Panel content for monitoring, compute, storage sections -->
+</div>
+```
+- **Background:** Gray 10
+- **Border:** 1px Gray 40
+- **Border Radius:** 0px (sharp corners)
+- **Padding:** 24px
+
+#### Section Dividers
+```html
+<hr class="ac-section-divider">
+```
+- **Border:** 1px solid Gray 20
+- **Margin:** 24px 0
+
+#### Navigation Sidebar
+```html
+<nav class="ac-sidebar">
+  <div class="ac-sidebar-item">Dashboard</div>
+  <div class="ac-sidebar-item active">Deployments</div>
+</nav>
+```
+- **Width:** 260px
+- **Background:** Gray 10
+- **Border Right:** 1px Gray 20
+- **Active State:** Left border Gray 100, background Gray 20
+
+#### Tables (Data Table Style)
+```html
+<table class="ac-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Service A</td>
+      <td>Running</td>
+    </tr>
+  </tbody>
+</table>
+```
+- **Border:** 1px Gray 40
+- **Header Background:** Gray 10
+- **Row Border:** 1px Gray 20
+
+#### Form Inputs
+```html
+<input type="text" class="ac-input" placeholder="Enter value">
+```
+- **Border:** 1px Gray 30
+- **Border Radius:** 2px
+- **Padding:** 12px
+- **Focus:** 2px IBM Blue outline
+
+#### Hover Elevation
+```html
+<div class="ac-hover-elevate">
+  <!-- Content that elevates on hover -->
+</div>
+```
+- **Hover Shadow:** Subtle 2px elevation
+
+### 17.6 Chart Grid Lines
+```css
+.ac-chart-grid line {
+  stroke: var(--ac-gray-20);
+  stroke-width: 1px;
+}
+```
+
+### 17.7 Usage Guidelines
+
+#### When to Use Each Component:
+- **`.ac-card`**: Primary content containers, data displays, action items
+- **`.ac-panel`**: Secondary sections, monitoring panels, grouped controls
+- **`.ac-sidebar`**: Main navigation, secondary navigation
+- **`.ac-table`**: Data tables, configuration tables
+- **`.ac-input`**: Form inputs, search fields
+
+#### Implementation Notes:
+- All components use CSS custom properties for theming
+- Spacing follows IBM 2× grid system
+- Colors align with IBM Carbon neutral palette
+- Border radius is minimal (2px) for enterprise feel
+- No heavy shadows - subtle elevation only on interaction
+
+#### Accessibility:
+- Focus states use IBM Blue (#0f62fe) for visibility
+- Color contrast meets WCAG AA standards
+- Keyboard navigation supported
+- Screen reader friendly class names
+
+### 17.8 Migration Guide
+When updating existing components to use Carbon styles:
+
+1. **Replace custom backgrounds** with `--ac-bg-*` variables
+2. **Update spacing** to use `--ac-space-*` values
+3. **Apply component classes** instead of inline styles
+4. **Use semantic color tokens** from the Carbon palette
+5. **Test focus states** for accessibility compliance
+
+### 17.9 Browser Support
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- CSS Custom Properties support required
+- Fallbacks provided for older browsers
 
 ---
+
+## 18. Development Checklist (Updated)
+- [ ] Typography installed (IBM Plex Sans)
+- [ ] Color system applied (Carbon tokens)
+- [ ] Spacing system enforced (2× grid)
+- [ ] Layout shell implemented
+- [ ] **Carbon structural styles imported**
+- [ ] **Component classes applied consistently**
+- [ ] **Accessibility focus states verified**
 
 This design system is versioned and must be updated whenever new components/patterns are introduced.

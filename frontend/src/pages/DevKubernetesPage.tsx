@@ -39,7 +39,7 @@ const SyncStatusChip: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const StatCard: React.FC<{ label: string; value: string | number; color?: string }> = ({ label, value, color }) => (
-  <Card variant="outlined">
+  <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}>
     <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
       <Typography variant="caption" color="text.secondary">{label}</Typography>
       <Typography variant="h6" fontWeight={800} color={color}>{value}</Typography>
@@ -329,7 +329,7 @@ const DevKubernetesPage: React.FC = () => {
           <CircularProgress size={24} /><Typography>Loading…</Typography>
         </Box>
       ) : (
-        <Card>
+        <Card sx={{ bgcolor: 'background.paper' }}>
           <CardContent>
             <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
               <Tab label={`Clusters (${clusters.length})`} />

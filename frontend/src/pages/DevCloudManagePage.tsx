@@ -140,7 +140,7 @@ const DevCloudManagePage: React.FC = () => {
 
         {/* Stats Grid */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5 }}>
-          <Card sx={dashboardCardSx}>
+          <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
             <CardContent sx={{ p: 1.5 }}>
               <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.05em' }}>
                 Total Regions
@@ -148,7 +148,7 @@ const DevCloudManagePage: React.FC = () => {
               <Typography sx={{ fontWeight: 700, fontSize: '1.5rem', color: t.textPrimary }}>{data.total}</Typography>
             </CardContent>
           </Card>
-          <Card sx={dashboardCardSx}>
+          <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
             <CardContent sx={{ p: 1.5 }}>
               <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.05em' }}>
                 Active
@@ -158,7 +158,7 @@ const DevCloudManagePage: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={dashboardCardSx}>
+          <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
             <CardContent sx={{ p: 1.5 }}>
               <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.05em' }}>
                 Degraded
@@ -168,7 +168,7 @@ const DevCloudManagePage: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
-          <Card sx={dashboardCardSx}>
+          <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
             <CardContent sx={{ p: 1.5 }}>
               <Typography sx={{ fontSize: '.75rem', color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '.05em' }}>
                 Services
@@ -179,7 +179,7 @@ const DevCloudManagePage: React.FC = () => {
         </Box>
 
         {/* Regions Table */}
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography sx={{ fontWeight: 700, mb: 1.5, color: t.textPrimary }}>Regions</Typography>
             {data.regions.length === 0 ? (
@@ -247,7 +247,7 @@ const DevCloudManagePage: React.FC = () => {
         </Card>
 
         {/* Service Catalog */}
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography sx={{ fontWeight: 700, mb: 1.5, color: t.textPrimary }}>Service Catalog</Typography>
             <Stack spacing={1}>
@@ -293,7 +293,7 @@ const DevCloudManagePage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: t.background, fontFamily: FONT, minHeight: '100vh' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: 'background.default', fontFamily: FONT, minHeight: '100vh' }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={2} gap={1}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: t.textPrimary }}>
@@ -315,19 +315,19 @@ const DevCloudManagePage: React.FC = () => {
 
       {/* Summary Cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 2 }}>
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography variant="caption" sx={{ color: t.textSecondary }}>Total Regions</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, color: t.textPrimary }}>{summary.totalRegions}</Typography>
           </CardContent>
         </Card>
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography variant="caption" sx={{ color: t.textSecondary }}>Active</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, color: dashboardSemanticColors.success }}>{summary.activeRegions}</Typography>
           </CardContent>
         </Card>
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography variant="caption" sx={{ color: t.textSecondary }}>Degraded</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, color: summary.degradedRegions > 0 ? dashboardSemanticColors.warning : t.textSecondary }}>
@@ -335,7 +335,7 @@ const DevCloudManagePage: React.FC = () => {
             </Typography>
           </CardContent>
         </Card>
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent>
             <Typography variant="caption" sx={{ color: t.textSecondary }}>Total Services</Typography>
             <Typography variant="h6" sx={{ fontWeight: 700, color: t.textPrimary }}>{summary.totalServices}</Typography>
@@ -346,14 +346,14 @@ const DevCloudManagePage: React.FC = () => {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {loading ? (
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <CardContent sx={{ textAlign: 'center', py: 6 }}>
             <CircularProgress size={32} sx={{ color: t.brandPrimary }} />
             <Typography sx={{ color: t.textSecondary, mt: 2 }}>Loading cloud infrastructure...</Typography>
           </CardContent>
         </Card>
       ) : (
-        <Card sx={dashboardCardSx}>
+        <Card sx={{ ...dashboardCardSx, bgcolor: 'background.paper' }}>
           <Tabs
             value={tab}
             onChange={(_, newValue) => setTab(newValue)}
@@ -394,6 +394,7 @@ const DevCloudManagePage: React.FC = () => {
                         key={cloudType}
                         sx={{
                           ...dashboardCardSx,
+                          bgcolor: 'background.paper',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           '&:hover': { borderColor: config.color, transform: 'translateY(-2px)' },
