@@ -167,8 +167,72 @@ function UsageServiceChart({ items }: { items: ServiceCost[] }) {
 
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 
+type SpendAnalysis = {
+  current_week:    { week_start: string; week_end: string; total: number; by_service: Record<string, number> };
+  prior_week:      { week_start: string; total: number } | null;
+  wow_delta:       number;
+  wow_pct:         number;
+  top_services:    { service: string; cost: number }[];
+  weekly_avg:      number;
+  projected_month: number;
+  mtd:             number;
+  prior_mtd:       number;
+  mtd_delta:       number;
+  mtd_pct:         number;
+  peak_week:       { week_start: string; total: number };
+  weekly_trend:    { week_start: string; week_end: string; total: number; by_service: Record<string, number> }[];
+};
+
+function WeeklyTrendBar({ weeks }: { weeks: SpendAnalysis['weekly_trend'] }) {
+  const t = useT();
+  if (!weeks.length) return null;
+  const max = Math.max(...weeks.map(w => w.total), 1);
+  const W = 480, H = 64;
+  const step = W / (weeks.length - 1 || 1);
+  const pts = weeks.map((w, i) => ({ x: i * step, y: H - (w.total / max) * (H - 10) - 5, w }));
+  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const area = `${d} L${W},${H} L0,${H} Z`;
+  return (
+    <Box sx={{ overflowX: 'auto' }}>
+      <Box sx={{ minWidth: 360 }}>
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H }}>
+          <defs>
+            <linearGradient id="wk-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={t.brand} stopOpacity="0.25" />
+              <stop offset="100%" stopColor={t.brand} stopOpacity="0.02" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#wk-grad)" />
+          <path d={d} stroke={t.brand} strokeWidth="2" fill="none" />
+          {pts.map((p, i) => (
+            <Tooltip key={i} title={`${p.w.week_start}: ${fmt(p.w.total)}`}>
+              <circle cx={p.x} cy={p.y} r="3.5" fill={t.brand} style={{ cursor: 'pointer' }} />
+            </Tooltip>
+          ))}
+        </svg>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5, px: 0.5 }}>
+          {weeks.map((w) => (
+            <Typography key={w.week_start} variant="caption"
+              sx={{ color: t.sub, fontSize: '.6rem', whiteSpace: 'nowrap' }}>
+              {w.week_start.slice(5)}
+            </Typography>
+          ))}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 function OverviewTab({ data, loading }: { data: BillingOverview | null; loading: boolean }) {
   const t = useT();
+  const [analysis, setAnalysis] = useState<SpendAnalysis | null>(null);
+
+  useEffect(() => {
+    billingApi.spendingAnalysis()
+      .then(r => setAnalysis(r.data as any))
+      .catch(() => {});
+  }, []);
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
   if (!data) return null;
   const { account, current_spend, projected, open_balance, credit_balance, trend, usage_breakdown } = data;
@@ -201,8 +265,110 @@ function OverviewTab({ data, loading }: { data: BillingOverview | null; loading:
         ))}
       </Grid>
 
+      {/* Weekly analysis cards */}
+      {analysis && (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {[
+            {
+              label: 'Week-over-Week',
+              value: `${analysis.wow_delta >= 0 ? '+' : ''}${fmt(analysis.wow_delta)}`,
+              sub: `${analysis.wow_pct >= 0 ? '+' : ''}${analysis.wow_pct}% vs prior week`,
+              color: analysis.wow_delta > 0 ? t.red : t.green,
+            },
+            {
+              label: 'MTD Spend',
+              value: fmt(analysis.mtd),
+              sub: `${analysis.mtd_delta >= 0 ? '+' : ''}${fmt(analysis.mtd_delta)} vs last month (${analysis.mtd_pct >= 0 ? '+' : ''}${analysis.mtd_pct}%)`,
+              color: t.blue,
+            },
+            {
+              label: 'Weekly Average',
+              value: fmt(analysis.weekly_avg),
+              sub: 'Last 4 weeks',
+              color: t.sub,
+            },
+            {
+              label: 'Projected Month',
+              value: fmt(analysis.projected_month),
+              sub: 'Based on weekly run-rate',
+              color: t.yellow,
+            },
+          ].map(s => (
+            <Grid key={s.label} size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Typography variant="caption" sx={{ color: t.sub, textTransform: 'uppercase', fontSize: '.65rem', fontWeight: 600, letterSpacing: '.05em' }}>{s.label}</Typography>
+                  <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: s.color, mt: 0.25 }}>{s.value}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub, fontSize: '.72rem' }}>{s.sub}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
       <Grid container spacing={3}>
-        {/* Spend trend */}
+        {/* Weekly spend trend (12 weeks) */}
+        {analysis && (
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}`, height: '100%' }}>
+              <CardHeader
+                title={<Typography sx={{ color: t.text, fontWeight: 700 }}>12-Week Spend Trend</Typography>}
+                subheader={
+                  analysis.peak_week && (
+                    <Typography variant="caption" sx={{ color: t.sub }}>
+                      Peak week: {analysis.peak_week.week_start} — {fmt(analysis.peak_week.total)}
+                    </Typography>
+                  )
+                }
+              />
+              <CardContent sx={{ pt: 0 }}>
+                <WeeklyTrendBar weeks={analysis.weekly_trend} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Top services this week */}
+        {analysis && (
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}`, height: '100%' }}>
+              <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Top Services (This Week)</Typography>} />
+              <CardContent sx={{ pt: 0 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {analysis.top_services.map((s, i) => {
+                    const weekTotal = analysis.current_week.total || 1;
+                    const pct = Math.round((s.cost / weekTotal) * 100);
+                    return (
+                      <Box key={s.service}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: SERVICE_COLORS[s.service] ?? t.brand }} />
+                            <Typography variant="body2" sx={{ color: t.text, textTransform: 'capitalize' }}>{s.service}</Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Typography variant="body2" sx={{ color: t.sub }}>{pct}%</Typography>
+                            <Typography variant="body2" sx={{ color: t.text, fontWeight: 600 }}>{fmt(s.cost)}</Typography>
+                          </Box>
+                        </Box>
+                        <LinearProgress
+                          variant="determinate" value={pct}
+                          sx={{
+                            height: 5, borderRadius: 3,
+                            bgcolor: `${SERVICE_COLORS[s.service] ?? t.brand}22`,
+                            '& .MuiLinearProgress-bar': { bgcolor: SERVICE_COLORS[s.service] ?? t.brand, borderRadius: 3 },
+                          }}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Monthly spend trend (backwards compat) */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}`, height: '100%' }}>
             <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Monthly Spend Trend</Typography>} />

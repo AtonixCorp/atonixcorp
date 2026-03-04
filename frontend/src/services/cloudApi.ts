@@ -704,11 +704,31 @@ export const billingApi = {
   getInvoice:           (id: number)                   => cloudClient.get<Invoice>(`/billing/invoices/${id}/`),
   payInvoice:           (id: number)                   => cloudClient.post<Invoice>(`/billing/invoices/${id}/pay/`),
 
-  // Usage
+  // Usage (current month)
   currentUsage:         ()                              => cloudClient.get<CurrentUsage>('/billing/usage/'),
 
   // Credits
   listCredits:          ()                              => cloudClient.get<CreditNote[]>('/billing/credits/'),
+
+  // Weekly snapshots — per-service weekly rollups (last N ISO weeks)
+  weeklySnapshots:      (weeks = 12)                   => cloudClient.get('/billing/weekly/', { params: { weeks } }),
+  recalculateWeekly:    (weeks_back = 12)              => cloudClient.post('/billing/weekly/recalculate/', { weeks_back }),
+
+  // Spending analysis — WoW, MTD, trends, projections
+  spendingAnalysis:     ()                              => cloudClient.get('/billing/analysis/'),
+
+  // Usage ingestion — called by any service to record a billable event
+  ingestUsage:          (p: {
+    service:        string;
+    metric:         string;
+    quantity:       number;
+    unit?:          string;
+    resource_id?:   string;
+    resource_type?: string;
+    unit_price?:    number;
+    event_time?:    string;
+  })                                                     => cloudClient.post('/billing/ingest/', p),
+  flushUsageEvents:     ()                              => cloudClient.post('/billing/ingest/flush/'),
 };
 
 // ---- Team System ----

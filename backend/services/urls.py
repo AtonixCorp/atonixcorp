@@ -54,6 +54,7 @@ from .billing.viewsets import (
     BillingOverviewViewSet, BillingAccountViewSet,
     PaymentMethodViewSet, InvoiceViewSet,
     UsageViewSet, CreditViewSet,
+    WeeklyBillingViewSet, SpendingAnalysisViewSet, UsageIngestViewSet,
 )
 from .marketing.suite_viewsets import MarketingOverviewViewSet
 from .pipelines.viewsets import (
@@ -219,8 +220,9 @@ router.register(r'billing/account',         BillingAccountViewSet,   basename='b
 router.register(r'billing/payment-methods', PaymentMethodViewSet,    basename='payment-method')
 router.register(r'billing/invoices',        InvoiceViewSet,          basename='invoice')
 router.register(r'billing/usage',           UsageViewSet,            basename='billing-usage')
-router.register(r'billing/credits',         CreditViewSet,           basename='credit')
-
+router.register(r'billing/credits',         CreditViewSet,           basename='credit')router.register(r'billing/weekly',          WeeklyBillingViewSet,    basename='billing-weekly')
+router.register(r'billing/analysis',        SpendingAnalysisViewSet, basename='billing-analysis')
+router.register(r'billing/ingest',          UsageIngestViewSet,      basename='billing-ingest')
 # ============================================================================
 # CI/CD PIPELINES ENDPOINTS
 # ============================================================================

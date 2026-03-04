@@ -198,6 +198,75 @@ class UsageRecord(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
+# ── Weekly Billing Snapshot ───────────────────────────────────────────────────
+
+class WeeklyBillingSnapshot(TimeStampedModel):
+    """
+    Pre-computed weekly cost rollup per user and service.
+    Generated every Monday by `billing_weekly_calculation` management command.
+    Also created on-demand when the weekly endpoint is accessed.
+    """
+    owner         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weekly_snapshots')
+    week_start    = models.DateField(db_index=True)   # Monday
+    week_end      = models.DateField()                # Sunday
+    week_number   = models.IntegerField()             # ISO week number
+    year          = models.IntegerField()
+    service       = models.CharField(max_length=64, db_index=True)  # 'compute', 'storage', '__total__'
+    total_cost    = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+    total_units   = models.DecimalField(max_digits=18, decimal_places=4, default=0)
+    record_count  = models.IntegerField(default=0)
+    is_mock       = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = [('owner', 'week_start', 'service')]
+        ordering        = ['-week_start', 'service']
+        indexes         = [
+            models.Index(fields=['owner', 'year', 'week_number']),
+            models.Index(fields=['owner', 'week_start']),
+        ]
+
+    def __str__(self):
+        return f'W{self.week_number}/{self.year} {self.service} – ${self.total_cost} ({self.owner.username})'
+
+
+# ── Platform Usage Event ──────────────────────────────────────────────────────
+
+class PlatformUsageEvent(TimeStampedModel):
+    """
+    Lightweight event emitted by any platform service (compute, storage, etc.)
+    when resources are consumed.  Aggregated into UsageRecord + WeeklyBillingSnapshot.
+    """
+    owner         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usage_events')
+    service       = models.CharField(max_length=64, db_index=True)
+    resource_id   = models.CharField(max_length=128, blank=True, db_index=True)
+    resource_type = models.CharField(max_length=64, blank=True)   # 'vm', 'volume', 'bucket', …
+    metric        = models.CharField(max_length=64)
+    quantity      = models.DecimalField(max_digits=18, decimal_places=4)
+    unit          = models.CharField(max_length=32)
+    unit_price    = models.DecimalField(max_digits=12, decimal_places=6, default=0)
+    cost          = models.DecimalField(max_digits=12, decimal_places=4, default=0)
+    event_time    = models.DateTimeField(db_index=True)
+    processed     = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        ordering = ['-event_time']
+        indexes  = [
+            models.Index(fields=['owner', 'service', 'event_time']),
+            models.Index(fields=['processed', 'event_time']),
+        ]
+
+    def save(self, *args, **kwargs):
+        from .models import UNIT_PRICES
+        if not self.unit_price:
+            self.unit_price = UNIT_PRICES.get(self.metric, 0)
+        if not self.cost:
+            self.cost = float(self.quantity) * float(self.unit_price)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.service}/{self.metric} qty={self.quantity} cost=${self.cost} ({self.owner.username})'
+
+
 # ── Credit Note ────────────────────────────────────────────────────────────────
 
 class CreditNoteReason(models.TextChoices):
