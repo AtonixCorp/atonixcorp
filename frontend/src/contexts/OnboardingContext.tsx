@@ -51,6 +51,9 @@ export interface OnboardingState {
 
   // Completion flag
   isCompleted: boolean;
+
+  // User plan chosen during onboarding
+  userPlan: 'cloud' | 'developer' | null;
 }
 
 export interface OnboardingActions {
@@ -63,6 +66,7 @@ export interface OnboardingActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   completeOnboarding: () => void;
+  setUserPlan: (plan: 'cloud' | 'developer') => void;
   reset: () => void;
 }
 
@@ -76,6 +80,7 @@ type OnboardingAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'COMPLETE_ONBOARDING' }
+  | { type: 'SET_USER_PLAN'; payload: 'cloud' | 'developer' }
   | { type: 'RESET' };
 
 const initialState: OnboardingState = {
@@ -95,6 +100,7 @@ const initialState: OnboardingState = {
   isLoading: false,
   error: null,
   isCompleted: false,
+  userPlan: null,
 };
 
 function onboardingReducer(state: OnboardingState, action: OnboardingAction): OnboardingState {
@@ -148,6 +154,9 @@ function onboardingReducer(state: OnboardingState, action: OnboardingAction): On
     case 'COMPLETE_ONBOARDING':
       return { ...state, isCompleted: true };
 
+    case 'SET_USER_PLAN':
+      return { ...state, userPlan: action.payload };
+
     case 'RESET':
       return initialState;
 
@@ -189,6 +198,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
           deploymentData: p.deploymentData ?? init.deploymentData,
           checklistProgress: p.checklistProgress ?? init.checklistProgress,
           isCompleted: p.isCompleted ?? init.isCompleted,
+          userPlan: p.userPlan ?? init.userPlan,
         };
       }
     } catch (e) {
@@ -207,6 +217,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       deploymentData: state.deploymentData,
       checklistProgress: state.checklistProgress,
       isCompleted: state.isCompleted,
+      userPlan: state.userPlan,
     }));
   }, [state]);
 
@@ -220,6 +231,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     setLoading: (loading: boolean) => dispatch({ type: 'SET_LOADING', payload: loading }),
     setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
     completeOnboarding: () => dispatch({ type: 'COMPLETE_ONBOARDING' }),
+    setUserPlan: (plan) => dispatch({ type: 'SET_USER_PLAN', payload: plan }),
     reset: () => dispatch({ type: 'RESET' }),
   };
 

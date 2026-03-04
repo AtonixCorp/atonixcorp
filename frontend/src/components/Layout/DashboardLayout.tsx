@@ -69,6 +69,7 @@ import SourceIcon              from '@mui/icons-material/Source';
 import ShieldIcon            from '@mui/icons-material/Shield';
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
+import { useOnboarding }    from '../../contexts/OnboardingContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem';
 import RightActivityPanel, { RightPanelExpandTab } from './RightActivityPanel';
@@ -403,6 +404,8 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
   const navigate  = useNavigate();
   const { mode: _mode }  = useColorMode();
   const isDarkSidebar = _mode === 'dark';
+  const { state: onboardingState } = useOnboarding();
+  const isDeveloperPlan = onboardingState.userPlan === 'developer';
   const routeBase = dashboardMode === 'developer'
     ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
@@ -504,8 +507,8 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         )}
       </Box>
 
-      {/* Back to Cloud Dashboard — shown in developer / marketing / monitor modes */}
-      {(dashboardMode === 'developer' || dashboardMode === 'marketing' || dashboardMode === 'monitor') && (
+      {/* Back to Cloud Dashboard — shown in developer / marketing / monitor modes (cloud-plan only) */}
+      {(dashboardMode === 'developer' || dashboardMode === 'marketing' || dashboardMode === 'monitor') && !isDeveloperPlan && (
         <Box
           onClick={() => navigate('/dashboard')}
           sx={{
@@ -533,6 +536,47 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
             </Box>
           </Tooltip>
         </Box>
+      )}
+
+      {/* Upgrade to Cloud — shown for developer-plan users at bottom of sidebar header */}
+      {isDeveloperPlan && !collapsed && (
+        <Box
+          sx={{
+            mx: 1.5, my: 1,
+            p: 1.5,
+            borderRadius: '6px',
+            background: 'rgba(37,99,235,0.10)',
+            border: '1px solid rgba(37,99,235,0.25)',
+            cursor: 'pointer',
+            flexShrink: 0,
+            '&:hover': { background: 'rgba(37,99,235,0.18)' },
+            transition: 'background .18s',
+          }}
+          onClick={() => navigate('/onboarding/plan')}
+        >
+          <Typography sx={{ fontSize: '.72rem', fontWeight: 700, color: BLUE, fontFamily: FONT, mb: 0.25 }}>
+            Upgrade to Cloud
+          </Typography>
+          <Typography sx={{ fontSize: '.68rem', color: TEXT_SECONDARY, fontFamily: FONT, lineHeight: 1.4 }}>
+            Unlock compute, storage, Kubernetes, billing and more.
+          </Typography>
+        </Box>
+      )}
+      {isDeveloperPlan && collapsed && (
+        <Tooltip title="Upgrade to Cloud" placement="right">
+          <Box
+            onClick={() => navigate('/onboarding/plan')}
+            sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              py: 0.85, borderBottom: `1px solid ${SB_DIV}`,
+              cursor: 'pointer',
+              '&:hover': { bgcolor: isDarkSidebar ? DARK_HOVER : BLUE_HOVER },
+              transition: 'background .15s',
+            }}
+          >
+            <LockIcon sx={{ fontSize: '1rem', color: BLUE }} />
+          </Box>
+        </Tooltip>
       )}
 
       {/* Navigation */}

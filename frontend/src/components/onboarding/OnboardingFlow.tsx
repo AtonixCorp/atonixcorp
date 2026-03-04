@@ -6,19 +6,27 @@ import { useAuth } from '../../contexts/AuthContext';
 
 // Import onboarding components
 import AccountCreationForm from './AccountCreationForm';
+import PlanSelectionStep from './PlanSelectionStep';
 import ProjectInitialization from './ProjectInitialization';
 import OnboardingChecklist from './OnboardingChecklist';
 import FirstDeploymentWizard from './FirstDeploymentWizard';
 import GroundingLayer from './GroundingLayer';
 import PostDeploymentSurface from './PostDeploymentSurface';
 
-const steps = [
+// Phase 1 = account, phase 2 = plan selection, phases 3-7 = cloud-only steps
+const CLOUD_STEPS = [
   'Create Account',
+  'Choose Plan',
   'Initialize Project',
-  'Complete Checklist',
-  'Deploy First Instance',
+  'Checklist',
+  'Deploy Instance',
   'Explore Dashboard',
-  'Advanced Features'
+  'Advanced Features',
+];
+
+const DEV_STEPS = [
+  'Create Account',
+  'Choose Plan',
 ];
 
 const OnboardingFlow: React.FC = () => {
@@ -27,7 +35,10 @@ const OnboardingFlow: React.FC = () => {
   const { user } = useAuth() as any;
   const { state, actions } = useOnboarding();
 
-  // Determine current phase from URL or state
+  const isDeveloper = state.userPlan === 'developer';
+  const steps = isDeveloper ? DEV_STEPS : CLOUD_STEPS;
+
+  // Determine current phase from URL
   useEffect(() => {
     const pathPhase = getPhaseFromPath(location.pathname);
     if (pathPhase && pathPhase !== state.currentPhase) {
@@ -35,69 +46,62 @@ const OnboardingFlow: React.FC = () => {
     }
   }, [location.pathname, state.currentPhase, actions]);
 
-  // Redirect to appropriate phase based on completion
+  // Guard: redirect to account step if not authenticated
   useEffect(() => {
-    if (!user) {
-      navigate('/onboarding/account');
-      return;
-    }
-
-    // If user is logged in but hasn't completed account creation
-    if (!state.accountData && state.currentPhase > 1) {
-      navigate('/onboarding/account');
-      return;
-    }
-
-    // If account is created but no project, go to project init
-    if (state.accountData && !state.projectData && state.currentPhase > 2) {
-      navigate('/onboarding/project');
-      return;
-    }
-
-    // Auto-advance based on completion status
-    if (state.accountData && !state.completedPhases.includes(1)) {
-      actions.completePhase(1);
-    }
-    if (state.projectData && !state.completedPhases.includes(2)) {
-      actions.completePhase(2);
-    }
-  }, [user, state, actions, navigate]);
+    if (!user) navigate('/onboarding/account');
+  }, [user, navigate]);
 
   const getPhaseFromPath = (path: string): number | null => {
     if (path.includes('/account')) return 1;
-    if (path.includes('/project')) return 2;
-    if (path.includes('/checklist')) return 3;
-    if (path.includes('/deploy')) return 4;
-    if (path.includes('/dashboard')) return 5;
-    if (path.includes('/advanced')) return 6;
+    if (path.includes('/plan')) return 2;
+    if (path.includes('/project')) return 3;
+    if (path.includes('/checklist')) return 4;
+    if (path.includes('/deploy')) return 5;
+    if (path.includes('/dashboard')) return 6;
+    if (path.includes('/advanced')) return 7;
     return null;
   };
 
   const handlePhaseComplete = (phase: number, data?: any) => {
     actions.completePhase(phase);
 
-    // Store data based on phase
     switch (phase) {
-      case 1:
+      case 1: // account done
         if (data) actions.updateAccountData(data);
-        navigate('/onboarding/project');
+        navigate('/onboarding/plan');
         break;
-      case 2:
+
+      case 2: // plan selected
+        if (data === 'developer') {
+          // Developer users: skip cloud phases, go straight to dev dashboard
+          actions.setUserPlan('developer');
+          actions.completeOnboarding();
+          navigate('/developer/Dashboard');
+        } else {
+          actions.setUserPlan('cloud');
+          navigate('/onboarding/project');
+        }
+        break;
+
+      case 3: // project done
         if (data) actions.updateProjectData(data);
         navigate('/onboarding/checklist');
         break;
-      case 3:
+
+      case 4: // checklist done
         navigate('/onboarding/deploy');
         break;
-      case 4:
+
+      case 5: // deploy done
         if (data) actions.updateDeploymentData(data);
         navigate('/onboarding/dashboard');
         break;
-      case 5:
+
+      case 6: // explore dashboard done
         navigate('/onboarding/advanced');
         break;
-      case 6:
-        // Onboarding complete - mark done and redirect to main dashboard
+
+      case 7: // advanced done
         actions.completeOnboarding();
         navigate('/dashboard');
         break;
@@ -106,7 +110,7 @@ const OnboardingFlow: React.FC = () => {
 
   const handleSkipToDashboard = () => {
     actions.completeOnboarding();
-    navigate('/dashboard');
+    navigate(isDeveloper ? '/developer/Dashboard' : '/dashboard');
   };
 
   const renderCurrentPhase = () => {
@@ -120,32 +124,38 @@ const OnboardingFlow: React.FC = () => {
         );
       case 2:
         return (
-          <ProjectInitialization
-            onComplete={(data) => handlePhaseComplete(2, data)}
+          <PlanSelectionStep
+            onComplete={(plan) => handlePhaseComplete(2, plan)}
           />
         );
       case 3:
         return (
-          <OnboardingChecklist
-            onComplete={() => handlePhaseComplete(3)}
+          <ProjectInitialization
+            onComplete={(data) => handlePhaseComplete(3, data)}
           />
         );
       case 4:
         return (
-          <FirstDeploymentWizard
+          <OnboardingChecklist
             onComplete={() => handlePhaseComplete(4)}
           />
         );
       case 5:
         return (
-          <GroundingLayer
+          <FirstDeploymentWizard
             onComplete={() => handlePhaseComplete(5)}
           />
         );
       case 6:
         return (
-          <PostDeploymentSurface
+          <GroundingLayer
             onComplete={() => handlePhaseComplete(6)}
+          />
+        );
+      case 7:
+        return (
+          <PostDeploymentSurface
+            onComplete={() => handlePhaseComplete(7)}
           />
         );
       default:
@@ -155,7 +165,7 @@ const OnboardingFlow: React.FC = () => {
               Onboarding Complete! 🎉
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              You're all set to start building with AtonixCorp Cloud.
+              You're all set. Let's go!
             </Typography>
             <Button variant="contained" size="large" onClick={handleSkipToDashboard}>
               Go to Dashboard
@@ -165,7 +175,7 @@ const OnboardingFlow: React.FC = () => {
     }
   };
 
-  // Don't show stepper for account creation (phase 1)
+  // Show stepper only after account creation
   const showStepper = state.currentPhase > 1;
 
   return (
@@ -174,7 +184,7 @@ const OnboardingFlow: React.FC = () => {
         {showStepper && (
           <Paper sx={{ p: 3, mb: 4 }}>
             <Typography variant="h6" gutterBottom align="center">
-              AtonixCorp Cloud Onboarding
+              AtonixCorp Onboarding
             </Typography>
             <Stepper activeStep={state.currentPhase - 1} sx={{ mb: 2 }}>
               {steps.map((label, index) => (
@@ -187,9 +197,11 @@ const OnboardingFlow: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Step {state.currentPhase} of {steps.length}
               </Typography>
-              <Button variant="outlined" onClick={handleSkipToDashboard}>
-                Skip to Dashboard
-              </Button>
+              {state.currentPhase > 2 && (
+                <Button variant="outlined" size="small" onClick={handleSkipToDashboard}>
+                  Skip to Dashboard
+                </Button>
+              )}
             </Box>
           </Paper>
         )}

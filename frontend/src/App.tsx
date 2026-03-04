@@ -129,6 +129,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   if (!user) return <Navigate to="/" replace />;
   // New users who haven't completed onboarding are redirected there first
   if (!onboardingState.isCompleted) return <Navigate to="/onboarding" replace />;
+  // Developer-plan users who land on /dashboard get sent to the dev dashboard
+  if (onboardingState.userPlan === 'developer' && location.pathname.startsWith('/dashboard')) {
+    return <Navigate to="/developer/Dashboard" replace />;
+  }
   return <>{children}</>;
 };
 
@@ -446,6 +450,7 @@ const AppShell: React.FC = () => {
           {/* Onboarding Routes */}
           <Route path="/onboarding" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/account" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/plan" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/project" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/checklist" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/deploy" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
