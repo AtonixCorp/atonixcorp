@@ -1,5 +1,6 @@
-# AtonixCorp Cloud – Email Marketing Models
-# Campaigns, contact lists, templates, automations, and analytics.
+# AtonixCorp Cloud – Marketing Workspace Models
+# Campaigns, contact lists, templates, automations, analytics, segments, channels, A/B tests, calendar.
+# All new org-scoped models are keyed via organization_id (string FK to enterprise.Organization).
 
 import uuid
 from django.db import models
@@ -16,6 +17,8 @@ class ContactList(ResourceModel):
         ('active',   'Active'),
         ('archived', 'Archived'),
     ]
+    organization = models.CharField(max_length=36, blank=True, db_index=True,
+                                    help_text='Enterprise org ID (optional org scope)')
     status      = models.CharField(max_length=20, choices=STATUSES, default='active')
     description = models.TextField(blank=True)
     double_optin = models.BooleanField(default=False,
@@ -89,6 +92,8 @@ class EmailTemplate(ResourceModel):
         ('custom',       'Custom'),
     ]
 
+    organization   = models.CharField(max_length=36, blank=True, db_index=True,
+                                       help_text='Enterprise org ID (optional org scope)')
     category       = models.CharField(max_length=30, choices=CATEGORIES,
                                       default='newsletter')
     subject        = models.CharField(max_length=255)
@@ -134,9 +139,21 @@ class Campaign(ResourceModel):
         ('automated',   'Automated'),
         ('rss',         'RSS Campaign'),
     ]
+    CHANNELS = [
+        ('email',  'Email'),
+        ('sms',    'SMS'),
+        ('social', 'Social'),
+        ('push',   'Push Notification'),
+        ('multi',  'Multi-Channel'),
+        ('ads',    'Ads'),
+    ]
 
+    organization    = models.CharField(max_length=36, blank=True, db_index=True,
+                                       help_text='Enterprise org ID (optional org scope)')
     status          = models.CharField(max_length=20, choices=STATUSES, default='draft')
     campaign_type   = models.CharField(max_length=20, choices=TYPES, default='regular')
+    channel         = models.CharField(max_length=20, choices=CHANNELS, default='email')
+    objective       = models.CharField(max_length=255, blank=True)
 
     # Sender
     from_name       = models.CharField(max_length=100)
@@ -267,6 +284,8 @@ class Automation(ResourceModel):
         ('manual',          'Manual Trigger'),
     ]
 
+    organization    = models.CharField(max_length=36, blank=True, db_index=True,
+                                       help_text='Enterprise org ID (optional org scope)')
     trigger         = models.CharField(max_length=30, choices=TRIGGERS,
                                        default='subscribe')
     contact_list    = models.ForeignKey(ContactList, on_delete=models.SET_NULL,
@@ -286,3 +305,197 @@ class Automation(ResourceModel):
         if not self.resource_id:
             self.resource_id = f'aut-{uuid.uuid4().hex[:12]}'
         super().save(*args, **kwargs)
+
+
+def _seg_id():   return f'seg-{uuid.uuid4().hex[:12]}'
+def _abt_id():   return f'abt-{uuid.uuid4().hex[:12]}'
+def _var_id():   return f'var-{uuid.uuid4().hex[:12]}'
+def _chn_id():   return f'chn-{uuid.uuid4().hex[:12]}'
+def _cal_id():   return f'cal-{uuid.uuid4().hex[:12]}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ORG-SCOPED MARKETING WORKSPACE MODELS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Segment(TimeStampedModel):
+    """Dynamic or static audience segment scoped to an organization."""
+    TYPES = [
+        ('dynamic', 'Dynamic'),
+        ('static',  'Static'),
+    ]
+
+    id            = models.CharField(max_length=36, primary_key=True,
+                                     default=_seg_id, editable=False)
+    organization  = models.CharField(max_length=36, db_index=True)
+    name          = models.CharField(max_length=255)
+    description   = models.TextField(blank=True)
+    segment_type  = models.CharField(max_length=10, choices=TYPES, default='static')
+    criteria      = models.JSONField(default=dict,
+                                     help_text='Filter rules: [{field, operator, value}]')
+    contact_count = models.PositiveIntegerField(default=0)
+    tags          = models.JSONField(default=list)
+    is_active     = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Segment'
+        ordering     = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} ({self.segment_type})'
+
+
+class ABTest(TimeStampedModel):
+    """A/B test entity for a marketing campaign."""
+    STATUSES   = [('draft','Draft'), ('running','Running'), ('completed','Completed'), ('paused','Paused')]
+    TEST_TYPES = [('subject','Subject Line'), ('creative','Creative'), ('audience','Audience'),
+                  ('send_time','Send Time'), ('cta','Call to Action')]
+
+    id                   = models.CharField(max_length=36, primary_key=True,
+                                            default=_abt_id, editable=False)
+    organization         = models.CharField(max_length=36, db_index=True)
+    name                 = models.CharField(max_length=255)
+    hypothesis           = models.TextField(blank=True)
+    status               = models.CharField(max_length=20, choices=STATUSES, default='draft')
+    test_type            = models.CharField(max_length=20, choices=TEST_TYPES, default='subject')
+    campaign             = models.ForeignKey(Campaign, on_delete=models.SET_NULL,
+                                             null=True, blank=True, related_name='ab_tests')
+    start_at             = models.DateTimeField(null=True, blank=True)
+    end_at               = models.DateTimeField(null=True, blank=True)
+    winner_variant       = models.CharField(max_length=36, blank=True)
+    auto_select_winner   = models.BooleanField(default=True)
+    winner_metric        = models.CharField(max_length=20, default='open_rate',
+                                            help_text='open_rate | click_rate | conversion_rate')
+
+    class Meta:
+        verbose_name = 'AB Test'
+        ordering     = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} [{self.status}]'
+
+
+class ABTestVariant(TimeStampedModel):
+    """A single variant (A or B) inside an A/B test."""
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_var_id, editable=False)
+    ab_test      = models.ForeignKey(ABTest, on_delete=models.CASCADE, related_name='variants')
+    label        = models.CharField(max_length=10, help_text='A, B, C …')
+    name         = models.CharField(max_length=255)
+    subject_line = models.CharField(max_length=255, blank=True)
+    preview_text = models.CharField(max_length=255, blank=True)
+    html_body    = models.TextField(blank=True)
+    allocation   = models.FloatField(default=0.5, help_text='Traffic share 0.0–1.0')
+    sends        = models.PositiveIntegerField(default=0)
+    opens        = models.PositiveIntegerField(default=0)
+    clicks       = models.PositiveIntegerField(default=0)
+    conversions  = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'AB Test Variant'
+        ordering     = ['ab_test', 'label']
+
+    @property
+    def open_rate(self):
+        return round(self.opens / self.sends * 100, 2) if self.sends else 0.0
+
+    @property
+    def click_rate(self):
+        return round(self.clicks / self.sends * 100, 2) if self.sends else 0.0
+
+    @property
+    def conversion_rate(self):
+        return round(self.conversions / self.sends * 100, 2) if self.sends else 0.0
+
+    def __str__(self):
+        return f'{self.ab_test.name} – Variant {self.label}'
+
+
+class MarketingChannel(TimeStampedModel):
+    """Per-channel configuration for an organization's marketing workspace."""
+    CHANNEL_TYPES = [
+        ('email',    'Email'),
+        ('sms',      'SMS'),
+        ('social',   'Social'),
+        ('push',     'Push Notification'),
+        ('ads',      'Ads'),
+    ]
+    STATUSES = [
+        ('active',         'Active'),
+        ('error',          'Error'),
+        ('unconfigured',   'Unconfigured'),
+        ('disconnected',   'Disconnected'),
+    ]
+
+    id            = models.CharField(max_length=36, primary_key=True,
+                                     default=_chn_id, editable=False)
+    organization  = models.CharField(max_length=36, db_index=True)
+    channel_type  = models.CharField(max_length=20, choices=CHANNEL_TYPES)
+    name          = models.CharField(max_length=255)
+    status        = models.CharField(max_length=20, choices=STATUSES, default='unconfigured')
+    provider      = models.CharField(max_length=100, blank=True,
+                                     help_text='e.g. SendGrid, Twilio, Facebook')
+    config        = models.JSONField(default=dict, help_text='Provider-specific config (API keys, etc.)')
+    last_checked  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Marketing Channel'
+        ordering     = ['organization', 'channel_type']
+        unique_together = ('organization', 'channel_type', 'name')
+
+    def __str__(self):
+        return f'{self.name} [{self.channel_type} / {self.status}]'
+
+
+class MarketingCalendarEvent(TimeStampedModel):
+    """Scheduled event on the marketing calendar."""
+    EVENT_TYPES = [
+        ('campaign',   'Campaign'),
+        ('automation', 'Automation'),
+        ('post',       'Social Post'),
+        ('deadline',   'Deadline'),
+        ('other',      'Other'),
+    ]
+
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_cal_id, editable=False)
+    organization = models.CharField(max_length=36, db_index=True)
+    title        = models.CharField(max_length=255)
+    description  = models.TextField(blank=True)
+    event_type   = models.CharField(max_length=20, choices=EVENT_TYPES, default='other')
+    campaign     = models.ForeignKey(Campaign, on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='calendar_events')
+    start_at     = models.DateTimeField()
+    end_at       = models.DateTimeField(null=True, blank=True)
+    all_day      = models.BooleanField(default=False)
+    color        = models.CharField(max_length=20, blank=True, help_text='hex color for UI')
+    assignee     = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'Marketing Calendar Event'
+        ordering     = ['start_at']
+
+    def __str__(self):
+        return f'{self.title} ({self.event_type}) @ {self.start_at}'
+
+
+class MarketingWorkspaceSettings(TimeStampedModel):
+    """Org-level marketing workspace preferences."""
+    organization      = models.CharField(max_length=36, primary_key=True)
+    default_from_name  = models.CharField(max_length=100, blank=True)
+    default_from_email = models.EmailField(blank=True)
+    default_reply_to   = models.EmailField(blank=True)
+    brand_color        = models.CharField(max_length=20, blank=True)
+    logo_url           = models.URLField(blank=True)
+    unsubscribe_page   = models.URLField(blank=True)
+    gdpr_enabled       = models.BooleanField(default=True)
+    popia_enabled      = models.BooleanField(default=False)
+    api_keys           = models.JSONField(default=dict)
+    permissions        = models.JSONField(default=dict,
+                                          help_text='Role → permission mapping')
+
+    class Meta:
+        verbose_name = 'Marketing Workspace Settings'
+
+    def __str__(self):
+        return f'MarketingSettings({self.organization})'

@@ -4,6 +4,8 @@ from rest_framework import serializers
 from .models import (
     ContactList, Contact, EmailTemplate,
     Campaign, CampaignAnalytics, SendEvent, Automation,
+    Segment, ABTest, ABTestVariant, MarketingChannel, MarketingCalendarEvent,
+    MarketingWorkspaceSettings,
 )
 
 
@@ -260,3 +262,234 @@ class CreateAutomationSerializer(serializers.ModelSerializer):
         if 'automation_list' in self.context:
             validated_data['contact_list'] = self.context['automation_list']
         return Automation.objects.create(**validated_data)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ORG-SCOPED MARKETING WORKSPACE SERIALIZERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Org Campaign (lightweight + detail) ─────────────────────────────────────
+
+class OrgCampaignSerializer(serializers.ModelSerializer):
+    """Org-scoped campaign list serializer."""
+    analytics = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Campaign
+        fields = [
+            'resource_id', 'name', 'description', 'status', 'campaign_type',
+            'channel', 'objective',
+            'from_name', 'from_email', 'subject',
+            'scheduled_at', 'sent_at',
+            'organization', 'created_at', 'updated_at', 'analytics',
+        ]
+        read_only_fields = ['resource_id', 'created_at', 'updated_at']
+
+    def get_analytics(self, obj):
+        try:
+            a = obj.analytics
+        except CampaignAnalytics.DoesNotExist:
+            return None
+        return {
+            'total_sent': a.total_sent, 'open_rate': a.open_rate,
+            'click_rate': a.click_rate, 'bounce_rate': a.bounce_rate,
+        }
+
+
+class CreateOrgCampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Campaign
+        fields = [
+            'name', 'description', 'campaign_type', 'channel', 'objective',
+            'from_name', 'from_email', 'reply_to',
+            'subject', 'preview_text', 'html_body', 'text_body',
+            'scheduled_at', 'track_opens', 'track_clicks',
+            'utm_source', 'utm_medium', 'utm_campaign',
+        ]
+
+
+# ── Org ContactList ──────────────────────────────────────────────────────────
+
+class OrgContactListSerializer(serializers.ModelSerializer):
+    subscriber_count = serializers.ReadOnlyField()
+
+    class Meta:
+        model  = ContactList
+        fields = [
+            'resource_id', 'name', 'description', 'status',
+            'double_optin', 'subscriber_count', 'organization',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['resource_id', 'subscriber_count', 'created_at', 'updated_at']
+
+
+class CreateOrgContactListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ContactList
+        fields = ['name', 'description', 'double_optin']
+
+
+# ── Org EmailTemplate ────────────────────────────────────────────────────────
+
+class OrgEmailTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EmailTemplate
+        fields = [
+            'resource_id', 'name', 'description', 'category',
+            'subject', 'preview_text', 'html_body', 'text_body',
+            'thumbnail_url', 'is_active', 'variables', 'organization',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['resource_id', 'created_at', 'updated_at']
+
+
+class CreateOrgEmailTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = EmailTemplate
+        fields = ['name', 'description', 'category', 'subject',
+                  'preview_text', 'html_body', 'text_body', 'thumbnail_url', 'variables']
+
+
+# ── Org Automation ───────────────────────────────────────────────────────────
+
+class OrgAutomationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Automation
+        fields = [
+            'resource_id', 'name', 'description',
+            'trigger', 'is_active', 'steps', 'organization',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['resource_id', 'created_at', 'updated_at']
+
+
+class CreateOrgAutomationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Automation
+        fields = ['name', 'description', 'trigger', 'steps']
+
+
+# ── Segment ──────────────────────────────────────────────────────────────────
+
+class SegmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Segment
+        fields = [
+            'id', 'organization', 'name', 'description',
+            'segment_type', 'criteria', 'contact_count',
+            'tags', 'is_active', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CreateSegmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Segment
+        fields = ['name', 'description', 'segment_type', 'criteria', 'tags']
+
+
+# ── A/B Test ─────────────────────────────────────────────────────────────────
+
+class ABTestVariantSerializer(serializers.ModelSerializer):
+    open_rate       = serializers.ReadOnlyField()
+    click_rate      = serializers.ReadOnlyField()
+    conversion_rate = serializers.ReadOnlyField()
+
+    class Meta:
+        model  = ABTestVariant
+        fields = [
+            'id', 'label', 'name',
+            'subject_line', 'preview_text', 'html_body',
+            'allocation', 'sends', 'opens', 'clicks', 'conversions',
+            'open_rate', 'click_rate', 'conversion_rate',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'sends', 'opens', 'clicks', 'conversions',
+                            'open_rate', 'click_rate', 'conversion_rate',
+                            'created_at', 'updated_at']
+
+
+class ABTestSerializer(serializers.ModelSerializer):
+    variants = ABTestVariantSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = ABTest
+        fields = [
+            'id', 'organization', 'name', 'hypothesis', 'status',
+            'test_type', 'start_at', 'end_at',
+            'winner_variant', 'auto_select_winner', 'winner_metric',
+            'variants', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'winner_variant', 'created_at', 'updated_at']
+
+
+class CreateABTestSerializer(serializers.ModelSerializer):
+    variants = serializers.ListField(
+        child=serializers.DictField(), write_only=True, required=False)
+
+    class Meta:
+        model  = ABTest
+        fields = ['name', 'hypothesis', 'test_type', 'start_at', 'end_at',
+                  'auto_select_winner', 'winner_metric', 'variants']
+
+    def create(self, validated_data):
+        variants_data = validated_data.pop('variants', [])
+        ab_test = ABTest.objects.create(**validated_data)
+        for v in variants_data:
+            ABTestVariant.objects.create(ab_test=ab_test, **v)
+        return ab_test
+
+
+# ── Marketing Channel ────────────────────────────────────────────────────────
+
+class MarketingChannelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MarketingChannel
+        fields = [
+            'id', 'organization', 'channel_type', 'name', 'status',
+            'provider', 'config', 'last_checked',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'last_checked', 'created_at', 'updated_at']
+
+
+class CreateMarketingChannelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MarketingChannel
+        fields = ['channel_type', 'name', 'provider', 'config']
+
+
+# ── Calendar Event ───────────────────────────────────────────────────────────
+
+class MarketingCalendarEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MarketingCalendarEvent
+        fields = [
+            'id', 'organization', 'title', 'description', 'event_type',
+            'start_at', 'end_at', 'all_day', 'color', 'assignee',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CreateMarketingCalendarEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MarketingCalendarEvent
+        fields = ['title', 'description', 'event_type',
+                  'start_at', 'end_at', 'all_day', 'color', 'assignee']
+
+
+# ── Workspace Settings ───────────────────────────────────────────────────────
+
+class MarketingWorkspaceSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MarketingWorkspaceSettings
+        fields = [
+            'organization',
+            'default_from_name', 'default_from_email', 'default_reply_to',
+            'brand_color', 'logo_url', 'unsubscribe_page',
+            'gdpr_enabled', 'popia_enabled',
+            'api_keys', 'permissions',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['organization', 'created_at', 'updated_at']

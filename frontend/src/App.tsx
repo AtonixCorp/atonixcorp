@@ -90,6 +90,9 @@ import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
 import EnterpriseOverviewDashboard from './pages/EnterpriseOverviewDashboard';
 import EnterpriseDashboardPage   from './pages/EnterpriseDashboardPage';
+import EnterpriseEntryRoute      from './pages/EnterpriseEntryRoute';
+import MarketingWorkspacePage    from './pages/MarketingWorkspacePage';
+import CreateOrganizationPage    from './pages/CreateOrganizationPage';
 import IAMPage                   from './pages/IAMPage';
 import KMSPage                   from './pages/KMSPage';
 import SecretsVaultPage          from './pages/SecretsVaultPage';
@@ -163,7 +166,11 @@ const AppShell: React.FC = () => {
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
-  const isEnterpriseDashboard = location.pathname.startsWith('/enterprise');
+  const isEnterpriseMarketing     = /^\/enterprise\/[^\/]+\/marketing/.test(location.pathname);
+  const isEnterpriseOrganization   = /^\/enterprise\/[^\/]+\/organization/.test(location.pathname);
+  const isEnterpriseDashboard = !isEnterpriseMarketing && !isEnterpriseOrganization &&
+    location.pathname.startsWith('/enterprise') &&
+    !location.pathname.startsWith('/enterprise/organizations/create');
   const isGroupsPage = location.pathname.startsWith('/groups');
   const isBillingPage = location.pathname === '/billing';
 
@@ -414,17 +421,55 @@ const AppShell: React.FC = () => {
     );
   }
 
+  // ── Org sub-dashboard (standalone, owns its own sidebar) ──
+  if (isEnterpriseOrganization) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/:section"   element={<EnterpriseDashboardPage />} />
+          <Route path="/enterprise/:orgSlug/:section/*" element={<EnterpriseDashboardPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  // ── Org-scoped Marketing Workspace (standalone, own sidebar, no enterprise chrome) ──
+  if (isEnterpriseMarketing) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/marketing"          element={<MarketingWorkspacePage />} />
+          <Route path="/enterprise/:orgSlug/marketing/:view"    element={<MarketingWorkspacePage />} />
+          <Route path="/enterprise/:orgSlug/marketing/:view/*"  element={<MarketingWorkspacePage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
   if (isEnterpriseDashboard) {
     return (
       <ProtectedRoute>
         <DashboardLayout dashboardMode="enterprise">
           <Routes>
-            <Route path="/enterprise" element={<Navigate to="/enterprise/atonixcorp/overview" replace />} />
-            <Route path="/enterprise/:orgSlug" element={<Navigate to="/enterprise/atonixcorp/overview" replace />} />
+            {/* Entry: resolve org or go to create */}
+            <Route path="/enterprise" element={<EnterpriseEntryRoute />} />
+            <Route path="/enterprise/:orgSlug" element={<EnterpriseEntryRoute />} />
+            {/* Dashboard sections */}
             <Route path="/enterprise/:orgSlug/:section" element={<EnterpriseDashboardPage />} />
             <Route path="/enterprise/:orgSlug/:section/*" element={<EnterpriseDashboardPage />} />
           </Routes>
         </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  // ── Create Org (standalone, no dashboard chrome) ───────────────────────────
+  if (location.pathname.startsWith('/enterprise/organizations/create')) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/organizations/create" element={<CreateOrganizationPage />} />
+        </Routes>
       </ProtectedRoute>
     );
   }

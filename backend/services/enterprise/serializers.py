@@ -3,6 +3,7 @@
 from rest_framework import serializers
 from .models import (
     Organization, OrganizationMember,
+    Department, OrgTeam, OrgGroup, DepartmentSidebarItem,
     EnterpriseSendDomain, EmailSenderIdentity, EnterpriseEmailTemplate, EmailLog,
     OrgDomain, OrgDomainRecord,
     BrandingProfile, BrandAsset,
@@ -20,7 +21,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model  = Organization
         fields = [
             'id', 'name', 'slug', 'primary_domain', 'industry', 'country',
-            'plan', 'status', 'member_count', 'created_at', 'updated_at',
+            'plan', 'status', 'member_count', 'contact_email', 'logo_url',
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'member_count']
 
@@ -31,7 +33,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class OrganizationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Organization
-        fields = ['name', 'slug', 'primary_domain', 'industry', 'country']
+        fields = ['name', 'slug', 'primary_domain', 'industry', 'country',
+                  'contact_email', 'logo_url']
 
 
 # ── Organization Member ───────────────────────────────────────────────────────
@@ -56,6 +59,81 @@ class InviteMemberSerializer(serializers.Serializer):
 
 class UpdateMemberRoleSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=OrganizationMember.Role.choices)
+
+
+# ── Hierarchy: Department → Team → Group ──────────────────────────────────────
+
+class OrgGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = OrgGroup
+        fields = ['id', 'team', 'name', 'description', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'team', 'created_at', 'updated_at']
+
+
+class OrgTeamSerializer(serializers.ModelSerializer):
+    groups = OrgGroupSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = OrgTeam
+        fields = ['id', 'department', 'name', 'description', 'team_type', 'groups', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'department', 'created_at', 'updated_at']
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    teams = OrgTeamSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = Department
+        fields = [
+            'id', 'organization', 'name', 'category', 'description',
+            'department_lead', 'parent', 'teams', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'organization', 'created_at', 'updated_at']
+
+
+# ── Create helpers (write-only, no nested expansions) ─────────────────────────
+
+class DepartmentCreateSerializer(serializers.Serializer):
+    name            = serializers.CharField(max_length=255)
+    category        = serializers.CharField(required=False, default='', allow_blank=True)
+    description     = serializers.CharField(required=False, default='', allow_blank=True)
+    department_lead = serializers.CharField(required=False, default='', allow_blank=True)
+    parent          = serializers.CharField(required=False, default='', allow_blank=True)
+
+
+# ── Department Sidebar ────────────────────────────────────────────────────────
+
+class DepartmentSidebarItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = DepartmentSidebarItem
+        fields = [
+            'id', 'item_type', 'label', 'url', 'icon',
+            'order_index', 'is_active', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class DepartmentSidebarItemWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = DepartmentSidebarItem
+        fields = ['item_type', 'label', 'url', 'icon', 'order_index', 'is_active']
+
+
+class DepartmentSidebarBulkSerializer(serializers.Serializer):
+    """Accepts a list of items to set/replace the full sidebar configuration."""
+    items = DepartmentSidebarItemWriteSerializer(many=True)
+
+
+class OrgTeamCreateSerializer(serializers.Serializer):
+    name        = serializers.CharField(max_length=255)
+    description = serializers.CharField(required=False, default='', allow_blank=True)
+    team_type   = serializers.ChoiceField(choices=OrgTeam.TeamType.choices,
+                                          default=OrgTeam.TeamType.SQUAD)
+
+
+class OrgGroupCreateSerializer(serializers.Serializer):
+    name        = serializers.CharField(max_length=255)
+    description = serializers.CharField(required=False, default='', allow_blank=True)
 
 
 # ── Enterprise Send Domain ────────────────────────────────────────────────────

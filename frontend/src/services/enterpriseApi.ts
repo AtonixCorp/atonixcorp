@@ -41,9 +41,61 @@ export interface OrgData {
   plan: string;
   status: 'ACTIVE' | 'SUSPENDED' | 'TRIAL';
   member_count: number;
+  contact_email: string;
+  logo_url: string;
   created_at: string;
   updated_at: string;
 }
+
+export interface OrgGroup {
+  id: string;
+  team: string;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgTeam {
+  id: string;
+  department: string;
+  name: string;
+  description: string;
+  team_type: 'DEPARTMENT' | 'FUNCTION' | 'SQUAD';
+  groups: OrgGroup[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Department {
+  id: string;
+  organization: string;
+  name: string;
+  category: string;
+  description: string;
+  department_lead: string;
+  parent: string | null;
+  teams: OrgTeam[];
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Department Sidebar ────────────────────────────────────────────────────────
+export type SidebarItemType = 'navigation' | 'action' | 'resource' | 'highlight' | 'custom';
+
+export interface DeptSidebarItem {
+  id: string;
+  item_type: SidebarItemType;
+  label: string;
+  url: string;
+  icon: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DeptSidebarItemWrite = Omit<DeptSidebarItem, 'id' | 'created_at' | 'updated_at'>;
 
 export interface OrgMember {
   id: string;
@@ -187,12 +239,29 @@ export interface AuditLogEntry {
   timestamp: string;
 }
 
+// ── Entry (org-context resolver) ─────────────────────────────────────────────
+export const enterpriseEntryApi = {
+  /** Returns { organizations: OrgData[] }. Empty array → redirect to create. */
+  resolve: () =>
+    enterpriseClient.get<{ organizations: OrgData[] }>('/entry/').then(r => r.data),
+};
+
 // ── Organization ──────────────────────────────────────────────────────────────
 export const organizationApi = {
   list: () =>
-    enterpriseClient.get<OrgData[]>('/organizations/').then(r => r.data),
+    enterpriseClient
+      .get<OrgData[] | { results: OrgData[] }>('/organizations/')
+      .then(r => unwrap(r.data)),
 
-  create: (data: { name: string; slug: string; primary_domain?: string; industry?: string; country?: string }) =>
+  create: (data: {
+    name: string;
+    slug: string;
+    primary_domain?: string;
+    industry?: string;
+    country?: string;
+    contact_email?: string;
+    logo_url?: string;
+  }) =>
     enterpriseClient.post<OrgData>('/organizations/', data).then(r => r.data),
 
   get: (orgId: string) =>
@@ -201,6 +270,9 @@ export const organizationApi = {
   update: (orgId: string, data: Partial<OrgData>) =>
     enterpriseClient.patch<OrgData>(`/organizations/${orgId}/`, data).then(r => r.data),
 
+  delete: (orgId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/`),
+
   /** Resolve by slug (searches the list, returns first match). */
   getBySlug: async (slug: string): Promise<OrgData> => {
     const list = await organizationApi.list();
@@ -208,6 +280,100 @@ export const organizationApi = {
     if (!org) throw new Error(`Organization "${slug}" not found`);
     return org;
   },
+};
+
+// helper: unwrap DRF pagination envelope if present
+function unwrap<T>(data: T[] | { results: T[] }): T[] {
+  return Array.isArray(data) ? data : data.results;
+}
+
+// ── Departments ───────────────────────────────────────────────────────────────
+export const departmentsApi = {
+  list: (orgId: string) =>
+    enterpriseClient
+      .get<Department[] | { results: Department[] }>(`/organizations/${orgId}/departments/`)
+      .then(r => unwrap(r.data)),
+
+  create: (orgId: string, payload: {
+    name: string;
+    category?: string;
+    description?: string;
+    department_lead?: string;
+    parent?: string;
+  }) =>
+    enterpriseClient.post<Department>(`/organizations/${orgId}/departments/`, payload).then(r => r.data),
+
+  update: (orgId: string, deptId: string, payload: {
+    name?: string;
+    category?: string;
+    description?: string;
+    department_lead?: string;
+    parent?: string;
+  }) =>
+    enterpriseClient.patch<Department>(`/organizations/${orgId}/departments/${deptId}/`, payload).then(r => r.data),
+
+  remove: (orgId: string, deptId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/departments/${deptId}/`),
+};
+
+// ── Department Sidebar Items ───────────────────────────────────────────────────
+export const deptSidebarApi = {
+  list: (orgId: string, deptId: string) =>
+    enterpriseClient
+      .get<DeptSidebarItem[]>(`/organizations/${orgId}/departments/${deptId}/sidebar/`)
+      .then(r => r.data),
+
+  create: (orgId: string, deptId: string, payload: DeptSidebarItemWrite) =>
+    enterpriseClient
+      .post<DeptSidebarItem>(`/organizations/${orgId}/departments/${deptId}/sidebar/`, payload)
+      .then(r => r.data),
+
+  update: (orgId: string, deptId: string, itemId: string, payload: Partial<DeptSidebarItemWrite>) =>
+    enterpriseClient
+      .patch<DeptSidebarItem>(`/organizations/${orgId}/departments/${deptId}/sidebar/${itemId}/`, payload)
+      .then(r => r.data),
+
+  bulkSet: (orgId: string, deptId: string, items: DeptSidebarItemWrite[]) =>
+    enterpriseClient
+      .post<DeptSidebarItem[]>(`/organizations/${orgId}/departments/${deptId}/sidebar/bulk_set/`, { items })
+      .then(r => r.data),
+
+  remove: (orgId: string, deptId: string, itemId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/departments/${deptId}/sidebar/${itemId}/`),
+};
+
+// ── Teams ─────────────────────────────────────────────────────────────────────
+export const orgTeamsApi = {
+  list: (orgId: string, deptId: string) =>
+    enterpriseClient
+      .get<OrgTeam[] | { results: OrgTeam[] }>(`/organizations/${orgId}/departments/${deptId}/teams/`)
+      .then(r => unwrap(r.data)),
+
+  create: (orgId: string, deptId: string, payload: { name: string; description?: string; team_type?: string }) =>
+    enterpriseClient.post<OrgTeam>(`/organizations/${orgId}/departments/${deptId}/teams/`, payload).then(r => r.data),
+
+  update: (orgId: string, deptId: string, teamId: string, payload: { name?: string; description?: string; team_type?: string }) =>
+    enterpriseClient.patch<OrgTeam>(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/`, payload).then(r => r.data),
+
+  remove: (orgId: string, deptId: string, teamId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/`),
+};
+
+// ── Groups ────────────────────────────────────────────────────────────────────
+export const orgGroupsApi = {
+  list: (orgId: string, deptId: string, teamId: string) =>
+    enterpriseClient
+      .get<OrgGroup[] | { results: OrgGroup[] }>(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/groups/`)
+      .then(r => unwrap(r.data)),
+
+  create: (orgId: string, deptId: string, teamId: string, payload: { name: string; description?: string }) =>
+    enterpriseClient.post<OrgGroup>(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/groups/`, payload).then(r => r.data),
+
+  update: (orgId: string, deptId: string, teamId: string, groupId: string, payload: { name?: string; description?: string }) =>
+    enterpriseClient.patch<OrgGroup>(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/groups/${groupId}/`, payload).then(r => r.data),
+
+  remove: (orgId: string, deptId: string, teamId: string, groupId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/departments/${deptId}/teams/${teamId}/groups/${groupId}/`),
 };
 
 // ── Members ───────────────────────────────────────────────────────────────────
@@ -340,8 +506,12 @@ export const auditLogsApi = {
 };
 
 export default {
+  entry: enterpriseEntryApi,
   organization: organizationApi,
   members: membersApi,
+  departments: departmentsApi,
+  teams: orgTeamsApi,
+  groups: orgGroupsApi,
   sendDomains: sendDomainsApi,
   senderIdentities: senderIdentitiesApi,
   emailTemplates: emailTemplatesApi,

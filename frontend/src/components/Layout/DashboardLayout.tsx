@@ -5,25 +5,17 @@ import React, { useState } from 'react';
 import {
   Box,
   Drawer,
-  AppBar,
-  Toolbar,
   List,
   Typography,
   Divider,
   IconButton,
-  Avatar,
-  Menu,
-  MenuItem,
-  Badge,
-  InputBase,
   Tooltip,
   Collapse,
   Stack,
   Chip,
 } from '@mui/material';
 import MenuIcon              from '@mui/icons-material/Menu';
-import SearchIcon            from '@mui/icons-material/Search';
-import NotificationsIcon     from '@mui/icons-material/Notifications';
+
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DashboardIcon         from '@mui/icons-material/Dashboard';
@@ -42,7 +34,6 @@ import MailOutlineIcon       from '@mui/icons-material/MailOutline';
 import PaletteIcon           from '@mui/icons-material/Palette';
 import HelpIcon              from '@mui/icons-material/HelpOutline';
 import PersonIcon            from '@mui/icons-material/Person';
-import LogoutIcon            from '@mui/icons-material/Logout';
 import BillingIcon           from '@mui/icons-material/ReceiptLong';
 import LockIcon              from '@mui/icons-material/Lock';
 import KeyIcon               from '@mui/icons-material/Key';
@@ -57,23 +48,23 @@ import MonitorIcon           from '@mui/icons-material/QueryStats';
 import DomainIcon            from '@mui/icons-material/Language';
 import CampaignIcon          from '@mui/icons-material/Campaign';
 import ViewListIcon          from '@mui/icons-material/ViewList';
-import LightModeIcon         from '@mui/icons-material/LightMode';
-import DarkModeIcon          from '@mui/icons-material/DarkMode';
+
 import FirstPageIcon         from '@mui/icons-material/FirstPage';
 import LastPageIcon          from '@mui/icons-material/LastPage';
 import ArrowBackIcon         from '@mui/icons-material/ArrowBack'
 import MemoryIcon            from '@mui/icons-material/Memory';
 import TrackChangesIcon      from '@mui/icons-material/TrackChanges';
 import SecurityIcon          from '@mui/icons-material/Security';
-import VerifiedUserIcon      from '@mui/icons-material/VerifiedUser';
+
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import SourceIcon              from '@mui/icons-material/Source';
-import ShieldIcon            from '@mui/icons-material/Shield';
+
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
 import { useOnboarding }    from '../../contexts/OnboardingContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem';
+import DashboardTopBar, { TopBarSearch } from './DashboardTopBar';
 import RightActivityPanel, { RightPanelExpandTab } from './RightActivityPanel';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -159,7 +150,7 @@ const CLOUD_NAV: NavItem[] = [
     ],
   },
   { label: 'Compliance',     icon: <GppGoodIcon  {...I()} />, path: '/dashboard/compliance' },
-  { label: 'Enterprise', icon: <GroupsIcon {...I()} />, path: '/enterprise/atonixcorp/overview' },
+  { label: 'Enterprise', icon: <GroupsIcon {...I()} />, path: '/enterprise' },
   { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/repositories' },
 ];
 
@@ -223,17 +214,19 @@ const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 const ACCOUNT_NAV: NavItem[] = [];
 
 // ── Enterprise nav (org-slug is injected at runtime) ────────────────────────
-const ENTERPRISE_NAV = (orgSlug: string): NavItem[] => [
-  { label: 'Overview',      icon: <DashboardIcon   {...I()} />, path: `/enterprise/${orgSlug}/overview`      },
-  { label: 'Organization',  icon: <TeamIcon        {...I()} />, path: `/enterprise/${orgSlug}/organization`  },
-  { label: 'Teams',         icon: <GroupsIcon      {...I()} />, path: `/enterprise/${orgSlug}/teams`         },
-  { label: 'Marketing',     icon: <CampaignIcon    {...I()} />, path: `/enterprise/${orgSlug}/marketing`     },
-  { label: 'Email Service', icon: <MailOutlineIcon {...I()} />, path: `/enterprise/${orgSlug}/email`         },
-  { label: 'Domains',       icon: <DomainIcon      {...I()} />, path: `/enterprise/${orgSlug}/domains`       },
-  { label: 'Branding',      icon: <PaletteIcon     {...I()} />, path: `/enterprise/${orgSlug}/branding`      },
-  { label: 'Billing',       icon: <BillingIcon     {...I()} />, path: `/enterprise/${orgSlug}/billing`       },
-  { label: 'Compliance',    icon: <GppGoodIcon     {...I()} />, path: `/enterprise/${orgSlug}/compliance`    },
-];
+const ENTERPRISE_NAV = (orgSlug: string): NavItem[] => {
+  const p = (section: string) => orgSlug ? `/enterprise/${orgSlug}/${section}` : '/enterprise';
+  return [
+    { label: 'Overview',      icon: <DashboardIcon   {...I()} />, path: p('overview')      },
+    { label: 'Organization',  icon: <TeamIcon        {...I()} />, path: p('organization')  },
+    { label: 'Marketing',     icon: <CampaignIcon    {...I()} />, path: p('marketing')     },
+    { label: 'Email Service', icon: <MailOutlineIcon {...I()} />, path: p('email')         },
+    { label: 'Domains',       icon: <DomainIcon      {...I()} />, path: p('domains')       },
+    { label: 'Branding',      icon: <PaletteIcon     {...I()} />, path: p('branding')      },
+    { label: 'Billing',       icon: <BillingIcon     {...I()} />, path: '/billing'          },
+    { label: 'Compliance',    icon: <GppGoodIcon     {...I()} />, path: p('compliance')    },
+  ];
+};
 
 const ENTERPRISE_ACCOUNT_NAV: NavItem[] = [];
 const ENTERPRISE_SUPPORT_NAV: NavItem[] = [];
@@ -417,7 +410,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
   const { state: onboardingState } = useOnboarding();
   const isDeveloperPlan = onboardingState.userPlan === 'developer';
   const enterpriseOrgSlug = dashboardMode === 'enterprise'
-    ? (loc.pathname.split('/')[2] || 'default')
+    ? (loc.pathname.split('/')[2] || '')
     : '';
 
   const routeBase = dashboardMode === 'developer'
@@ -429,7 +422,7 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         : dashboardMode === 'monitor'
           ? '/monitor-dashboard'
           : dashboardMode === 'enterprise'
-            ? `/enterprise/${enterpriseOrgSlug}/overview`
+            ? (enterpriseOrgSlug ? `/enterprise/${enterpriseOrgSlug}/overview` : '/enterprise')
             : '/dashboard';
 
   const navItems = dashboardMode === 'developer'
@@ -659,15 +652,14 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMode = 'cloud' }) => {
-  const { user, logout }  = useAuth() as any;
   const navigate           = useNavigate();
-  const { mode, toggleTheme } = useColorMode();
+  const location           = useLocation();
+  const { mode } = useColorMode();
+
   const isDark             = mode === 'dark';
   const [mobileOpen,    setMobileOpen]    = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightCollapsed,   setRightCollapsed]   = useState(false);
-  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
-  const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
   const routeBase = dashboardMode === 'developer'
     ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
@@ -678,10 +670,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           ? '/monitor-dashboard'
           : '/dashboard';
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  // Enterprise sidebar is always visible for all sections
+  const enterpriseOrgSlug = dashboardMode === 'enterprise'
+    ? location.pathname.split('/')[2] || ''
+    : '';
 
   return (
     <Box
@@ -745,256 +737,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
       >
 
         {/* ── Top AppBar ─────────────────────────────────────────────────────── */}
-        <AppBar
-          position="sticky"
-          elevation={0}
-          sx={{
-            bgcolor: dashboardTokens.colors.surface,
-            borderBottom: `1px solid ${DIVIDER_COLOR}`,
-            color: dashboardTokens.colors.textPrimary,
-            zIndex: (theme) => theme.zIndex.drawer - 1,
-          }}
-        >
-          <Toolbar sx={{ gap: { xs: 1, md: 1.5 }, px: { xs: 1.25, md: 3 }, minHeight: '64px !important' }}>
-
-            <IconButton
-                onClick={() => setMobileOpen(true)}
-                sx={{ display: { lg: 'none' }, color: '#6B7280' }}
-              >
-              <MenuIcon />
-            </IconButton>
-
-            <Tooltip title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-              <IconButton
-                onClick={() => setSidebarCollapsed(prev => !prev)}
-                sx={{ display: { xs: 'none', lg: 'inline-flex' }, color: TEXT_SECONDARY }}
-              >
-                {sidebarCollapsed ? <LastPageIcon /> : <FirstPageIcon />}
-              </IconButton>
-            </Tooltip>
-
-            {/* Global search */}
-            <Box
-              sx={{
-                display: { xs: 'none', sm: 'flex' }, alignItems: 'center',
-                flex: 1, maxWidth: 420,
-                minWidth: 0,
-                width: { xs: '100%', sm: 'auto' },
-                bgcolor: dashboardTokens.colors.surfaceSubtle,
-                borderRadius: '2px',
-                px: 1.5, py: 0.5, gap: 1,
-                border: `1px solid ${DIVIDER_COLOR}`,
-                transition: 'border .15s',
-                '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: dashboardTokens.colors.surface },
-              }}
-            >
-              <SearchIcon sx={{ color: dashboardTokens.colors.textTertiary, fontSize: '1rem', flexShrink: 0 }} />
-              <InputBase
-                placeholder="Search resources…"
-                sx={{
-                  flex: 1, fontSize: '.875rem', color: dashboardTokens.colors.textPrimary,
-                  '& input::placeholder': { color: dashboardTokens.colors.textTertiary },
-                }}
-              />
-              <Typography
-                sx={{
-                  fontSize: '.7rem', color: TEXT_SECONDARY,
-                  bgcolor: dashboardTokens.colors.surfaceHover, px: 0.75, py: 0.25,
-                  borderRadius: '2px', flexShrink: 0,
-                  display: { xs: 'none', md: 'block' },
-                }}
-              >
-                Ctrl K
-              </Typography>
-            </Box>
-
-            <Box sx={{ flex: 1 }} />
-
-            {/* Dark / Light mode toggle */}
-            <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-              <IconButton
-                onClick={toggleTheme}
-                sx={{
-                  color: TEXT_SECONDARY,
-                  bgcolor: 'transparent',
-                  borderRadius: '2px',
-                  '&:hover': {
-                    bgcolor: dashboardTokens.colors.surfaceHover,
-                    color: BLUE,
-                  },
-                  transition: 'all .15s',
-                }}
-              >
-                {isDark
-                  ? <LightModeIcon sx={{ fontSize: '1.15rem' }} />
-                  : <DarkModeIcon  sx={{ fontSize: '1.15rem' }} />}
-              </IconButton>
-            </Tooltip>
-
-            {/* Notifications */}
-            <Tooltip title="Notifications">
-              <IconButton
-                onClick={(e) => setNotifAnchor(e.currentTarget)}
-                sx={{ color: TEXT_SECONDARY, '&:hover': { color: dashboardTokens.colors.textPrimary } }}
-              >
-                <Badge
-                  badgeContent={3}
-                  color="error"
-                  sx={{ '& .MuiBadge-badge': { fontSize: '.6rem', minWidth: 16, height: 16 } }}
+        <DashboardTopBar
+          routeBase={routeBase}
+          showMobileMenu
+          onMobileMenuOpen={() => setMobileOpen(true)}
+          leftContent={
+            <>
+              {/* Sidebar collapse toggle */}
+              <Tooltip title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+                <IconButton
+                  onClick={() => setSidebarCollapsed(prev => !prev)}
+                  sx={{ display: { xs: 'none', lg: 'inline-flex' }, color: TEXT_SECONDARY }}
                 >
-                  <NotificationsIcon sx={{ fontSize: '1.2rem' }} />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-            <Menu
-              anchorEl={notifAnchor}
-              open={Boolean(notifAnchor)}
-              onClose={() => setNotifAnchor(null)}
-              PaperProps={{
-                sx: { width: 'min(320px, calc(100vw - 24px))', mt: 1, borderRadius: '2px', boxShadow: 'none', border: `1px solid ${DIVIDER_COLOR}`, bgcolor: dashboardTokens.colors.surface },
-              }}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6'}` }}>
-                <Typography fontWeight={700} fontSize=".9rem">Notifications</Typography>
-              </Box>
-              {[
-                { title: 'VM atonix-prod-01 is running', time: '2 min ago',  dot: '#22C55E' },
-                { title: 'Snapshot backup completed',    time: '1 hr ago',   dot: '#153d75' },
-                { title: 'Billing invoice available',   time: '2 days ago',  dot: '#F59E0B' },
-              ].map((n, i) => (
-                <MenuItem key={i} sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start' }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: n.dot, mt: 0.75, flexShrink: 0 }} />
-                  <Box>
-                    <Typography fontSize=".82rem" fontWeight={500}>{n.title}</Typography>
-                    <Typography fontSize=".72rem" color="text.secondary">{n.time}</Typography>
-                  </Box>
-                </MenuItem>
-              ))}
-            </Menu>
+                  {sidebarCollapsed ? <LastPageIcon /> : <FirstPageIcon />}
+                </IconButton>
+              </Tooltip>
 
-            {/* User profile */}
-            <Box
-              onClick={(e) => setProfileAnchor(e.currentTarget)}
-              sx={{
-                display: 'flex', alignItems: 'center', gap: 1,
-                px: 1, py: 0.5, borderRadius: '2px',
-                cursor: 'pointer', border: `1px solid ${isDark ? 'rgba(255,255,255,.12)' : '#E5E7EB'}`,
-                transition: 'border .15s',
-                '&:hover': { borderColor: BLUE },
-              }}
-            >
-              <Avatar
-                sx={{ width: 28, height: 28, bgcolor: BLUE, fontSize: '.75rem', fontWeight: 700 }}
-              >
-                {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
-              </Avatar>
-              <Typography
-                sx={{
-                  fontSize: '.82rem', fontWeight: 600, color: dashboardTokens.colors.textPrimary,
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
-                {user?.first_name || user?.username}
-              </Typography>
-              <KeyboardArrowDownIcon
-                sx={{ fontSize: '.85rem', color: '#6B7280', display: { xs: 'none', sm: 'block' } }}
-              />
-            </Box>
-            <Menu
-              anchorEl={profileAnchor}
-              open={Boolean(profileAnchor)}
-              onClose={() => setProfileAnchor(null)}
-              PaperProps={{
-                sx: { minWidth: 'min(240px, calc(100vw - 24px))', mt: 1, borderRadius: '2px', boxShadow: 'none', border: `1px solid ${DIVIDER_COLOR}`, bgcolor: dashboardTokens.colors.surface },
-              }}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              {/* User info header */}
-              <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : '#F3F4F6'}` }}>
-                <Typography fontWeight={700} fontSize=".875rem" color={isDark ? '#ffffff' : '#111827'}>
-                  {user?.first_name
-                    ? `${user.first_name} ${user.last_name || ''}`.trim()
-                    : user?.username}
-                </Typography>
-                <Typography fontSize=".75rem" color="text.secondary">{user?.email}</Typography>
-              </Box>
-
-              {/* Account group */}
-              <Box sx={{ px: 1.5, pt: 1, pb: .25 }}>
-                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Account</Typography>
-              </Box>
-              {[
-                { label: 'Profile',       icon: <PersonIcon />,            path: `${routeBase}/settings/profile` },
-                { label: 'Settings',      icon: <SettingsIcon />,          path: `${routeBase}/settings` },
-                { label: 'Preferences',   icon: <TuneIcon />,              path: `${routeBase}/settings/preferences` },
-                { label: 'Notifications', icon: <NotificationsNoneIcon />, path: `${routeBase}/settings/notifications` },
-                { label: 'Billing',       icon: <BillingIcon />,           path: '/billing' },
-              ].map(item => (
-                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
-                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
-                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
-                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
-                </MenuItem>
-              ))}
-
-              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
-
-              {/* Security group */}
-              <Box sx={{ px: 1.5, pb: .25 }}>
-                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Security</Typography>
-              </Box>
-              {[
-                { label: 'IAM',            icon: <PersonIcon       />, path: '/dashboard/iam' },
-                { label: 'KMS',            icon: <KeyIcon          />, path: '/dashboard/kms' },
-                { label: 'Secrets Vault',  icon: <LockIcon         />, path: '/dashboard/secrets' },
-                { label: 'Zero-Trust',     icon: <VerifiedUserIcon />, path: '/dashboard/zero-trust' },
-                { label: 'DDoS Shield',    icon: <ShieldIcon       />, path: '/dashboard/ddos' },
-                { label: 'Authentication', icon: <LockIcon         />, path: `${routeBase}/settings/authentication` },
-                { label: 'SSH Keys',       icon: <KeyIcon          />, path: `${routeBase}/settings/ssh-keys` },
-                { label: 'Compliance',     icon: <GppGoodIcon      />, path: `${routeBase}/settings/compliance` },
-              ].map(item => (
-                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
-                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
-                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
-                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
-                </MenuItem>
-              ))}
-
-              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
-
-              {/* Developer group */}
-              <Box sx={{ px: 1.5, pb: .25 }}>
-                <Typography variant="caption" sx={{ color: isDark ? 'rgba(255,255,255,.35)' : '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', fontSize: '.65rem' }}>Developer</Typography>
-              </Box>
-              {[
-                { label: 'Users',          icon: <TeamIcon />, path: `${routeBase}/settings/users` },
-                { label: 'API Management', icon: <ApiIcon  />, path: '/developer/Dashboard/api-management' },
-              ].map(item => (
-                <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
-                  sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',
-                    '&:hover': { bgcolor: isDark ? DARK_HOVER : BLUE_HOVER } }}>
-                  {React.cloneElement(item.icon, { sx: { fontSize: '1rem', color: isDark ? '#ffffff' : '#6B7280' } })}
-                  <Typography fontSize=".85rem" color={isDark ? '#ffffff' : '#374151'}>{item.label}</Typography>
-                </MenuItem>
-              ))}
-
-              <Divider sx={{ my: .75, mx: 1.5, borderColor: isDark ? 'rgba(255,255,255,.08)' : '#F3F4F6' }} />
-
-              <MenuItem onClick={handleLogout}
-                sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, mb: .5, borderRadius: '2px',
-                  '&:hover': { bgcolor: 'rgba(239,68,68,.08)' } }}>
-                <LogoutIcon sx={{ fontSize: '1rem', color: '#EF4444' }} />
-                <Typography fontSize=".85rem" color="#EF4444">Sign Out</Typography>
-              </MenuItem>
-            </Menu>
-
-          </Toolbar>
-        </AppBar>
+              {/* Global search */}
+              <TopBarSearch />
+            </>
+          }
+        />
 
         {/* ── Page content ──────────────────────────────────────────────────── */}
         <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
@@ -1003,11 +766,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           </Box>
 
           {/* ── Right activity panel ─────────────────────────────────────────── */}
-          <RightActivityPanel
-            collapsed={rightCollapsed}
-            onToggle={() => setRightCollapsed(true)}
-          />
-          {rightCollapsed && <RightPanelExpandTab onClick={() => setRightCollapsed(false)} />}
+          {dashboardMode !== 'enterprise' && (
+            <>
+              <RightActivityPanel
+                collapsed={rightCollapsed}
+                onToggle={() => setRightCollapsed(true)}
+              />
+              {rightCollapsed && <RightPanelExpandTab onClick={() => setRightCollapsed(false)} />}
+            </>
+          )}
         </Box>
       </Box>
     </Box>

@@ -28,6 +28,10 @@ def _plan_id():  return _uid('plan')
 def _sub_id():   return _uid('sub')
 def _einv_id():  return _uid('einv')
 def _aud_id():   return _uid('aud')
+def _dept_id():  return _uid('dept')
+def _team_id():  return _uid('team')
+def _grp_id():   return _uid('grp')
+def _dsbi_id():  return _uid('dsbi')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -54,7 +58,8 @@ class Organization(TimeStampedModel):
     plan           = models.CharField(max_length=64,  default='Enterprise')
     status         = models.CharField(max_length=20,  choices=Status.choices,
                                       default=Status.TRIAL)
-
+    contact_email  = models.EmailField(blank=True, default='')
+    logo_url       = models.URLField(blank=True, default='')
     class Meta:
         verbose_name = 'Organization'
 
@@ -100,6 +105,156 @@ class OrganizationMember(TimeStampedModel):
 
     def __str__(self):
         return f'{self.email} @ {self.organization.slug} [{self.role}]'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1b. HIERARCHY: DEPARTMENT → TEAM → GROUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Department(TimeStampedModel):
+    """A department inside an Organization."""
+    DEPT_CATEGORIES = [
+        # Business
+        ('Administration', 'Administration'),
+        ('Finance', 'Finance'),
+        ('Human Resources (HR)', 'Human Resources (HR)'),
+        ('Legal & Compliance', 'Legal & Compliance'),
+        ('Operations', 'Operations'),
+        ('Procurement', 'Procurement'),
+        ('Sales', 'Sales'),
+        ('Marketing', 'Marketing'),
+        ('Customer Support', 'Customer Support'),
+        ('Product Management', 'Product Management'),
+        ('Business Development', 'Business Development'),
+        ('Partnerships & Alliances', 'Partnerships & Alliances'),
+        ('Public Relations / Communications', 'Public Relations / Communications'),
+        ('Strategy & Planning', 'Strategy & Planning'),
+        ('Investor Relations', 'Investor Relations'),
+        # Technical
+        ('Engineering / Software Development', 'Engineering / Software Development'),
+        ('IT & Infrastructure', 'IT & Infrastructure'),
+        ('Security / Cybersecurity', 'Security / Cybersecurity'),
+        ('Research & Development (R&D)', 'Research & Development (R&D)'),
+        ('Data & Analytics', 'Data & Analytics'),
+        ('Quality Assurance', 'Quality Assurance'),
+        ('Computing & Technology', 'Computing & Technology'),
+        # Creative
+        ('Design / Creative', 'Design / Creative'),
+        ('Media & Content', 'Media & Content'),
+        ('Training & Learning', 'Training & Learning'),
+        ('Education & Training', 'Education & Training'),
+        # Operations / Physical
+        ('Manufacturing / Production', 'Manufacturing / Production'),
+        ('Logistics / Supply Chain', 'Logistics / Supply Chain'),
+        ('Facilities / Maintenance', 'Facilities / Maintenance'),
+        ('Health & Safety', 'Health & Safety'),
+        ('Construction & Architecture', 'Construction & Architecture'),
+        ('Transportation', 'Transportation'),
+        # Industry-specific
+        ('Science & Research', 'Science & Research'),
+        ('Medical / Healthcare', 'Medical / Healthcare'),
+        ('Government & Public Sector', 'Government & Public Sector'),
+        ('Nonprofit / NGO', 'Nonprofit / NGO'),
+        ('Hospitality & Tourism', 'Hospitality & Tourism'),
+        ('Real Estate', 'Real Estate'),
+        ('Energy & Environment', 'Energy & Environment'),
+        ('Agriculture', 'Agriculture'),
+        ('Retail & E-commerce', 'Retail & E-commerce'),
+        ('Sports & Entertainment', 'Sports & Entertainment'),
+        ('Other', 'Other'),
+    ]
+
+    id              = models.CharField(max_length=36, primary_key=True, default=_dept_id, editable=False)
+    organization    = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='departments')
+    name            = models.CharField(max_length=255)
+    category        = models.CharField(max_length=100, blank=True)
+    description     = models.TextField(blank=True)
+    department_lead = models.CharField(max_length=255, blank=True)
+    parent          = models.ForeignKey(
+                        'self', null=True, blank=True,
+                        on_delete=models.SET_NULL,
+                        related_name='sub_departments',
+                      )
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        verbose_name = 'Department'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name} @ {self.organization.slug}'
+
+
+class OrgTeam(TimeStampedModel):
+    """A team inside a Department."""
+
+    class TeamType(models.TextChoices):
+        DEPARTMENT = 'DEPARTMENT', 'Department'
+        FUNCTION   = 'FUNCTION',   'Function'
+        SQUAD      = 'SQUAD',      'Squad'
+
+    id          = models.CharField(max_length=36, primary_key=True, default=_team_id, editable=False)
+    department  = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='teams')
+    name        = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    team_type   = models.CharField(max_length=20, choices=TeamType.choices, default=TeamType.SQUAD)
+
+    class Meta:
+        unique_together = ('department', 'name')
+        verbose_name = 'Team'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name} @ {self.department.name}'
+
+
+class OrgGroup(TimeStampedModel):
+    """A group inside a Team."""
+    id          = models.CharField(max_length=36, primary_key=True, default=_grp_id, editable=False)
+    team        = models.ForeignKey(OrgTeam, on_delete=models.CASCADE, related_name='groups')
+    name        = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    owner       = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        unique_together = ('team', 'name')
+        verbose_name = 'Group'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name} @ {self.team.name}'
+
+
+# ── Department Sidebar Item ───────────────────────────────────────────────────
+
+class DepartmentSidebarItem(TimeStampedModel):
+    """
+    A configurable sidebar entry scoped to one Department.
+    Admins can reorder, toggle, rename, and add custom links.
+    """
+
+    class ItemType(models.TextChoices):
+        NAVIGATION = 'navigation', 'Navigation'
+        ACTION     = 'action',     'Quick Action'
+        RESOURCE   = 'resource',   'Resource'
+        HIGHLIGHT  = 'highlight',  'Highlight'
+        CUSTOM     = 'custom',     'Custom Link'
+
+    id          = models.CharField(max_length=36, primary_key=True, default=_dsbi_id, editable=False)
+    department  = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='sidebar_items')
+    item_type   = models.CharField(max_length=20, choices=ItemType.choices, default=ItemType.NAVIGATION)
+    label       = models.CharField(max_length=100)
+    url         = models.CharField(max_length=500, blank=True, default='')
+    icon        = models.CharField(max_length=100, blank=True, default='')
+    order_index = models.PositiveIntegerField(default=0)
+    is_active   = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['item_type', 'order_index']
+        verbose_name = 'Department Sidebar Item'
+
+    def __str__(self):
+        return f'{self.item_type}:{self.label} @ {self.department.name}'
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
