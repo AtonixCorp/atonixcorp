@@ -8,12 +8,23 @@ import {
   IconButton, Tooltip, LinearProgress, Paper, Divider,
   Switch, FormControlLabel,
 } from '@mui/material';
-import RefreshIcon      from '@mui/icons-material/Refresh';
-import AddIcon          from '@mui/icons-material/Add';
-import CreditCardIcon   from '@mui/icons-material/CreditCard';
-import DeleteIcon       from '@mui/icons-material/Delete';
-import DownloadIcon     from '@mui/icons-material/Download';
-import { billingApi }   from '../services/cloudApi';
+import RefreshIcon         from '@mui/icons-material/Refresh';
+import AddIcon             from '@mui/icons-material/Add';
+import CreditCardIcon      from '@mui/icons-material/CreditCard';
+import DeleteIcon          from '@mui/icons-material/Delete';
+import DownloadIcon        from '@mui/icons-material/Download';
+import AccountBalanceIcon  from '@mui/icons-material/AccountBalance';
+import WarningAmberIcon    from '@mui/icons-material/WarningAmber';
+import CheckCircleIcon     from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon    from '@mui/icons-material/ErrorOutline';
+import SpeedIcon           from '@mui/icons-material/Speed';
+import SwapHorizIcon       from '@mui/icons-material/SwapHoriz';
+import SecurityIcon        from '@mui/icons-material/Security';
+import FlashOnIcon         from '@mui/icons-material/FlashOn';
+import RouterIcon          from '@mui/icons-material/Router';
+import BubbleChartIcon     from '@mui/icons-material/BubbleChart';
+import ArrowBackIcon       from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
 import type {
   BillingOverview, Invoice, PaymentMethod,
   CurrentUsage, PlanTier, ServiceCost,
@@ -611,12 +622,564 @@ function PaymentMethodsTab() {
 
 
 
-// ── Main BillingPage ──────────────────────────────────────────────────────────
+// ── Payments Board ───────────────────────────────────────────────────────────
 
-const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods'] as const;
+// Mock data for payments board (replace with real API calls)
+const mockPaymentsData = {
+  executive: {
+    volume: { today: 125000, week: 850000, month: 3200000 },
+    successRate: 98.7,
+    avgLatency: 1.2,
+    topCurrencies: ['USD', 'EUR', 'GBP', 'CAD'],
+    topCorridors: ['US→EU', 'EU→US', 'US→CA', 'UK→US'],
+    railDistribution: [
+      { rail: 'Stripe', volume: 45, color: '#635bff' },
+      { rail: 'PayPal', volume: 25, color: '#0070ba' },
+      { rail: 'ACH', volume: 15, color: '#00d4aa' },
+      { rail: 'Wire', volume: 10, color: '#ff6b35' },
+      { rail: 'Crypto', volume: 5, color: '#f7931a' },
+    ],
+    countryHeatmap: [
+      { country: 'US', volume: 1200000, risk: 'low' },
+      { country: 'EU', volume: 950000, risk: 'low' },
+      { country: 'UK', volume: 450000, risk: 'low' },
+      { country: 'CA', volume: 350000, risk: 'medium' },
+      { country: 'AU', volume: 250000, risk: 'low' },
+    ],
+  },
+  risk: {
+    blockedTransactions: 234,
+    fraudRate: 0.12,
+    amlFlags: 45,
+    velocityTriggers: 89,
+    ruleHits: [
+      { rule: 'Velocity Check', count: 89, severity: 'medium' },
+      { rule: 'Device Risk', count: 67, severity: 'low' },
+      { rule: 'IP Geolocation', count: 45, severity: 'high' },
+      { rule: 'Amount Threshold', count: 33, severity: 'medium' },
+    ],
+    reviewQueue: [
+      { id: 'TXN-001', amount: 5000, risk: 'high', reason: 'Unusual amount' },
+      { id: 'TXN-002', amount: 1200, risk: 'medium', reason: 'New device' },
+      { id: 'TXN-003', amount: 800, risk: 'low', reason: 'Velocity limit' },
+    ],
+  },
+  technical: {
+    services: [
+      { name: 'payments-api', latency: 45, errorRate: 0.02, status: 'healthy' },
+      { name: 'orchestrator', latency: 120, errorRate: 0.01, status: 'healthy' },
+      { name: 'risk-service', latency: 89, errorRate: 0.03, status: 'warning' },
+      { name: 'ledger', latency: 67, errorRate: 0.005, status: 'healthy' },
+      { name: 'settlement', latency: 234, errorRate: 0.01, status: 'healthy' },
+    ],
+    adapters: [
+      { rail: 'Stripe', health: 'healthy', latency: 1200, queueDepth: 12 },
+      { rail: 'PayPal', health: 'healthy', latency: 1500, queueDepth: 8 },
+      { rail: 'ACH', health: 'warning', latency: 3000, queueDepth: 45 },
+      { rail: 'Wire', health: 'healthy', latency: 1800, queueDepth: 3 },
+    ],
+    circuitBreakers: [
+      { service: 'stripe-adapter', status: 'closed', failures: 2 },
+      { service: 'paypal-adapter', status: 'closed', failures: 0 },
+      { service: 'ach-adapter', status: 'open', failures: 15 },
+    ],
+  },
+  finance: {
+    settlements: [
+      { rail: 'Stripe', net: 45000, feesEarned: 2250, feesPaid: 1800, pnl: 450 },
+      { rail: 'PayPal', net: 25000, feesEarned: 1250, feesPaid: 1000, pnl: 250 },
+      { rail: 'ACH', net: 15000, feesEarned: 750, feesPaid: 600, pnl: 150 },
+      { rail: 'Wire', net: 10000, feesEarned: 500, feesPaid: 400, pnl: 100 },
+    ],
+    fxPnL: 1250,
+    reconciliation: {
+      clean: 98.5,
+      mismatched: 1.2,
+      pending: 0.3,
+    },
+    exports: [
+      { type: 'Settlement Report', format: 'CSV', period: 'Daily' },
+      { type: 'FX P&L', format: 'JSON', period: 'Weekly' },
+      { type: 'Audit Trail', format: 'PDF', period: 'Monthly' },
+    ],
+  },
+};
+
+function PaymentsBoardTab() {
+  const t = useT();
+  const [view, setView] = useState<'executive' | 'risk' | 'technical' | 'finance'>('executive');
+  const data = mockPaymentsData;
+
+  const views = [
+    { key: 'executive', label: 'Executive / Ops', icon: <AccountBalanceIcon /> },
+    { key: 'risk', label: 'Risk & Compliance', icon: <SecurityIcon /> },
+    { key: 'technical', label: 'Technical / SRE', icon: <SpeedIcon /> },
+    { key: 'finance', label: 'Finance & Settlement', icon: <AccountBalanceIcon /> },
+  ] as const;
+
+  return (
+    <Box>
+      {/* View selector */}
+      <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+        {views.map(v => (
+          <Button
+            key={v.key}
+            variant={view === v.key ? 'contained' : 'outlined'}
+            startIcon={v.icon}
+            onClick={() => setView(v.key)}
+            sx={{
+              bgcolor: view === v.key ? t.brand : 'transparent',
+              borderColor: t.border,
+              color: view === v.key ? '#fff' : t.text,
+              '&:hover': { bgcolor: view === v.key ? t.brand : `${t.brand}11` },
+            }}
+          >
+            {v.label}
+          </Button>
+        ))}
+      </Box>
+
+      {/* Executive / Ops View */}
+      {view === 'executive' && (
+        <Box>
+          <Typography variant="h6" sx={{ color: t.text, mb: 3 }}>Executive Operations Dashboard</Typography>
+          <Grid container spacing={3}>
+            {/* KPIs */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.green }}>{fmt(data.executive.volume.today)}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Today Volume</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.blue }}>{data.executive.successRate}%</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Success Rate</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.yellow }}>{data.executive.avgLatency}s</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Avg Latency</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.purple }}>{data.executive.topCurrencies.length}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Active Currencies</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Rail Distribution Pie */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Rail Distribution</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {data.executive.railDistribution.map(rail => (
+                      <Box key={rail.rail}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: rail.color }} />
+                            <Typography variant="body2" sx={{ color: t.text }}>{rail.rail}</Typography>
+                          </Box>
+                          <Typography variant="body2" sx={{ color: t.text, fontWeight: 600 }}>{rail.volume}%</Typography>
+                        </Box>
+                        <LinearProgress
+                          variant="determinate"
+                          value={rail.volume}
+                          sx={{
+                            height: 8, borderRadius: 4,
+                            bgcolor: `${rail.color}22`,
+                            '& .MuiLinearProgress-bar': { bgcolor: rail.color, borderRadius: 4 },
+                          }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Top Corridors */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Top Corridors</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {data.executive.topCorridors.map(corridor => (
+                      <Box key={corridor} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <SwapHorizIcon sx={{ fontSize: '1rem', color: t.sub }} />
+                        <Typography variant="body2" sx={{ color: t.text }}>{corridor}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {/* Risk & Compliance View */}
+      {view === 'risk' && (
+        <Box>
+          <Typography variant="h6" sx={{ color: t.text, mb: 3 }}>Risk & Compliance Dashboard</Typography>
+          <Grid container spacing={3}>
+            {/* Risk Metrics */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.red }}>{data.risk.blockedTransactions}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Blocked Transactions</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.yellow }}>{data.risk.fraudRate}%</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Fraud Rate</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.purple }}>{data.risk.amlFlags}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>AML Flags</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: t.blue }}>{data.risk.velocityTriggers}</Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>Velocity Triggers</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Rule Hits */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Rule Hit Breakdown</Typography>} />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Rule</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Count</TableCell>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Severity</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data.risk.ruleHits.map(rule => (
+                          <TableRow key={rule.rule}>
+                            <TableCell sx={{ color: t.text }}>{rule.rule}</TableCell>
+                            <TableCell align="right" sx={{ color: t.text, fontWeight: 600 }}>{rule.count}</TableCell>
+                            <TableCell>
+                              <StatusChip label={rule.severity} color={
+                                rule.severity === 'high' ? t.red :
+                                rule.severity === 'medium' ? t.yellow : t.green
+                              } />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Review Queue */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Manual Review Queue</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {data.risk.reviewQueue.map(item => (
+                      <Box key={item.id} sx={{ p: 1.5, border: `1px solid ${t.border}`, borderRadius: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                          <Typography variant="body2" sx={{ color: t.text, fontWeight: 600 }}>{item.id}</Typography>
+                          <StatusChip label={item.risk} color={
+                            item.risk === 'high' ? t.red :
+                            item.risk === 'medium' ? t.yellow : t.green
+                          } />
+                        </Box>
+                        <Typography variant="caption" sx={{ color: t.sub }}>{fmt(item.amount)} - {item.reason}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {/* Technical / SRE View */}
+      {view === 'technical' && (
+        <Box>
+          <Typography variant="h6" sx={{ color: t.text, mb: 3 }}>Technical Operations Dashboard</Typography>
+          <Grid container spacing={3}>
+            {/* Service Health */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Service Health</Typography>} />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Service</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Latency</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Error Rate</TableCell>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Status</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data.technical.services.map(service => (
+                          <TableRow key={service.name}>
+                            <TableCell sx={{ color: t.text }}>{service.name}</TableCell>
+                            <TableCell align="right" sx={{ color: t.text }}>{service.latency}ms</TableCell>
+                            <TableCell align="right" sx={{ color: t.text }}>{(service.errorRate * 100).toFixed(2)}%</TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                {service.status === 'healthy' ? (
+                                  <CheckCircleIcon sx={{ fontSize: '1rem', color: t.green }} />
+                                ) : service.status === 'warning' ? (
+                                  <WarningAmberIcon sx={{ fontSize: '1rem', color: t.yellow }} />
+                                ) : (
+                                  <ErrorOutlineIcon sx={{ fontSize: '1rem', color: t.red }} />
+                                )}
+                                <Typography variant="caption" sx={{ color: t.text, textTransform: 'capitalize' }}>{service.status}</Typography>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Adapter Health */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Rail Adapters</Typography>} />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Rail</TableCell>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Health</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Latency</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Queue</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data.technical.adapters.map(adapter => (
+                          <TableRow key={adapter.rail}>
+                            <TableCell sx={{ color: t.text }}>{adapter.rail}</TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                {adapter.health === 'healthy' ? (
+                                  <CheckCircleIcon sx={{ fontSize: '1rem', color: t.green }} />
+                                ) : (
+                                  <WarningAmberIcon sx={{ fontSize: '1rem', color: t.yellow }} />
+                                )}
+                                <Typography variant="caption" sx={{ color: t.text, textTransform: 'capitalize' }}>{adapter.health}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell align="right" sx={{ color: t.text }}>{adapter.latency}ms</TableCell>
+                            <TableCell align="right" sx={{ color: t.text }}>{adapter.queueDepth}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Circuit Breakers */}
+            <Grid size={{ xs: 12 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Circuit Breakers</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    {data.technical.circuitBreakers.map(cb => (
+                      <Box key={cb.service} sx={{ p: 1.5, border: `1px solid ${t.border}`, borderRadius: 1, minWidth: 200 }}>
+                        <Typography variant="body2" sx={{ color: t.text, fontWeight: 600, mb: 0.5 }}>{cb.service}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" sx={{ color: t.sub }}>Status:</Typography>
+                          <StatusChip label={cb.status} color={cb.status === 'closed' ? t.green : t.red} />
+                        </Box>
+                        <Typography variant="caption" sx={{ color: t.sub }}>Failures: {cb.failures}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      {/* Finance & Settlement View */}
+      {view === 'finance' && (
+        <Box>
+          <Typography variant="h6" sx={{ color: t.text, mb: 3 }}>Finance & Settlement Dashboard</Typography>
+          <Grid container spacing={3}>
+            {/* Settlement Summary */}
+            <Grid size={{ xs: 12, md: 8 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Settlement by Rail</Typography>} />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ color: t.sub, fontWeight: 600 }}>Rail</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Net Settlement</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Fees Earned</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>Fees Paid</TableCell>
+                          <TableCell align="right" sx={{ color: t.sub, fontWeight: 600 }}>P&L</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data.finance.settlements.map(settlement => (
+                          <TableRow key={settlement.rail}>
+                            <TableCell sx={{ color: t.text }}>{settlement.rail}</TableCell>
+                            <TableCell align="right" sx={{ color: t.text }}>{fmt(settlement.net)}</TableCell>
+                            <TableCell align="right" sx={{ color: t.green }}>{fmt(settlement.feesEarned)}</TableCell>
+                            <TableCell align="right" sx={{ color: t.red }}>{fmt(settlement.feesPaid)}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600, color: settlement.pnl > 0 ? t.green : t.red }}>
+                              {fmt(settlement.pnl)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Reconciliation Status */}
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Reconciliation Status</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: t.text }}>Clean</Typography>
+                        <Typography variant="body2" sx={{ color: t.green, fontWeight: 600 }}>{data.finance.reconciliation.clean}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={data.finance.reconciliation.clean}
+                        sx={{
+                          height: 8, borderRadius: 4,
+                          bgcolor: `${t.green}22`,
+                          '& .MuiLinearProgress-bar': { bgcolor: t.green, borderRadius: 4 },
+                        }}
+                      />
+                    </Box>
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: t.text }}>Mismatched</Typography>
+                        <Typography variant="body2" sx={{ color: t.red, fontWeight: 600 }}>{data.finance.reconciliation.mismatched}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={data.finance.reconciliation.mismatched}
+                        sx={{
+                          height: 8, borderRadius: 4,
+                          bgcolor: `${t.red}22`,
+                          '& .MuiLinearProgress-bar': { bgcolor: t.red, borderRadius: 4 },
+                        }}
+                      />
+                    </Box>
+                    <Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: t.text }}>Pending</Typography>
+                        <Typography variant="body2" sx={{ color: t.yellow, fontWeight: 600 }}>{data.finance.reconciliation.pending}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={data.finance.reconciliation.pending}
+                        sx={{
+                          height: 8, borderRadius: 4,
+                          bgcolor: `${t.yellow}22`,
+                          '& .MuiLinearProgress-bar': { bgcolor: t.yellow, borderRadius: 4 },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* FX P&L */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: data.finance.fxPnL > 0 ? t.green : t.red }}>
+                    {fmt(data.finance.fxPnL)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: t.sub }}>FX P&L (This Month)</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Export Options */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: t.cardBg, border: `1px solid ${t.border}` }}>
+                <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Export Reports</Typography>} />
+                <CardContent>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {data.finance.exports.map(export_ => (
+                      <Box key={export_.type} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1, border: `1px solid ${t.border}`, borderRadius: 1 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ color: t.text, fontWeight: 600 }}>{export_.type}</Typography>
+                          <Typography variant="caption" sx={{ color: t.sub }}>{export_.format} • {export_.period}</Typography>
+                        </Box>
+                        <Button size="small" variant="outlined" sx={{ borderColor: t.border, color: t.sub }}>
+                          Export
+                        </Button>
+                      </Box>
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods', 'Payments Board'] as const;
 
 export default function BillingPage() {
   const t = useT();
+  const navigate = useNavigate();
   const [tab, setTab]           = useState(0);
   const [overview, setOverview] = useState<BillingOverview | null>(null);
   const [loading, setLoading]   = useState(true);
@@ -633,15 +1196,29 @@ export default function BillingPage() {
   useEffect(() => { loadOverview(); }, [loadOverview]);
 
   return (
-    <Box sx={{ bgcolor: t.panelBg, minHeight: '100vh', p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" sx={{ color: t.text, fontWeight: 700 }}>Billing & Payments</Typography>
-          <Typography variant="body2" sx={{ color: t.sub }}>
-            Manage your plan, invoices, usage and payment methods
-          </Typography>
+    <Box sx={{ bgcolor: t.panelBg, minHeight: '100vh' }}>
+      {/* Navigation Header */}
+      <Box sx={{ p: 2, borderBottom: `1px solid ${t.border}`, bgcolor: t.cardBg }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/')}
+            sx={{ color: t.sub, '&:hover': { bgcolor: `${t.brand}11` } }}
+          >
+            Back to AtonixCorp
+          </Button>
         </Box>
+      </Box>
+
+      <Box sx={{ p: 3 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+          <Box>
+            <Typography variant="h5" sx={{ color: t.text, fontWeight: 700 }}>Billing & Payments</Typography>
+            <Typography variant="body2" sx={{ color: t.sub }}>
+              Manage your plan, invoices, usage and payment methods
+            </Typography>
+          </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {overview && (
             <Chip
@@ -670,14 +1247,16 @@ export default function BillingPage() {
           '& .MuiTabs-indicator': { bgcolor: t.brand },
         }}
       >
-        {TABS.map(l => <Tab key={l} label={l} />)}
+        {TABS.map((l: string) => <Tab key={l} label={l} />)}
       </Tabs>
 
       {tab === 0 && <OverviewTab data={overview} loading={loading} />}
       {tab === 1 && <InvoicesTab />}
       {tab === 2 && <UsageTab />}
       {tab === 3 && <PaymentMethodsTab />}
+      {tab === 4 && <PaymentsBoardTab />}
 
+      </Box>
     </Box>
   );
 }

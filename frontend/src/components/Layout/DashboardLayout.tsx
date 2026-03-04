@@ -909,6 +909,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
                 { label: 'Settings',      icon: <SettingsIcon />,          path: `${routeBase}/settings` },
                 { label: 'Preferences',   icon: <TuneIcon />,              path: `${routeBase}/settings/preferences` },
                 { label: 'Notifications', icon: <NotificationsNoneIcon />, path: `${routeBase}/settings/notifications` },
+                { label: 'Billing',       icon: <BillingIcon />,           path: '/billing' },
               ].map(item => (
                 <MenuItem key={item.label} onClick={() => { setProfileAnchor(null); navigate(item.path); }}
                   sx={{ gap: 1.5, fontSize: '.85rem', py: .75, mx: .5, borderRadius: '2px',

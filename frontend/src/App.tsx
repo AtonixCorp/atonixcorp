@@ -370,7 +370,6 @@ const AppShell: React.FC = () => {
             <Route path="/dashboard/cdn"                      element={<CDNPage />} />
             <Route path="/dashboard/network"                  element={<NetworkPage />} />
             <Route path="/dashboard/orchestration"            element={<OrchestrationPage />} />
-            <Route path="/dashboard/billing"                  element={<BillingPage />} />
             <Route path="/dashboard/iam"                      element={<IAMPage />} />
             <Route path="/dashboard/kms"                      element={<KMSPage />} />
             <Route path="/dashboard/secrets"                  element={<SecretsVaultPage />} />
@@ -446,6 +445,7 @@ const AppShell: React.FC = () => {
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<DomainsLandingPage />} />
           <Route path="/domains/dashboard" element={<ProtectedRoute><DomainsServiceDashboardPage /></ProtectedRoute>} />
+          <Route path="/billing"   element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
 
           {/* Onboarding Routes */}
           <Route path="/onboarding" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
