@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 // Import onboarding components
 import AccountCreationForm from './AccountCreationForm';
+import EnterpriseSetupStep from './EnterpriseSetupStep';
 import PlanSelectionStep from './PlanSelectionStep';
 import ProjectInitialization from './ProjectInitialization';
 import OnboardingChecklist from './OnboardingChecklist';
@@ -29,14 +30,21 @@ const DEV_STEPS = [
   'Choose Plan',
 ];
 
+const ENTERPRISE_STEPS = [
+  'Create Account',
+  'Choose Plan',
+  'Set Up Organization',
+];
+
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth() as any;
   const { state, actions } = useOnboarding();
 
-  const isDeveloper = state.userPlan === 'developer';
-  const steps = isDeveloper ? DEV_STEPS : CLOUD_STEPS;
+  const isDeveloper  = state.userPlan === 'developer';
+  const isEnterprise = state.userPlan === 'enterprise';
+  const steps = isDeveloper ? DEV_STEPS : isEnterprise ? ENTERPRISE_STEPS : CLOUD_STEPS;
 
   // Determine current phase from URL
   useEffect(() => {
@@ -54,6 +62,7 @@ const OnboardingFlow: React.FC = () => {
   const getPhaseFromPath = (path: string): number | null => {
     if (path.includes('/account')) return 1;
     if (path.includes('/plan')) return 2;
+    if (path.endsWith('/enterprise') || path.includes('/onboarding/enterprise')) return 8;
     if (path.includes('/project')) return 3;
     if (path.includes('/checklist')) return 4;
     if (path.includes('/deploy')) return 5;
@@ -77,10 +86,19 @@ const OnboardingFlow: React.FC = () => {
           actions.setUserPlan('developer');
           actions.completeOnboarding();
           navigate('/developer/Dashboard');
+        } else if (data === 'enterprise') {
+          // Enterprise users: go to org setup step
+          actions.setUserPlan('enterprise');
+          navigate('/onboarding/enterprise');
         } else {
           actions.setUserPlan('cloud');
           navigate('/onboarding/project');
         }
+        break;
+
+      case 8: // enterprise org setup done
+        actions.completeOnboarding();
+        navigate(`/enterprise/${data?.slug ?? 'org'}/overview`);
         break;
 
       case 3: // project done
@@ -110,7 +128,7 @@ const OnboardingFlow: React.FC = () => {
 
   const handleSkipToDashboard = () => {
     actions.completeOnboarding();
-    navigate(isDeveloper ? '/developer/Dashboard' : '/dashboard');
+    navigate(isEnterprise ? '/enterprise/org/overview' : isDeveloper ? '/developer/Dashboard' : '/dashboard');
   };
 
   const renderCurrentPhase = () => {
@@ -156,6 +174,12 @@ const OnboardingFlow: React.FC = () => {
         return (
           <PostDeploymentSurface
             onComplete={() => handlePhaseComplete(7)}
+          />
+        );
+      case 8:
+        return (
+          <EnterpriseSetupStep
+            onComplete={(data) => handlePhaseComplete(8, data)}
           />
         );
       default:

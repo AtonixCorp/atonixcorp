@@ -8,12 +8,13 @@ import {
   Cloud as CloudIcon,
   Code as DevIcon,
   CheckCircle as CheckIcon,
+  Groups as GroupsIcon,
 } from '@mui/icons-material';
 import { Card as DSCard } from '../design-system/Card';
 import { Button as DSButton } from '../design-system/Button';
 
 interface Plan {
-  id: 'cloud' | 'developer';
+  id: 'cloud' | 'developer' | 'enterprise';
   title: string;
   subtitle: string;
   icon: React.ReactNode;
@@ -55,14 +56,30 @@ const PLANS: Plan[] = [
     ],
     cta: 'Start with Developer Tools',
   },
+  {
+    id: 'enterprise',
+    title: 'Enterprise',
+    subtitle: 'Business command center for your organization',
+    icon: <GroupsIcon sx={{ fontSize: 48 }} />,
+    color: '#153d75',
+    features: [
+      'Organization & team management',
+      'Marketing campaigns & audiences',
+      'Email service & sending domains',
+      'Custom domains & branding',
+      'Billing & subscription management',
+      'Compliance & audit logs',
+    ],
+    cta: 'Start with Enterprise',
+  },
 ];
 
 interface PlanSelectionStepProps {
-  onComplete: (plan: 'cloud' | 'developer') => void;
+  onComplete: (plan: 'cloud' | 'developer' | 'enterprise') => void;
 }
 
 const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({ onComplete }) => {
-  const [selected, setSelected] = useState<'cloud' | 'developer' | null>(null);
+  const [selected, setSelected] = useState<'cloud' | 'developer' | 'enterprise' | null>(null);
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', p: 3 }}>
@@ -145,7 +162,7 @@ const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({ onComplete }) => 
       </Box>
 
       <Typography variant="caption" color="text.secondary" display="block" textAlign="center" sx={{ mt: 2 }}>
-        Developer Tools plan has no cloud infrastructure costs. Switch to Cloud Platform any time.
+        Developer Tools has no infrastructure costs. Enterprise includes the business command center. Switch plans any time.
       </Typography>
     </Box>
   );

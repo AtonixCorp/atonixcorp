@@ -483,6 +483,7 @@ const AppShell: React.FC = () => {
           <Route path="/onboarding/deploy" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/dashboard" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
           <Route path="/onboarding/advanced" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/enterprise" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
 
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/support"   element={<SupportPage />} />

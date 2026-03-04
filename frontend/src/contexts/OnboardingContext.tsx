@@ -53,7 +53,7 @@ export interface OnboardingState {
   isCompleted: boolean;
 
   // User plan chosen during onboarding
-  userPlan: 'cloud' | 'developer' | null;
+  userPlan: 'cloud' | 'developer' | 'enterprise' | null;
 }
 
 export interface OnboardingActions {
@@ -66,7 +66,7 @@ export interface OnboardingActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   completeOnboarding: () => void;
-  setUserPlan: (plan: 'cloud' | 'developer') => void;
+  setUserPlan: (plan: 'cloud' | 'developer' | 'enterprise') => void;
   reset: () => void;
 }
 
@@ -80,7 +80,7 @@ type OnboardingAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'COMPLETE_ONBOARDING' }
-  | { type: 'SET_USER_PLAN'; payload: 'cloud' | 'developer' }
+  | { type: 'SET_USER_PLAN'; payload: 'cloud' | 'developer' | 'enterprise' }
   | { type: 'RESET' };
 
 const initialState: OnboardingState = {

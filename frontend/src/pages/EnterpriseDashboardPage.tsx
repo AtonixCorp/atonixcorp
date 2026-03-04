@@ -2,7 +2,7 @@
 // Business command center: org management, teams, marketing, email, domains,
 // branding, billing, and compliance — all scoped to an organization (tenant).
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Grid, Card, CardContent, CardHeader,
   Chip, Button, Avatar, Table, TableHead, TableRow,
@@ -10,8 +10,16 @@ import {
   TextField, MenuItem, Select, FormControl, InputLabel,
   Dialog, DialogTitle, DialogContent, DialogActions,
   Tabs, Tab, Divider, IconButton, Tooltip,
-  Alert, Snackbar, Paper,
+  Alert, Snackbar, Paper, CircularProgress,
 } from '@mui/material';
+import {
+  organizationApi, membersApi, sendDomainsApi, senderIdentitiesApi,
+  emailTemplatesApi, orgDomainsApi, brandingApi, enterpriseBillingApi, auditLogsApi,
+} from '../services/enterpriseApi';
+import type {
+  OrgData, OrgMember, SendDomain, SenderIdentity, EmailTemplate,
+  OrgDomain, BrandingProfile, BrandAsset, Subscription, EnterpriseInvoice, AuditLogEntry,
+} from '../services/enterpriseApi';
 import AddIcon                from '@mui/icons-material/Add';
 import EditIcon               from '@mui/icons-material/Edit';
 import GroupsIcon             from '@mui/icons-material/Groups';
@@ -192,7 +200,8 @@ function MetricCard({ label, value, color, sub }: { label: string; value: string
 }
 
 // ── Section: Overview ─────────────────────────────────────────────────────────
-function OverviewSection({ org, navigate, orgSlug }: { org: Org; navigate: ReturnType<typeof useNavigate>; orgSlug: string }) {
+function OverviewSection({ org, navigate, orgSlug }: { org: OrgData | null; navigate: ReturnType<typeof useNavigate>; orgSlug: string }) {
+  if (!org) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
   return (
     <Box>
       {/* Org identity */}
@@ -211,7 +220,7 @@ function OverviewSection({ org, navigate, orgSlug }: { org: Org; navigate: Retur
               <Typography variant="body2" sx={{ color: T.sub, mt: 0.5 }}>
                 {org.primary_domain} · {org.industry} · {org.country}
               </Typography>
-              <Typography variant="caption" sx={{ color: T.sub }}>Member since {org.created_at}</Typography>
+              <Typography variant="caption" sx={{ color: T.sub }}>Member since {org.created_at?.slice(0,10)}</Typography>
             </Box>
           </Box>
         </CardContent>
@@ -219,12 +228,12 @@ function OverviewSection({ org, navigate, orgSlug }: { org: Org; navigate: Retur
 
       {/* KPI metrics */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Members"    value={mockMembers.length}   color={T.brand}  /></Grid>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Teams"      value={mockTeams.length}     color={T.blue}   /></Grid>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Campaigns"  value={mockCampaigns.filter(c => c.status === 'RUNNING').length} color={T.green} sub="active" /></Grid>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Emails 30d" value="26.8k"                color={T.purple} /></Grid>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Domains"    value={mockDomains.filter(d => d.status === 'ACTIVE').length} color={T.yellow} sub="active" /></Grid>
-        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Audit Events" value={mockAudit.length}   color={T.sub}    /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Members"    value={org.member_count}  color={T.brand}  /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Teams"      value="—"                 color={T.blue}   /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Campaigns"  value="—"                 color={T.green}  sub="active" /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Emails 30d" value="—"                 color={T.purple} /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Domains"    value="—"                 color={T.yellow} sub="active" /></Grid>
+        <Grid size={{ xs: 6, md: 2 }}><MetricCard label="Audit Events" value="—"               color={T.sub}    /></Grid>
       </Grid>
 
       {/* Quick links */}
@@ -253,16 +262,34 @@ function OverviewSection({ org, navigate, orgSlug }: { org: Org; navigate: Retur
 }
 
 // ── Section: Organization (Members) ──────────────────────────────────────────
-function OrganizationSection() {
+function OrganizationSection({ orgId }: { orgId: string }) {
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<MemberRole>('MEMBER');
   const [snack, setSnack] = useState('');
 
+  const loadMembers = useCallback(() => {
+    if (!orgId) return;
+    setLoading(true);
+    membersApi.list(orgId)
+      .then(setMembers)
+      .catch(() => setSnack('Failed to load members'))
+      .finally(() => setLoading(false));
+  }, [orgId]);
+
+  useEffect(() => { loadMembers(); }, [loadMembers]);
+
   const handleInvite = () => {
-    setSnack(`Invitation sent to ${inviteEmail}`);
-    setInviteOpen(false);
-    setInviteEmail('');
+    membersApi.invite(orgId, { email: inviteEmail, role: inviteRole })
+      .then(newMember => {
+        setMembers(prev => [...prev, newMember]);
+        setSnack(`Invitation sent to ${inviteEmail}`);
+        setInviteOpen(false);
+        setInviteEmail('');
+      })
+      .catch(() => setSnack('Failed to send invitation'));
   };
 
   const roleColors: Record<MemberRole, string> = {
@@ -279,6 +306,9 @@ function OrganizationSection() {
           </Button>
         }
       >
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>
+        ) : (
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -289,11 +319,13 @@ function OrganizationSection() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {mockMembers.map(m => (
+              {members.map(m => (
                 <TableRow key={m.id} hover sx={{ '& td': { borderColor: T.border } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: T.brand, fontSize: '.8rem' }}>{m.avatar}</Avatar>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: T.brand, fontSize: '.8rem' }}>
+                        {m.name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)}
+                      </Avatar>
                       <Typography variant="body2" sx={{ color: T.text, fontWeight: 600 }}>{m.name}</Typography>
                     </Box>
                   </TableCell>
@@ -303,7 +335,7 @@ function OrganizationSection() {
                       sx={{ bgcolor: `${roleColors[m.role]}22`, color: roleColors[m.role], fontWeight: 700, fontSize: '.7rem' }} />
                   </TableCell>
                   <TableCell><StatusChip status={m.status} /></TableCell>
-                  <TableCell><Typography variant="caption" sx={{ color: T.sub }}>{m.joined}</Typography></TableCell>
+                  <TableCell><Typography variant="caption" sx={{ color: T.sub }}>{m.joined_at ?? m.invited_at ?? '—'}</Typography></TableCell>
                   <TableCell>
                     <IconButton size="small"><EditIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton>
                   </TableCell>
@@ -312,6 +344,7 @@ function OrganizationSection() {
             </TableBody>
           </Table>
         </TableContainer>
+        )}
       </SectionCard>
 
       {/* Role matrix */}
@@ -533,9 +566,27 @@ function MarketingSection() {
 }
 
 // ── Section: Email Service ────────────────────────────────────────────────────
-function EmailSection() {
+function EmailSection({ orgId }: { orgId: string }) {
   const [tab, setTab] = useState(0);
   const [snack, setSnack] = useState('');
+  const [emailDomains, setEmailDomains] = useState<SendDomain[]>([]);
+  const [senders, setSenders] = useState<SenderIdentity[]>([]);
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [domLoading, setDomLoading] = useState(true);
+
+  useEffect(() => {
+    if (!orgId) return;
+    Promise.all([
+      sendDomainsApi.list(orgId),
+      senderIdentitiesApi.list(orgId),
+      emailTemplatesApi.list(orgId),
+    ]).then(([doms, sndrs, tmpls]) => {
+      setEmailDomains(doms);
+      setSenders(sndrs);
+      setTemplates(tmpls);
+    }).catch(() => setSnack('Failed to load email data'))
+      .finally(() => setDomLoading(false));
+  }, [orgId]);
 
   return (
     <Box>
@@ -550,7 +601,11 @@ function EmailSection() {
         <SectionCard title="Email Sending Domains" icon={<DnsIcon />}
           action={<Button startIcon={<AddIcon />} variant="contained" size="small" sx={{ bgcolor: T.brand }}>Add Domain</Button>}
         >
-          {mockEmailDomains.map(d => (
+          {domLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}><CircularProgress size={28} /></Box>
+          ) : emailDomains.length === 0 ? (
+            <Typography variant="body2" sx={{ color: T.sub, py: 2 }}>No sending domains configured yet.</Typography>
+          ) : emailDomains.map(d => (
             <Paper key={d.id} sx={{ p: 2, bgcolor: T.card2, border: `1px solid ${T.border}`, borderRadius: 2, mb: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -559,7 +614,13 @@ function EmailSection() {
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <StatusChip status={d.status} />
-                  <Tooltip title="Check DNS"><IconButton size="small" onClick={() => setSnack('DNS check triggered')}><RefreshIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton></Tooltip>
+                  <Tooltip title="Check DNS">
+                    <IconButton size="small" onClick={() => {
+                      sendDomainsApi.checkDns(orgId, d.id)
+                        .then(updated => setEmailDomains(prev => prev.map(x => x.id === updated.id ? updated : x)))
+                        .catch(() => setSnack('DNS check failed'));
+                    }}><RefreshIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton>
+                  </Tooltip>
                 </Box>
               </Box>
               {d.status === 'PENDING_DNS' && (
@@ -567,11 +628,11 @@ function EmailSection() {
                   Add the following DNS records to verify this domain.
                 </Alert>
               )}
-              {[['DKIM (TXT)', d.dkim], ['SPF (TXT)', d.spf]].map(([type, val]) => (
-                <Box key={String(type)} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+              {([['DKIM (TXT)', d.dkim_record], ['SPF (TXT)', d.spf_record]] as [string, string][]).map(([type, val]) => (
+                <Box key={type} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
                   <Typography variant="caption" sx={{ color: T.sub, width: 90, flexShrink: 0 }}>{type}</Typography>
                   <Box sx={{ flex: 1, bgcolor: T.bg, borderRadius: 1, px: 1.5, py: 0.5, fontFamily: 'monospace', fontSize: '.72rem', color: T.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{val}</Box>
-                  <Tooltip title="Copy"><IconButton size="small" onClick={() => { navigator.clipboard?.writeText(String(val)); setSnack('Copied!'); }}><ContentCopyIcon sx={{ fontSize: '.9rem', color: T.sub }} /></IconButton></Tooltip>
+                  <Tooltip title="Copy"><IconButton size="small" onClick={() => { navigator.clipboard?.writeText(val); setSnack('Copied!'); }}><ContentCopyIcon sx={{ fontSize: '.9rem', color: T.sub }} /></IconButton></Tooltip>
                 </Box>
               ))}
             </Paper>
@@ -583,12 +644,10 @@ function EmailSection() {
         <SectionCard title="Sender Identities" icon={<VerifiedIcon />}
           action={<Button startIcon={<AddIcon />} variant="contained" size="small" sx={{ bgcolor: T.brand }}>Add Sender</Button>}
         >
-          {[
-            { name: 'AtonixCorp Platform', email: 'noreply@atonixcorp.com', verified: true },
-            { name: 'AtonixCorp Marketing', email: 'hello@atonixcorp.com',  verified: true },
-            { name: 'AtonixCorp Support',   email: 'support@atonixcorp.com', verified: false },
-          ].map(s => (
-            <Box key={s.email} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: `1px solid ${T.border}` }}>
+          {senders.length === 0 ? (
+            <Typography variant="body2" sx={{ color: T.sub, py: 2 }}>No sender identities configured yet.</Typography>
+          ) : senders.map(s => (
+            <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: `1px solid ${T.border}` }}>
               <Box>
                 <Typography sx={{ color: T.text, fontWeight: 600 }}>{s.name}</Typography>
                 <Typography variant="caption" sx={{ color: T.sub }}>{s.email}</Typography>
@@ -596,7 +655,12 @@ function EmailSection() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {s.verified
                   ? <Chip label="Verified" size="small" icon={<CheckCircleIcon sx={{ fontSize: '.9rem' }} />} sx={{ bgcolor: `${T.green}22`, color: T.green }} />
-                  : <Button size="small" variant="outlined" sx={{ borderColor: T.yellow, color: T.yellow, fontSize: '.75rem' }}>Verify</Button>
+                  : <Button size="small" variant="outlined" sx={{ borderColor: T.yellow, color: T.yellow, fontSize: '.75rem' }}
+                      onClick={() => senderIdentitiesApi.verify(orgId, s.id)
+                        .then(updated => setSenders(prev => prev.map(x => x.id === updated.id ? updated : x)))
+                        .catch(() => setSnack('Verify failed'))}>
+                      Verify
+                    </Button>
                 }
               </Box>
             </Box>
@@ -608,27 +672,27 @@ function EmailSection() {
         <SectionCard title="Email Templates" icon={<MailOutlineIcon />}
           action={<Button startIcon={<AddIcon />} variant="contained" size="small" sx={{ bgcolor: T.brand }}>New Template</Button>}
         >
+          {templates.length === 0 ? (
+            <Typography variant="body2" sx={{ color: T.sub, py: 2 }}>No email templates yet.</Typography>
+          ) : (
           <Grid container spacing={2}>
-            {[
-              { name: 'Welcome Email',     subject: 'Welcome to AtonixCorp!',         vars: ['name', 'plan'], updated: '2026-02-20' },
-              { name: 'Newsletter',        subject: 'AtonixCorp Monthly Update',       vars: ['name', 'month'], updated: '2026-03-01' },
-              { name: 'Trial Expiry',      subject: 'Your trial ends in {{days}} days', vars: ['name', 'days'], updated: '2026-01-15' },
-            ].map(t => (
-              <Grid key={t.name} size={{ xs: 12, md: 4 }}>
+            {templates.map(t => (
+              <Grid key={t.id} size={{ xs: 12, md: 4 }}>
                 <Paper sx={{ p: 2, bgcolor: T.card2, border: `1px solid ${T.border}`, borderRadius: 2, height: '100%' }}>
                   <Typography sx={{ color: T.text, fontWeight: 700, mb: 0.5 }}>{t.name}</Typography>
                   <Typography variant="caption" sx={{ color: T.sub, display: 'block', mb: 1 }}>{t.subject}</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
-                    {t.vars.map(v => <Chip key={v} label={`{{${v}}}`} size="small" sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontSize: '.7rem' }} />)}
+                    {t.variables.map((v: string) => <Chip key={v} label={`{{${v}}}`} size="small" sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontSize: '.7rem' }} />)}
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ color: T.sub }}>Updated {t.updated}</Typography>
+                    <Typography variant="caption" sx={{ color: T.sub }}>Updated {t.updated_at?.slice(0, 10)}</Typography>
                     <Button size="small" sx={{ color: T.brand, minWidth: 0, px: 1 }}>Edit</Button>
                   </Box>
                 </Paper>
               </Grid>
             ))}
           </Grid>
+          )}
         </SectionCard>
       )}
 
@@ -656,11 +720,26 @@ function EmailSection() {
 }
 
 // ── Section: Domains ──────────────────────────────────────────────────────────
-function DomainsSection() {
+function DomainsSection({ orgId }: { orgId: string }) {
+  const [domains, setDomains] = useState<OrgDomain[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [snack, setSnack] = useState('');
+
+  useEffect(() => {
+    if (!orgId) return;
+    orgDomainsApi.list(orgId)
+      .then(setDomains)
+      .catch(() => setSnack('Failed to load domains'))
+      .finally(() => setLoading(false));
+  }, [orgId]);
+
   return (
     <SectionCard title="Organization Domains" icon={<DomainIcon />}
       action={<Button startIcon={<AddIcon />} variant="contained" size="small" sx={{ bgcolor: T.brand }}>Add Domain</Button>}
     >
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>
+      ) : (
       <TableContainer>
         <Table size="small">
           <TableHead>
@@ -671,7 +750,7 @@ function DomainsSection() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {mockDomains.map(d => (
+            {domains.map(d => (
               <TableRow key={d.id} hover sx={{ '& td': { borderColor: T.border } }}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -683,7 +762,7 @@ function DomainsSection() {
                 <TableCell><StatusChip status={d.status} /></TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {d.linked.map(l => <Chip key={l} label={l} size="small" sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontSize: '.7rem' }} />)}
+                    {(d.linked_apps ?? []).map((l: string) => <Chip key={l} label={l} size="small" sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontSize: '.7rem' }} />)}
                   </Box>
                 </TableCell>
                 <TableCell>
@@ -694,23 +773,50 @@ function DomainsSection() {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack('')} message={snack} />
     </SectionCard>
   );
 }
 
 // ── Section: Branding ─────────────────────────────────────────────────────────
-function BrandingSection() {
-  const [primary, setPrimary]     = useState(branding.primary_color);
-  const [secondary, setSecondary] = useState(branding.secondary_color);
-  const [accent, setAccent]       = useState(branding.accent_color);
+function BrandingSection({ orgId }: { orgId: string }) {
+  const [profile, setProfile] = useState<BrandingProfile | null>(null);
+  const [assets, setAssets]   = useState<BrandAsset[]>([]);
+  const [primary, setPrimary]     = useState('#153d75');
+  const [secondary, setSecondary] = useState('#1e5fa8');
+  const [accent, setAccent]       = useState('#00d4aa');
   const [snack, setSnack]         = useState('');
+
+  useEffect(() => {
+    if (!orgId) return;
+    brandingApi.get(orgId)
+      .then(p => {
+        setProfile(p);
+        setPrimary(p.primary_color || '#153d75');
+        setSecondary(p.secondary_color || '#1e5fa8');
+        setAccent(p.accent_color || '#00d4aa');
+      })
+      .catch(() => {/* profile may not exist yet */});
+    brandingApi.listAssets(orgId)
+      .then(setAssets)
+      .catch(() => {});
+  }, [orgId]);
+
+  const handleSave = () => {
+    brandingApi.update(orgId, { primary_color: primary, secondary_color: secondary, accent_color: accent })
+      .then(p => { setProfile(p); setSnack('Branding profile saved'); })
+      .catch(() => setSnack('Failed to save branding'));
+  };
+
+  const fontFamily = profile?.font_family || 'IBM Plex Sans';
 
   return (
     <Box>
       <SectionCard title="Brand Identity" icon={<PaletteIcon />}
         action={
           <Button variant="contained" size="small" sx={{ bgcolor: T.brand }}
-            onClick={() => setSnack('Branding profile saved')}>
+            onClick={handleSave}>
             Save Changes
           </Button>
         }
@@ -753,8 +859,8 @@ function BrandingSection() {
                 <Button variant="outlined" size="small" sx={{ borderColor: 'rgba(255,255,255,.4)', color: '#fff', '&:hover': { borderColor: '#fff' } }}>
                   Learn More
                 </Button>
-                <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,.6)', mt: 1.5, fontFamily: branding.font_family }}>
-                  {branding.font_family} · Enterprise branding preview
+                <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,.6)', mt: 1.5, fontFamily: fontFamily }}>
+                  {fontFamily} · Enterprise branding preview
                 </Typography>
               </Box>
             </Paper>
@@ -766,26 +872,41 @@ function BrandingSection() {
       <SectionCard title="Brand Assets" icon={<ColorLensIcon />}
         action={<Button startIcon={<AddIcon />} variant="outlined" size="small" sx={{ borderColor: T.border, color: T.text }}>Upload Asset</Button>}
       >
-        <Grid container spacing={2}>
-          {[
-            { type: 'LOGO', label: 'Primary Logo', size: '512×512 PNG' },
-            { type: 'ICON', label: 'App Icon',     size: '192×192 PNG' },
-            { type: 'IMAGE', label: 'OG Image',   size: '1200×630 PNG' },
-          ].map(a => (
-            <Grid key={a.type} size={{ xs: 12, sm: 4 }}>
-              <Paper sx={{ p: 2, bgcolor: T.card2, border: `2px dashed ${T.border}`, borderRadius: 2, textAlign: 'center' }}>
-                <Box sx={{ width: 64, height: 64, bgcolor: `${T.brand}22`, borderRadius: 2, mx: 'auto', mb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ColorLensIcon sx={{ color: T.brand }} />
-                </Box>
-                <Typography variant="body2" sx={{ color: T.text, fontWeight: 600 }}>{a.label}</Typography>
-                <Typography variant="caption" sx={{ color: T.sub }}>{a.size}</Typography>
-                <Box sx={{ mt: 1.5 }}>
-                  <Button size="small" sx={{ color: T.brand, fontSize: '.75rem' }}>Upload</Button>
-                </Box>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+        {assets.length === 0 ? (
+          <Grid container spacing={2}>
+            {[
+              { type: 'LOGO', label: 'Primary Logo', size: '512×512 PNG' },
+              { type: 'ICON', label: 'App Icon',     size: '192×192 PNG' },
+              { type: 'IMAGE', label: 'OG Image',    size: '1200×630 PNG' },
+            ].map(a => (
+              <Grid key={a.type} size={{ xs: 12, sm: 4 }}>
+                <Paper sx={{ p: 2, bgcolor: T.card2, border: `2px dashed ${T.border}`, borderRadius: 2, textAlign: 'center' }}>
+                  <Box sx={{ width: 64, height: 64, bgcolor: `${T.brand}22`, borderRadius: 2, mx: 'auto', mb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ColorLensIcon sx={{ color: T.brand }} />
+                  </Box>
+                  <Typography variant="body2" sx={{ color: T.text, fontWeight: 600 }}>{a.label}</Typography>
+                  <Typography variant="caption" sx={{ color: T.sub }}>{a.size}</Typography>
+                  <Box sx={{ mt: 1.5 }}><Button size="small" sx={{ color: T.brand, fontSize: '.75rem' }}>Upload</Button></Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Grid container spacing={2}>
+            {assets.map(a => (
+              <Grid key={a.id} size={{ xs: 12, sm: 4 }}>
+                <Paper sx={{ p: 2, bgcolor: T.card2, border: `1px solid ${T.border}`, borderRadius: 2, textAlign: 'center' }}>
+                  {a.url
+                    ? <Box component="img" src={a.url} alt={a.label} sx={{ width: 64, height: 64, objectFit: 'contain', mb: 1 }} />
+                    : <Box sx={{ width: 64, height: 64, bgcolor: `${T.brand}22`, borderRadius: 2, mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ColorLensIcon sx={{ color: T.brand }} /></Box>
+                  }
+                  <Typography variant="body2" sx={{ color: T.text, fontWeight: 600 }}>{a.label}</Typography>
+                  <Typography variant="caption" sx={{ color: T.sub }}>{a.type}</Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </SectionCard>
       <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack('')} message={snack} />
     </Box>
@@ -793,25 +914,45 @@ function BrandingSection() {
 }
 
 // ── Section: Billing ──────────────────────────────────────────────────────────
-function BillingSection({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
-  const invoices = [
-    { id: 'INV-2026-03', period: 'Mar 2026', amount: 2199, status: 'DUE',  due: '2026-04-01' },
-    { id: 'INV-2026-02', period: 'Feb 2026', amount: 2199, status: 'PAID', due: '2026-03-01' },
-    { id: 'INV-2026-01', period: 'Jan 2026', amount: 2099, status: 'PAID', due: '2026-02-01' },
-  ];
+function BillingSection({ navigate, orgId }: { navigate: ReturnType<typeof useNavigate>; orgId: string }) {
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [invoices, setInvoices] = useState<EnterpriseInvoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [snack, setSnack] = useState('');
+
+  useEffect(() => {
+    if (!orgId) return;
+    Promise.all([
+      enterpriseBillingApi.subscription(orgId).catch(() => null),
+      enterpriseBillingApi.invoices(orgId).catch(() => []),
+    ]).then(([sub, invs]) => {
+      setSubscription(sub);
+      setInvoices(invs as EnterpriseInvoice[]);
+    }).finally(() => setLoading(false));
+  }, [orgId]);
+
+  const planName  = subscription?.plan?.name ?? 'Enterprise';
+  const planPrice = subscription?.plan?.price_monthly ?? '—';
+  const renewal   = subscription?.renewal_date ?? '—';
 
   return (
     <Box>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={32} /></Box>
+      ) : (
+      <>
       {/* Plan card */}
       <Card sx={{ bgcolor: `${T.brand}11`, border: `1px solid ${T.brand}44`, mb: 3 }}>
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <Box>
-              <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.3rem', fontFamily: T.font }}>Enterprise Plan</Typography>
-              <Typography variant="body2" sx={{ color: T.sub, mt: 0.5 }}>Next renewal: April 1, 2026 · Annual contract</Typography>
+              <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.3rem', fontFamily: T.font }}>{planName}</Typography>
+              <Typography variant="body2" sx={{ color: T.sub, mt: 0.5 }}>Next renewal: {renewal} · {subscription?.status ?? 'ACTIVE'}</Typography>
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography sx={{ color: T.brand, fontWeight: 800, fontSize: '1.6rem', fontFamily: T.font }}>{fmt$(2199)}<Typography component="span" variant="caption" sx={{ color: T.sub }}>/mo</Typography></Typography>
+              <Typography sx={{ color: T.brand, fontWeight: 800, fontSize: '1.6rem', fontFamily: T.font }}>
+                ${planPrice}<Typography component="span" variant="caption" sx={{ color: T.sub }}>/mo</Typography>
+              </Typography>
               <Button variant="outlined" size="small" sx={{ borderColor: T.brand, color: T.brand, mt: 1 }}
                 onClick={() => navigate('/billing')}>
                 Manage Billing
@@ -860,12 +1001,15 @@ function BillingSection({ navigate }: { navigate: ReturnType<typeof useNavigate>
               {invoices.map(inv => (
                 <TableRow key={inv.id} hover sx={{ '& td': { borderColor: T.border } }}>
                   <TableCell sx={{ color: T.text, fontFamily: 'monospace', fontWeight: 600 }}>{inv.id}</TableCell>
-                  <TableCell sx={{ color: T.sub }}>{inv.period}</TableCell>
-                  <TableCell sx={{ color: T.text, fontWeight: 700 }}>{fmt$(inv.amount)}</TableCell>
+                  <TableCell sx={{ color: T.sub }}>{inv.period_start?.slice(0,10)} – {inv.period_end?.slice(0,10)}</TableCell>
+                  <TableCell sx={{ color: T.text, fontWeight: 700 }}>${inv.amount}</TableCell>
                   <TableCell><StatusChip status={inv.status} /></TableCell>
-                  <TableCell sx={{ color: T.sub }}>{inv.due}</TableCell>
+                  <TableCell sx={{ color: T.sub }}>{inv.created_at?.slice(0,10)}</TableCell>
                   <TableCell>
-                    <Tooltip title="Download PDF"><IconButton size="small"><DownloadIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton></Tooltip>
+                    {inv.pdf_url
+                      ? <Tooltip title="Download PDF"><IconButton size="small" component="a" href={inv.pdf_url} target="_blank"><DownloadIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton></Tooltip>
+                      : <Tooltip title="Download PDF"><IconButton size="small"><DownloadIcon sx={{ fontSize: '1rem', color: T.sub }} /></IconButton></Tooltip>
+                    }
                   </TableCell>
                 </TableRow>
               ))}
@@ -873,16 +1017,34 @@ function BillingSection({ navigate }: { navigate: ReturnType<typeof useNavigate>
           </Table>
         </TableContainer>
       </SectionCard>
+      </>
+      )}
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack('')} message={snack} />
     </Box>
   );
 }
 
 // ── Section: Compliance ───────────────────────────────────────────────────────
-function ComplianceSection() {
+function ComplianceSection({ orgId }: { orgId: string }) {
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
-  const filtered = mockAudit.filter(e =>
-    !filter || e.action.toLowerCase().includes(filter.toLowerCase()) || e.actor.toLowerCase().includes(filter.toLowerCase())
+
+  useEffect(() => {
+    if (!orgId) return;
+    auditLogsApi.list(orgId)
+      .then(setAuditLogs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [orgId]);
+
+  const filtered = auditLogs.filter(e =>
+    !filter ||
+    e.action.toLowerCase().includes(filter.toLowerCase()) ||
+    e.actor_name.toLowerCase().includes(filter.toLowerCase())
   );
+
+  const uniqueActors = new Set(auditLogs.map(e => e.actor_email)).size;
 
   const actionColor: Record<string, string> = {
     MEMBER_INVITED: T.blue, CAMPAIGN_SENT: T.green, DOMAIN_ADDED: T.purple,
@@ -893,9 +1055,9 @@ function ComplianceSection() {
     <Box>
       {/* Summary */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Audit Events"  value={mockAudit.length}  color={T.brand} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Active Users"  value={mockMembers.filter(m => m.status === 'ACTIVE').length} color={T.green} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Action Types"  value={new Set(mockAudit.map(a => a.action)).size} color={T.blue} /></Grid>
+        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Audit Events"  value={auditLogs.length}  color={T.brand} /></Grid>
+        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Active Actors" value={uniqueActors}        color={T.green} /></Grid>
+        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Action Types"  value={new Set(auditLogs.map(a => a.action)).size} color={T.blue} /></Grid>
         <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Days Retained" value="90"  color={T.sub} sub="audit log" /></Grid>
       </Grid>
 
@@ -911,6 +1073,9 @@ function ComplianceSection() {
           </Box>
         }
       >
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>
+        ) : (
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -926,28 +1091,29 @@ function ComplianceSection() {
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar sx={{ width: 24, height: 24, fontSize: '.65rem', bgcolor: T.brand }}>
-                        {e.actor.split(' ').map(w => w[0]).join('')}
+                        {e.actor_name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0,2)}
                       </Avatar>
-                      <Typography variant="body2" sx={{ color: T.text }}>{e.actor}</Typography>
+                      <Typography variant="body2" sx={{ color: T.text }}>{e.actor_name}</Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
                     <Chip label={e.action} size="small"
                       sx={{ bgcolor: `${actionColor[e.action] ?? T.sub}22`, color: actionColor[e.action] ?? T.sub, fontWeight: 700, fontSize: '.7rem', fontFamily: 'monospace' }} />
                   </TableCell>
-                  <TableCell sx={{ color: T.sub }}>{e.target}</TableCell>
+                  <TableCell sx={{ color: T.sub }}>{e.target_label || e.target_id}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <CalendarTodayIcon sx={{ fontSize: '.8rem', color: T.sub }} />
-                      <Typography variant="caption" sx={{ color: T.sub }}>{e.timestamp}</Typography>
+                      <Typography variant="caption" sx={{ color: T.sub }}>{e.timestamp?.slice(0, 16).replace('T', ' ')}</Typography>
                     </Box>
                   </TableCell>
-                  <TableCell sx={{ color: T.sub, fontFamily: 'monospace', fontSize: '.78rem' }}>{e.ip}</TableCell>
+                  <TableCell sx={{ color: T.sub, fontFamily: 'monospace', fontSize: '.78rem' }}>{e.ip_address ?? '—'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+        )}
       </SectionCard>
     </Box>
   );
@@ -971,6 +1137,22 @@ const EnterpriseDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const meta = SECTION_META[section] ?? SECTION_META.overview;
 
+  // Load the real organization from the API
+  const [org, setOrg] = useState<OrgData | null>(null);
+  const [orgLoading, setOrgLoading] = useState(true);
+
+  useEffect(() => {
+    organizationApi.getBySlug(orgSlug)
+      .then(setOrg)
+      .catch(() => {/* org not found or API down; header gracefully degrades */})
+      .finally(() => setOrgLoading(false));
+  }, [orgSlug]);
+
+  const orgId = org?.id ?? '';
+  const orgName   = org?.name   ?? orgSlug;
+  const orgDomain = org?.primary_domain ?? '—';
+  const orgPlan   = org?.plan   ?? 'Enterprise';
+
   return (
     <Box sx={{ bgcolor: T.bg, minHeight: '100vh', p: { xs: 2, md: 3 }, fontFamily: T.font }}>
       {/* Page header */}
@@ -980,24 +1162,26 @@ const EnterpriseDashboardPage: React.FC = () => {
           <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.35rem', fontFamily: T.font }}>
             {meta.label}
           </Typography>
-          <Chip label={mockOrg.name} size="small"
-            sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontWeight: 700, ml: 0.5 }} />
+          {orgLoading
+            ? <CircularProgress size={16} sx={{ ml: 0.5 }} />
+            : <Chip label={orgName} size="small" sx={{ bgcolor: `${T.brand}22`, color: T.brand, fontWeight: 700, ml: 0.5 }} />
+          }
         </Box>
         <Typography variant="body2" sx={{ color: T.sub, fontFamily: T.font }}>
-          Enterprise Dashboard · {mockOrg.primary_domain} · {mockOrg.plan}
+          Enterprise Dashboard · {orgDomain} · {orgPlan}
         </Typography>
       </Box>
 
       {/* Section content */}
-      {section === 'overview'     && <OverviewSection     org={mockOrg} navigate={navigate} orgSlug={orgSlug} />}
-      {section === 'organization' && <OrganizationSection />}
+      {section === 'overview'     && <OverviewSection     org={org} navigate={navigate} orgSlug={orgSlug} />}
+      {section === 'organization' && <OrganizationSection orgId={orgId} />}
       {section === 'teams'        && <TeamsSection />}
       {section === 'marketing'    && <MarketingSection />}
-      {section === 'email'        && <EmailSection />}
-      {section === 'domains'      && <DomainsSection />}
-      {section === 'branding'     && <BrandingSection />}
-      {section === 'billing'      && <BillingSection navigate={navigate} />}
-      {section === 'compliance'   && <ComplianceSection />}
+      {section === 'email'        && <EmailSection        orgId={orgId} />}
+      {section === 'domains'      && <DomainsSection      orgId={orgId} />}
+      {section === 'branding'     && <BrandingSection     orgId={orgId} />}
+      {section === 'billing'      && <BillingSection      orgId={orgId} navigate={navigate} />}
+      {section === 'compliance'   && <ComplianceSection   orgId={orgId} />}
 
       {/* Fallback */}
       {!SECTION_META[section] && (
