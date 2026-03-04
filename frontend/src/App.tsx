@@ -89,6 +89,7 @@ import DevOperationalPage         from './pages/DevOperationalPage'
 import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
 import EnterpriseOverviewDashboard from './pages/EnterpriseOverviewDashboard';
+import EnterpriseDashboardPage   from './pages/EnterpriseDashboardPage';
 import IAMPage                   from './pages/IAMPage';
 import KMSPage                   from './pages/KMSPage';
 import SecretsVaultPage          from './pages/SecretsVaultPage';
@@ -162,6 +163,7 @@ const AppShell: React.FC = () => {
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
+  const isEnterpriseDashboard = location.pathname.startsWith('/enterprise');
   const isGroupsPage = location.pathname.startsWith('/groups');
   const isBillingPage = location.pathname === '/billing';
 
@@ -406,6 +408,21 @@ const AppShell: React.FC = () => {
             <Route path="/domains/dashboard/sections" element={<DashboardSectionsPage dashboardMode="domains" />} />
             <Route path="/domains/dashboard/:id"      element={<DomainDetailPage />} />
             <Route path="/domains/dashboard/*"        element={<DomainsServiceDashboardPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isEnterpriseDashboard) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="enterprise">
+          <Routes>
+            <Route path="/enterprise" element={<Navigate to="/enterprise/atonixcorp/overview" replace />} />
+            <Route path="/enterprise/:orgSlug" element={<Navigate to="/enterprise/atonixcorp/overview" replace />} />
+            <Route path="/enterprise/:orgSlug/:section" element={<EnterpriseDashboardPage />} />
+            <Route path="/enterprise/:orgSlug/:section/*" element={<EnterpriseDashboardPage />} />
           </Routes>
         </DashboardLayout>
       </ProtectedRoute>

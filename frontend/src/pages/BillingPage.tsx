@@ -22,9 +22,6 @@ import ErrorOutlineIcon      from '@mui/icons-material/ErrorOutline';
 import SpeedIcon             from '@mui/icons-material/Speed';
 import SwapHorizIcon         from '@mui/icons-material/SwapHoriz';
 import SecurityIcon          from '@mui/icons-material/Security';
-import FlashOnIcon           from '@mui/icons-material/FlashOn';
-import RouterIcon            from '@mui/icons-material/Router';
-import BubbleChartIcon       from '@mui/icons-material/BubbleChart';
 import ArrowBackIcon         from '@mui/icons-material/ArrowBack';
 import SaveIcon              from '@mui/icons-material/Save';
 import SearchIcon            from '@mui/icons-material/Search';
@@ -336,7 +333,7 @@ function OverviewTab({ data, loading }: { data: BillingOverview | null; loading:
               <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Top Services (This Week)</Typography>} />
               <CardContent sx={{ pt: 0 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {analysis.top_services.map((s, i) => {
+                  {analysis.top_services.map((s) => {
                     const weekTotal = analysis.current_week.total || 1;
                     const pct = Math.round((s.cost / weekTotal) * 100);
                     return (

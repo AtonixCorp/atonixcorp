@@ -38,6 +38,8 @@ import CdnIcon               from '@mui/icons-material/PublicRounded';
 import NetworkIcon           from '@mui/icons-material/RouterRounded';
 import OrchestrateIcon       from '@mui/icons-material/AccountTree';
 import SettingsIcon          from '@mui/icons-material/Settings';
+import MailOutlineIcon       from '@mui/icons-material/MailOutline';
+import PaletteIcon           from '@mui/icons-material/Palette';
 import HelpIcon              from '@mui/icons-material/HelpOutline';
 import PersonIcon            from '@mui/icons-material/Person';
 import LogoutIcon            from '@mui/icons-material/Logout';
@@ -109,7 +111,7 @@ interface NavItem {
   children?: NavItem[];
 }
 
-type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor';
+type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor' | 'enterprise';
 
 // ── Nav definition — exact order from spec ────────────────────────────────────
 const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
@@ -157,16 +159,7 @@ const CLOUD_NAV: NavItem[] = [
     ],
   },
   { label: 'Compliance',     icon: <GppGoodIcon  {...I()} />, path: '/dashboard/compliance' },
-  {
-    label: 'Enterprise',
-    icon: <GroupsIcon {...I()} />,
-    children: [
-      { label: 'Deployments',  icon: <ComputerIcon {...I('.95rem')} />, path: '/dashboard/deployments'                 },
-      { label: 'Organization', icon: <TeamIcon    {...I('.95rem')} />, path: '/dashboard/organization' },
-      { label: 'Governance',   icon: <GppGoodIcon {...I('.95rem')} />, path: '/dashboard/governance'   },
-      { label: 'Marketing',    icon: <CampaignIcon {...I('.95rem')} />, path: '/marketing-dashboard/analytics' },
-    ],
-  },
+  { label: 'Enterprise', icon: <GroupsIcon {...I()} />, path: '/enterprise/atonixcorp/overview' },
   { label: 'Developer', icon: <ComputerIcon {...I()} />, path: '/developer/Dashboard/repositories' },
 ];
 
@@ -228,6 +221,22 @@ const MONITOR_SUPPORT_NAV: NavItem[] = [];
 const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 
 const ACCOUNT_NAV: NavItem[] = [];
+
+// ── Enterprise nav (org-slug is injected at runtime) ────────────────────────
+const ENTERPRISE_NAV = (orgSlug: string): NavItem[] => [
+  { label: 'Overview',      icon: <DashboardIcon   {...I()} />, path: `/enterprise/${orgSlug}/overview`      },
+  { label: 'Organization',  icon: <TeamIcon        {...I()} />, path: `/enterprise/${orgSlug}/organization`  },
+  { label: 'Teams',         icon: <GroupsIcon      {...I()} />, path: `/enterprise/${orgSlug}/teams`         },
+  { label: 'Marketing',     icon: <CampaignIcon    {...I()} />, path: `/enterprise/${orgSlug}/marketing`     },
+  { label: 'Email Service', icon: <MailOutlineIcon {...I()} />, path: `/enterprise/${orgSlug}/email`         },
+  { label: 'Domains',       icon: <DomainIcon      {...I()} />, path: `/enterprise/${orgSlug}/domains`       },
+  { label: 'Branding',      icon: <PaletteIcon     {...I()} />, path: `/enterprise/${orgSlug}/branding`      },
+  { label: 'Billing',       icon: <BillingIcon     {...I()} />, path: `/enterprise/${orgSlug}/billing`       },
+  { label: 'Compliance',    icon: <GppGoodIcon     {...I()} />, path: `/enterprise/${orgSlug}/compliance`    },
+];
+
+const ENTERPRISE_ACCOUNT_NAV: NavItem[] = [];
+const ENTERPRISE_SUPPORT_NAV: NavItem[] = [];
 
 const DEVELOPER_ACCOUNT_NAV: NavItem[] = [];
 
@@ -402,10 +411,15 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
 }) => {
   const { user } = useAuth() as any;
   const navigate  = useNavigate();
+  const loc       = useLocation();
   const { mode: _mode }  = useColorMode();
   const isDarkSidebar = _mode === 'dark';
   const { state: onboardingState } = useOnboarding();
   const isDeveloperPlan = onboardingState.userPlan === 'developer';
+  const enterpriseOrgSlug = dashboardMode === 'enterprise'
+    ? (loc.pathname.split('/')[2] || 'default')
+    : '';
+
   const routeBase = dashboardMode === 'developer'
     ? '/developer/Dashboard'
     : dashboardMode === 'marketing'
@@ -414,7 +428,9 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         ? '/domains/dashboard'
         : dashboardMode === 'monitor'
           ? '/monitor-dashboard'
-          : '/dashboard';
+          : dashboardMode === 'enterprise'
+            ? `/enterprise/${enterpriseOrgSlug}/overview`
+            : '/dashboard';
 
   const navItems = dashboardMode === 'developer'
     ? DEVELOPER_NAV
@@ -424,7 +440,9 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         ? DOMAINS_NAV
         : dashboardMode === 'monitor'
           ? MONITOR_NAV
-          : CLOUD_NAV;
+          : dashboardMode === 'enterprise'
+            ? ENTERPRISE_NAV(enterpriseOrgSlug)
+            : CLOUD_NAV;
 
   const accountNav = dashboardMode === 'developer'
     ? DEVELOPER_ACCOUNT_NAV
@@ -434,7 +452,9 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         ? DOMAINS_ACCOUNT_NAV
         : dashboardMode === 'monitor'
           ? MONITOR_ACCOUNT_NAV
-          : ACCOUNT_NAV;
+          : dashboardMode === 'enterprise'
+            ? ENTERPRISE_ACCOUNT_NAV
+            : ACCOUNT_NAV;
 
   const supportNav = dashboardMode === 'developer'
     ? DEVELOPER_SUPPORT_NAV
@@ -444,7 +464,9 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
         ? DOMAINS_SUPPORT_NAV
         : dashboardMode === 'monitor'
           ? MONITOR_SUPPORT_NAV
-          : SUPPORT_NAV;
+          : dashboardMode === 'enterprise'
+            ? ENTERPRISE_SUPPORT_NAV
+            : SUPPORT_NAV;
 
   // Sidebar surface colours switch with the theme
   const SB_BG     = NAVY;

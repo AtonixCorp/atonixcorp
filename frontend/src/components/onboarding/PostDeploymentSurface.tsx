@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Button,
   Chip,
   List,
@@ -30,7 +29,6 @@ import {
   Backup as BackupIcon,
   Security as SecurityIcon,
   Notifications as NotificationsIcon,
-  Settings as SettingsIcon,
   PlayArrow as PlayIcon,
   Stop as StopIcon,
   Refresh as RefreshIcon,
@@ -69,13 +67,13 @@ interface PostDeploymentSurfaceProps {
   onComplete: () => void;
 }
 
-export const PostDeploymentSurface: React.FC<PostDeploymentSurfaceProps> = ({ onComplete }) => {
+export const PostDeploymentSurface: React.FC<PostDeploymentSurfaceProps> = ({ onComplete: _onComplete }) => {
   const navigate = useNavigate();
-  const { state, actions } = useOnboarding();
+  const { state: _state, actions: _actions } = useOnboarding();
   const [activeTab, setActiveTab] = useState(0);
-  const [autoScalingEnabled, setAutoScalingEnabled] = useState(false);
+  const [autoScalingEnabled, _setAutoScalingEnabled] = useState(false);
   const [monitoringEnabled, setMonitoringEnabled] = useState(true);
-  const [backupEnabled, setBackupEnabled] = useState(false);
+  const [backupEnabled, _setBackupEnabled] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

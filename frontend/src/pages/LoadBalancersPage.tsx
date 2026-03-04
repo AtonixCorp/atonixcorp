@@ -42,8 +42,7 @@ const statusColor = (status: string): 'success' | 'warning' | 'error' | 'default
 };
 
 const LoadBalancersPage: React.FC = () => {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  const _theme = useTheme();
 
   const [loadBalancers, setLoadBalancers] = useState<LoadBalancer[]>([]);
   const [selected, setSelected] = useState<LoadBalancer | null>(null);

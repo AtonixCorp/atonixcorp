@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
-  Card,
   CardContent,
   Typography,
   LinearProgress,
@@ -26,7 +25,6 @@ import {
   NetworkCheck as NetworkIcon,
   CloudUpload as CloudIcon,
   Code as CodeIcon,
-  Terminal as TerminalIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '../../contexts/OnboardingContext';
@@ -188,7 +186,7 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onComp
 
           {/* Checklist Items */}
           <List sx={{ width: '100%' }}>
-            {checklistItems.map((item, index) => (
+            {checklistItems.map((item) => (
               <ListItem
                 key={item.id}
                 sx={{

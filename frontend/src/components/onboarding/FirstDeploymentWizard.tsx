@@ -25,23 +25,11 @@ import {
   Memory as MemoryIcon,
   Storage as StorageIcon,
   NetworkCheck as NetworkIcon,
-  Security as SecurityIcon,
-  CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
-
-interface InstanceConfig {
-  name: string;
-  region: string;
-  flavor: string;
-  image: string;
-  network: string;
-  securityGroup: string;
-  sshKey: string;
-}
 
 interface Flavor {
   id: string;
@@ -96,7 +84,7 @@ interface FirstDeploymentWizardProps {
 }
 
 export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ onComplete }) => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { state, actions } = useOnboarding();
   const [activeStep, setActiveStep] = useState(0);
   const config = state.deploymentData || {

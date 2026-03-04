@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
   CardContent,
-  TextField,
   Typography,
   Alert,
   Stepper,
@@ -39,10 +38,10 @@ export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({
   onComplete,
   initialData
 }) => {
-  const navigate = useNavigate();
-  const { state, actions } = useOnboarding();
+  const _navigate = useNavigate();
+  const { state: _state, actions } = useOnboarding();
   const [activeStep, setActiveStep] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({

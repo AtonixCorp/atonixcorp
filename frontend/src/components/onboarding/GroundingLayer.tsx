@@ -14,10 +14,8 @@ import {
   Button,
   LinearProgress,
   Alert,
-  Divider,
   Avatar,
   IconButton,
-  Tooltip,
 } from '@mui/material';
 import {
   Computer as ComputeIcon,
@@ -25,9 +23,6 @@ import {
   NetworkCheck as NetworkIcon,
   Security as SecurityIcon,
   AccountBalance as BillingIcon,
-  Dashboard as DashboardIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
   Help as HelpIcon,
   TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
@@ -73,9 +68,9 @@ interface GroundingLayerProps {
   onComplete: () => void;
 }
 
-export const GroundingLayer: React.FC<GroundingLayerProps> = ({ onComplete }) => {
+export const GroundingLayer: React.FC<GroundingLayerProps> = ({ onComplete: _onComplete }) => {
   const navigate = useNavigate();
-  const { state, actions } = useOnboarding();
+  const { state: _state, actions: _actions } = useOnboarding();
   const [activeTab, setActiveTab] = useState(0);
 
   const resourceSummary: ResourceSummary[] = [
