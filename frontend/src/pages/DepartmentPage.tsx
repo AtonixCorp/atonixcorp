@@ -7,10 +7,12 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Avatar, AvatarGroup, Box, Button, Chip, CircularProgress, Collapse,
   Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton,
-  InputAdornment, MenuItem, Paper, Select, Switch, TextField, Tooltip, Typography,
+  InputAdornment, LinearProgress, MenuItem, Paper, Select, Stack, Switch,
+  TextField, Tooltip, Typography,
 } from '@mui/material';
 import AddIcon              from '@mui/icons-material/Add';
 import ArrowBackIcon        from '@mui/icons-material/ArrowBack';
@@ -49,8 +51,12 @@ import SearchIcon           from '@mui/icons-material/Search';
 import SendIcon             from '@mui/icons-material/Send';
 import SettingsIcon         from '@mui/icons-material/Settings';
 import StarIcon             from '@mui/icons-material/Star';
+import TerminalIcon         from '@mui/icons-material/Terminal';
 import TuneIcon             from '@mui/icons-material/Tune';
 import WarningAmberIcon     from '@mui/icons-material/WarningAmber';
+import OpenInNewIcon        from '@mui/icons-material/OpenInNew';
+import PlayArrowIcon        from '@mui/icons-material/PlayArrow';
+import StopIcon             from '@mui/icons-material/Stop';
 
 import {
   Department as ApiDepartment,
@@ -61,6 +67,13 @@ import {
   deptSidebarApi,
 } from '../services/enterpriseApi';
 import { dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import {
+  listDevWorkspaces,
+  startDevWorkspace,
+  stopDevWorkspace,
+  type DevWorkspace,
+} from '../services/devWorkspaceApi';
+import WorkspaceCreationWizard from '../components/Workspace/WorkspaceCreationWizard';
 
 const T = {
   bg:     dashboardTokens.colors.background,
@@ -94,6 +107,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   ArticleIcon:     <ArticleIcon sx={{ fontSize: '1rem' }} />,
   EmailIcon:       <EmailIcon sx={{ fontSize: '1rem' }} />,
   BusinessIcon:    <BadgeIcon sx={{ fontSize: '1rem' }} />,
+  TerminalIcon:    <TerminalIcon sx={{ fontSize: '1rem' }} />,
 };
 
 const ICON_OPTIONS = Object.keys(ICON_MAP);
@@ -107,6 +121,7 @@ export const DEFAULT_SIDEBAR_ITEMS: DeptSidebarItemWrite[] = [
   { item_type: 'navigation', label: 'Documents',   url: 'documents',   icon: 'DescriptionIcon', order_index: 4,  is_active: true },
   { item_type: 'navigation', label: 'FAQs',        url: 'faqs',        icon: 'HelpOutlineIcon', order_index: 5,  is_active: true },
   { item_type: 'navigation', label: 'Contact',     url: 'contact',     icon: 'ContactMailIcon', order_index: 6,  is_active: true },
+  { item_type: 'navigation', label: 'Dev Workspaces', url: 'workspaces', icon: 'TerminalIcon',    order_index: 7,  is_active: true },
   { item_type: 'action',     label: 'Submit Request', url: '',         icon: 'RocketLaunchIcon', order_index: 0, is_active: true },
   { item_type: 'resource',   label: 'Handbook',    url: '',            icon: 'ArticleIcon',     order_index: 0,  is_active: true },
   { item_type: 'highlight',  label: 'Hiring',      url: '',            icon: 'StarIcon',        order_index: 0,  is_active: true },
@@ -115,7 +130,7 @@ export const DEFAULT_SIDEBAR_ITEMS: DeptSidebarItemWrite[] = [
 // ── Type helpers ──────────────────────────────────────────────────────────────
 type DeptSubView =
   | 'overview' | 'team' | 'services' | 'projects'
-  | 'documents' | 'faqs' | 'contact';
+  | 'documents' | 'faqs' | 'contact' | 'workspaces';
 
 interface DeptPageProps {
   deptId:   string;
@@ -384,6 +399,7 @@ export default function DepartmentPage({
         {currentView === 'documents'  && <DeptDocuments  dept={dept} />}
         {currentView === 'faqs'       && <DeptFAQs       dept={dept} />}
         {currentView === 'contact'    && <DeptContact    dept={dept}     members={members} />}
+        {currentView === 'workspaces' && <DeptDevWorkspaces orgId={orgId} deptId={deptId} dept={dept} />}
       </Box>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -2158,6 +2174,359 @@ function DeptContact({ dept, members }: { dept: ApiDepartment | null; members: O
           </Button>
         </Box>
       </Paper>
+    </Box>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── Sub-view: Developer Workspaces
+// ═══════════════════════════════════════════════════════════════════════════════
+const WS_STATUS_CFG: Record<string, { label: string; color: string }> = {
+  running:  { label: 'Running',  color: '#22c55e' },
+  starting: { label: 'Starting', color: '#f59e0b' },
+  stopping: { label: 'Stopping', color: '#f59e0b' },
+  stopped:  { label: 'Stopped',  color: '#6b7280' },
+  error:    { label: 'Error',    color: '#ef4444' },
+};
+
+function DeptDevWorkspaces({
+  orgId, deptId, dept,
+}: {
+  orgId: string;
+  deptId: string;
+  dept: ApiDepartment | null;
+}) {
+  const navigate = useNavigate();
+  const [workspaces, setWorkspaces] = useState<DevWorkspace[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [busyMap, setBusyMap]       = useState<Record<string, boolean>>({});
+  const [search, setSearch]         = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [snack, setSnack]           = useState('');
+
+  const load = useCallback(() => {
+    setLoading(true);
+    listDevWorkspaces()
+      .then(setWorkspaces)
+      .catch(() => setError('Failed to load workspaces.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const setBusy = (id: string, val: boolean) =>
+    setBusyMap(prev => ({ ...prev, [id]: val }));
+
+  const handleStart = async (ws: DevWorkspace) => {
+    setBusy(ws.workspace_id, true);
+    try {
+      const updated = await startDevWorkspace(ws.workspace_id);
+      setWorkspaces(prev => prev.map(w => w.workspace_id === ws.workspace_id ? updated : w));
+      setSnack(`"${ws.display_name}" started.`);
+    } catch {
+      setSnack('Failed to start workspace.');
+    } finally { setBusy(ws.workspace_id, false); }
+  };
+
+  const handleStop = async (ws: DevWorkspace) => {
+    setBusy(ws.workspace_id, true);
+    try {
+      const updated = await stopDevWorkspace(ws.workspace_id);
+      setWorkspaces(prev => prev.map(w => w.workspace_id === ws.workspace_id ? updated : w));
+      setSnack(`"${ws.display_name}" stopped.`);
+    } catch {
+      setSnack('Failed to stop workspace.');
+    } finally { setBusy(ws.workspace_id, false); }
+  };
+
+  const filtered = workspaces.filter(ws => {
+    const matchStatus = statusFilter === 'all' || ws.status === statusFilter;
+    const q = search.toLowerCase();
+    const matchText = !q || ws.display_name.toLowerCase().includes(q) || ws.workspace_id.toLowerCase().includes(q);
+    return matchStatus && matchText;
+  });
+
+  const statusCounts = ['running', 'stopped', 'starting', 'error'].reduce<Record<string, number>>((acc, s) => {
+    acc[s] = workspaces.filter(w => w.status === s).length;
+    return acc;
+  }, {});
+
+  return (
+    <Box>
+      {/* Header toolbar */}
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3, flexWrap: 'wrap' }}>
+        <TextField
+          size="small"
+          placeholder="Search workspaces…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          sx={{ flex: '1 1 200px', '& input': { color: T.text }, '& .MuiOutlinedInput-root': { bgcolor: T.card2 } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: T.sub, fontSize: '1rem' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Select
+          value={statusFilter}
+          size="small"
+          onChange={e => setStatusFilter(e.target.value)}
+          sx={{ minWidth: 140, bgcolor: T.card2, color: T.text }}
+        >
+          <MenuItem value="all">All statuses</MenuItem>
+          {['running', 'stopped', 'starting', 'stopping', 'error'].map(s => (
+            <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>
+              {WS_STATUS_CFG[s]?.label ?? s}
+            </MenuItem>
+          ))}
+        </Select>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<AddIcon />}
+          onClick={() => setCreateOpen(true)}
+          sx={{ bgcolor: T.brand, '&:hover': { bgcolor: T.brand, opacity: .85 }, borderRadius: 2 }}
+        >
+          New Workspace
+        </Button>
+        <Tooltip title="Open Developer Dashboard">
+          <IconButton size="small" onClick={() => navigate('/developer/Dashboard/workspace')}
+            sx={{ color: T.sub, '&:hover': { color: T.text } }}>
+            <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+          </IconButton>
+        </Tooltip>
+      </Stack>
+
+      {/* Status summary pills */}
+      {workspaces.length > 0 && (
+        <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: 'wrap' }}>
+          {(['running', 'stopped', 'starting', 'error'] as string[]).map(s => (
+            <Paper
+              key={s}
+              onClick={() => setStatusFilter(statusFilter === s ? 'all' : s)}
+              sx={{
+                px: 2, py: 1.25, bgcolor: T.card, cursor: 'pointer',
+                border: `1px solid ${statusFilter === s ? WS_STATUS_CFG[s].color : T.border}`,
+                borderRadius: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70,
+                transition: 'border-color .2s', '&:hover': { borderColor: WS_STATUS_CFG[s].color },
+              }}
+            >
+              <Typography sx={{ color: WS_STATUS_CFG[s].color, fontWeight: 800, fontSize: '1.4rem', lineHeight: 1 }}>
+                {statusCounts[s] ?? 0}
+              </Typography>
+              <Typography variant="caption" sx={{ color: T.sub, textTransform: 'capitalize' }}>{s}</Typography>
+            </Paper>
+          ))}
+        </Stack>
+      )}
+
+      {/* Loading */}
+      {loading && <LinearProgress sx={{ borderRadius: 2, mb: 2 }} />}
+
+      {/* Error */}
+      {error && (
+        <Paper sx={{ p: 2, bgcolor: `${T.red}10`, border: `1px solid ${T.red}40`, borderRadius: 2, mb: 2 }}>
+          <Typography sx={{ color: T.red, fontSize: '.85rem' }}>{error}</Typography>
+        </Paper>
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && filtered.length === 0 && (
+        <Box sx={{ textAlign: 'center', py: 10 }}>
+          <TerminalIcon sx={{ fontSize: '3rem', color: T.sub, opacity: .3, mb: 2 }} />
+          <Typography variant="h6" sx={{ color: T.text, fontWeight: 700, mb: 1 }}>
+            {workspaces.length === 0 ? 'No developer workspaces yet' : 'No workspaces match the filter'}
+          </Typography>
+          <Typography variant="body2" sx={{ color: T.sub, mb: 3 }}>
+            {workspaces.length === 0
+              ? `Create a cloud dev environment for the ${dept?.name ?? 'department'} team.`
+              : 'Try adjusting the search or status filter.'}
+          </Typography>
+          {workspaces.length === 0 && (
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}
+              sx={{ borderColor: T.brand, color: T.brand }}>
+              Create First Workspace
+            </Button>
+          )}
+        </Box>
+      )}
+
+      {/* Workspace list */}
+      {!loading && filtered.length > 0 && (
+        <Stack spacing={1.5}>
+          {filtered.map(ws => {
+            const cfg   = WS_STATUS_CFG[ws.status] ?? WS_STATUS_CFG.stopped;
+            const busy  = !!busyMap[ws.workspace_id];
+            const canStart = ws.status === 'stopped' || ws.status === 'error';
+            const canStop  = ws.status === 'running' || ws.status === 'starting';
+
+            return (
+              <Paper
+                key={ws.workspace_id}
+                sx={{
+                  p: 2.5, bgcolor: T.card,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 2, transition: 'border-color .2s',
+                  '&:hover': { borderColor: `${cfg.color}55` },
+                }}
+              >
+                <Stack direction="row" alignItems="flex-start" spacing={2}>
+                  {/* Icon */}
+                  <Box sx={{
+                    width: 40, height: 40, borderRadius: 1.5, flexShrink: 0,
+                    bgcolor: `${cfg.color}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <TerminalIcon sx={{ fontSize: '1.2rem', color: cfg.color }} />
+                  </Box>
+
+                  {/* Info */}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5, flexWrap: 'wrap' }}>
+                      <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.95rem', fontFamily: T.font }}>
+                        {ws.display_name}
+                      </Typography>
+                      <Chip
+                        label={cfg.label}
+                        size="small"
+                        sx={{
+                          bgcolor: `${cfg.color}18`, color: cfg.color,
+                          fontWeight: 700, fontSize: '.65rem', height: 20,
+                        }}
+                      />
+                      {ws.ide && (
+                        <Chip
+                          label={ws.ide}
+                          size="small"
+                          sx={{ bgcolor: `${T.brand}15`, color: T.brand, fontWeight: 600, fontSize: '.65rem', height: 20 }}
+                        />
+                      )}
+                    </Stack>
+
+                    <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+                      <Typography variant="caption" sx={{ color: T.sub, fontFamily: T.font }}>
+                        ID: {ws.workspace_id}
+                      </Typography>
+                      {ws.region && (
+                        <Typography variant="caption" sx={{ color: T.sub }}>
+                          Region: {ws.region}
+                        </Typography>
+                      )}
+                      {ws.owner && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                          <PersonIcon sx={{ fontSize: '.75rem', color: T.sub }} />
+                          <Typography variant="caption" sx={{ color: T.sub }}>{ws.owner}</Typography>
+                        </Box>
+                      )}
+                      {ws.image && (
+                        <Typography variant="caption" sx={{ color: T.sub }}>
+                          {ws.image}
+                        </Typography>
+                      )}
+                    </Stack>
+
+                    {/* CPU/RAM mini bars */}
+                    {ws.status === 'running' && (
+                      <Stack direction="row" spacing={2} sx={{ mt: 1.25 }}>
+                        {([['CPU', ws.cpu_percent], ['RAM', ws.ram_percent]] as [string, number][]).map(([lbl, val]) => (
+                          <Box key={lbl} sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 120 }}>
+                            <Typography variant="caption" sx={{ color: T.sub, minWidth: 32 }}>{lbl}</Typography>
+                            <Box sx={{ flex: 1, height: 5, bgcolor: T.card2, borderRadius: 3, overflow: 'hidden' }}>
+                              <Box sx={{
+                                height: '100%', width: `${val ?? 0}%`,
+                                bgcolor: (val ?? 0) > 85 ? T.red : (val ?? 0) > 60 ? T.yellow : T.green,
+                                borderRadius: 3, transition: 'width .4s',
+                              }} />
+                            </Box>
+                            <Typography variant="caption" sx={{ color: T.sub, minWidth: 28, textAlign: 'right' }}>
+                              {val ?? 0}%
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    )}
+                  </Box>
+
+                  {/* Actions */}
+                  <Stack direction="row" spacing={0.5} alignItems="center" flexShrink={0}>
+                    {canStart && (
+                      <Tooltip title="Start workspace">
+                        <span>
+                          <IconButton size="small" disabled={busy} onClick={() => handleStart(ws)}
+                            sx={{ color: T.green, '&:hover': { bgcolor: `${T.green}15` } }}>
+                            <PlayArrowIcon sx={{ fontSize: '1rem' }} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {canStop && (
+                      <Tooltip title="Stop workspace">
+                        <span>
+                          <IconButton size="small" disabled={busy} onClick={() => handleStop(ws)}
+                            sx={{ color: T.yellow, '&:hover': { bgcolor: `${T.yellow}15` } }}>
+                            <StopIcon sx={{ fontSize: '1rem' }} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {ws.status === 'running' && ws.editor_url && (
+                      <Tooltip title="Open IDE">
+                        <IconButton size="small" component="a" href={ws.editor_url} target="_blank"
+                          sx={{ color: T.sub, '&:hover': { color: T.text } }}>
+                          <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Workspace Dashboard">
+                      <IconButton
+                        size="small"
+                        onClick={() => navigate(`/developer/Dashboard/workspace/${ws.workspace_id}`)}
+                        sx={{ color: T.brand, '&:hover': { bgcolor: `${T.brand}15` } }}
+                      >
+                        <LaunchIcon sx={{ fontSize: '1rem' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </Stack>
+
+                {/* Busy progress bar */}
+                {busy && <LinearProgress sx={{ mt: 1.5, borderRadius: 2 }} />}
+              </Paper>
+            );
+          })}
+        </Stack>
+      )}
+
+      {/* Workspace creation wizard (same as developer dashboard) */}
+      <WorkspaceCreationWizard
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(created) => {
+          setWorkspaces(prev => [created, ...prev]);
+          setCreateOpen(false);
+          setSnack(`Workspace "${created.display_name}" created.`);
+        }}
+      />
+
+      {/* Snackbar */}
+      {snack && (
+        <Box
+          sx={{
+            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            bgcolor: '#161b22', border: '1px solid #30363d', color: '#e6edf3',
+            borderRadius: 2, px: 2.5, py: 1.25, fontSize: '.85rem', zIndex: 9999,
+            display: 'flex', alignItems: 'center', gap: 1,
+          }}
+          onClick={() => setSnack('')}
+        >
+          <CheckCircleIcon sx={{ color: T.green, fontSize: '1rem' }} />
+          {snack}
+        </Box>
+      )}
     </Box>
   );
 }
