@@ -71,6 +71,32 @@ type TeamType    = 'DEPARTMENT' | 'FUNCTION' | 'SQUAD';
 type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'COMPLETED';
 type DomainStatus = 'ACTIVE' | 'PENDING_DNS' | 'FAILED';
 type EmailDomainStatus = 'VERIFIED' | 'PENDING_DNS' | 'FAILED';
+const T = {
+  bg:      dashboardTokens.colors.background,
+  card:    dashboardTokens.colors.surface,
+  card2:   dashboardTokens.colors.surfaceSubtle,
+  border:  dashboardTokens.colors.border,
+  text:    dashboardTokens.colors.textPrimary,
+  sub:     dashboardTokens.colors.textSecondary,
+  brand:   dashboardTokens.colors.brandPrimary,
+  green:   dashboardSemanticColors.success,
+  yellow:  dashboardSemanticColors.warning,
+  red:     dashboardSemanticColors.danger,
+  blue:    '#3b82f6',
+  purple:  '#8b5cf6',
+  font:    '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+};
+
+const fmt$ = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+type OrgStatus   = 'ACTIVE' | 'SUSPENDED' | 'TRIAL';
+type MemberRole  = 'OWNER' | 'ADMIN' | 'MANAGER' | 'MEMBER' | 'VIEWER';
+type MemberStatus = 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+type TeamType    = 'DEPARTMENT' | 'FUNCTION' | 'SQUAD';
+type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'COMPLETED';
+type DomainStatus = 'ACTIVE' | 'PENDING_DNS' | 'FAILED';
+type EmailDomainStatus = 'VERIFIED' | 'PENDING_DNS' | 'FAILED';
 
 interface Org {
   id: string; name: string; slug: string; primary_domain: string;
@@ -1020,101 +1046,6 @@ function BillingSection({ navigate, orgId }: { navigate: ReturnType<typeof useNa
       </>
       )}
       <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack('')} message={snack} />
-    </Box>
-  );
-}
-
-// ── Section: Compliance ───────────────────────────────────────────────────────
-function ComplianceSection({ orgId }: { orgId: string }) {
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('');
-
-  useEffect(() => {
-    if (!orgId) return;
-    auditLogsApi.list(orgId)
-      .then(setAuditLogs)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [orgId]);
-
-  const filtered = auditLogs.filter(e =>
-    !filter ||
-    e.action.toLowerCase().includes(filter.toLowerCase()) ||
-    e.actor_name.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const uniqueActors = new Set(auditLogs.map(e => e.actor_email)).size;
-
-  const actionColor: Record<string, string> = {
-    MEMBER_INVITED: T.blue, CAMPAIGN_SENT: T.green, DOMAIN_ADDED: T.purple,
-    TEAM_CREATED: T.brand, BILLING_UPDATED: T.yellow, TEMPLATE_CREATED: T.sub,
-  };
-
-  return (
-    <Box>
-      {/* Summary */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Audit Events"  value={auditLogs.length}  color={T.brand} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Active Actors" value={uniqueActors}        color={T.green} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Action Types"  value={new Set(auditLogs.map(a => a.action)).size} color={T.blue} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><MetricCard label="Days Retained" value="90"  color={T.sub} sub="audit log" /></Grid>
-      </Grid>
-
-      <SectionCard title="Audit Log" icon={<GppGoodIcon />}
-        action={
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <TextField size="small" placeholder="Filter events…" value={filter}
-              onChange={e => setFilter(e.target.value)}
-              sx={{ width: 200, '& .MuiOutlinedInput-root': { color: T.text } }}
-              InputProps={{ startAdornment: <FilterListIcon sx={{ mr: 1, color: T.sub, fontSize: '1rem' }} /> }}
-            />
-            <Button startIcon={<DownloadIcon />} size="small" sx={{ color: T.sub }}>Export</Button>
-          </Box>
-        }
-      >
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={28} /></Box>
-        ) : (
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {['Actor', 'Action', 'Target', 'Timestamp', 'IP'].map(h => (
-                  <TableCell key={h} sx={{ color: T.sub, borderColor: T.border, fontSize: '.8rem' }}>{h}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filtered.map(e => (
-                <TableRow key={e.id} hover sx={{ '& td': { borderColor: T.border } }}>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, fontSize: '.65rem', bgcolor: T.brand }}>
-                        {e.actor_name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0,2)}
-                      </Avatar>
-                      <Typography variant="body2" sx={{ color: T.text }}>{e.actor_name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={e.action} size="small"
-                      sx={{ bgcolor: `${actionColor[e.action] ?? T.sub}22`, color: actionColor[e.action] ?? T.sub, fontWeight: 700, fontSize: '.7rem', fontFamily: 'monospace' }} />
-                  </TableCell>
-                  <TableCell sx={{ color: T.sub }}>{e.target_label || e.target_id}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <CalendarTodayIcon sx={{ fontSize: '.8rem', color: T.sub }} />
-                      <Typography variant="caption" sx={{ color: T.sub }}>{e.timestamp?.slice(0, 16).replace('T', ' ')}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ color: T.sub, fontFamily: 'monospace', fontSize: '.78rem' }}>{e.ip_address ?? '—'}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        )}
-      </SectionCard>
     </Box>
   );
 }
