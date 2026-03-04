@@ -7,6 +7,7 @@ import './styles/atonixcorp-carbon.css';
 // Context
 import { CustomThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { OnboardingProvider } from './contexts/OnboardingContext';
 
 // Observability
 import { initializeOpenTelemetry } from './observability/telemetry';
@@ -28,6 +29,7 @@ import AboutPage from './pages/AboutPage';
 import ContactSalesPage from './pages/ContactSalesPage';
 import SupportPage from './pages/SupportPage';
 import OnboardingDashboard  from './pages/OnboardingDashboard';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import AccountSettingsPage       from './pages/AccountSettingsPage';
 import DatabasePage              from './pages/DatabasePage';
 import ContainerRegistryPage     from './pages/ContainerRegistryPage';
@@ -428,6 +430,16 @@ const AppShell: React.FC = () => {
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<DomainsLandingPage />} />
           <Route path="/domains/dashboard" element={<ProtectedRoute><DomainsServiceDashboardPage /></ProtectedRoute>} />
+
+          {/* Onboarding Routes */}
+          <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route path="/onboarding/account" element={<OnboardingFlow />} />
+          <Route path="/onboarding/project" element={<OnboardingFlow />} />
+          <Route path="/onboarding/checklist" element={<OnboardingFlow />} />
+          <Route path="/onboarding/deploy" element={<OnboardingFlow />} />
+          <Route path="/onboarding/dashboard" element={<OnboardingFlow />} />
+          <Route path="/onboarding/advanced" element={<OnboardingFlow />} />
+
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/support"   element={<SupportPage />} />
           <Route path="/contact"   element={<ContactSalesPage />} />
@@ -450,7 +462,9 @@ function App() {
       <Router>
         <CustomThemeProvider>
           <AuthProvider>
-            <AppShell />
+            <OnboardingProvider>
+              <AppShell />
+            </OnboardingProvider>
           </AuthProvider>
         </CustomThemeProvider>
       </Router>

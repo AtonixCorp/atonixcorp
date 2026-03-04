@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -18,6 +18,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Input } from '../design-system/Input';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
@@ -30,22 +31,29 @@ const COUNTRIES = [
 const STEPS = ['Account Details', 'Verification', 'Welcome'];
 
 interface AccountCreationFormProps {
-  onComplete: (data: any) => void;
+  onComplete?: (data: any) => void;
+  initialData?: any;
 }
 
-export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({ onComplete }) => {
+export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({
+  onComplete,
+  initialData
+}) => {
   const navigate = useNavigate();
+  const { state, actions } = useOnboarding();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    email: '',
+    email: initialData?.email || '',
+    firstName: initialData?.firstName || '',
+    lastName: initialData?.lastName || '',
     password: '',
     confirmPassword: '',
-    country: '',
+    country: initialData?.country || '',
     phone: '',
-    company: '',
+    company: initialData?.company || '',
     acceptTerms: false,
     acceptMarketing: false,
   });
@@ -100,8 +108,8 @@ export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({ onComp
   const handleNext = async () => {
     if (!validateStep(activeStep)) return;
 
-    setLoading(true);
-    setError(null);
+    actions.setLoading(true);
+    actions.setError(null);
 
     try {
       if (activeStep === 0) {
@@ -112,15 +120,28 @@ export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({ onComp
         // Verify code and create account
         await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
         setActiveStep(2);
+
+        // Update onboarding context
+        actions.updateAccountData({
+          email: formData.email,
+          firstName: formData.firstName || '',
+          lastName: formData.lastName || '',
+          company: formData.company,
+          country: formData.country,
+          accountType: 'business' // Default to business
+        });
+
         // Auto-redirect after welcome
         setTimeout(() => {
-          onComplete(formData);
+          if (onComplete) {
+            onComplete(formData);
+          }
         }, 3000);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      actions.setError('An error occurred. Please try again.');
     } finally {
-      setLoading(false);
+      actions.setLoading(false);
     }
   };
 
@@ -147,6 +168,26 @@ export const AccountCreationForm: React.FC<AccountCreationFormProps> = ({ onComp
               required
               fullWidth
             />
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Input
+                label="First Name"
+                placeholder="John"
+                value={formData.firstName}
+                onChange={handleInputChange('firstName')}
+                required
+                fullWidth
+              />
+
+              <Input
+                label="Last Name"
+                placeholder="Doe"
+                value={formData.lastName}
+                onChange={handleInputChange('lastName')}
+                required
+                fullWidth
+              />
+            </Box>
 
             <Input
               label="Password"

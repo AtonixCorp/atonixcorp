@@ -36,6 +36,7 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
 
@@ -69,11 +70,12 @@ interface ResourceSummary {
 }
 
 interface GroundingLayerProps {
-  projectId: string;
+  onComplete: () => void;
 }
 
-export const GroundingLayer: React.FC<GroundingLayerProps> = ({ projectId }) => {
+export const GroundingLayer: React.FC<GroundingLayerProps> = ({ onComplete }) => {
   const navigate = useNavigate();
+  const { state, actions } = useOnboarding();
   const [activeTab, setActiveTab] = useState(0);
 
   const resourceSummary: ResourceSummary[] = [

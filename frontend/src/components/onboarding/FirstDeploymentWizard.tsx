@@ -29,6 +29,7 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
 
@@ -91,22 +92,22 @@ const images: Image[] = [
 ];
 
 interface FirstDeploymentWizardProps {
-  projectId: string;
-  onComplete: () => void;
+  onComplete: (data?: any) => void;
 }
 
-export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ projectId, onComplete }) => {
+export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ onComplete }) => {
   const navigate = useNavigate();
+  const { state, actions } = useOnboarding();
   const [activeStep, setActiveStep] = useState(0);
-  const [config, setConfig] = useState<InstanceConfig>({
-    name: '',
+  const config = state.deploymentData || {
+    instanceName: '',
     region: '',
     flavor: '',
     image: '',
     network: 'default',
-    securityGroup: 'default',
-    sshKey: '',
-  });
+    securityGroups: [],
+    keyPair: '',
+  };
   const [isDeploying, setIsDeploying] = useState(false);
 
   const handleNext = () => {
@@ -129,8 +130,11 @@ export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ pr
     onComplete();
   };
 
-  const updateConfig = (field: keyof InstanceConfig, value: string) => {
-    setConfig(prev => ({ ...prev, [field]: value }));
+  const updateConfig = (field: keyof typeof config, value: any) => {
+    actions.updateDeploymentData({
+      ...config,
+      [field]: value,
+    });
   };
 
   const canProceed = () => {
@@ -138,9 +142,9 @@ export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ pr
       case 0: return !!config.region;
       case 1: return !!config.flavor;
       case 2: return !!config.image;
-      case 3: return !!config.network;
-      case 4: return !!config.securityGroup && !!config.sshKey;
-      case 5: return !!config.name;
+      case 3: return true; // Network step - can proceed
+      case 4: return config.securityGroups.length > 0 && !!config.keyPair;
+      case 5: return !!config.instanceName;
       default: return false;
     }
   };
@@ -312,8 +316,8 @@ export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ pr
                 <FormControl fullWidth>
                   <InputLabel>Security Group</InputLabel>
                   <Select
-                    value={config.securityGroup}
-                    onChange={(e) => updateConfig('securityGroup', e.target.value)}
+                    value={config.securityGroups[0] || ''}
+                    onChange={(e) => updateConfig('securityGroups', [e.target.value])}
                     label="Security Group"
                   >
                     <MenuItem value="default">Default (SSH, HTTP, HTTPS)</MenuItem>
@@ -327,8 +331,8 @@ export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ pr
                 <FormControl fullWidth>
                   <InputLabel>SSH Key</InputLabel>
                   <Select
-                    value={config.sshKey}
-                    onChange={(e) => updateConfig('sshKey', e.target.value)}
+                    value={config.keyPair}
+                    onChange={(e) => updateConfig('keyPair', e.target.value)}
                     label="SSH Key"
                   >
                     <MenuItem value="my-key">my-ssh-key</MenuItem>
@@ -364,8 +368,8 @@ export const FirstDeploymentWizard: React.FC<FirstDeploymentWizardProps> = ({ pr
                 <TextField
                   fullWidth
                   label="Instance Name"
-                  value={config.name}
-                  onChange={(e) => updateConfig('name', e.target.value)}
+                  value={config.instanceName}
+                  onChange={(e) => updateConfig('instanceName', e.target.value)}
                   placeholder="my-first-instance"
                   helperText="Choose a descriptive name for your instance"
                 />

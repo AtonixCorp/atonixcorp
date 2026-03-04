@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -13,6 +13,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Input } from '../design-system/Input';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
@@ -33,26 +34,28 @@ const PURPOSES = [
 ];
 
 interface ProjectInitializationProps {
-  onComplete: (projectData: any) => void;
+  onComplete: (data: any) => void;
 }
 
 export const ProjectInitialization: React.FC<ProjectInitializationProps> = ({ onComplete }) => {
   const navigate = useNavigate();
+  const { state, actions } = useOnboarding();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [projectData, setProjectData] = useState({
+  const projectData = state.projectData || {
+    id: '',
     name: '',
     region: '',
     purpose: '',
     description: '',
-  });
+  };
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProjectData(prev => ({
-      ...prev,
+    actions.updateProjectData({
+      ...projectData,
       [field]: event.target.value,
-    }));
+    });
   };
 
   const validateForm = (): boolean => {
@@ -148,7 +151,9 @@ export const ProjectInitialization: React.FC<ProjectInitializationProps> = ({ on
                       borderColor: projectData.region === region.id ? 'primary.main' : 'divider',
                       bgcolor: projectData.region === region.id ? 'action.selected' : 'background.paper',
                     }}
-                    onClick={() => setProjectData(prev => ({ ...prev, region: region.id }))}
+                    onClick={() => actions.updateProjectData({
+                      ...projectData, region: region.id
+                    })}
                   >
                     <CardContent sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -189,7 +194,9 @@ export const ProjectInitialization: React.FC<ProjectInitializationProps> = ({ on
                       borderColor: projectData.purpose === purpose.value ? 'primary.main' : 'divider',
                       bgcolor: projectData.purpose === purpose.value ? 'action.selected' : 'background.paper',
                     }}
-                    onClick={() => setProjectData(prev => ({ ...prev, purpose: purpose.value }))}
+                    onClick={() => actions.updateProjectData({
+                      ...projectData, purpose: purpose.value
+                    })}
                   >
                     <CardContent sx={{ p: 2 }}>
                       <Typography variant="subtitle2" fontWeight="bold" gutterBottom>

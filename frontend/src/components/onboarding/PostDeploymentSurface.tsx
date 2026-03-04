@@ -39,6 +39,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
 
@@ -65,11 +66,12 @@ function TabPanel(props: TabPanelProps) {
 }
 
 interface PostDeploymentSurfaceProps {
-  projectId: string;
+  onComplete: () => void;
 }
 
-export const PostDeploymentSurface: React.FC<PostDeploymentSurfaceProps> = ({ projectId }) => {
+export const PostDeploymentSurface: React.FC<PostDeploymentSurfaceProps> = ({ onComplete }) => {
   const navigate = useNavigate();
+  const { state, actions } = useOnboarding();
   const [activeTab, setActiveTab] = useState(0);
   const [autoScalingEnabled, setAutoScalingEnabled] = useState(false);
   const [monitoringEnabled, setMonitoringEnabled] = useState(true);

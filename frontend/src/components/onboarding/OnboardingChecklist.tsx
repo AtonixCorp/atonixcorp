@@ -29,6 +29,7 @@ import {
   Terminal as TerminalIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { Button as DSButton } from '../design-system/Button';
 import { Card as DSCard } from '../design-system/Card';
 
@@ -45,128 +46,98 @@ interface ChecklistItem {
 }
 
 interface OnboardingChecklistProps {
-  projectId: string;
   onComplete: () => void;
 }
 
-export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ projectId, onComplete }) => {
+export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onComplete }) => {
   const navigate = useNavigate();
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
+  const { state, actions } = useOnboarding();
+  const checklistItems: ChecklistItem[] = [
     {
-      id: 'ssh-key',
-      title: 'Add SSH Key',
-      description: 'Securely connect to your instances with SSH key authentication',
+      id: 'verify_email',
+      title: 'Verify Email',
+      description: 'Confirm your email address to secure your account',
       icon: <KeyIcon />,
-      completed: false,
+      completed: state.checklistProgress.verify_email,
       locked: false,
-      action: 'Add SSH Key',
-      route: '/developer/ssh-keys',
-      estimatedTime: '2 min',
+      action: 'Verify Email',
+      route: '/settings/account',
+      estimatedTime: '1 min',
     },
     {
-      id: 'first-instance',
-      title: 'Create First Instance',
-      description: 'Launch your first virtual machine in the cloud',
+      id: 'create_project',
+      title: 'Create Project',
+      description: 'Set up your first project workspace',
       icon: <ComputerIcon />,
-      completed: false,
+      completed: state.checklistProgress.create_project,
       locked: false,
-      action: 'Create Instance',
-      route: '/developer/compute/instances/create',
-      estimatedTime: '5 min',
-    },
-    {
-      id: 'first-volume',
-      title: 'Create First Volume',
-      description: 'Add persistent storage to your instances',
-      icon: <StorageIcon />,
-      completed: false,
-      locked: true,
-      action: 'Create Volume',
-      route: '/developer/storage/volumes/create',
+      action: 'Create Project',
+      route: '/onboarding/project',
       estimatedTime: '3 min',
     },
     {
-      id: 'private-network',
-      title: 'Create Private Network',
-      description: 'Set up isolated networking for your resources',
+      id: 'deploy_instance',
+      title: 'Deploy First Instance',
+      description: 'Launch your first virtual machine',
+      icon: <StorageIcon />,
+      completed: state.checklistProgress.deploy_instance,
+      locked: !state.checklistProgress.create_project,
+      action: 'Deploy Instance',
+      route: '/onboarding/deploy',
+      estimatedTime: '5 min',
+    },
+    {
+      id: 'configure_security',
+      title: 'Configure Security',
+      description: 'Set up security groups and access rules',
       icon: <NetworkIcon />,
-      completed: false,
-      locked: true,
-      action: 'Create Network',
-      route: '/developer/networking/networks/create',
+      completed: state.checklistProgress.configure_security,
+      locked: !state.checklistProgress.deploy_instance,
+      action: 'Configure Security',
+      route: '/developer/security',
       estimatedTime: '4 min',
     },
     {
-      id: 'object-storage',
-      title: 'Explore Object Storage',
-      description: 'Store and serve files, backups, and static content',
+      id: 'setup_monitoring',
+      title: 'Setup Monitoring',
+      description: 'Configure monitoring and alerts for your resources',
       icon: <CloudIcon />,
-      completed: false,
-      locked: true,
-      action: 'Explore Storage',
-      route: '/developer/storage/object-storage',
+      completed: state.checklistProgress.setup_monitoring,
+      locked: !state.checklistProgress.configure_security,
+      action: 'Setup Monitoring',
+      route: '/developer/monitoring',
       estimatedTime: '3 min',
     },
     {
-      id: 'api-token',
-      title: 'Generate API Token',
-      description: 'Create API credentials for automation and integrations',
+      id: 'enable_backups',
+      title: 'Enable Backups',
+      description: 'Set up automated backups for your data',
       icon: <CodeIcon />,
-      completed: false,
-      locked: true,
-      action: 'Generate Token',
-      route: '/developer/settings/api-tokens',
+      completed: state.checklistProgress.enable_backups,
+      locked: !state.checklistProgress.setup_monitoring,
+      action: 'Enable Backups',
+      route: '/developer/backups',
       estimatedTime: '2 min',
     },
-    {
-      id: 'cli-tools',
-      title: 'Install CLI Tools',
-      description: 'Set up command-line tools for advanced management',
-      icon: <TerminalIcon />,
-      completed: false,
-      locked: true,
-      action: 'Install CLI',
-      route: '/developer/tools/cli',
-      estimatedTime: '5 min',
-    },
-  ]);
+  ];
 
-  // Simulate progress updates (in real app, this would come from API)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setChecklistItems(prev => prev.map(item => {
-        if (item.id === 'ssh-key' && Math.random() > 0.8) {
-          return { ...item, completed: true };
-        }
-        if (item.id === 'first-instance' && Math.random() > 0.9) {
-          return { ...item, completed: true };
-        }
-        return item;
-      }));
-    }, 5000);
+  // Update checklist progress when actions are completed
+  const handleChecklistUpdate = (itemId: string, completed: boolean) => {
+    actions.updateChecklistProgress({
+      ...state.checklistProgress,
+      [itemId]: completed,
+    });
+  };
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update locked status based on completion
-  useEffect(() => {
-    setChecklistItems(prev => prev.map((item, index) => {
-      if (index === 0) return { ...item, locked: false }; // First item always unlocked
-
-      const previousItem = prev[index - 1];
-      return {
-        ...item,
-        locked: !previousItem.completed,
-      };
-    }));
-  }, [checklistItems]);
-
-  const completedCount = checklistItems.filter(item => item.completed).length;
-  const totalCount = checklistItems.length;
-  const progress = (completedCount / totalCount) * 100;
+  const completedCount = Object.values(state.checklistProgress).filter(Boolean).length;
+  const totalCount = Object.keys(state.checklistProgress).length;
+  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const handleAction = (item: ChecklistItem) => {
     if (item.locked) return;
+
+    // Mark item as completed when action is taken
+    handleChecklistUpdate(item.id, true);
 
     if (item.route) {
       navigate(item.route);
