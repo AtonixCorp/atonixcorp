@@ -163,6 +163,7 @@ const AppShell: React.FC = () => {
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
   const isGroupsPage = location.pathname.startsWith('/groups');
+  const isBillingPage = location.pathname === '/billing';
 
   if (isWorkspaceDashboard) {
     return (
@@ -411,6 +412,16 @@ const AppShell: React.FC = () => {
     );
   }
 
+  if (isBillingPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/billing" element={<BillingPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
   if (isMonitorDashboard) {
     return (
       <ProtectedRoute>
@@ -445,7 +456,6 @@ const AppShell: React.FC = () => {
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<DomainsLandingPage />} />
           <Route path="/domains/dashboard" element={<ProtectedRoute><DomainsServiceDashboardPage /></ProtectedRoute>} />
-          <Route path="/billing"   element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
 
           {/* Onboarding Routes */}
           <Route path="/onboarding" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />

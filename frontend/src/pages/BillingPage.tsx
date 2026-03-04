@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Box, Typography, Tabs, Tab, Grid, Card, CardContent, CardHeader,
   Chip, Button, CircularProgress, Alert as MuiAlert,
@@ -7,26 +7,38 @@ import {
   TextField, MenuItem, Select, FormControl, InputLabel,
   IconButton, Tooltip, LinearProgress, Paper, Divider,
   Switch, FormControlLabel,
+  AppBar, Toolbar, InputBase, Avatar, Menu, Badge,
+  Snackbar,
 } from '@mui/material';
-import RefreshIcon         from '@mui/icons-material/Refresh';
-import AddIcon             from '@mui/icons-material/Add';
-import CreditCardIcon      from '@mui/icons-material/CreditCard';
-import DeleteIcon          from '@mui/icons-material/Delete';
-import DownloadIcon        from '@mui/icons-material/Download';
-import AccountBalanceIcon  from '@mui/icons-material/AccountBalance';
-import WarningAmberIcon    from '@mui/icons-material/WarningAmber';
-import CheckCircleIcon     from '@mui/icons-material/CheckCircle';
-import ErrorOutlineIcon    from '@mui/icons-material/ErrorOutline';
-import SpeedIcon           from '@mui/icons-material/Speed';
-import SwapHorizIcon       from '@mui/icons-material/SwapHoriz';
-import SecurityIcon        from '@mui/icons-material/Security';
-import FlashOnIcon         from '@mui/icons-material/FlashOn';
-import RouterIcon          from '@mui/icons-material/Router';
-import BubbleChartIcon     from '@mui/icons-material/BubbleChart';
-import ArrowBackIcon       from '@mui/icons-material/ArrowBack';
+import RefreshIcon           from '@mui/icons-material/Refresh';
+import AddIcon               from '@mui/icons-material/Add';
+import CreditCardIcon        from '@mui/icons-material/CreditCard';
+import DeleteIcon            from '@mui/icons-material/Delete';
+import DownloadIcon          from '@mui/icons-material/Download';
+import AccountBalanceIcon    from '@mui/icons-material/AccountBalance';
+import WarningAmberIcon      from '@mui/icons-material/WarningAmber';
+import CheckCircleIcon       from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon      from '@mui/icons-material/ErrorOutline';
+import SpeedIcon             from '@mui/icons-material/Speed';
+import SwapHorizIcon         from '@mui/icons-material/SwapHoriz';
+import SecurityIcon          from '@mui/icons-material/Security';
+import FlashOnIcon           from '@mui/icons-material/FlashOn';
+import RouterIcon            from '@mui/icons-material/Router';
+import BubbleChartIcon       from '@mui/icons-material/BubbleChart';
+import ArrowBackIcon         from '@mui/icons-material/ArrowBack';
+import SaveIcon              from '@mui/icons-material/Save';
+import SearchIcon            from '@mui/icons-material/Search';
+import NotificationsIcon     from '@mui/icons-material/Notifications';
+import LightModeIcon         from '@mui/icons-material/LightMode';
+import DarkModeIcon          from '@mui/icons-material/DarkMode';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate } from 'react-router-dom';
+import { billingApi } from '../services/cloudApi';
+import { useAuth }  from '../contexts/AuthContext';
+import { useTheme as useColorMode } from '../contexts/ThemeContext';
 import type {
-  BillingOverview, Invoice, PaymentMethod,
+  BillingOverview, BillingAccount, UpdateBillingAccountPayload,
+  Invoice, PaymentMethod,
   CurrentUsage, PlanTier, ServiceCost,
 } from '../types/billing';
 import {
@@ -38,6 +50,9 @@ import {
 // ── Theme tokens ──────────────────────────────────────────────────────────────
 
 function useT() {
+  // Consume mode so every component using useT() re-renders on theme toggle
+  const { mode } = useColorMode();
+  const isDark = mode === 'dark';
   return {
     panelBg: dashboardTokens.colors.background,
     cardBg: dashboardTokens.colors.surface,
@@ -48,6 +63,7 @@ function useT() {
     green: dashboardSemanticColors.success,
     yellow: dashboardSemanticColors.warning,
     red: dashboardSemanticColors.danger,
+    isDark,
     blue: dashboardSemanticColors.info,
     purple: dashboardSemanticColors.purple,
   };
@@ -1175,11 +1191,552 @@ function PaymentsBoardTab() {
   );
 }
 
-const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods', 'Payments Board'] as const;
+// ── Billing Account Settings Tab ────────────────────────────────────────────
+
+const PLAN_PRICES: Record<string, number> = { free: 0, starter: 29, professional: 99, enterprise: 299 };
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'SGD', 'JPY'];
+const COUNTRIES = [
+  { code: 'US', name: 'United States' }, { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' }, { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' }, { code: 'FR', name: 'France' },
+  { code: 'JP', name: 'Japan' }, { code: 'SG', name: 'Singapore' },
+  { code: 'IN', name: 'India' }, { code: 'BR', name: 'Brazil' },
+];
+
+function BillingAccountTab() {
+  const t = useT();
+  const [account, setAccount]       = useState<BillingAccount | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [saving, setSaving]         = useState(false);
+  const [toast, setToast]           = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [form, setForm]             = useState<UpdateBillingAccountPayload>({});
+  const [changingPlan, setChangingPlan] = useState(false);
+  const [planBusy, setPlanBusy]     = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    billingApi.getAccount()
+      .then(r => {
+        const acct = r.data as any;
+        setAccount(acct);
+        setForm({
+          company_name:  acct.company_name,  billing_email: acct.billing_email,
+          tax_id:        acct.tax_id,        address_line1: acct.address_line1,
+          address_line2: acct.address_line2, city:          acct.city,
+          state:         acct.state,         postal_code:   acct.postal_code,
+          country:       acct.country,       currency:      acct.currency,
+          auto_pay:      acct.auto_pay,      spend_limit:   acct.spend_limit,
+        });
+      })
+      .catch(() => setToast({ msg: 'Failed to load account settings.', type: 'error' }))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleField = (field: keyof UpdateBillingAccountPayload) =>
+    (e: React.ChangeEvent<HTMLInputElement | { value: unknown }>) =>
+      setForm(p => ({ ...p, [field]: (e.target as any).value }));
+
+  const save = () => {
+    setSaving(true);
+    billingApi.updateAccount(form)
+      .then(r => { setAccount(r.data as any); setToast({ msg: 'Billing account updated successfully.', type: 'success' }); })
+      .catch(() => setToast({ msg: 'Failed to save changes.', type: 'error' }))
+      .finally(() => setSaving(false));
+  };
+
+  const changePlan = (newPlan: string) => {
+    setPlanBusy(true);
+    billingApi.changePlan(newPlan)
+      .then(() => { load(); setChangingPlan(false); setToast({ msg: `Plan changed to ${newPlan}.`, type: 'success' }); })
+      .catch(() => setToast({ msg: 'Failed to change plan.', type: 'error' }))
+      .finally(() => setPlanBusy(false));
+  };
+
+  const inputSx = {
+    '& .MuiInputLabel-root': { color: t.sub },
+    '& .MuiOutlinedInput-root': {
+      color: t.text,
+      '& fieldset': { borderColor: t.border },
+      '&:hover fieldset': { borderColor: t.sub },
+      '&.Mui-focused fieldset': { borderColor: t.brand },
+    },
+  };
+
+  const sectionSx = { bgcolor: t.cardBg, border: `1px solid ${t.border}`, mb: 3, borderRadius: '6px' };
+
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Box>
+          <Typography variant="h6" sx={{ color: t.text, fontWeight: 700 }}>Billing Account Settings</Typography>
+          <Typography variant="body2" sx={{ color: t.sub }}>Manage your billing profile, address, and preferences</Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : <SaveIcon />}
+          onClick={save} disabled={saving}
+          sx={{ bgcolor: t.brand, '&:hover': { filter: 'brightness(1.1)' } }}
+        >
+          {saving ? 'Saving…' : 'Save Changes'}
+        </Button>
+      </Box>
+
+      {/* Plan */}
+      <Card sx={sectionSx}>
+        <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Current Plan</Typography>} />
+        <CardContent sx={{ pt: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Chip
+              label={(account?.plan ?? 'free').toUpperCase()}
+              sx={{
+                bgcolor: `${PLAN_COLOR[(account?.plan ?? 'free') as PlanTier]}22`,
+                color: PLAN_COLOR[(account?.plan ?? 'free') as PlanTier],
+                border: `1px solid ${PLAN_COLOR[(account?.plan ?? 'free') as PlanTier]}44`,
+                fontWeight: 700, fontSize: '.75rem', px: 0.5,
+              }}
+            />
+            <Typography sx={{ color: t.sub }}>{fmt(account?.plan_price ?? 0)}/month</Typography>
+            {(account?.credit_balance ?? 0) > 0 && (
+              <Chip label={`${fmt(account!.credit_balance)} credits`} size="small"
+                sx={{ bgcolor: `${t.green}22`, color: t.green, border: `1px solid ${t.green}44`, fontWeight: 600 }} />
+            )}
+            <Box sx={{ flex: 1 }} />
+            <Button size="small" variant="outlined" onClick={() => setChangingPlan(p => !p)}
+              sx={{ borderColor: t.border, color: t.sub, '&:hover': { borderColor: t.brand, color: t.brand } }}>
+              {changingPlan ? 'Cancel' : 'Change Plan'}
+            </Button>
+          </Box>
+          {changingPlan && (
+            <Box sx={{ mt: 2, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              {(['free', 'starter', 'professional', 'enterprise'] as PlanTier[]).map(p => (
+                <Card key={p} onClick={() => !planBusy && changePlan(p)} sx={{
+                  flex: '1 1 140px', minWidth: 140, cursor: 'pointer',
+                  bgcolor: account?.plan === p ? `${t.brand}15` : t.panelBg,
+                  border: `1px solid ${account?.plan === p ? t.brand : t.border}`,
+                  borderRadius: '6px', transition: 'border .15s, background .15s',
+                  '&:hover': { borderColor: t.brand }, opacity: planBusy ? 0.6 : 1,
+                }}>
+                  <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                    <Typography sx={{ color: t.text, fontWeight: 700, textTransform: 'capitalize', mb: 0.5 }}>{p}</Typography>
+                    <Typography sx={{ color: t.brand, fontWeight: 800, fontSize: '1.1rem' }}>
+                      {p === 'free' ? 'Free' : `${fmt(PLAN_PRICES[p])}/mo`}
+                    </Typography>
+                    {account?.plan === p && <Typography variant="caption" sx={{ color: t.green }}>Current</Typography>}
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Business information */}
+      <Card sx={sectionSx}>
+        <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Business Information</Typography>} />
+        <CardContent sx={{ pt: 0 }}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField label="Company Name" value={form.company_name ?? ''} onChange={handleField('company_name')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField label="Billing Email" type="email" value={form.billing_email ?? ''} onChange={handleField('billing_email')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField label="Tax ID / VAT Number" value={form.tax_id ?? ''} onChange={handleField('tax_id')} fullWidth sx={inputSx} />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Billing address */}
+      <Card sx={sectionSx}>
+        <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Billing Address</Typography>} />
+        <CardContent sx={{ pt: 0 }}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>
+              <TextField label="Address Line 1" value={form.address_line1 ?? ''} onChange={handleField('address_line1')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField label="Address Line 2" value={form.address_line2 ?? ''} onChange={handleField('address_line2')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 5 }}>
+              <TextField label="City" value={form.city ?? ''} onChange={handleField('city')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 3 }}>
+              <TextField label="State / Region" value={form.state ?? ''} onChange={handleField('state')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <TextField label="Postal Code" value={form.postal_code ?? ''} onChange={handleField('postal_code')} fullWidth sx={inputSx} />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 2 }}>
+              <FormControl fullWidth sx={inputSx}>
+                <InputLabel>Country</InputLabel>
+                <Select value={form.country ?? ''} label="Country" onChange={handleField('country') as any} sx={{ color: t.text }}>
+                  {COUNTRIES.map(c => <MenuItem key={c.code} value={c.code}>{c.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Billing preferences */}
+      <Card sx={sectionSx}>
+        <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Billing Preferences</Typography>} />
+        <CardContent sx={{ pt: 0 }}>
+          <Grid container spacing={2} alignItems="flex-start">
+            <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+              <FormControl fullWidth sx={inputSx}>
+                <InputLabel>Currency</InputLabel>
+                <Select value={form.currency ?? 'USD'} label="Currency" onChange={handleField('currency') as any} sx={{ color: t.text }}>
+                  {CURRENCIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+              <TextField
+                label="Spend Limit (USD)"
+                type="number"
+                value={form.spend_limit ?? ''}
+                onChange={(e) => setForm(p => ({ ...p, spend_limit: e.target.value === '' ? null : Number(e.target.value) }))}
+                placeholder="No limit"
+                fullWidth sx={inputSx}
+                helperText={<Typography variant="caption" sx={{ color: t.sub }}>Leave blank for no limit</Typography>}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4, md: 6 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={form.auto_pay ?? false}
+                    onChange={(e) => setForm(p => ({ ...p, auto_pay: e.target.checked }))}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': { color: t.brand },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: t.brand },
+                    }}
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body2" sx={{ color: t.text, fontWeight: 600 }}>Auto-Pay</Typography>
+                    <Typography variant="caption" sx={{ color: t.sub }}>
+                      Automatically charge your default payment method when invoices are due
+                    </Typography>
+                  </Box>
+                }
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Read-only meta */}
+      {account && (
+        <Card sx={{ ...sectionSx, mb: 0 }}>
+          <CardHeader title={<Typography sx={{ color: t.text, fontWeight: 700 }}>Account Details</Typography>} />
+          <CardContent sx={{ pt: 0 }}>
+            <Grid container spacing={2}>
+              {([
+                ['Account ID',   String(account.id)],
+                ['Created',      new Date(account.created_at).toLocaleDateString()],
+                ['Last Updated', new Date(account.updated_at).toLocaleDateString()],
+              ] as [string, string][]).map(([label, value]) => (
+                <Grid key={label} size={{ xs: 12, sm: 4 }}>
+                  <Typography variant="caption" sx={{ color: t.sub, textTransform: 'uppercase', fontWeight: 600, fontSize: '.65rem' }}>{label}</Typography>
+                  <Typography sx={{ color: t.text, fontFamily: 'monospace', mt: 0.25 }}>{value}</Typography>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <MuiAlert severity={toast?.type ?? 'info'} onClose={() => setToast(null)} sx={{ minWidth: 280 }}>
+          {toast?.msg}
+        </MuiAlert>
+      </Snackbar>
+    </Box>
+  );
+}
+
+const TABS = ['Overview', 'Invoices', 'Usage', 'Payment Methods', 'Payments Board', 'Account Settings'] as const;
+
+// ── Billing-specific AppBar header ───────────────────────────────────────────
+
+type BillingNotif = {
+  message: string;
+  detail:  string;
+  color:   string;
+};
+
+function BillingHeader({
+  onRefresh, overview, onNavigateTab,
+}: {
+  onRefresh: () => void;
+  overview: BillingOverview | null;
+  onNavigateTab: (tab: number) => void;
+}) {
+  const t = useT();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth() as any;
+  const { mode, toggleTheme } = useColorMode();
+  const isDark = mode === 'dark';
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+  const [notifAnchor,   setNotifAnchor]   = useState<null | HTMLElement>(null);
+  const BLUE = t.brand;
+  const DIVIDER = t.border;
+
+  const notifications = useMemo((): BillingNotif[] => {
+    if (!overview) return [];
+    const items: BillingNotif[] = [];
+
+    if (overview.open_balance > 0)
+      items.push({
+        message: `Unpaid balance: ${fmt(overview.open_balance)}`,
+        detail:  'Payment is required to avoid service interruption.',
+        color:   t.red,
+      });
+
+    if (overview.account?.spend_limit && overview.current_spend > overview.account.spend_limit * 0.8)
+      items.push({
+        message: 'Approaching spend limit',
+        detail:  `${fmt(overview.current_spend)} used of ${fmt(overview.account.spend_limit)} limit.`,
+        color:   t.yellow,
+      });
+
+    if (overview.projected > overview.current_spend * 1.3 && overview.projected > 0)
+      items.push({
+        message: 'Projected spend is elevated',
+        detail:  `${fmt(overview.projected)} projected this billing cycle.`,
+        color:   t.yellow,
+      });
+
+    if (overview.account && !overview.account.auto_pay)
+      items.push({
+        message: 'Auto-pay is disabled',
+        detail:  'Enable auto-pay to prevent missed payments.',
+        color:   t.yellow,
+      });
+
+    if (overview.credit_balance > 0)
+      items.push({
+        message: `Credit balance available`,
+        detail:  `${fmt(overview.credit_balance)} in credits will be applied to your next invoice.`,
+        color:   t.blue,
+      });
+
+    return items;
+  }, [overview, t.red, t.yellow, t.blue]);
+
+  return (
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        bgcolor: t.cardBg,
+        borderBottom: `1px solid ${DIVIDER}`,
+        color: t.text,
+        zIndex: 1100,
+      }}
+    >
+      <Toolbar sx={{ gap: 1.5, px: { xs: 1.5, md: 3 }, minHeight: '64px !important' }}>
+
+        {/* Logo + back */}
+        <Box
+          onClick={() => navigate('/dashboard')}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1.25,
+            cursor: 'pointer', mr: 1,
+            '&:hover': { opacity: 0.85 },
+          }}
+        >
+          <Box
+            sx={{
+              width: 32, height: 32, borderRadius: '4px',
+              bgcolor: BLUE,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, color: '#fff', fontSize: '.85rem',
+              letterSpacing: '-.02em', flexShrink: 0,
+            }}
+          >
+            A
+          </Box>
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '.9rem', color: t.text, lineHeight: 1.1, letterSpacing: '-.01em' }}>
+              AtonixCorp
+            </Typography>
+            <Typography sx={{ fontSize: '.65rem', color: t.sub, lineHeight: 1 }}>
+              Cloud Platform
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Search */}
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' }, alignItems: 'center',
+            flex: 1, maxWidth: 380,
+            bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+            borderRadius: '4px',
+            px: 1.5, py: 0.5, gap: 1,
+            border: `1px solid ${DIVIDER}`,
+            '&:focus-within': { border: `1px solid ${BLUE}`, bgcolor: t.cardBg },
+            transition: 'border .15s',
+          }}
+        >
+          <SearchIcon sx={{ color: t.sub, fontSize: '1rem', flexShrink: 0 }} />
+          <InputBase
+            placeholder="Search invoices, payments…"
+            sx={{ flex: 1, fontSize: '.875rem', color: t.text, '& input::placeholder': { color: t.sub } }}
+          />
+        </Box>
+
+        <Box sx={{ flex: 1 }} />
+
+        {/* Back to dashboard */}
+        <Tooltip title="Back to Dashboard">
+          <Button
+            startIcon={<ArrowBackIcon sx={{ fontSize: '1rem !important' }} />}
+            onClick={() => navigate('/dashboard')}
+            size="small"
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              color: t.sub, fontSize: '.8rem', fontWeight: 600,
+              border: `1px solid ${DIVIDER}`,
+              borderRadius: '4px', px: 1.5, py: 0.5,
+              '&:hover': { bgcolor: `${BLUE}11`, borderColor: BLUE, color: BLUE },
+              transition: 'all .15s',
+            }}
+          >
+            Dashboard
+          </Button>
+        </Tooltip>
+
+        {/* Refresh */}
+        <Tooltip title="Refresh billing data">
+          <IconButton onClick={onRefresh} sx={{ color: t.sub, '&:hover': { color: BLUE } }}>
+            <RefreshIcon sx={{ fontSize: '1.15rem' }} />
+          </IconButton>
+        </Tooltip>
+
+        {/* Dark/Light toggle */}
+        <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          <IconButton
+            onClick={toggleTheme}
+            sx={{ color: t.sub, borderRadius: '4px', '&:hover': { color: BLUE, bgcolor: `${BLUE}11` }, transition: 'all .15s' }}
+          >
+            {isDark
+              ? <LightModeIcon sx={{ fontSize: '1.15rem' }} />
+              : <DarkModeIcon  sx={{ fontSize: '1.15rem' }} />}
+          </IconButton>
+        </Tooltip>
+
+        {/* Notifications */}
+        <Tooltip title="Billing Notifications">
+          <IconButton onClick={(e) => setNotifAnchor(e.currentTarget)} sx={{ color: t.sub, '&:hover': { color: t.text } }}>
+            <Badge
+              badgeContent={notifications.length}
+              color={notifications.some(n => n.color === t.red) ? 'error' : 'warning'}
+              sx={{ '& .MuiBadge-badge': { fontSize: '.6rem', minWidth: 16, height: 16 } }}
+            >
+              <NotificationsIcon sx={{ fontSize: '1.2rem' }} />
+            </Badge>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={notifAnchor}
+          open={Boolean(notifAnchor)}
+          onClose={() => setNotifAnchor(null)}
+          PaperProps={{ sx: { width: 340, mt: 1, borderRadius: '4px', boxShadow: 'none', border: `1px solid ${DIVIDER}`, bgcolor: t.cardBg } }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${DIVIDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography fontWeight={700} fontSize=".9rem" sx={{ color: t.text }}>Billing Alerts</Typography>
+            {notifications.length > 0 && (
+              <Chip label={`${notifications.length} active`} size="small" sx={{ bgcolor: `${t.red}22`, color: t.red, fontWeight: 700, fontSize: '.65rem', height: 20 }} />
+            )}
+          </Box>
+          {notifications.length === 0 ? (
+            <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
+              <CheckCircleIcon sx={{ fontSize: '2rem', color: t.green, mb: 1 }} />
+              <Typography fontSize=".82rem" sx={{ color: t.sub }}>No billing alerts</Typography>
+            </Box>
+          ) : (
+            notifications.map((n, i) => (
+              <MenuItem key={i} disableRipple sx={{ py: 1.25, gap: 1.5, alignItems: 'flex-start', borderBottom: i < notifications.length - 1 ? `1px solid ${DIVIDER}` : 'none', '&:hover': { bgcolor: `${n.color}0d` } }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: n.color, mt: 0.6, flexShrink: 0 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography fontSize=".82rem" fontWeight={600} sx={{ color: t.text, lineHeight: 1.3 }}>{n.message}</Typography>
+                  <Typography fontSize=".72rem" sx={{ color: t.sub, mt: 0.25, lineHeight: 1.4 }}>{n.detail}</Typography>
+                </Box>
+              </MenuItem>
+            ))
+          )}
+        </Menu>
+
+        {/* User profile */}
+        <Box
+          onClick={(e) => setProfileAnchor(e.currentTarget)}
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 0.75,
+            px: 1, py: 0.5, borderRadius: '4px',
+            cursor: 'pointer', border: `1px solid ${DIVIDER}`,
+            '&:hover': { borderColor: BLUE },
+            transition: 'border .15s',
+          }}
+        >
+          <Avatar sx={{ width: 28, height: 28, bgcolor: BLUE, fontSize: '.75rem', fontWeight: 700 }}>
+            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+          </Avatar>
+          <Typography sx={{ fontSize: '.82rem', fontWeight: 600, color: t.text, display: { xs: 'none', sm: 'block' } }}>
+            {user?.first_name || user?.username}
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ fontSize: '.85rem', color: t.sub, display: { xs: 'none', sm: 'block' } }} />
+        </Box>
+        <Menu
+          anchorEl={profileAnchor}
+          open={Boolean(profileAnchor)}
+          onClose={() => setProfileAnchor(null)}
+          PaperProps={{ sx: { minWidth: 220, mt: 1, borderRadius: '4px', boxShadow: 'none', border: `1px solid ${DIVIDER}`, bgcolor: t.cardBg } }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${DIVIDER}` }}>
+            <Typography fontWeight={700} fontSize=".875rem" sx={{ color: t.text }}>
+              {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username}
+            </Typography>
+            <Typography fontSize=".75rem" sx={{ color: t.sub }}>{user?.email}</Typography>
+          </Box>
+          <MenuItem onClick={() => { setProfileAnchor(null); navigate('/dashboard/settings'); }} sx={{ gap: 1.5, py: 1.25 }}>
+            <Typography fontSize=".875rem" sx={{ color: t.text }}>Account Settings</Typography>
+          </MenuItem>
+          <MenuItem onClick={() => { setProfileAnchor(null); onNavigateTab(5); }} sx={{ gap: 1.5, py: 1.25 }}>
+            <Typography fontSize=".875rem" sx={{ color: t.text }}>Billing Account</Typography>
+          </MenuItem>
+          <Divider sx={{ borderColor: DIVIDER }} />
+          <MenuItem onClick={() => { setProfileAnchor(null); logout(); navigate('/'); }} sx={{ gap: 1.5, py: 1.25 }}>
+            <Typography fontSize=".875rem" sx={{ color: t.red }}>Sign Out</Typography>
+          </MenuItem>
+        </Menu>
+
+      </Toolbar>
+    </AppBar>
+  );
+}
 
 export default function BillingPage() {
   const t = useT();
-  const navigate = useNavigate();
   const [tab, setTab]           = useState(0);
   const [overview, setOverview] = useState<BillingOverview | null>(null);
   const [loading, setLoading]   = useState(true);
@@ -1197,18 +1754,7 @@ export default function BillingPage() {
 
   return (
     <Box sx={{ bgcolor: t.panelBg, minHeight: '100vh' }}>
-      {/* Navigation Header */}
-      <Box sx={{ p: 2, borderBottom: `1px solid ${t.border}`, bgcolor: t.cardBg }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/')}
-            sx={{ color: t.sub, '&:hover': { bgcolor: `${t.brand}11` } }}
-          >
-            Back to AtonixCorp
-          </Button>
-        </Box>
-      </Box>
+      <BillingHeader onRefresh={loadOverview} overview={overview} onNavigateTab={setTab} />
 
       <Box sx={{ p: 3 }}>
         {/* Header */}
@@ -1255,6 +1801,7 @@ export default function BillingPage() {
       {tab === 2 && <UsageTab />}
       {tab === 3 && <PaymentMethodsTab />}
       {tab === 4 && <PaymentsBoardTab />}
+      {tab === 5 && <BillingAccountTab />}
 
       </Box>
     </Box>
