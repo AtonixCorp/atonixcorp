@@ -97,13 +97,15 @@ const OnboardingFlow: React.FC = () => {
         navigate('/onboarding/advanced');
         break;
       case 6:
-        // Onboarding complete - redirect to main dashboard
+        // Onboarding complete - mark done and redirect to main dashboard
+        actions.completeOnboarding();
         navigate('/dashboard');
         break;
     }
   };
 
   const handleSkipToDashboard = () => {
+    actions.completeOnboarding();
     navigate('/dashboard');
   };
 

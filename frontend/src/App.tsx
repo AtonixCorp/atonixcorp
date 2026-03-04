@@ -7,7 +7,7 @@ import './styles/atonixcorp-carbon.css';
 // Context
 import { CustomThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { OnboardingProvider } from './contexts/OnboardingContext';
+import { OnboardingProvider, useOnboarding } from './contexts/OnboardingContext';
 
 // Observability
 import { initializeOpenTelemetry } from './observability/telemetry';
@@ -123,7 +123,19 @@ const RedirectToGroupPage: React.FC = () => {
 // Protected route – redirects to home if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isInitializing } = useAuth() as any;
+  const { state: onboardingState } = useOnboarding();
+  const location = useLocation();
   if (isInitializing) return null; // wait for token verification before deciding
+  if (!user) return <Navigate to="/" replace />;
+  // New users who haven't completed onboarding are redirected there first
+  if (!onboardingState.isCompleted) return <Navigate to="/onboarding" replace />;
+  return <>{children}</>;
+};
+
+// Requires login only – used for the onboarding flow itself
+const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isInitializing } = useAuth() as any;
+  if (isInitializing) return null;
   if (!user) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
@@ -432,13 +444,13 @@ const AppShell: React.FC = () => {
           <Route path="/domains/dashboard" element={<ProtectedRoute><DomainsServiceDashboardPage /></ProtectedRoute>} />
 
           {/* Onboarding Routes */}
-          <Route path="/onboarding" element={<OnboardingFlow />} />
-          <Route path="/onboarding/account" element={<OnboardingFlow />} />
-          <Route path="/onboarding/project" element={<OnboardingFlow />} />
-          <Route path="/onboarding/checklist" element={<OnboardingFlow />} />
-          <Route path="/onboarding/deploy" element={<OnboardingFlow />} />
-          <Route path="/onboarding/dashboard" element={<OnboardingFlow />} />
-          <Route path="/onboarding/advanced" element={<OnboardingFlow />} />
+          <Route path="/onboarding" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/account" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/project" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/checklist" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/deploy" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/dashboard" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
+          <Route path="/onboarding/advanced" element={<RequireAuth><OnboardingFlow /></RequireAuth>} />
 
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/support"   element={<SupportPage />} />

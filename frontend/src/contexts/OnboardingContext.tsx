@@ -48,6 +48,9 @@ export interface OnboardingState {
   // UI state
   isLoading: boolean;
   error: string | null;
+
+  // Completion flag
+  isCompleted: boolean;
 }
 
 export interface OnboardingActions {
@@ -59,6 +62,7 @@ export interface OnboardingActions {
   updateChecklistProgress: (progress: Partial<OnboardingState['checklistProgress']>) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  completeOnboarding: () => void;
   reset: () => void;
 }
 
@@ -71,6 +75,7 @@ type OnboardingAction =
   | { type: 'UPDATE_CHECKLIST_PROGRESS'; payload: Partial<OnboardingState['checklistProgress']> }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'RESET' };
 
 const initialState: OnboardingState = {
@@ -89,6 +94,7 @@ const initialState: OnboardingState = {
   },
   isLoading: false,
   error: null,
+  isCompleted: false,
 };
 
 function onboardingReducer(state: OnboardingState, action: OnboardingAction): OnboardingState {
@@ -139,6 +145,9 @@ function onboardingReducer(state: OnboardingState, action: OnboardingAction): On
     case 'SET_ERROR':
       return { ...state, error: action.payload };
 
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, isCompleted: true };
+
     case 'RESET':
       return initialState;
 
@@ -165,40 +174,28 @@ interface OnboardingProviderProps {
 }
 
 export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => {
-  const [state, dispatch] = useReducer(onboardingReducer, initialState);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('atonix-onboarding-state');
-    if (saved) {
-      try {
-        const parsedState = JSON.parse(saved);
-        // Restore state selectively (avoid overwriting computed values)
-        if (parsedState.accountData) {
-          dispatch({ type: 'UPDATE_ACCOUNT_DATA', payload: parsedState.accountData });
-        }
-        if (parsedState.projectData) {
-          dispatch({ type: 'UPDATE_PROJECT_DATA', payload: parsedState.projectData });
-        }
-        if (parsedState.deploymentData) {
-          dispatch({ type: 'UPDATE_DEPLOYMENT_DATA', payload: parsedState.deploymentData });
-        }
-        if (parsedState.checklistProgress) {
-          dispatch({ type: 'UPDATE_CHECKLIST_PROGRESS', payload: parsedState.checklistProgress });
-        }
-        if (parsedState.completedPhases) {
-          parsedState.completedPhases.forEach((phase: number) => {
-            dispatch({ type: 'COMPLETE_PHASE', payload: phase });
-          });
-        }
-        if (parsedState.currentPhase) {
-          dispatch({ type: 'SET_CURRENT_PHASE', payload: parsedState.currentPhase });
-        }
-      } catch (error) {
-        console.warn('Failed to restore onboarding state:', error);
+  // Initialise state synchronously from localStorage to avoid redirect flicker
+  const [state, dispatch] = useReducer(onboardingReducer, initialState, (init) => {
+    try {
+      const saved = localStorage.getItem('atonix-onboarding-state');
+      if (saved) {
+        const p = JSON.parse(saved);
+        return {
+          ...init,
+          currentPhase: p.currentPhase ?? init.currentPhase,
+          completedPhases: p.completedPhases ?? init.completedPhases,
+          accountData: p.accountData ?? init.accountData,
+          projectData: p.projectData ?? init.projectData,
+          deploymentData: p.deploymentData ?? init.deploymentData,
+          checklistProgress: p.checklistProgress ?? init.checklistProgress,
+          isCompleted: p.isCompleted ?? init.isCompleted,
+        };
       }
+    } catch (e) {
+      console.warn('Failed to restore onboarding state:', e);
     }
-  }, []);
+    return init;
+  });
 
   // Save to localStorage whenever state changes
   useEffect(() => {
@@ -209,6 +206,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
       projectData: state.projectData,
       deploymentData: state.deploymentData,
       checklistProgress: state.checklistProgress,
+      isCompleted: state.isCompleted,
     }));
   }, [state]);
 
@@ -221,6 +219,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     updateChecklistProgress: (progress) => dispatch({ type: 'UPDATE_CHECKLIST_PROGRESS', payload: progress }),
     setLoading: (loading: boolean) => dispatch({ type: 'SET_LOADING', payload: loading }),
     setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
+    completeOnboarding: () => dispatch({ type: 'COMPLETE_ONBOARDING' }),
     reset: () => dispatch({ type: 'RESET' }),
   };
 
