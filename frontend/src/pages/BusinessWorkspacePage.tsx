@@ -1825,8 +1825,8 @@ function AuditModule({ orgId }: { orgId: string }) {
     if (!orgId) return;
     setLoading(true);
     auditLogsApi.list(orgId)
-      .then(setLogs)
-      .catch()
+      .then(data => setLogs(Array.isArray(data) ? data : []))
+      .catch(() => setLogs([]))
       .finally(() => setLoading(false));
   }, [orgId]);
 

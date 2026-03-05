@@ -311,7 +311,11 @@ class EnterpriseAuditLogSerializer(serializers.ModelSerializer):
             'action', 'target_type', 'target_id', 'target_label',
             'metadata', 'ip_address', 'timestamp',
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+            'id', 'organization', 'actor_member', 'actor_email',
+            'action', 'target_type', 'target_id', 'target_label',
+            'metadata', 'ip_address', 'timestamp',
+        ]
 
     def get_actor_name(self, obj):
         if obj.actor_member:

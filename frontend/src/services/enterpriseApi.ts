@@ -503,7 +503,8 @@ export const auditLogsApi = {
     since?: string;
     until?: string;
   }) =>
-    enterpriseClient.get<AuditLogEntry[]>(`/organizations/${orgId}/audit-logs/`, { params: filters }).then(r => r.data),
+    enterpriseClient.get<{ results: AuditLogEntry[] } | AuditLogEntry[]>(`/organizations/${orgId}/audit-logs/`, { params: filters })
+      .then(r => Array.isArray(r.data) ? r.data : ((r.data as any).results ?? [])),
 };
 
 // ── Usage ─────────────────────────────────────────────────────────────────────
