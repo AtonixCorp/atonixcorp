@@ -220,3 +220,16 @@ if settings.DEBUG or os.environ.get('SERVE_STATIC', 'True') == 'True':
     urlpatterns += [
         re_path(r'^static/(?P<path>.*)$', static_serve, kwargs={'insecure': True}),
     ]
+
+if settings.DEBUG:
+    # Silently swallow webpack HMR polling requests that leak into Django when
+    # the browser has a stale bundle (e.g. after a dev-server restart).
+    # Returns 204 No Content so the browser stops spamming the log.
+    from django.http import HttpResponse
+
+    def _hmr_sink(request, **kwargs):
+        return HttpResponse(status=204)
+
+    urlpatterns += [
+        re_path(r'^.*\.hot-update\.(js|json|js\.map)$', _hmr_sink),
+    ]

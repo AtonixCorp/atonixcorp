@@ -28,18 +28,6 @@ def _plan_id():  return _uid('plan')
 def _sub_id():   return _uid('sub')
 def _einv_id():  return _uid('einv')
 def _aud_id():   return _uid('aud')
-def _dept_id():  return _uid('dept')
-def _team_id():  return _uid('team')
-def _grp_id():   return _uid('grp')
-def _dsbi_id():  return _uid('dsbi')
-def _wpage_id(): return _uid('wp')
-def _wcat_id():  return _uid('wcat')
-def _wver_id():  return _uid('wver')
-def _intc_id():  return _uid('intc')
-def _intl_id():  return _uid('intl')
-def _intwh_id(): return _uid('intwh')
-def _order_id(): return _uid('ord')
-def _oitem_id(): return _uid('oitm')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -66,10 +54,10 @@ class Organization(TimeStampedModel):
     plan           = models.CharField(max_length=64,  default='Enterprise')
     status         = models.CharField(max_length=20,  choices=Status.choices,
                                       default=Status.TRIAL)
-    contact_email  = models.EmailField(blank=True, default='')
-    domain_email   = models.EmailField(blank=True, default='',
-                                       help_text='Primary organization email, e.g. admin@acme.com')
-    logo_url       = models.URLField(blank=True, default='')
+    contact_email  = models.EmailField(blank=True)
+    domain_email   = models.EmailField(blank=True)
+    logo_url       = models.URLField(blank=True)
+
     class Meta:
         verbose_name = 'Organization'
 
@@ -115,156 +103,6 @@ class OrganizationMember(TimeStampedModel):
 
     def __str__(self):
         return f'{self.email} @ {self.organization.slug} [{self.role}]'
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# 1b. HIERARCHY: DEPARTMENT → TEAM → GROUP
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class Department(TimeStampedModel):
-    """A department inside an Organization."""
-    DEPT_CATEGORIES = [
-        # Business
-        ('Administration', 'Administration'),
-        ('Finance', 'Finance'),
-        ('Human Resources (HR)', 'Human Resources (HR)'),
-        ('Legal & Compliance', 'Legal & Compliance'),
-        ('Operations', 'Operations'),
-        ('Procurement', 'Procurement'),
-        ('Sales', 'Sales'),
-        ('Marketing', 'Marketing'),
-        ('Customer Support', 'Customer Support'),
-        ('Product Management', 'Product Management'),
-        ('Business Development', 'Business Development'),
-        ('Partnerships & Alliances', 'Partnerships & Alliances'),
-        ('Public Relations / Communications', 'Public Relations / Communications'),
-        ('Strategy & Planning', 'Strategy & Planning'),
-        ('Investor Relations', 'Investor Relations'),
-        # Technical
-        ('Engineering / Software Development', 'Engineering / Software Development'),
-        ('IT & Infrastructure', 'IT & Infrastructure'),
-        ('Security / Cybersecurity', 'Security / Cybersecurity'),
-        ('Research & Development (R&D)', 'Research & Development (R&D)'),
-        ('Data & Analytics', 'Data & Analytics'),
-        ('Quality Assurance', 'Quality Assurance'),
-        ('Computing & Technology', 'Computing & Technology'),
-        # Creative
-        ('Design / Creative', 'Design / Creative'),
-        ('Media & Content', 'Media & Content'),
-        ('Training & Learning', 'Training & Learning'),
-        ('Education & Training', 'Education & Training'),
-        # Operations / Physical
-        ('Manufacturing / Production', 'Manufacturing / Production'),
-        ('Logistics / Supply Chain', 'Logistics / Supply Chain'),
-        ('Facilities / Maintenance', 'Facilities / Maintenance'),
-        ('Health & Safety', 'Health & Safety'),
-        ('Construction & Architecture', 'Construction & Architecture'),
-        ('Transportation', 'Transportation'),
-        # Industry-specific
-        ('Science & Research', 'Science & Research'),
-        ('Medical / Healthcare', 'Medical / Healthcare'),
-        ('Government & Public Sector', 'Government & Public Sector'),
-        ('Nonprofit / NGO', 'Nonprofit / NGO'),
-        ('Hospitality & Tourism', 'Hospitality & Tourism'),
-        ('Real Estate', 'Real Estate'),
-        ('Energy & Environment', 'Energy & Environment'),
-        ('Agriculture', 'Agriculture'),
-        ('Retail & E-commerce', 'Retail & E-commerce'),
-        ('Sports & Entertainment', 'Sports & Entertainment'),
-        ('Other', 'Other'),
-    ]
-
-    id              = models.CharField(max_length=36, primary_key=True, default=_dept_id, editable=False)
-    organization    = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='departments')
-    name            = models.CharField(max_length=255)
-    category        = models.CharField(max_length=100, blank=True)
-    description     = models.TextField(blank=True)
-    department_lead = models.CharField(max_length=255, blank=True)
-    parent          = models.ForeignKey(
-                        'self', null=True, blank=True,
-                        on_delete=models.SET_NULL,
-                        related_name='sub_departments',
-                      )
-
-    class Meta:
-        unique_together = ('organization', 'name')
-        verbose_name = 'Department'
-        ordering = ['name']
-
-    def __str__(self):
-        return f'{self.name} @ {self.organization.slug}'
-
-
-class OrgTeam(TimeStampedModel):
-    """A team inside a Department."""
-
-    class TeamType(models.TextChoices):
-        DEPARTMENT = 'DEPARTMENT', 'Department'
-        FUNCTION   = 'FUNCTION',   'Function'
-        SQUAD      = 'SQUAD',      'Squad'
-
-    id          = models.CharField(max_length=36, primary_key=True, default=_team_id, editable=False)
-    department  = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='teams')
-    name        = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    team_type   = models.CharField(max_length=20, choices=TeamType.choices, default=TeamType.SQUAD)
-
-    class Meta:
-        unique_together = ('department', 'name')
-        verbose_name = 'Team'
-        ordering = ['name']
-
-    def __str__(self):
-        return f'{self.name} @ {self.department.name}'
-
-
-class OrgGroup(TimeStampedModel):
-    """A group inside a Team."""
-    id          = models.CharField(max_length=36, primary_key=True, default=_grp_id, editable=False)
-    team        = models.ForeignKey(OrgTeam, on_delete=models.CASCADE, related_name='groups')
-    name        = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    owner       = models.CharField(max_length=255, blank=True)
-
-    class Meta:
-        unique_together = ('team', 'name')
-        verbose_name = 'Group'
-        ordering = ['name']
-
-    def __str__(self):
-        return f'{self.name} @ {self.team.name}'
-
-
-# ── Department Sidebar Item ───────────────────────────────────────────────────
-
-class DepartmentSidebarItem(TimeStampedModel):
-    """
-    A configurable sidebar entry scoped to one Department.
-    Admins can reorder, toggle, rename, and add custom links.
-    """
-
-    class ItemType(models.TextChoices):
-        NAVIGATION = 'navigation', 'Navigation'
-        ACTION     = 'action',     'Quick Action'
-        RESOURCE   = 'resource',   'Resource'
-        HIGHLIGHT  = 'highlight',  'Highlight'
-        CUSTOM     = 'custom',     'Custom Link'
-
-    id          = models.CharField(max_length=36, primary_key=True, default=_dsbi_id, editable=False)
-    department  = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='sidebar_items')
-    item_type   = models.CharField(max_length=20, choices=ItemType.choices, default=ItemType.NAVIGATION)
-    label       = models.CharField(max_length=100)
-    url         = models.CharField(max_length=500, blank=True, default='')
-    icon        = models.CharField(max_length=100, blank=True, default='')
-    order_index = models.PositiveIntegerField(default=0)
-    is_active   = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['item_type', 'order_index']
-        verbose_name = 'Department Sidebar Item'
-
-    def __str__(self):
-        return f'{self.item_type}:{self.label} @ {self.department.name}'
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -634,104 +472,196 @@ class EnterpriseAuditLog(models.Model):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 7. WIKI (knowledge base)
+# 7. HIERARCHY: Department → Team → Group
 # ═══════════════════════════════════════════════════════════════════════════════
 
-class WikiCategory(TimeStampedModel):
-    """Org-scoped category for grouping wiki pages."""
+def _dept_id():   return _uid('dept')
+def _dsbi_id():   return _uid('dsbi')
+def _team_id():   return _uid('team')
+def _grp_id():    return _uid('grp')
 
+
+class Department(TimeStampedModel):
+    """Top-level grouping within an Organization (e.g. Engineering, Marketing)."""
+
+    id               = models.CharField(max_length=36, primary_key=True,
+                                        default=_dept_id, editable=False)
+    organization     = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                         related_name='departments')
+    name             = models.CharField(max_length=255)
+    category         = models.CharField(max_length=100, blank=True)
+    description      = models.TextField(blank=True)
+    department_lead  = models.CharField(max_length=255, blank=True)
+    parent           = models.ForeignKey('self', null=True, blank=True,
+                                         on_delete=models.SET_NULL,
+                                         related_name='sub_departments')
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        verbose_name = 'Department'
+
+    def __str__(self):
+        return f'{self.name} ({self.organization.slug})'
+
+
+class DepartmentSidebarItem(TimeStampedModel):
+    """Custom sidebar navigation item for a Department sub-dashboard."""
+
+    class ItemType(models.TextChoices):
+        LINK   = 'LINK',   'Link'
+        HEADER = 'HEADER', 'Header'
+        DIVIDER = 'DIVIDER', 'Divider'
+
+    id          = models.CharField(max_length=36, primary_key=True,
+                                   default=_dsbi_id, editable=False)
+    department  = models.ForeignKey(Department, on_delete=models.CASCADE,
+                                    related_name='sidebar_items')
+    item_type   = models.CharField(max_length=20, choices=ItemType.choices,
+                                   default=ItemType.LINK)
+    label       = models.CharField(max_length=100)
+    url         = models.CharField(max_length=500, blank=True)
+    icon        = models.CharField(max_length=60,  blank=True)
+    order_index = models.PositiveSmallIntegerField(default=0)
+    is_active   = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order_index']
+        verbose_name = 'Department Sidebar Item'
+
+    def __str__(self):
+        return f'{self.department.name} / {self.label}'
+
+
+class OrgTeam(TimeStampedModel):
+    """A team inside a Department."""
+
+    class TeamType(models.TextChoices):
+        DEPARTMENT = 'DEPARTMENT', 'Department'
+        FUNCTION   = 'FUNCTION',   'Function'
+        SQUAD      = 'SQUAD',      'Squad'
+
+    id          = models.CharField(max_length=36, primary_key=True,
+                                   default=_team_id, editable=False)
+    department  = models.ForeignKey(Department, on_delete=models.CASCADE,
+                                    related_name='teams')
+    name        = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    team_type   = models.CharField(max_length=20, choices=TeamType.choices,
+                                   default=TeamType.SQUAD)
+
+    class Meta:
+        unique_together = ('department', 'name')
+        verbose_name = 'Organization Team'
+
+    def __str__(self):
+        return f'{self.department.name} / {self.name}'
+
+
+class OrgGroup(TimeStampedModel):
+    """A sub-group within a Team."""
+
+    id          = models.CharField(max_length=36, primary_key=True,
+                                   default=_grp_id, editable=False)
+    team        = models.ForeignKey(OrgTeam, on_delete=models.CASCADE,
+                                    related_name='groups')
+    name        = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('team', 'name')
+        verbose_name = 'Organization Group'
+
+    def __str__(self):
+        return f'{self.team.name} / {self.name}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 8. WIKI
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _wcat_id():   return _uid('wcat')
+def _wpage_id():  return _uid('wpag')
+def _wver_id():   return _uid('wver')
+
+
+class WikiCategory(TimeStampedModel):
     id           = models.CharField(max_length=36, primary_key=True,
                                     default=_wcat_id, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
                                      related_name='wiki_categories')
     name         = models.CharField(max_length=120)
-    color        = models.CharField(max_length=20, default='#3b82f6',
-                                    help_text='Hex color for UI badge')
-    description  = models.TextField(blank=True, default='')
+    color        = models.CharField(max_length=20, default='#3b82f6')
+    description  = models.TextField(blank=True)
 
     class Meta:
-        ordering = ['name']
-        unique_together = [('organization', 'name')]
+        unique_together = ('organization', 'name')
+        verbose_name = 'Wiki Category'
 
     def __str__(self):
         return f'{self.organization.slug} / {self.name}'
 
 
 class WikiPage(TimeStampedModel):
-    """A knowledge base page scoped to an organization."""
-
-    id           = models.CharField(max_length=36, primary_key=True,
-                                    default=_wpage_id, editable=False)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
-                                     related_name='wiki_pages')
-    title        = models.CharField(max_length=255, db_index=True)
-    slug         = models.SlugField(max_length=255, db_index=True)
-    content      = models.TextField(default='', blank=True,
-                                    help_text='Markdown content')
-    summary      = models.CharField(max_length=500, blank=True, default='',
-                                    help_text='Short description / excerpt')
-    is_pinned    = models.BooleanField(default=False)
-    view_count   = models.PositiveIntegerField(default=0)
-    tags         = models.JSONField(default=list,
-                                    help_text='Free-form tag strings, e.g. ["policy","hr"]')
-    categories   = models.ManyToManyField(WikiCategory, through='WikiPageCategory',
-                                          blank=True, related_name='pages')
-    created_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
-                                     null=True, blank=True, related_name='+')
-    updated_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
-                                     null=True, blank=True, related_name='+')
-    # Cross-module: optional link source label (e.g. "Compliance", "Marketing")
-    linked_module = models.CharField(max_length=50, blank=True, default='')
+    id            = models.CharField(max_length=36, primary_key=True,
+                                     default=_wpage_id, editable=False)
+    organization  = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                      related_name='wiki_pages')
+    title         = models.CharField(max_length=255)
+    slug          = models.SlugField(max_length=255, blank=True)
+    content       = models.TextField(blank=True)
+    summary       = models.CharField(max_length=500, blank=True)
+    is_pinned     = models.BooleanField(default=False)
+    view_count    = models.PositiveIntegerField(default=0)
+    tags          = models.JSONField(default=list)
+    categories    = models.ManyToManyField(WikiCategory, blank=True,
+                                           related_name='pages')
+    linked_module = models.CharField(max_length=50, blank=True)
+    created_by    = models.ForeignKey(User, null=True, blank=True,
+                                      on_delete=models.SET_NULL,
+                                      related_name='wiki_pages_created')
+    updated_by    = models.ForeignKey(User, null=True, blank=True,
+                                      on_delete=models.SET_NULL,
+                                      related_name='wiki_pages_updated')
 
     class Meta:
-        ordering = ['-updated_at']
-        unique_together = [('organization', 'slug')]
-        indexes = [
-            models.Index(fields=['organization', '-updated_at']),
-            models.Index(fields=['organization', 'title']),
-        ]
+        unique_together = ('organization', 'slug')
+        verbose_name = 'Wiki Page'
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.organization.slug} / {self.title}'
-
-
-class WikiPageCategory(models.Model):
-    """Through table linking pages to categories."""
-    page     = models.ForeignKey(WikiPage,     on_delete=models.CASCADE)
-    category = models.ForeignKey(WikiCategory, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = [('page', 'category')]
+        return f'{self.title} ({self.organization.slug})'
 
 
 class WikiPageVersion(models.Model):
-    """Immutable snapshot of a WikiPage at a point in time."""
-
-    id        = models.CharField(max_length=36, primary_key=True,
-                                 default=_wver_id, editable=False)
-    page      = models.ForeignKey(WikiPage, on_delete=models.CASCADE,
-                                  related_name='versions')
-    title     = models.CharField(max_length=255)
-    content   = models.TextField(default='')
-    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL,
-                                  null=True, blank=True, related_name='+')
-    edited_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    version_note = models.CharField(max_length=255, blank=True, default='')
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_wver_id, editable=False)
+    page         = models.ForeignKey(WikiPage, on_delete=models.CASCADE,
+                                     related_name='versions')
+    title        = models.CharField(max_length=255)
+    content      = models.TextField(blank=True)
+    edited_by    = models.ForeignKey(User, null=True, blank=True,
+                                     on_delete=models.SET_NULL)
+    edited_at    = models.DateTimeField(auto_now_add=True)
+    version_note = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ['-edited_at']
+        verbose_name = 'Wiki Page Version'
 
     def __str__(self):
-        return f'{self.page.title} @ {self.edited_at:%Y-%m-%d %H:%M}'
+        return f'{self.page.title} v@{self.edited_at:%Y-%m-%d %H:%M}'
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 8. INTEGRATIONS (external service connections)
+# 9. INTEGRATIONS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+def _intc_id():  return _uid('intc')
+def _intl_id():  return _uid('intl')
+def _intwh_id(): return _uid('inwh')
+
 
 class IntegrationConnection(TimeStampedModel):
-    """An org's connection to an external integration provider (Stripe, SendGrid, etc.)."""
-
     class Status(models.TextChoices):
         CONNECTED    = 'CONNECTED',    'Connected'
         DISCONNECTED = 'DISCONNECTED', 'Disconnected'
@@ -742,124 +672,118 @@ class IntegrationConnection(TimeStampedModel):
                                       default=_intc_id, editable=False)
     organization   = models.ForeignKey(Organization, on_delete=models.CASCADE,
                                        related_name='integrations')
-    provider       = models.CharField(max_length=80, db_index=True,
-                                      help_text='e.g. stripe, sendgrid, slack')
-    display_name   = models.CharField(max_length=120, blank=True, default='')
-    category       = models.CharField(max_length=50, default='other',
-                                      help_text='payments | email | domains | communication | development | marketing | identity | monitoring | crm | productivity | support | other')
+    provider       = models.CharField(max_length=80, db_index=True)
+    display_name   = models.CharField(max_length=120, blank=True)
+    category       = models.CharField(max_length=50, default='other')
     status         = models.CharField(max_length=20, choices=Status.choices,
-                                      default=Status.DISCONNECTED, db_index=True)
-    credentials    = models.JSONField(default=dict, blank=True,
-                                      help_text='Encrypted-at-rest credential fields')
-    config         = models.JSONField(default=dict, blank=True,
-                                      help_text='Provider-specific settings')
+                                      default=Status.PENDING)
+    config         = models.JSONField(default=dict)
+    credentials    = models.JSONField(default=dict,
+                                      help_text='Encrypted at rest; never expose to client')
     last_sync      = models.DateTimeField(null=True, blank=True)
-    last_error     = models.TextField(blank=True, default='')
-    total_calls    = models.PositiveIntegerField(default=0)
+    last_error     = models.TextField(blank=True)
+    total_calls    = models.PositiveBigIntegerField(default=0)
     error_count    = models.PositiveIntegerField(default=0)
-    connected_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
-                                       null=True, blank=True, related_name='+')
-    webhook_secret = models.CharField(max_length=128, blank=True, default='',
-                                      help_text='HMAC secret for incoming webhooks')
+    connected_by   = models.ForeignKey(User, null=True, blank=True,
+                                       on_delete=models.SET_NULL)
+    webhook_secret = models.CharField(max_length=64, blank=True)
 
     class Meta:
-        ordering = ['provider']
-        unique_together = [('organization', 'provider')]
+        unique_together = ('organization', 'provider')
+        verbose_name = 'Integration Connection'
 
     def __str__(self):
-        return f'{self.organization.slug}/{self.provider} [{self.status}]'
+        return f'{self.provider} ({self.organization.slug}) [{self.status}]'
 
 
 class IntegrationLog(models.Model):
-    """Append-only audit trail for all integration events."""
-
-    class Level(models.TextChoices):
-        INFO    = 'INFO',    'Info'
-        SUCCESS = 'SUCCESS', 'Success'
-        WARNING = 'WARNING', 'Warning'
-        ERROR   = 'ERROR',   'Error'
-
-    class EventType(models.TextChoices):
-        API_CALL       = 'API_CALL',       'API Call'
-        WEBHOOK        = 'WEBHOOK',        'Webhook Received'
-        TOKEN_REFRESH  = 'TOKEN_REFRESH',  'Token Refresh'
-        SYNC           = 'SYNC',           'Data Sync'
-        CONNECT        = 'CONNECT',        'Connection'
-        DISCONNECT     = 'DISCONNECT',     'Disconnection'
-        TEST           = 'TEST',           'Connection Test'
-        ERROR          = 'ERROR',          'Error'
-
     id             = models.CharField(max_length=36, primary_key=True,
                                       default=_intl_id, editable=False)
-    connection     = models.ForeignKey(IntegrationConnection, on_delete=models.CASCADE,
-                                       related_name='logs', null=True, blank=True)
-    organization   = models.ForeignKey(Organization, on_delete=models.CASCADE,
-                                       related_name='integration_logs')
-    provider       = models.CharField(max_length=80, db_index=True)
-    event_type     = models.CharField(max_length=30, choices=EventType.choices)
-    level          = models.CharField(max_length=10, choices=Level.choices,
-                                      default=Level.INFO)
-    message        = models.TextField()
-    request_data   = models.JSONField(default=dict, blank=True)
-    response_data  = models.JSONField(default=dict, blank=True)
-    http_status    = models.IntegerField(null=True, blank=True)
-    duration_ms    = models.IntegerField(null=True, blank=True)
-    retry_count    = models.IntegerField(default=0)
-    correlation_id = models.CharField(max_length=64, blank=True, default='')
+    connection     = models.ForeignKey(IntegrationConnection, null=True, blank=True,
+                                       on_delete=models.CASCADE,
+                                       related_name='logs')
+    provider       = models.CharField(max_length=80)
+    event_type     = models.CharField(max_length=80)
+    level          = models.CharField(max_length=10, default='INFO')
+    message        = models.TextField(blank=True)
+    http_status    = models.PositiveSmallIntegerField(null=True, blank=True)
+    duration_ms    = models.PositiveIntegerField(default=0)
+    retry_count    = models.PositiveSmallIntegerField(default=0)
+    correlation_id = models.CharField(max_length=64, blank=True)
     timestamp      = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ['-timestamp']
-        indexes = [
-            models.Index(fields=['organization', '-timestamp']),
-            models.Index(fields=['organization', 'provider', '-timestamp']),
-        ]
+        verbose_name = 'Integration Log'
 
     def __str__(self):
-        return f'[{self.level}] {self.provider}/{self.event_type} @ {self.timestamp:%Y-%m-%d %H:%M}'
+        return f'[{self.provider}] {self.event_type} {self.level}'
+
+
+class IntegrationWebhookEvent(models.Model):
+    id                = models.CharField(max_length=36, primary_key=True,
+                                         default=_intwh_id, editable=False)
+    connection        = models.ForeignKey(IntegrationConnection, null=True, blank=True,
+                                          on_delete=models.CASCADE,
+                                          related_name='webhook_events')
+    provider          = models.CharField(max_length=80)
+    event_type        = models.CharField(max_length=80)
+    event_id          = models.CharField(max_length=128, blank=True)
+    payload           = models.JSONField(default=dict)
+    normalized        = models.JSONField(default=dict)
+    processed         = models.BooleanField(default=False)
+    processing_error  = models.TextField(blank=True)
+    received_at       = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-received_at']
+        verbose_name = 'Integration Webhook Event'
+
+    def __str__(self):
+        return f'{self.provider} / {self.event_type}'
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ORDERS
+# 10. ORDERS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+def _order_id():  return _uid('ordr')
+def _oitem_id():  return _uid('oitm')
+
 
 class OrgOrder(TimeStampedModel):
-    """A purchase order placed against this organization."""
-
     class Status(models.TextChoices):
         PENDING   = 'PENDING',   'Pending'
         CONFIRMED = 'CONFIRMED', 'Confirmed'
-        COMPLETED = 'COMPLETED', 'Completed'
-        CANCELLED = 'CANCELLED', 'Cancelled'
+        FULFILLED = 'FULFILLED', 'Fulfilled'
+        CANCELED  = 'CANCELED',  'Canceled'
 
     id           = models.CharField(max_length=36, primary_key=True,
                                     default=_order_id, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
                                      related_name='orders')
-    order_number = models.CharField(max_length=64, unique=True)
+    order_number = models.CharField(max_length=32, unique=True)
     status       = models.CharField(max_length=20, choices=Status.choices,
                                     default=Status.PENDING)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency     = models.CharField(max_length=8, default='USD')
-    notes        = models.TextField(blank=True, default='')
+    notes        = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'Org Order'
         ordering = ['-created_at']
+        verbose_name = 'Organization Order'
 
     def __str__(self):
-        return f'{self.organization.slug} / {self.order_number} [{self.status}]'
+        return f'{self.order_number} ({self.organization.slug})'
 
     def save(self, *args, **kwargs):
         if not self.order_number:
-            import uuid
-            self.order_number = f'ORD-{uuid.uuid4().hex[:8].upper()}'
+            import uuid as _uuid
+            self.order_number = f'ORD-{_uuid.uuid4().hex[:8].upper()}'
         super().save(*args, **kwargs)
 
 
-class OrderItem(TimeStampedModel):
-    """A single line item within an OrgOrder."""
-
+class OrderItem(models.Model):
     id          = models.CharField(max_length=36, primary_key=True,
                                    default=_oitem_id, editable=False)
     order       = models.ForeignKey(OrgOrder, on_delete=models.CASCADE,
@@ -869,202 +793,170 @@ class OrderItem(TimeStampedModel):
     unit_price  = models.DecimalField(max_digits=12, decimal_places=2)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
-    class Meta:
-        verbose_name = 'Order Item'
-        ordering = ['product']
-
     def save(self, *args, **kwargs):
         self.total_price = self.unit_price * self.quantity
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Order Item'
 
     def __str__(self):
         return f'{self.product} x{self.quantity}'
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# MEETING HUB
-# ══════════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# 11. MEETINGS & ANNOUNCEMENTS
+# ═══════════════════════════════════════════════════════════════════════════════
 
-def _mtg_id():   return _uid('mtg')
-def _mtp_id():   return _uid('mtp')
-def _mtn_id():   return _uid('mtn')
-def _ann_id():   return _uid('ann')
+def _mtg_id():  return _uid('mtg')
+def _mtp_id():  return _uid('mtp')
+def _mtn_id():  return _uid('mtn')
+def _ann_id():  return _uid('ann')
 
 
 class Meeting(TimeStampedModel):
-    """An org-scoped meeting event."""
+    class Type(models.TextChoices):
+        STANDUP   = 'STANDUP',   'Standup'
+        REVIEW    = 'REVIEW',    'Review'
+        PLANNING  = 'PLANNING',  'Planning'
+        ONE_ON_ONE = 'ONE_ON_ONE', '1:1'
+        ALL_HANDS = 'ALL_HANDS', 'All Hands'
+        OTHER     = 'OTHER',     'Other'
 
     class Status(models.TextChoices):
-        SCHEDULED  = 'SCHEDULED',  'Scheduled'
+        SCHEDULED = 'SCHEDULED', 'Scheduled'
         IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
-        COMPLETED  = 'COMPLETED',  'Completed'
-        CANCELLED  = 'CANCELLED',  'Cancelled'
+        COMPLETED = 'COMPLETED', 'Completed'
+        CANCELED  = 'CANCELED',  'Canceled'
 
-    class MeetingType(models.TextChoices):
-        SCHEDULED  = 'scheduled',  'Scheduled'
-        RECURRING  = 'recurring',  'Recurring'
-        INSTANT    = 'instant',    'Instant'
-        DEPARTMENT = 'department', 'Department'
-
-    id              = models.CharField(max_length=36, primary_key=True, default=_mtg_id, editable=False)
-    organization    = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
-    department      = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
-    created_by      = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_meetings')
-    title           = models.CharField(max_length=255)
-    description     = models.TextField(blank=True, default='')
-    agenda          = models.TextField(blank=True, default='')
-    start_time      = models.DateTimeField()
-    end_time        = models.DateTimeField()
-    meeting_type    = models.CharField(max_length=20, choices=MeetingType.choices, default=MeetingType.SCHEDULED)
-    status          = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
-    video_room_id   = models.CharField(max_length=255, blank=True, default='')
-    video_provider  = models.CharField(max_length=50, blank=True, default='livekit',
-                                       help_text='livekit | twilio | daily | webrtc')
-    video_join_url  = models.URLField(blank=True, default='')
-    location        = models.CharField(max_length=255, blank=True, default='')
-    is_recurring    = models.BooleanField(default=False)
-    recurrence_rule = models.CharField(max_length=255, blank=True, default='',
-                                       help_text='RRULE string e.g. FREQ=WEEKLY;BYDAY=MO')
-    recording_url   = models.URLField(blank=True, default='')
-    notes           = models.TextField(blank=True, default='')
-    max_participants = models.PositiveIntegerField(default=0, help_text='0 = unlimited')
+    id               = models.CharField(max_length=36, primary_key=True,
+                                        default=_mtg_id, editable=False)
+    organization     = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                         related_name='meetings')
+    department       = models.ForeignKey(Department, null=True, blank=True,
+                                         on_delete=models.SET_NULL,
+                                         related_name='meetings')
+    created_by       = models.ForeignKey(User, null=True, blank=True,
+                                         on_delete=models.SET_NULL,
+                                         related_name='meetings_created')
+    title            = models.CharField(max_length=255)
+    description      = models.TextField(blank=True)
+    agenda           = models.TextField(blank=True)
+    start_time       = models.DateTimeField()
+    end_time         = models.DateTimeField(null=True, blank=True)
+    meeting_type     = models.CharField(max_length=20, choices=Type.choices,
+                                        default=Type.OTHER)
+    status           = models.CharField(max_length=20, choices=Status.choices,
+                                        default=Status.SCHEDULED)
+    video_room_id    = models.CharField(max_length=128, blank=True)
+    video_provider   = models.CharField(max_length=40, blank=True)
+    video_join_url   = models.URLField(blank=True)
+    location         = models.CharField(max_length=255, blank=True)
+    is_recurring     = models.BooleanField(default=False)
+    recurrence_rule  = models.CharField(max_length=255, blank=True)
+    recording_url    = models.URLField(blank=True)
+    notes            = models.TextField(blank=True)
+    max_participants = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        ordering = ['-start_time']
         verbose_name = 'Meeting'
-        ordering = ['start_time']
-        indexes = [
-            models.Index(fields=['organization', 'start_time']),
-            models.Index(fields=['organization', 'status']),
-        ]
 
     @property
     def duration_minutes(self):
         if self.end_time and self.start_time:
-            return int((self.end_time - self.start_time).total_seconds() / 60)
-        return 0
+            delta = self.end_time - self.start_time
+            return int(delta.total_seconds() / 60)
+        return None
 
     def __str__(self):
-        return f'{self.title} ({self.start_time:%Y-%m-%d %H:%M})'
+        return f'{self.title} @ {self.start_time:%Y-%m-%d %H:%M}'
 
 
-class MeetingParticipant(TimeStampedModel):
-    """Junction between a Meeting and an org member."""
-
+class MeetingParticipant(models.Model):
     class Role(models.TextChoices):
-        HOST      = 'host',     'Host'
-        CO_HOST   = 'co_host',  'Co-host'
-        ATTENDEE  = 'attendee', 'Attendee'
+        ORGANIZER = 'ORGANIZER', 'Organizer'
+        ATTENDEE  = 'ATTENDEE',  'Attendee'
+        OPTIONAL  = 'OPTIONAL',  'Optional'
 
     class InviteStatus(models.TextChoices):
-        INVITED   = 'invited',  'Invited'
-        ACCEPTED  = 'accepted', 'Accepted'
-        DECLINED  = 'declined', 'Declined'
-        TENTATIVE = 'tentative','Tentative'
-        ATTENDED  = 'attended', 'Attended'
-        NO_SHOW   = 'no_show',  'No Show'
+        PENDING  = 'PENDING',  'Pending'
+        ACCEPTED = 'ACCEPTED', 'Accepted'
+        DECLINED = 'DECLINED', 'Declined'
 
-    id             = models.CharField(max_length=36, primary_key=True, default=_mtp_id, editable=False)
-    meeting        = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='participants')
-    user           = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_participations')
-    member         = models.ForeignKey('OrganizationMember', on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_participations')
-    email          = models.EmailField(blank=True, default='', help_text='For external invitees')
-    name           = models.CharField(max_length=255, blank=True, default='')
-    role           = models.CharField(max_length=20, choices=Role.choices, default=Role.ATTENDEE)
-    invite_status  = models.CharField(max_length=20, choices=InviteStatus.choices, default=InviteStatus.INVITED)
-    joined_at      = models.DateTimeField(null=True, blank=True)
-    left_at        = models.DateTimeField(null=True, blank=True)
+    id            = models.CharField(max_length=36, primary_key=True,
+                                     default=_mtp_id, editable=False)
+    meeting       = models.ForeignKey(Meeting, on_delete=models.CASCADE,
+                                      related_name='participants')
+    user          = models.ForeignKey(User, null=True, blank=True,
+                                      on_delete=models.SET_NULL)
+    member        = models.ForeignKey(OrganizationMember, null=True, blank=True,
+                                      on_delete=models.SET_NULL)
+    email         = models.EmailField(blank=True)
+    name          = models.CharField(max_length=255, blank=True)
+    role          = models.CharField(max_length=20, choices=Role.choices,
+                                     default=Role.ATTENDEE)
+    invite_status = models.CharField(max_length=20, choices=InviteStatus.choices,
+                                     default=InviteStatus.PENDING)
+    joined_at     = models.DateTimeField(null=True, blank=True)
+    left_at       = models.DateTimeField(null=True, blank=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        unique_together = ('meeting', 'email')
         verbose_name = 'Meeting Participant'
-        unique_together = [('meeting', 'user'), ('meeting', 'email')]
-        ordering = ['role', 'name']
 
     def __str__(self):
-        return f'{self.meeting.title} → {self.name or self.email}'
+        return f'{self.email} @ {self.meeting.title}'
 
 
-class MeetingNotification(TimeStampedModel):
-    """In-app notifications for meeting events."""
-
-    class NotifType(models.TextChoices):
-        INVITE      = 'invite',       'Meeting Invite'
-        REMINDER    = 'reminder',     'Reminder'
-        UPDATED     = 'updated',      'Meeting Updated'
-        CANCELLED   = 'cancelled',    'Meeting Cancelled'
-        STARTED     = 'started',      'Meeting Started'
-        RECORDING   = 'recording',    'Recording Ready'
-        NOTES       = 'notes',        'Notes Added'
-
-    id          = models.CharField(max_length=36, primary_key=True, default=_mtn_id, editable=False)
-    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meeting_notifications')
-    meeting     = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='notifications')
-    notif_type  = models.CharField(max_length=30, choices=NotifType.choices)
-    message     = models.TextField(blank=True, default='')
-    is_read     = models.BooleanField(default=False, db_index=True)
+class MeetingNotification(models.Model):
+    id          = models.CharField(max_length=36, primary_key=True,
+                                   default=_mtn_id, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE,
+                                    related_name='meeting_notifications')
+    meeting     = models.ForeignKey(Meeting, on_delete=models.CASCADE,
+                                    related_name='notifications')
+    notif_type  = models.CharField(max_length=40, default='REMINDER')
+    message     = models.TextField(blank=True)
+    is_read     = models.BooleanField(default=False)
     sent_at     = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-sent_at']
+        verbose_name = 'Meeting Notification'
 
     def __str__(self):
-        return f'{self.user} / {self.notif_type} / {self.meeting.title}'
+        return f'Notif for {self.user_id} / {self.meeting.title}'
 
 
 class Announcement(TimeStampedModel):
-    """Org-wide or department-scoped announcements shown in the Meeting Hub."""
-
     class Priority(models.TextChoices):
-        LOW    = 'low',    'Low'
-        NORMAL = 'normal', 'Normal'
-        HIGH   = 'high',   'High'
-        URGENT = 'urgent', 'Urgent'
+        LOW    = 'LOW',    'Low'
+        NORMAL = 'NORMAL', 'Normal'
+        HIGH   = 'HIGH',   'High'
+        URGENT = 'URGENT', 'Urgent'
 
-    id           = models.CharField(max_length=36, primary_key=True, default=_ann_id, editable=False)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='announcements')
-    department   = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='announcements',
-                                     help_text='Null = org-wide')
-    created_by   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_announcements')
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_ann_id, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                     related_name='announcements')
+    department   = models.ForeignKey(Department, null=True, blank=True,
+                                     on_delete=models.SET_NULL,
+                                     related_name='announcements')
+    created_by   = models.ForeignKey(User, null=True, blank=True,
+                                     on_delete=models.SET_NULL,
+                                     related_name='announcements_created')
     title        = models.CharField(max_length=255)
     message      = models.TextField()
-    priority     = models.CharField(max_length=10, choices=Priority.choices, default=Priority.NORMAL)
+    priority     = models.CharField(max_length=10, choices=Priority.choices,
+                                    default=Priority.NORMAL)
     is_pinned    = models.BooleanField(default=False)
     expires_at   = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        ordering = ['-created_at']
         verbose_name = 'Announcement'
-        ordering = ['-is_pinned', '-created_at']
-        indexes = [
-            models.Index(fields=['organization', '-created_at']),
-        ]
 
     def __str__(self):
-        return self.title
-
-
-class IntegrationWebhookEvent(models.Model):
-    """Incoming webhook events from external providers."""
-
-    id               = models.CharField(max_length=36, primary_key=True,
-                                        default=_intwh_id, editable=False)
-    connection       = models.ForeignKey(IntegrationConnection, on_delete=models.CASCADE,
-                                         related_name='webhook_events', null=True, blank=True)
-    organization     = models.ForeignKey(Organization, on_delete=models.CASCADE,
-                                         related_name='webhook_events')
-    provider         = models.CharField(max_length=80, db_index=True)
-    event_type       = models.CharField(max_length=120)
-    event_id         = models.CharField(max_length=128, blank=True, default='',
-                                        help_text='Provider event ID for deduplication')
-    payload          = models.JSONField(default=dict)
-    normalized       = models.JSONField(default=dict)
-    processed        = models.BooleanField(default=False, db_index=True)
-    processing_error = models.TextField(blank=True, default='')
-    received_at      = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    class Meta:
-        ordering = ['-received_at']
-        indexes = [
-            models.Index(fields=['organization', 'provider', '-received_at']),
-        ]
-
-    def __str__(self):
-        return f'{self.provider}/{self.event_type} [{self.id}]'
+        return f'{self.title} [{self.priority}]'

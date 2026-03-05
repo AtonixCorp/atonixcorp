@@ -27,21 +27,25 @@
 }
 
 /* ─── Dark mode override ──────────────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Backgrounds */
-    --ac-bg-primary:   #161616;  /* Carbon Gray 100                           */
-    --ac-bg-secondary: #262626;  /* Carbon Gray 90                            */
-    --ac-bg-tertiary:  #393939;  /* Carbon Gray 80                            */
+/*
+ * Dark variables are keyed to html[data-color-scheme="dark"], which is set
+ * only by ThemeContext when the user is on a dashboard/app route in dark mode.
+ * This ensures the landing page is NEVER affected by the dark theme, even when
+ * the user's OS preference is dark or they toggled dark mode in the dashboard.
+ */
+html[data-color-scheme="dark"] {
+  /* Backgrounds */
+  --ac-bg-primary:   #161616;  /* Carbon Gray 100                           */
+  --ac-bg-secondary: #262626;  /* Carbon Gray 90                            */
+  --ac-bg-tertiary:  #393939;  /* Carbon Gray 80                            */
 
-    /* Layers */
-    --ac-layer-01: #1C1C1C;
-    --ac-layer-02: #262626;
-    --ac-layer-03: #393939;
+  /* Layers */
+  --ac-layer-01: #1C1C1C;
+  --ac-layer-02: #262626;
+  --ac-layer-03: #393939;
 
-    /* Text */
-    --ac-text-primary:   #F4F4F4; /* Carbon Gray 10                           */
-    --ac-text-secondary: #A8A8A8; /* Carbon Gray 40                           */
-    --ac-text-inverse:   #161616; /* text on light surfaces in dark mode      */
-  }
+  /* Text */
+  --ac-text-primary:   #F4F4F4; /* Carbon Gray 10                           */
+  --ac-text-secondary: #A8A8A8; /* Carbon Gray 40                           */
+  --ac-text-inverse:   #161616; /* text on light surfaces in dark mode      */
 }

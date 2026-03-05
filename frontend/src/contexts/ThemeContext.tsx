@@ -756,6 +756,18 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
 
   const effectiveMode: ThemeMode = isDashboardRoute ? mode : 'light';
 
+  // Set data-color-scheme on <html> so professional.css and other plain CSS
+  // files key their dark-mode blocks to this attribute rather than the OS
+  // media query. This guarantees the landing page is always light — the
+  // attribute is only present on dashboard/app routes when dark mode is on.
+  useEffect(() => {
+    if (effectiveMode === 'dark') {
+      document.documentElement.setAttribute('data-color-scheme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-color-scheme');
+    }
+  }, [effectiveMode]);
+
   const theme = effectiveMode === 'dark' ? ___darkTheme : ___lightTheme;
 
   return (

@@ -240,10 +240,15 @@ export interface AuditLogEntry {
 }
 
 // ── Entry (org-context resolver) ─────────────────────────────────────────────
+export interface EntryResponse {
+  has_org: boolean;
+  org: OrgData | null;
+}
+
 export const enterpriseEntryApi = {
-  /** Returns { organizations: OrgData[] }. Empty array → redirect to create. */
+  /** GET /api/enterprise/entry/ → { has_org, org }. */
   resolve: () =>
-    enterpriseClient.get<{ organizations: OrgData[] }>('/entry/').then(r => r.data),
+    enterpriseClient.get<EntryResponse>('/entry/').then(r => r.data),
 };
 
 // ── Organization ──────────────────────────────────────────────────────────────

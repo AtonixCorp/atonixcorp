@@ -97,6 +97,7 @@ import EnterpriseEntryRoute      from './pages/EnterpriseEntryRoute';
 import MarketingWorkspacePage    from './pages/MarketingWorkspacePage';
 import EnterpriseMeetingsPage    from './pages/EnterpriseMeetingsPage';
 import EnterpriseDeveloperHubPage from './pages/EnterpriseDeveloperHubPage';
+import EnterpriseEmailPage        from './pages/EnterpriseEmailPage';
 import CreateOrganizationPage    from './pages/CreateOrganizationPage';
 import IAMPage                   from './pages/IAMPage';
 import KMSPage                   from './pages/KMSPage';
@@ -177,7 +178,8 @@ const AppShell: React.FC = () => {
   const isWikiPage                 = /^\/enterprise\/[^\/]+\/wiki$/.test(location.pathname);
   const isMeetingsPage             = /^\/enterprise\/[^\/]+\/meetings(\/.*)?$/.test(location.pathname);
   const isDeveloperHubPage         = /^\/enterprise\/[^\/]+\/developer-hub(\/.*)?$/.test(location.pathname);
-  const isEnterpriseDashboard = !isBusinessWorkspace && !isEnterpriseMarketing && !isEnterpriseOrganization && !isWikiPage && !isMeetingsPage && !isDeveloperHubPage &&
+  const isEmailPage                = /^\/enterprise\/[^\/]+\/email(\/.*)?$/.test(location.pathname);
+  const isEnterpriseDashboard = !isBusinessWorkspace && !isEnterpriseMarketing && !isEnterpriseOrganization && !isWikiPage && !isMeetingsPage && !isDeveloperHubPage && !isEmailPage &&
     location.pathname.startsWith('/enterprise') &&
     !location.pathname.startsWith('/enterprise/organizations/create');
   const isGroupsPage = location.pathname.startsWith('/groups');
@@ -214,6 +216,17 @@ const AppShell: React.FC = () => {
         <Routes>
           <Route path="/enterprise/:orgSlug/developer-hub"   element={<EnterpriseDeveloperHubPage />} />
           <Route path="/enterprise/:orgSlug/developer-hub/*" element={<EnterpriseDeveloperHubPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isEmailPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/email"   element={<EnterpriseEmailPage />} />
+          <Route path="/enterprise/:orgSlug/email/*" element={<EnterpriseEmailPage />} />
         </Routes>
       </ProtectedRoute>
     );
