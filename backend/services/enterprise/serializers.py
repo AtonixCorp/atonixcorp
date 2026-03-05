@@ -9,6 +9,8 @@ from .models import (
     BrandingProfile, BrandAsset,
     EnterprisePlan, Subscription, EnterpriseInvoice,
     EnterpriseAuditLog,
+    WikiCategory, WikiPage, WikiPageVersion,
+    IntegrationConnection, IntegrationLog, IntegrationWebhookEvent,
 )
 
 
@@ -315,3 +317,148 @@ class EnterpriseAuditLogSerializer(serializers.ModelSerializer):
         if obj.actor_member:
             return obj.actor_member.name or obj.actor_member.email
         return obj.actor_email or 'System'
+
+
+# ── Wiki ─────────────────────────────────────────────────────────────────────
+
+class WikiCategorySerializer(serializers.ModelSerializer):
+    page_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = WikiCategory
+        fields = ['id', 'organization', 'name', 'color', 'description',
+                  'page_count', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'organization', 'page_count', 'created_at', 'updated_at']
+
+    def get_page_count(self, obj):
+        return obj.pages.count()
+
+
+class WikiPageListSerializer(serializers.ModelSerializer):
+    """Compact serializer for list views (no content body)."""
+    categories   = WikiCategorySerializer(many=True, read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+    updated_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = WikiPage
+        fields = [
+            'id', 'organization', 'title', 'slug', 'summary',
+            'is_pinned', 'view_count', 'tags', 'categories',
+            'linked_module', 'created_by_name', 'updated_by_name',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'organization', 'view_count', 'created_at', 'updated_at']
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.get_full_name() or obj.created_by.username
+        return ''
+
+    def get_updated_by_name(self, obj):
+        if obj.updated_by:
+            return obj.updated_by.get_full_name() or obj.updated_by.username
+        return ''
+
+
+class WikiPageDetailSerializer(WikiPageListSerializer):
+    """Full serializer including markdown content."""
+
+    class Meta(WikiPageListSerializer.Meta):
+        fields = WikiPageListSerializer.Meta.fields + ['content']
+
+
+class WikiPageVersionSerializer(serializers.ModelSerializer):
+    edited_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = WikiPageVersion
+        fields = ['id', 'page', 'title', 'content', 'edited_by_name',
+                  'edited_at', 'version_note']
+        read_only_fields = ['id', 'page', 'edited_at']
+
+    def get_edited_by_name(self, obj):
+        if obj.edited_by:
+            return obj.edited_by.get_full_name() or obj.edited_by.username
+        return 'System'
+
+
+class WikiPageWriteSerializer(serializers.Serializer):
+    title         = serializers.CharField(max_length=255)
+    slug          = serializers.SlugField(max_length=255, required=False, allow_blank=True)
+    content       = serializers.CharField(required=False, default='', allow_blank=True)
+    summary       = serializers.CharField(max_length=500, required=False,
+                                          default='', allow_blank=True)
+    is_pinned     = serializers.BooleanField(required=False, default=False)
+    tags          = serializers.ListField(
+                        child=serializers.CharField(max_length=50),
+                        required=False, default=list)
+    category_ids  = serializers.ListField(
+                        child=serializers.CharField(max_length=36),
+                        required=False, default=list)
+    linked_module = serializers.CharField(max_length=50, required=False,
+                                          default='', allow_blank=True)
+    version_note  = serializers.CharField(max_length=255, required=False,
+                                          default='', allow_blank=True)
+
+
+class WikiCategoryWriteSerializer(serializers.Serializer):
+    name        = serializers.CharField(max_length=120)
+    color       = serializers.CharField(max_length=20, required=False, default='#3b82f6')
+    description = serializers.CharField(required=False, default='', allow_blank=True)
+
+
+# ── Integrations ──────────────────────────────────────────────────────────────
+
+class IntegrationConnectionSerializer(serializers.ModelSerializer):
+    connected_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = IntegrationConnection
+        fields = [
+            'id', 'organization', 'provider', 'display_name', 'category',
+            'status', 'config', 'last_sync', 'last_error',
+            'total_calls', 'error_count',
+            'connected_by_name', 'webhook_secret',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'organization', 'total_calls', 'error_count',
+            'last_sync', 'last_error', 'connected_by_name',
+            'webhook_secret', 'created_at', 'updated_at',
+        ]
+
+    def get_connected_by_name(self, obj):
+        if obj.connected_by:
+            return obj.connected_by.get_full_name() or obj.connected_by.username
+        return ''
+
+
+class IntegrationConnectionWriteSerializer(serializers.Serializer):
+    provider     = serializers.CharField(max_length=80)
+    display_name = serializers.CharField(max_length=120, required=False, default='', allow_blank=True)
+    category     = serializers.CharField(max_length=50, required=False, default='other')
+    credentials  = serializers.DictField(required=False, default=dict)
+    config       = serializers.DictField(required=False, default=dict)
+
+
+class IntegrationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = IntegrationLog
+        fields = [
+            'id', 'provider', 'event_type', 'level', 'message',
+            'http_status', 'duration_ms', 'retry_count',
+            'correlation_id', 'timestamp',
+        ]
+        read_only_fields = fields
+
+
+class IntegrationWebhookEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = IntegrationWebhookEvent
+        fields = [
+            'id', 'provider', 'event_type', 'event_id',
+            'payload', 'normalized', 'processed', 'processing_error',
+            'received_at',
+        ]
+        read_only_fields = fields

@@ -15,6 +15,8 @@ from .views import (
     BrandingProfileViewSet, BrandAssetViewSet,
     EnterprisePlanViewSet, SubscriptionViewSet, EnterpriseInvoiceViewSet,
     EnterpriseAuditLogViewSet,
+    WikiCategoryViewSet, WikiPageViewSet,
+    IntegrationConnectionViewSet, IntegrationWebhookView,
 )
 from ..marketing.suite_viewsets import (
     OrgMarketingOverviewViewSet,
@@ -50,6 +52,9 @@ _r_assets    = SimpleRouter(); _r_assets.register(r'',    BrandAssetViewSet,    
 _r_sub       = SimpleRouter(); _r_sub.register(r'',       SubscriptionViewSet,            basename='org-sub')
 _r_invoices  = SimpleRouter(); _r_invoices.register(r'',  EnterpriseInvoiceViewSet,       basename='org-invoice')
 _r_audit     = SimpleRouter(); _r_audit.register(r'',     EnterpriseAuditLogViewSet,      basename='org-audit')
+_r_wiki_cats   = SimpleRouter(); _r_wiki_cats.register(r'',   WikiCategoryViewSet,          basename='org-wiki-cat')
+_r_wiki_pgs    = SimpleRouter(); _r_wiki_pgs.register(r'',    WikiPageViewSet,               basename='org-wiki-page')
+_r_integrations = SimpleRouter(); _r_integrations.register(r'', IntegrationConnectionViewSet, basename='org-integration')
 
 _P     = 'organizations/<str:org_pk>/'
 _DEPT  = _P + 'departments/<str:dept_pk>/'
@@ -100,6 +105,14 @@ urlpatterns = router.urls + [
 
     # Audit
     path(_P + 'audit-logs/',           include(_r_audit.urls)),
+
+    # Wiki (knowledge base)
+    path(_P + 'wiki/categories/',      include(_r_wiki_cats.urls)),
+    path(_P + 'wiki/pages/',           include(_r_wiki_pgs.urls)),
+
+    # Integrations
+    path(_P + 'integrations/',          include(_r_integrations.urls)),
+    path('webhooks/<str:provider>/<str:org_pk>/', IntegrationWebhookView.as_view(), name='integration-webhook'),
 
     # ── Marketing Workspace ──────────────────────────────────────────────────
     path(_MKT + 'overview/',           include(_r_mkt_overview.urls)),

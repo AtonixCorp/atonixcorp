@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'services.ai',
     'services.regions',
     'services.catalog',
+    'services.enterprise',
 ]
 
 HAS_GRAPHENE_DJANGO = importlib.util.find_spec('graphene_django') is not None

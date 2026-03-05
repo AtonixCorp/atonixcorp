@@ -32,6 +32,12 @@ def _dept_id():  return _uid('dept')
 def _team_id():  return _uid('team')
 def _grp_id():   return _uid('grp')
 def _dsbi_id():  return _uid('dsbi')
+def _wpage_id(): return _uid('wp')
+def _wcat_id():  return _uid('wcat')
+def _wver_id():  return _uid('wver')
+def _intc_id():  return _uid('intc')
+def _intl_id():  return _uid('intl')
+def _intwh_id(): return _uid('intwh')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -623,3 +629,218 @@ class EnterpriseAuditLog(models.Model):
 
     def __str__(self):
         return f'[{self.timestamp:%Y-%m-%d}] {self.actor_email} {self.action}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 7. WIKI (knowledge base)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class WikiCategory(TimeStampedModel):
+    """Org-scoped category for grouping wiki pages."""
+
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_wcat_id, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                     related_name='wiki_categories')
+    name         = models.CharField(max_length=120)
+    color        = models.CharField(max_length=20, default='#3b82f6',
+                                    help_text='Hex color for UI badge')
+    description  = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['name']
+        unique_together = [('organization', 'name')]
+
+    def __str__(self):
+        return f'{self.organization.slug} / {self.name}'
+
+
+class WikiPage(TimeStampedModel):
+    """A knowledge base page scoped to an organization."""
+
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_wpage_id, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                     related_name='wiki_pages')
+    title        = models.CharField(max_length=255, db_index=True)
+    slug         = models.SlugField(max_length=255, db_index=True)
+    content      = models.TextField(default='', blank=True,
+                                    help_text='Markdown content')
+    summary      = models.CharField(max_length=500, blank=True, default='',
+                                    help_text='Short description / excerpt')
+    is_pinned    = models.BooleanField(default=False)
+    view_count   = models.PositiveIntegerField(default=0)
+    tags         = models.JSONField(default=list,
+                                    help_text='Free-form tag strings, e.g. ["policy","hr"]')
+    categories   = models.ManyToManyField(WikiCategory, through='WikiPageCategory',
+                                          blank=True, related_name='pages')
+    created_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='+')
+    updated_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                     null=True, blank=True, related_name='+')
+    # Cross-module: optional link source label (e.g. "Compliance", "Marketing")
+    linked_module = models.CharField(max_length=50, blank=True, default='')
+
+    class Meta:
+        ordering = ['-updated_at']
+        unique_together = [('organization', 'slug')]
+        indexes = [
+            models.Index(fields=['organization', '-updated_at']),
+            models.Index(fields=['organization', 'title']),
+        ]
+
+    def __str__(self):
+        return f'{self.organization.slug} / {self.title}'
+
+
+class WikiPageCategory(models.Model):
+    """Through table linking pages to categories."""
+    page     = models.ForeignKey(WikiPage,     on_delete=models.CASCADE)
+    category = models.ForeignKey(WikiCategory, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [('page', 'category')]
+
+
+class WikiPageVersion(models.Model):
+    """Immutable snapshot of a WikiPage at a point in time."""
+
+    id        = models.CharField(max_length=36, primary_key=True,
+                                 default=_wver_id, editable=False)
+    page      = models.ForeignKey(WikiPage, on_delete=models.CASCADE,
+                                  related_name='versions')
+    title     = models.CharField(max_length=255)
+    content   = models.TextField(default='')
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                  null=True, blank=True, related_name='+')
+    edited_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    version_note = models.CharField(max_length=255, blank=True, default='')
+
+    class Meta:
+        ordering = ['-edited_at']
+
+    def __str__(self):
+        return f'{self.page.title} @ {self.edited_at:%Y-%m-%d %H:%M}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 8. INTEGRATIONS (external service connections)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class IntegrationConnection(TimeStampedModel):
+    """An org's connection to an external integration provider (Stripe, SendGrid, etc.)."""
+
+    class Status(models.TextChoices):
+        CONNECTED    = 'CONNECTED',    'Connected'
+        DISCONNECTED = 'DISCONNECTED', 'Disconnected'
+        ERROR        = 'ERROR',        'Error'
+        PENDING      = 'PENDING',      'Pending'
+
+    id             = models.CharField(max_length=36, primary_key=True,
+                                      default=_intc_id, editable=False)
+    organization   = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                       related_name='integrations')
+    provider       = models.CharField(max_length=80, db_index=True,
+                                      help_text='e.g. stripe, sendgrid, slack')
+    display_name   = models.CharField(max_length=120, blank=True, default='')
+    category       = models.CharField(max_length=50, default='other',
+                                      help_text='payments | email | domains | communication | development | marketing | identity | monitoring | crm | productivity | support | other')
+    status         = models.CharField(max_length=20, choices=Status.choices,
+                                      default=Status.DISCONNECTED, db_index=True)
+    credentials    = models.JSONField(default=dict, blank=True,
+                                      help_text='Encrypted-at-rest credential fields')
+    config         = models.JSONField(default=dict, blank=True,
+                                      help_text='Provider-specific settings')
+    last_sync      = models.DateTimeField(null=True, blank=True)
+    last_error     = models.TextField(blank=True, default='')
+    total_calls    = models.PositiveIntegerField(default=0)
+    error_count    = models.PositiveIntegerField(default=0)
+    connected_by   = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='+')
+    webhook_secret = models.CharField(max_length=128, blank=True, default='',
+                                      help_text='HMAC secret for incoming webhooks')
+
+    class Meta:
+        ordering = ['provider']
+        unique_together = [('organization', 'provider')]
+
+    def __str__(self):
+        return f'{self.organization.slug}/{self.provider} [{self.status}]'
+
+
+class IntegrationLog(models.Model):
+    """Append-only audit trail for all integration events."""
+
+    class Level(models.TextChoices):
+        INFO    = 'INFO',    'Info'
+        SUCCESS = 'SUCCESS', 'Success'
+        WARNING = 'WARNING', 'Warning'
+        ERROR   = 'ERROR',   'Error'
+
+    class EventType(models.TextChoices):
+        API_CALL       = 'API_CALL',       'API Call'
+        WEBHOOK        = 'WEBHOOK',        'Webhook Received'
+        TOKEN_REFRESH  = 'TOKEN_REFRESH',  'Token Refresh'
+        SYNC           = 'SYNC',           'Data Sync'
+        CONNECT        = 'CONNECT',        'Connection'
+        DISCONNECT     = 'DISCONNECT',     'Disconnection'
+        TEST           = 'TEST',           'Connection Test'
+        ERROR          = 'ERROR',          'Error'
+
+    id             = models.CharField(max_length=36, primary_key=True,
+                                      default=_intl_id, editable=False)
+    connection     = models.ForeignKey(IntegrationConnection, on_delete=models.CASCADE,
+                                       related_name='logs', null=True, blank=True)
+    organization   = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                       related_name='integration_logs')
+    provider       = models.CharField(max_length=80, db_index=True)
+    event_type     = models.CharField(max_length=30, choices=EventType.choices)
+    level          = models.CharField(max_length=10, choices=Level.choices,
+                                      default=Level.INFO)
+    message        = models.TextField()
+    request_data   = models.JSONField(default=dict, blank=True)
+    response_data  = models.JSONField(default=dict, blank=True)
+    http_status    = models.IntegerField(null=True, blank=True)
+    duration_ms    = models.IntegerField(null=True, blank=True)
+    retry_count    = models.IntegerField(default=0)
+    correlation_id = models.CharField(max_length=64, blank=True, default='')
+    timestamp      = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['organization', '-timestamp']),
+            models.Index(fields=['organization', 'provider', '-timestamp']),
+        ]
+
+    def __str__(self):
+        return f'[{self.level}] {self.provider}/{self.event_type} @ {self.timestamp:%Y-%m-%d %H:%M}'
+
+
+class IntegrationWebhookEvent(models.Model):
+    """Incoming webhook events from external providers."""
+
+    id               = models.CharField(max_length=36, primary_key=True,
+                                        default=_intwh_id, editable=False)
+    connection       = models.ForeignKey(IntegrationConnection, on_delete=models.CASCADE,
+                                         related_name='webhook_events', null=True, blank=True)
+    organization     = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                         related_name='webhook_events')
+    provider         = models.CharField(max_length=80, db_index=True)
+    event_type       = models.CharField(max_length=120)
+    event_id         = models.CharField(max_length=128, blank=True, default='',
+                                        help_text='Provider event ID for deduplication')
+    payload          = models.JSONField(default=dict)
+    normalized       = models.JSONField(default=dict)
+    processed        = models.BooleanField(default=False, db_index=True)
+    processing_error = models.TextField(blank=True, default='')
+    received_at      = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-received_at']
+        indexes = [
+            models.Index(fields=['organization', 'provider', '-received_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.provider}/{self.event_type} [{self.id}]'

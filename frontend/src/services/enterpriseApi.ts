@@ -506,6 +506,304 @@ export const auditLogsApi = {
     enterpriseClient.get<AuditLogEntry[]>(`/organizations/${orgId}/audit-logs/`, { params: filters }).then(r => r.data),
 };
 
+// ── Usage ─────────────────────────────────────────────────────────────────────
+export interface UsageSummary {
+  storage_gb_used: number;
+  storage_gb_limit: number | null;
+  email_sent_30d: number;
+  email_limit_30d: number | null;
+  compute_hours_used: number;
+  compute_hours_limit: number | null;
+  members_count: number;
+  members_limit: number | null;
+}
+
+export const usageApi = {
+  summary: (orgId: string) =>
+    enterpriseClient.get<UsageSummary>(`/organizations/${orgId}/usage/`).then(r => r.data),
+};
+
+// ── Integrations ──────────────────────────────────────────────────────────────
+export interface OrgIntegration {
+  id: string;
+  organization: string;
+  provider: string;
+  display_name: string;
+  category: string;
+  status: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'PENDING';
+  config: Record<string, unknown>;
+  last_sync: string | null;
+  last_error: string;
+  total_calls: number;
+  error_count: number;
+  connected_by_name: string;
+  webhook_secret: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntegrationLog {
+  id: string;
+  provider: string;
+  event_type: string;
+  level: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
+  message: string;
+  http_status: number | null;
+  duration_ms: number | null;
+  retry_count: number;
+  correlation_id: string;
+  timestamp: string;
+}
+
+export interface IntegrationWebhookEvent {
+  id: string;
+  provider: string;
+  event_type: string;
+  event_id: string;
+  payload: Record<string, unknown>;
+  normalized: Record<string, unknown>;
+  processed: boolean;
+  processing_error: string;
+  received_at: string;
+}
+
+export interface IntegrationPayload {
+  provider: string;
+  display_name?: string;
+  category?: string;
+  credentials?: Record<string, string>;
+  config?: Record<string, unknown>;
+}
+
+export const integrationsApi = {
+  list: (orgId: string, params?: { category?: string; status?: string }) =>
+    enterpriseClient
+      .get<OrgIntegration[]>(`/organizations/${orgId}/integrations/`, { params })
+      .then(r => r.data),
+
+  get: (orgId: string, id: string) =>
+    enterpriseClient.get<OrgIntegration>(`/organizations/${orgId}/integrations/${id}/`).then(r => r.data),
+
+  upsert: (orgId: string, payload: IntegrationPayload) =>
+    enterpriseClient.post<OrgIntegration>(`/organizations/${orgId}/integrations/`, payload).then(r => r.data),
+
+  update: (orgId: string, id: string, payload: Partial<IntegrationPayload>) =>
+    enterpriseClient.patch<OrgIntegration>(`/organizations/${orgId}/integrations/${id}/`, payload).then(r => r.data),
+
+  remove: (orgId: string, id: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/integrations/${id}/`),
+
+  connect: (orgId: string, id: string, credentials: Record<string, string>, displayName?: string) =>
+    enterpriseClient
+      .post<OrgIntegration>(`/organizations/${orgId}/integrations/${id}/connect/`,
+        { credentials, display_name: displayName })
+      .then(r => r.data),
+
+  disconnect: (orgId: string, id: string) =>
+    enterpriseClient.post<OrgIntegration>(`/organizations/${orgId}/integrations/${id}/disconnect/`).then(r => r.data),
+
+  test: (orgId: string, id: string) =>
+    enterpriseClient
+      .post<{ success: boolean; message: string; duration_ms?: number }>(
+        `/organizations/${orgId}/integrations/${id}/test/`)
+      .then(r => r.data),
+
+  sync: (orgId: string, id: string) =>
+    enterpriseClient
+      .post<{ success: boolean; synced_at: string }>(`/organizations/${orgId}/integrations/${id}/sync/`)
+      .then(r => r.data),
+
+  logs: (orgId: string, id: string) =>
+    enterpriseClient.get<IntegrationLog[]>(`/organizations/${orgId}/integrations/${id}/logs/`).then(r => r.data),
+
+  events: (orgId: string, id: string) =>
+    enterpriseClient
+      .get<IntegrationWebhookEvent[]>(`/organizations/${orgId}/integrations/${id}/events/`)
+      .then(r => r.data),
+};
+
+// ── Orders ────────────────────────────────────────────────────────────────────
+export interface OrderItem {
+  id: string;
+  product: string;
+  quantity: number;
+  unit_price: string;
+  total_price: string;
+}
+
+export interface OrgOrder {
+  id: string;
+  order_number: string;
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  total_amount: string;
+  currency: string;
+  items: OrderItem[];
+  created_at: string;
+}
+
+export const ordersApi = {
+  list: (orgId: string) =>
+    enterpriseClient
+      .get<OrgOrder[] | { results: OrgOrder[] }>(`/organizations/${orgId}/orders/`)
+      .then(r => unwrap(r.data)),
+};
+
+// ── Org Subscriptions ─────────────────────────────────────────────────────────
+export interface OrgSubscriptionItem {
+  id: string;
+  name: string;
+  provider: string;
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'TRIALING';
+  billing_cycle: 'MONTHLY' | 'ANNUAL';
+  amount: string;
+  currency: string;
+  renewal_date: string | null;
+  created_at: string;
+}
+
+export const orgSubscriptionsApi = {
+  list: (orgId: string) =>
+    enterpriseClient
+      .get<OrgSubscriptionItem[] | { results: OrgSubscriptionItem[] }>(`/organizations/${orgId}/subscriptions/`)
+      .then(r => unwrap(r.data)),
+};
+
+// ── Security Policies ─────────────────────────────────────────────────────────
+export interface SecurityPolicy {
+  mfa_required: boolean;
+  password_min_length: number;
+  password_require_uppercase: boolean;
+  password_require_numbers: boolean;
+  password_require_symbols: boolean;
+  session_timeout_minutes: number;
+  ip_allowlist: string[];
+  sso_required: boolean;
+  data_residency: string;
+  audit_retention_days: number;
+}
+
+export const securityPoliciesApi = {
+  get: (orgId: string) =>
+    enterpriseClient.get<SecurityPolicy>(`/organizations/${orgId}/security/policies/`).then(r => r.data),
+
+  update: (orgId: string, payload: Partial<SecurityPolicy>) =>
+    enterpriseClient.put<SecurityPolicy>(`/organizations/${orgId}/security/policies/`, payload).then(r => r.data),
+};
+
+// ── Org Settings ──────────────────────────────────────────────────────────────
+export interface OrgSettings {
+  language: string;
+  timezone: string;
+  default_department: string | null;
+  notifications_billing: boolean;
+  notifications_security: boolean;
+  notifications_usage: boolean;
+  notification_slack_webhook: string;
+  branding_primary_color: string;
+}
+
+export const orgSettingsApi = {
+  get: (orgId: string) =>
+    enterpriseClient.get<OrgSettings>(`/organizations/${orgId}/settings/`).then(r => r.data),
+
+  update: (orgId: string, payload: Partial<OrgSettings>) =>
+    enterpriseClient.put<OrgSettings>(`/organizations/${orgId}/settings/`, payload).then(r => r.data),
+};
+
+// ── Wiki ──────────────────────────────────────────────────────────────────────
+export interface WikiCategory {
+  id: string;
+  organization: string;
+  name: string;
+  color: string;
+  description: string;
+  page_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WikiPageSummary {
+  id: string;
+  organization: string;
+  title: string;
+  slug: string;
+  summary: string;
+  is_pinned: boolean;
+  view_count: number;
+  tags: string[];
+  categories: WikiCategory[];
+  linked_module: string;
+  created_by_name: string;
+  updated_by_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WikiPage extends WikiPageSummary {
+  content: string;
+}
+
+export interface WikiPageVersion {
+  id: string;
+  page: string;
+  title: string;
+  content: string;
+  edited_by_name: string;
+  edited_at: string;
+  version_note: string;
+}
+
+export interface WikiPagePayload {
+  title: string;
+  slug?: string;
+  content?: string;
+  summary?: string;
+  is_pinned?: boolean;
+  tags?: string[];
+  category_ids?: string[];
+  linked_module?: string;
+  version_note?: string;
+}
+
+export const wikiCategoriesApi = {
+  list: (orgId: string) =>
+    enterpriseClient.get<WikiCategory[]>(`/organizations/${orgId}/wiki/categories/`).then(r => r.data),
+
+  create: (orgId: string, payload: { name: string; color?: string; description?: string }) =>
+    enterpriseClient.post<WikiCategory>(`/organizations/${orgId}/wiki/categories/`, payload).then(r => r.data),
+
+  update: (orgId: string, catId: string, payload: Partial<{ name: string; color: string; description: string }>) =>
+    enterpriseClient.patch<WikiCategory>(`/organizations/${orgId}/wiki/categories/${catId}/`, payload).then(r => r.data),
+
+  delete: (orgId: string, catId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/wiki/categories/${catId}/`).then(r => r.data),
+};
+
+export const wikiPagesApi = {
+  list: (orgId: string, params?: {
+    q?: string; category?: string; tag?: string; module?: string; pinned?: boolean;
+  }) =>
+    enterpriseClient.get<WikiPageSummary[]>(`/organizations/${orgId}/wiki/pages/`, { params }).then(r => r.data),
+
+  get: (orgId: string, pageId: string) =>
+    enterpriseClient.get<WikiPage>(`/organizations/${orgId}/wiki/pages/${pageId}/`).then(r => r.data),
+
+  create: (orgId: string, payload: WikiPagePayload) =>
+    enterpriseClient.post<WikiPage>(`/organizations/${orgId}/wiki/pages/`, payload).then(r => r.data),
+
+  update: (orgId: string, pageId: string, payload: Partial<WikiPagePayload>) =>
+    enterpriseClient.patch<WikiPage>(`/organizations/${orgId}/wiki/pages/${pageId}/`, payload).then(r => r.data),
+
+  delete: (orgId: string, pageId: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/wiki/pages/${pageId}/`).then(r => r.data),
+
+  versions: (orgId: string, pageId: string) =>
+    enterpriseClient.get<WikiPageVersion[]>(`/organizations/${orgId}/wiki/pages/${pageId}/versions/`).then(r => r.data),
+
+  restore: (orgId: string, pageId: string, versionId: string) =>
+    enterpriseClient.post<WikiPage>(`/organizations/${orgId}/wiki/pages/${pageId}/restore/${versionId}/`).then(r => r.data),
+};
+
 export default {
   entry: enterpriseEntryApi,
   organization: organizationApi,
@@ -521,4 +819,12 @@ export default {
   branding: brandingApi,
   billing: enterpriseBillingApi,
   auditLogs: auditLogsApi,
+  usage: usageApi,
+  integrations: integrationsApi,
+  orders: ordersApi,
+  subscriptions: orgSubscriptionsApi,
+  securityPolicies: securityPoliciesApi,
+  settings: orgSettingsApi,
+  wikiCategories: wikiCategoriesApi,
+  wikiPages: wikiPagesApi,
 };

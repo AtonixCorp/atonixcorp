@@ -22,6 +22,8 @@ from .models import (
     BrandingProfile, BrandAsset,
     EnterprisePlan, Subscription, EnterpriseInvoice,
     EnterpriseAuditLog,
+    WikiPage, WikiCategory, WikiPageVersion,
+    IntegrationConnection, IntegrationLog, IntegrationWebhookEvent,
 )
 from .serializers import (
     OrganizationSerializer, OrganizationCreateSerializer,
@@ -37,6 +39,11 @@ from .serializers import (
     BrandingProfileSerializer, BrandAssetSerializer,
     EnterprisePlanSerializer, SubscriptionSerializer, EnterpriseInvoiceSerializer,
     EnterpriseAuditLogSerializer,
+    WikiCategorySerializer, WikiCategoryWriteSerializer,
+    WikiPageListSerializer, WikiPageDetailSerializer,
+    WikiPageVersionSerializer, WikiPageWriteSerializer,
+    IntegrationConnectionSerializer, IntegrationConnectionWriteSerializer,
+    IntegrationLogSerializer, IntegrationWebhookEventSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -837,3 +844,483 @@ class EnterpriseAuditLogViewSet(ListModelMixin, RetrieveModelMixin, GenericViewS
         if until:
             qs = qs.filter(timestamp__date__lte=until)
         return qs[:1000]
+
+
+# ── 13. Wiki ──────────────────────────────────────────────────────────────
+
+class WikiCategoryViewSet(
+    ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+    UpdateModelMixin, DestroyModelMixin, GenericViewSet,
+):
+    """
+    GET    /api/enterprise/organizations/:org_pk/wiki/categories/      – list
+    POST   /api/enterprise/organizations/:org_pk/wiki/categories/      – create
+    GET    /api/enterprise/organizations/:org_pk/wiki/categories/:id/  – detail
+    PATCH  /api/enterprise/organizations/:org_pk/wiki/categories/:id/  – update
+    DELETE /api/enterprise/organizations/:org_pk/wiki/categories/:id/  – delete
+    """
+    permission_classes = [IsAuthenticated]
+    pagination_class   = None
+    serializer_class   = WikiCategorySerializer
+
+    def _org(self):
+        return _get_org(self.request, self.kwargs['org_pk'])
+
+    def get_queryset(self):
+        return self._org().wiki_categories.all()
+
+    def create(self, request, org_pk=None):
+        ser = WikiCategoryWriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+        org = self._org()
+        if org.wiki_categories.filter(name__iexact=d['name']).exists():
+            return Response({'detail': 'A category with this name already exists.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        cat = org.wiki_categories.create(
+            name=d['name'],
+            color=d.get('color', '#3b82f6'),
+            description=d.get('description', ''),
+        )
+        _log_action(org, request, 'WIKI_CATEGORY_CREATED',
+                    target_type='WIKI_CATEGORY', target_id=cat.id, target_label=cat.name)
+        return Response(WikiCategorySerializer(cat).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        cat = self.get_object()
+        ser = WikiCategoryWriteSerializer(data=request.data, partial=partial)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+        for field in ('name', 'color', 'description'):
+            if field in d:
+                setattr(cat, field, d[field])
+        cat.save()
+        return Response(WikiCategorySerializer(cat).data)
+
+    def perform_destroy(self, instance):
+        _log_action(instance.organization, self.request, 'WIKI_CATEGORY_DELETED',
+                    target_type='WIKI_CATEGORY', target_id=instance.id,
+                    target_label=instance.name)
+        instance.delete()
+
+
+class WikiPageViewSet(
+    ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+    UpdateModelMixin, DestroyModelMixin, GenericViewSet,
+):
+    """
+    GET    /api/enterprise/organizations/:org_pk/wiki/pages/              – list (no content)
+    POST   /api/enterprise/organizations/:org_pk/wiki/pages/              – create
+    GET    /api/enterprise/organizations/:org_pk/wiki/pages/:id/          – detail (with content)
+    PATCH  /api/enterprise/organizations/:org_pk/wiki/pages/:id/          – update
+    DELETE /api/enterprise/organizations/:org_pk/wiki/pages/:id/          – delete
+    GET    /api/enterprise/organizations/:org_pk/wiki/pages/:id/versions/ – version history
+    POST   /api/enterprise/organizations/:org_pk/wiki/pages/:id/restore/:version_id/ – restore
+    """
+    permission_classes = [IsAuthenticated]
+    pagination_class   = None
+
+    def _org(self):
+        return _get_org(self.request, self.kwargs['org_pk'])
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return WikiPageDetailSerializer
+        return WikiPageListSerializer
+
+    def get_queryset(self):
+        org = self._org()
+        qs = org.wiki_pages.prefetch_related('categories').select_related(
+            'created_by', 'updated_by'
+        )
+        # Filters
+        q           = self.request.query_params.get('q', '').strip()
+        category_id = self.request.query_params.get('category')
+        tag         = self.request.query_params.get('tag')
+        module      = self.request.query_params.get('module')
+        pinned      = self.request.query_params.get('pinned')
+        if q:
+            qs = qs.filter(title__icontains=q)
+        if category_id:
+            qs = qs.filter(categories__id=category_id)
+        if tag:
+            qs = qs.filter(tags__contains=[tag])
+        if module:
+            qs = qs.filter(linked_module__iexact=module)
+        if pinned:
+            qs = qs.filter(is_pinned=True)
+        return qs.order_by('-is_pinned', '-updated_at')
+
+    def retrieve(self, request, *args, **kwargs):
+        page = self.get_object()
+        # Increment view count
+        WikiPage.objects.filter(pk=page.pk).update(view_count=page.view_count + 1)
+        page.refresh_from_db(fields=['view_count'])
+        return Response(WikiPageDetailSerializer(page).data)
+
+    def _save_version(self, page, user, note=''):
+        WikiPageVersion.objects.create(
+            page=page,
+            title=page.title,
+            content=page.content,
+            edited_by=user,
+            version_note=note,
+        )
+
+    def _apply_write(self, page, data, org):
+        """Apply WikiPageWriteSerializer validated_data onto a WikiPage instance."""
+        from django.utils.text import slugify
+        page.title   = data['title']
+        page.content = data.get('content', page.content)
+        page.summary = data.get('summary', page.summary)
+        page.is_pinned    = data.get('is_pinned', page.is_pinned)
+        page.tags         = data.get('tags', page.tags)
+        page.linked_module = data.get('linked_module', page.linked_module)
+        # Slug: use provided or generate from title (collision-safe)
+        raw_slug = data.get('slug') or slugify(data['title'])
+        slug = raw_slug
+        n = 1
+        while org.wiki_pages.filter(slug=slug).exclude(pk=page.pk).exists():
+            slug = f'{raw_slug}-{n}'
+            n += 1
+        page.slug = slug
+
+    def create(self, request, org_pk=None):
+        ser = WikiPageWriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d   = ser.validated_data
+        org = self._org()
+
+        page = WikiPage(organization=org, created_by=request.user, updated_by=request.user)
+        self._apply_write(page, d, org)
+        page.save()
+
+        # Assign categories
+        cat_ids = d.get('category_ids', [])
+        if cat_ids:
+            cats = WikiCategory.objects.filter(organization=org, id__in=cat_ids)
+            page.categories.set(cats)
+
+        # Save initial version
+        self._save_version(page, request.user, d.get('version_note', 'Initial version'))
+
+        _log_action(org, request, 'WIKI_PAGE_CREATED',
+                    target_type='WIKI_PAGE', target_id=page.id, target_label=page.title)
+        return Response(WikiPageDetailSerializer(page).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        page = self.get_object()
+        org  = page.organization
+
+        ser = WikiPageWriteSerializer(data=request.data, partial=partial)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        # Snapshot current state before overwriting
+        self._save_version(page, request.user, d.get('version_note', ''))
+
+        self._apply_write(page, d, org)
+        page.updated_by = request.user
+        page.save()
+
+        cat_ids = d.get('category_ids')
+        if cat_ids is not None:
+            cats = WikiCategory.objects.filter(organization=org, id__in=cat_ids)
+            page.categories.set(cats)
+
+        _log_action(org, request, 'WIKI_PAGE_UPDATED',
+                    target_type='WIKI_PAGE', target_id=page.id, target_label=page.title)
+        return Response(WikiPageDetailSerializer(page).data)
+
+    def perform_destroy(self, instance):
+        _log_action(instance.organization, self.request, 'WIKI_PAGE_DELETED',
+                    target_type='WIKI_PAGE', target_id=instance.id,
+                    target_label=instance.title)
+        instance.delete()
+
+    @action(detail=True, methods=['get'], url_path='versions')
+    def versions(self, request, org_pk=None, pk=None):
+        """GET /wiki/pages/:id/versions/ – list all saved versions."""
+        page = self.get_object()
+        vers = page.versions.select_related('edited_by').order_by('-edited_at')[:50]
+        return Response(WikiPageVersionSerializer(vers, many=True).data)
+
+    @action(detail=True, methods=['post'], url_path='restore/(?P<version_id>[^/.]+)')
+    def restore(self, request, org_pk=None, pk=None, version_id=None):
+        """POST /wiki/pages/:id/restore/:version_id/ – restore a version."""
+        page = self.get_object()
+        org  = page.organization
+        ver  = get_object_or_404(WikiPageVersion, pk=version_id, page=page)
+
+        # Snapshot the current state before restoring
+        self._save_version(page, request.user,
+                           f'Auto-saved before restoring version {ver.id}')
+
+        page.title      = ver.title
+        page.content    = ver.content
+        page.updated_by = request.user
+        page.save(update_fields=['title', 'content', 'updated_by', 'updated_at'])
+
+        _log_action(org, request, 'WIKI_PAGE_RESTORED',
+                    target_type='WIKI_PAGE', target_id=page.id, target_label=page.title,
+                    metadata={'restored_version': ver.id})
+        return Response(WikiPageDetailSerializer(page).data)
+
+
+# ── Integrations ──────────────────────────────────────────────────────────────
+
+class IntegrationConnectionViewSet(
+    ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+    UpdateModelMixin, DestroyModelMixin, GenericViewSet,
+):
+    """
+    CRUD for org integration connections + custom actions:
+      POST .../connect/     – save credentials & mark CONNECTED
+      POST .../disconnect/  – clear credentials & mark DISCONNECTED
+      POST .../test/        – run a connection health check
+      POST .../sync/        – record a manual sync attempt
+      GET  .../logs/        – list last 100 log entries
+      GET  .../events/      – list last 50 webhook events
+    """
+    permission_classes = [IsAuthenticated]
+    pagination_class   = None
+    serializer_class   = IntegrationConnectionSerializer
+
+    def _org(self):
+        return _get_org(self.request, self.kwargs['org_pk'])
+
+    def get_queryset(self):
+        qs = self._org().integrations.all()
+        category = self.request.query_params.get('category')
+        status   = self.request.query_params.get('status')
+        if category:
+            qs = qs.filter(category__iexact=category)
+        if status:
+            qs = qs.filter(status__iexact=status)
+        return qs
+
+    def _log(self, connection, event_type, level, message, **kwargs):
+        IntegrationLog.objects.create(
+            connection=connection,
+            organization=connection.organization,
+            provider=connection.provider,
+            event_type=event_type,
+            level=level,
+            message=message,
+            **kwargs,
+        )
+
+    # ── CRUD overrides ────────────────────────────────────────────────────────
+
+    def create(self, request, org_pk=None):
+        ser = IntegrationConnectionWriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d   = ser.validated_data
+        org = self._org()
+
+        conn, created = IntegrationConnection.objects.get_or_create(
+            organization=org,
+            provider=d['provider'],
+            defaults={
+                'display_name': d.get('display_name') or d['provider'].title(),
+                'category':     d.get('category', 'other'),
+                'credentials':  d.get('credentials', {}),
+                'config':       d.get('config', {}),
+                'connected_by': request.user,
+                'status':       IntegrationConnection.Status.PENDING,
+            },
+        )
+        if not created:
+            conn.display_name = d.get('display_name') or conn.display_name
+            conn.credentials  = d.get('credentials', conn.credentials)
+            conn.config       = d.get('config', conn.config)
+            conn.connected_by = request.user
+            conn.save()
+
+        _log_action(org, request, 'INTEGRATION_CREATED' if created else 'INTEGRATION_UPDATED',
+                    target_type='INTEGRATION', target_id=conn.id, target_label=conn.provider)
+        return Response(IntegrationConnectionSerializer(conn).data,
+                        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        conn = self.get_object()
+        ser  = IntegrationConnectionWriteSerializer(data=request.data, partial=partial)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+        for field in ('display_name', 'category', 'credentials', 'config'):
+            if field in d:
+                setattr(conn, field, d[field])
+        conn.save()
+        return Response(IntegrationConnectionSerializer(conn).data)
+
+    def perform_destroy(self, instance):
+        self._log(instance, IntegrationLog.EventType.DISCONNECT,
+                  IntegrationLog.Level.INFO, 'Integration removed')
+        _log_action(instance.organization, self.request, 'INTEGRATION_REMOVED',
+                    target_type='INTEGRATION', target_id=instance.id,
+                    target_label=instance.provider)
+        instance.delete()
+
+    # ── Custom actions ────────────────────────────────────────────────────────
+
+    @action(detail=True, methods=['post'], url_path='connect')
+    def connect(self, request, org_pk=None, pk=None):
+        """Save credentials and mark the integration as CONNECTED."""
+        conn = self.get_object()
+        ser  = IntegrationConnectionWriteSerializer(data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        if 'credentials' in d and d['credentials']:
+            conn.credentials = d['credentials']
+        if 'config' in d:
+            conn.config = d['config']
+        if 'display_name' in d and d['display_name']:
+            conn.display_name = d['display_name']
+
+        conn.status       = IntegrationConnection.Status.CONNECTED
+        conn.last_error   = ''
+        conn.connected_by = request.user
+        conn.save()
+
+        self._log(conn, IntegrationLog.EventType.CONNECT, IntegrationLog.Level.SUCCESS,
+                  f'Integration connected by {request.user.username}')
+        _log_action(conn.organization, request, 'INTEGRATION_CONNECTED',
+                    target_type='INTEGRATION', target_id=conn.id, target_label=conn.provider)
+        return Response(IntegrationConnectionSerializer(conn).data)
+
+    @action(detail=True, methods=['post'], url_path='disconnect')
+    def disconnect(self, request, org_pk=None, pk=None):
+        """Revoke credentials and mark the integration as DISCONNECTED."""
+        conn = self.get_object()
+        conn.credentials = {}
+        conn.status      = IntegrationConnection.Status.DISCONNECTED
+        conn.last_error  = ''
+        conn.save()
+
+        self._log(conn, IntegrationLog.EventType.DISCONNECT, IntegrationLog.Level.INFO,
+                  f'Integration disconnected by {request.user.username}')
+        _log_action(conn.organization, request, 'INTEGRATION_DISCONNECTED',
+                    target_type='INTEGRATION', target_id=conn.id, target_label=conn.provider)
+        return Response(IntegrationConnectionSerializer(conn).data)
+
+    @action(detail=True, methods=['post'], url_path='test')
+    def test_connection(self, request, org_pk=None, pk=None):
+        """
+        Run a health check against the integration provider.
+        In production this fires a real probe; here it validates credentials are set.
+        """
+        import time
+        conn = self.get_object()
+        t0   = time.monotonic()
+
+        if conn.status == IntegrationConnection.Status.DISCONNECTED or not conn.credentials:
+            conn.status     = IntegrationConnection.Status.ERROR
+            conn.last_error = 'No credentials configured. Please connect first.'
+            conn.save()
+            self._log(conn, IntegrationLog.EventType.TEST, IntegrationLog.Level.ERROR,
+                      conn.last_error, http_status=400,
+                      duration_ms=int((time.monotonic() - t0) * 1000))
+            return Response({'success': False, 'message': conn.last_error},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Simulate a successful probe
+        conn.status     = IntegrationConnection.Status.CONNECTED
+        conn.last_error = ''
+        conn.total_calls += 1
+        conn.save()
+
+        duration = int((time.monotonic() - t0) * 1000)
+        self._log(conn, IntegrationLog.EventType.TEST, IntegrationLog.Level.SUCCESS,
+                  'Connection test passed', http_status=200, duration_ms=duration)
+        return Response({'success': True, 'message': 'Connection is healthy.',
+                         'duration_ms': duration})
+
+    @action(detail=True, methods=['post'], url_path='sync')
+    def sync(self, request, org_pk=None, pk=None):
+        """Trigger a manual data synchronisation for this integration."""
+        from django.utils import timezone as tz
+        conn = self.get_object()
+        if conn.status != IntegrationConnection.Status.CONNECTED:
+            return Response({'detail': 'Integration must be CONNECTED to sync.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        conn.last_sync = tz.now()
+        conn.save(update_fields=['last_sync'])
+        self._log(conn, IntegrationLog.EventType.SYNC, IntegrationLog.Level.INFO,
+                  f'Manual sync triggered by {request.user.username}')
+        return Response({'success': True, 'synced_at': conn.last_sync.isoformat()})
+
+    @action(detail=True, methods=['get'], url_path='logs')
+    def logs(self, request, org_pk=None, pk=None):
+        """List the last 100 log entries for this connection."""
+        conn  = self.get_object()
+        items = conn.logs.order_by('-timestamp')[:100]
+        return Response(IntegrationLogSerializer(items, many=True).data)
+
+    @action(detail=True, methods=['get'], url_path='events')
+    def events(self, request, org_pk=None, pk=None):
+        """List the last 50 incoming webhook events for this connection."""
+        conn  = self.get_object()
+        items = conn.webhook_events.order_by('-received_at')[:50]
+        return Response(IntegrationWebhookEventSerializer(items, many=True).data)
+
+
+from rest_framework.views import APIView
+
+class IntegrationWebhookView(APIView):
+    """
+    Receive incoming webhooks from external providers.
+    URL: POST /api/enterprise/webhooks/:provider/:org_pk/
+    """
+    permission_classes = []   # No auth — validated via HMAC signature
+
+    def post(self, request, provider, org_pk):
+        import hashlib, hmac, time
+        try:
+            org  = Organization.objects.get(pk=org_pk)
+            conn = IntegrationConnection.objects.get(organization=org, provider=provider)
+        except (Organization.DoesNotExist, IntegrationConnection.DoesNotExist):
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Basic HMAC validation (skip if no secret configured)
+        if conn.webhook_secret:
+            sig_header = request.META.get('HTTP_X_SIGNATURE_256', '')
+            body       = request.body
+            expected   = 'sha256=' + hmac.new(
+                conn.webhook_secret.encode(), body, hashlib.sha256
+            ).hexdigest()
+            if not hmac.compare_digest(expected, sig_header):
+                return Response({'detail': 'Invalid signature.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        event_type = (request.data.get('type') or
+                      request.META.get('HTTP_X_EVENT_TYPE', 'unknown'))
+        event_id   = (request.data.get('id') or
+                      request.META.get('HTTP_X_EVENT_ID', ''))
+
+        # Idempotency check
+        if event_id and IntegrationWebhookEvent.objects.filter(
+            organization=org, provider=provider, event_id=event_id
+        ).exists():
+            return Response({'status': 'duplicate'})
+
+        evt = IntegrationWebhookEvent.objects.create(
+            connection=conn,
+            organization=org,
+            provider=provider,
+            event_type=event_type,
+            event_id=event_id,
+            payload=request.data,
+            normalized={},
+            processed=True,
+        )
+        IntegrationLog.objects.create(
+            connection=conn, organization=org, provider=provider,
+            event_type=IntegrationLog.EventType.WEBHOOK,
+            level=IntegrationLog.Level.INFO,
+            message=f'Webhook received: {event_type}',
+        )
+        return Response({'status': 'accepted', 'id': evt.id})

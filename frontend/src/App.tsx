@@ -90,6 +90,7 @@ import DevDeployAppPage           from './pages/DevDeployAppPage';
 import TeamDetailPage             from './pages/TeamDetailPage';
 import EnterpriseOverviewDashboard from './pages/EnterpriseOverviewDashboard';
 import EnterpriseDashboardPage   from './pages/EnterpriseDashboardPage';
+import BusinessWorkspacePage     from './pages/BusinessWorkspacePage';
 import EnterpriseEntryRoute      from './pages/EnterpriseEntryRoute';
 import MarketingWorkspacePage    from './pages/MarketingWorkspacePage';
 import CreateOrganizationPage    from './pages/CreateOrganizationPage';
@@ -166,9 +167,10 @@ const AppShell: React.FC = () => {
   const isMarketingDashboard = location.pathname.startsWith('/marketing-dashboard');
   const isDomainsDashboard = location.pathname.startsWith('/domains/dashboard');
   const isMonitorDashboard = location.pathname.startsWith('/monitor-dashboard');
+  const isBusinessWorkspace       = /^\/enterprise\/[^\/]+\/workspace/.test(location.pathname);
   const isEnterpriseMarketing     = /^\/enterprise\/[^\/]+\/marketing/.test(location.pathname);
   const isEnterpriseOrganization   = /^\/enterprise\/[^\/]+\/organization/.test(location.pathname);
-  const isEnterpriseDashboard = !isEnterpriseMarketing && !isEnterpriseOrganization &&
+  const isEnterpriseDashboard = !isBusinessWorkspace && !isEnterpriseMarketing && !isEnterpriseOrganization &&
     location.pathname.startsWith('/enterprise') &&
     !location.pathname.startsWith('/enterprise/organizations/create');
   const isGroupsPage = location.pathname.startsWith('/groups');
@@ -417,6 +419,19 @@ const AppShell: React.FC = () => {
             <Route path="/domains/dashboard/*"        element={<DomainsServiceDashboardPage />} />
           </Routes>
         </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  // ── Business Workspace (standalone, own sidebar + DashboardTopBar) ──
+  if (isBusinessWorkspace) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/workspace"         element={<BusinessWorkspacePage />} />
+          <Route path="/enterprise/:orgSlug/workspace/:module"   element={<BusinessWorkspacePage />} />
+          <Route path="/enterprise/:orgSlug/workspace/:module/*"  element={<BusinessWorkspacePage />} />
+        </Routes>
       </ProtectedRoute>
     );
   }
