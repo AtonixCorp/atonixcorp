@@ -106,7 +106,7 @@ interface NavItem {
   children?: NavItem[];
 }
 
-type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor' | 'enterprise' | 'docs' | 'audit';
+type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor' | 'enterprise' | 'docs' | 'audit' | 'wiki';
 
 // ── Nav definition — exact order from spec ────────────────────────────────────
 const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
@@ -764,7 +764,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
     >
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      {dashboardMode !== 'docs' && dashboardMode !== 'audit' && (
+      {dashboardMode !== 'docs' && dashboardMode !== 'audit' && dashboardMode !== 'wiki' && (
         <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
           <Drawer
             variant="temporary"
@@ -800,7 +800,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
       <Box
         sx={{
           flexGrow: 1,
-          width: { lg: (dashboardMode === 'docs' || dashboardMode === 'audit') ? '100%' : `calc(100% - ${sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px)` },
+          width: { lg: (dashboardMode === 'docs' || dashboardMode === 'audit' || dashboardMode === 'wiki') ? '100%' : `calc(100% - ${sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -810,7 +810,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
       >
 
         {/* ── Top AppBar ─────────────────────────────────────────────────────── */}
-        {dashboardMode !== 'docs' && dashboardMode !== 'audit' && <DashboardTopBar
+        {dashboardMode !== 'docs' && dashboardMode !== 'audit' && dashboardMode !== 'wiki' && <DashboardTopBar
           routeBase={routeBase}
           showMobileMenu
           onMobileMenuOpen={() => setMobileOpen(true)}
@@ -839,7 +839,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
           </Box>
 
           {/* ── Right activity panel ─────────────────────────────────────────── */}
-          {dashboardMode !== 'enterprise' && dashboardMode !== 'docs' && dashboardMode !== 'audit' && (
+          {dashboardMode !== 'enterprise' && dashboardMode !== 'docs' && dashboardMode !== 'audit' && dashboardMode !== 'wiki' && (
             <>
               <RightActivityPanel
                 collapsed={rightCollapsed}

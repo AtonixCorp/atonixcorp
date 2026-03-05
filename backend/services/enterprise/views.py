@@ -24,6 +24,7 @@ from .models import (
     EnterpriseAuditLog,
     WikiPage, WikiCategory, WikiPageVersion,
     IntegrationConnection, IntegrationLog, IntegrationWebhookEvent,
+    OrgOrder,
 )
 from .serializers import (
     OrganizationSerializer, OrganizationCreateSerializer,
@@ -44,6 +45,7 @@ from .serializers import (
     WikiPageVersionSerializer, WikiPageWriteSerializer,
     IntegrationConnectionSerializer, IntegrationConnectionWriteSerializer,
     IntegrationLogSerializer, IntegrationWebhookEventSerializer,
+    OrgOrderSerializer, OrgOrderWriteSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -807,6 +809,36 @@ class SubscriptionViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
         return Response(SubscriptionSerializer(sub).data)
 
 
+# ── Orders ────────────────────────────────────────────────────────────────────
+
+class OrgOrderViewSet(
+    ListModelMixin, CreateModelMixin,
+    RetrieveModelMixin, UpdateModelMixin,
+    GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return OrgOrderWriteSerializer
+        return OrgOrderSerializer
+
+    def get_queryset(self):
+        org = _get_org(self.request, self.kwargs['org_pk'])
+        qs  = org.orders.prefetch_related('items').order_by('-created_at')
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+    def perform_create(self, serializer):
+        org   = _get_org(self.request, self.kwargs['org_pk'])
+        order = serializer.save(organization=org)
+        _log_action(org, self.request, 'ORDER_CREATED',
+                    target_type='ORDER', target_id=order.id,
+                    target_label=order.order_number)
+
+
 # ── 11. Enterprise Invoices ───────────────────────────────────────────────────
 
 class EnterpriseInvoiceViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
@@ -1324,3 +1356,203 @@ class IntegrationWebhookView(APIView):
             message=f'Webhook received: {event_type}',
         )
         return Response({'status': 'accepted', 'id': evt.id})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MEETING HUB VIEW SETS
+# ══════════════════════════════════════════════════════════════════════════════
+
+from .models import Meeting, MeetingParticipant, MeetingNotification, Announcement
+from .serializers import (
+    MeetingSerializer, MeetingWriteSerializer,
+    MeetingParticipantSerializer,
+    MeetingNotificationSerializer,
+    AnnouncementSerializer, AnnouncementWriteSerializer,
+)
+import uuid as _uuid
+
+
+class MeetingViewSet(
+    ListModelMixin, CreateModelMixin,
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin,
+    GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+
+    def _org(self):
+        return _get_org(self.request, self.kwargs['org_pk'])
+
+    def get_queryset(self):
+        org = self._org()
+        qs = Meeting.objects.filter(organization=org).prefetch_related('participants')
+        dept = self.request.query_params.get('department')
+        status_filter = self.request.query_params.get('status')
+        meeting_type = self.request.query_params.get('type')
+        upcoming = self.request.query_params.get('upcoming')
+        if dept:
+            qs = qs.filter(department_id=dept)
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        if meeting_type:
+            qs = qs.filter(meeting_type=meeting_type)
+        if upcoming:
+            qs = qs.filter(start_time__gte=timezone.now(), status=Meeting.Status.SCHEDULED)
+        return qs
+
+    def get_serializer_class(self):
+        return MeetingWriteSerializer if self.request.method in ('POST', 'PUT', 'PATCH') else MeetingSerializer
+
+    def perform_create(self, serializer):
+        org = self._org()
+        video_room_id = f'room-{_uuid.uuid4().hex[:12]}'
+        meeting = serializer.save(
+            organization=org,
+            created_by=self.request.user,
+            video_room_id=video_room_id,
+        )
+        _log_action(org, self.request, 'meeting.create',
+                    'Meeting', meeting.id, meeting.title)
+
+    def perform_update(self, serializer):
+        meeting = serializer.save()
+        _log_action(self._org(), self.request, 'meeting.update',
+                    'Meeting', meeting.id, meeting.title)
+
+    def perform_destroy(self, instance):
+        _log_action(self._org(), self.request, 'meeting.delete',
+                    'Meeting', instance.id, instance.title)
+        instance.delete()
+
+    @action(detail=True, methods=['post'], url_path='invite')
+    def invite(self, request, org_pk=None, pk=None):
+        """Invite participants: [{email, name, role}]"""
+        meeting = self.get_object()
+        participants = request.data.get('participants', [])
+        created_count = 0
+        for p in participants:
+            email = p.get('email', '')
+            name  = p.get('name', '')
+            role  = p.get('role', 'attendee')
+            if not email:
+                continue
+            MeetingParticipant.objects.get_or_create(
+                meeting=meeting, email=email,
+                defaults={'name': name, 'role': role,
+                          'invite_status': MeetingParticipant.InviteStatus.INVITED},
+            )
+            created_count += 1
+        return Response({'invited': created_count})
+
+    @action(detail=True, methods=['post'], url_path='start')
+    def start(self, request, org_pk=None, pk=None):
+        """Mark meeting as in-progress and return the join URL."""
+        meeting = self.get_object()
+        meeting.status = Meeting.Status.IN_PROGRESS
+        meeting.save(update_fields=['status', 'updated_at'])
+        # Notify all participants
+        for participant in meeting.participants.select_related('user'):
+            if participant.user:
+                MeetingNotification.objects.create(
+                    user=participant.user,
+                    meeting=meeting,
+                    notif_type=MeetingNotification.NotifType.STARTED,
+                    message=f'"{meeting.title}" has started. Join now.',
+                )
+        return Response({
+            'status': meeting.status,
+            'video_room_id': meeting.video_room_id,
+            'video_join_url': meeting.video_join_url or f'/meetings/room/{meeting.video_room_id}',
+        })
+
+    @action(detail=True, methods=['post'], url_path='end')
+    def end(self, request, org_pk=None, pk=None):
+        """Mark meeting as completed."""
+        meeting = self.get_object()
+        meeting.status = Meeting.Status.COMPLETED
+        notes = request.data.get('notes', '')
+        if notes:
+            meeting.notes = notes
+        meeting.save(update_fields=['status', 'notes', 'updated_at'])
+        return Response({'status': meeting.status})
+
+    @action(detail=True, methods=['post'], url_path='rsvp')
+    def rsvp(self, request, org_pk=None, pk=None):
+        """Current user responds to an invite: {status: accepted|declined|tentative}"""
+        meeting = self.get_object()
+        invite_status = request.data.get('status', 'accepted')
+        MeetingParticipant.objects.filter(
+            meeting=meeting, user=request.user
+        ).update(invite_status=invite_status)
+        return Response({'status': invite_status})
+
+    @action(detail=False, methods=['get'], url_path='analytics')
+    def analytics(self, request, org_pk=None):
+        """Quick stats for the Meeting Hub dashboard."""
+        from django.utils import timezone
+        from datetime import timedelta
+        org = self._org()
+        now = timezone.now()
+        week_start = now - timedelta(days=now.weekday())
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        qs = Meeting.objects.filter(organization=org)
+        return Response({
+            'total':          qs.count(),
+            'this_week':      qs.filter(start_time__gte=week_start).count(),
+            'this_month':     qs.filter(start_time__gte=month_start).count(),
+            'upcoming':       qs.filter(start_time__gte=now, status=Meeting.Status.SCHEDULED).count(),
+            'in_progress':    qs.filter(status=Meeting.Status.IN_PROGRESS).count(),
+            'completed':      qs.filter(status=Meeting.Status.COMPLETED).count(),
+            'avg_duration':   int(
+                sum(m.duration_minutes for m in qs.filter(status=Meeting.Status.COMPLETED)) /
+                max(qs.filter(status=Meeting.Status.COMPLETED).count(), 1)
+            ),
+        })
+
+
+class MeetingNotificationViewSet(
+    ListModelMixin, UpdateModelMixin, GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MeetingNotificationSerializer
+
+    def get_queryset(self):
+        _get_org(self.request, self.kwargs['org_pk'])  # gate
+        return MeetingNotification.objects.filter(
+            user=self.request.user,
+            meeting__organization__id=self.kwargs['org_pk'],
+        ).select_related('meeting')
+
+    @action(detail=False, methods=['post'], url_path='mark-all-read')
+    def mark_all_read(self, request, org_pk=None):
+        updated = self.get_queryset().filter(is_read=False).update(is_read=True)
+        return Response({'marked': updated})
+
+
+class AnnouncementViewSet(
+    ListModelMixin, CreateModelMixin,
+    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin,
+    GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+
+    def _org(self):
+        return _get_org(self.request, self.kwargs['org_pk'])
+
+    def get_queryset(self):
+        org = self._org()
+        qs = Announcement.objects.filter(organization=org)
+        dept = self.request.query_params.get('department')
+        if dept == 'org':
+            qs = qs.filter(department__isnull=True)
+        elif dept:
+            qs = qs.filter(department_id=dept)
+        return qs
+
+    def get_serializer_class(self):
+        return AnnouncementWriteSerializer if self.request.method in ('POST', 'PUT', 'PATCH') else AnnouncementSerializer
+
+    def perform_create(self, serializer):
+        org = self._org()
+        ann = serializer.save(organization=org, created_by=self.request.user)
+        _log_action(org, self.request, 'announcement.create',
+                    'Announcement', ann.id, ann.title)

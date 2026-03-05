@@ -56,8 +56,16 @@ import StarIcon from '@mui/icons-material/Star';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import StyleIcon from '@mui/icons-material/Style';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import SaveIcon from '@mui/icons-material/Save';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import EventIcon from '@mui/icons-material/Event';
+import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 
 // APIs and types
 import {
@@ -101,11 +109,13 @@ const SIDEBAR_COLLAPSED_WIDTH = 70;
 
 // ── Module definitions ─────────────────────────────────────────────────────
 type WorkspaceModule = 'overview' | 'organization' | 'departments' | 'members' | 'billing' |
-  'domains' | 'email' | 'marketing' | 'compliance' | 'integrations' | 'orders' | 'audit' | 'settings' | 'wiki' | 'docs';
+  'domains' | 'email' | 'marketing' | 'compliance' | 'integrations' | 'orders' | 'audit' | 'settings' | 'wiki' | 'docs' |
+  'meetings' | 'developer-hub';
 
 const VALID_MODULES: WorkspaceModule[] = [
   'overview', 'organization', 'departments', 'members', 'billing',
   'domains', 'email', 'marketing', 'compliance', 'integrations', 'orders', 'audit', 'settings', 'wiki', 'docs',
+  'meetings', 'developer-hub',
 ];
 
 const MODULES: Array<{
@@ -120,7 +130,7 @@ const MODULES: Array<{
   { key: 'organization', label: 'Organization', icon: <BusinessIcon />,     desc: 'Profile, identity & branding',         enterprisePath: s => `/enterprise/${s}/organization/overview` },
   { key: 'departments',  label: 'Departments',  icon: <AccountTreeIcon />,  desc: 'Team structure & hierarchy',           enterprisePath: s => `/enterprise/${s}/organization/departments` },
   { key: 'members',      label: 'Members',      icon: <PeopleIcon />,       desc: 'Users, roles & access control',        enterprisePath: s => `/enterprise/${s}/organization/people` },
-  { key: 'billing',      label: 'Billing',      icon: <BillingIcon />,      desc: 'Plans, invoices & usage',              enterprisePath: s => `/enterprise/${s}/billing` },
+  { key: 'billing',      label: 'Billing',      icon: <BillingIcon />,      desc: 'Plans, invoices & usage',              enterprisePath: _s => `/billing`, externalLink: true },
   { key: 'domains',      label: 'Domains',      icon: <DomainIcon />,       desc: 'Business domains & DNS health',        enterprisePath: s => `/enterprise/${s}/domains` },
   { key: 'email',        label: 'Email',        icon: <MailOutlineIcon />,  desc: 'Sending domains, senders & templates', enterprisePath: s => `/enterprise/${s}/email` },
   { key: 'marketing',    label: 'Marketing',    icon: <CampaignIcon />,     desc: 'Campaigns, audience & automations',    enterprisePath: s => `/enterprise/${s}/marketing`, externalLink: true },
@@ -129,8 +139,18 @@ const MODULES: Array<{
   { key: 'orders',       label: 'Orders',       icon: <ShoppingCartIcon />, desc: 'Order history & subscriptions',        enterprisePath: s => `/enterprise/${s}/orders` },
   { key: 'audit',        label: 'Audit Logs',   icon: <HistoryIcon />,      desc: 'Full activity log & actor trail',      enterprisePath: s => `/enterprise/${s}/compliance` },
   { key: 'settings',     label: 'Settings',     icon: <SettingsIcon />,     desc: 'General, notifications & API keys',    enterprisePath: s => `/enterprise/${s}/settings` },
-  { key: 'wiki',         label: 'Wiki',         icon: <MenuBookIcon />,     desc: 'Org knowledge base & documentation',   enterprisePath: s => `/enterprise/${s}/workspace/wiki` },
-  { key: 'docs',         label: 'Docs',         icon: <AutoStoriesIcon />,  desc: 'Platform docs, runbooks & guides',     enterprisePath: s => `/docs`, externalLink: true },
+  { key: 'wiki',         label: 'Wiki',         icon: <MenuBookIcon />,     desc: 'Org knowledge base & documentation',   enterprisePath: s => `/enterprise/${s}/wiki` },
+  { key: 'docs',         label: 'Docs',         icon: <AutoStoriesIcon />,    desc: 'Platform docs, runbooks & guides',     enterprisePath: s => `/docs`, externalLink: true },
+  { key: 'meetings',     label: 'Meetings',     icon: <EventIcon />,          desc: 'Schedule, join & manage meetings',     enterprisePath: s => `/enterprise/${s}/meetings`,      externalLink: true },
+  { key: 'developer-hub', label: 'Developer Hub', icon: <DeveloperModeIcon />, desc: 'APIs, SDKs, webhooks & dev tools',    enterprisePath: s => `/enterprise/${s}/developer-hub`, externalLink: true },
+];
+
+const SIDEBAR_GROUPS: Array<{ label: string; keys: WorkspaceModule[] }> = [
+  { label: 'Workspace',            keys: ['overview', 'organization', 'departments', 'members'] },
+  { label: 'Finance',              keys: ['billing', 'orders'] },
+  { label: 'Domain',               keys: ['domains', 'email', 'marketing', 'meetings', 'developer-hub'] },
+  { label: 'Security & Compliance',keys: ['compliance', 'integrations', 'audit'] },
+  { label: 'Resources',            keys: ['settings', 'wiki', 'docs'] },
 ];
 
 // ── Utility components ─────────────────────────────────────────────────────
@@ -580,8 +600,8 @@ function BillingModule({ orgId }: { orgId: string }) {
     if (!orgId) return;
     setLoading(true);
     Promise.all([
-      usageApi.summary(orgId).then(setUsage),
-      enterpriseBillingApi.invoices(orgId).then(setInvoices),
+      usageApi.summary(orgId).then(setUsage).catch(() => {}),
+      enterpriseBillingApi.invoices(orgId).then(setInvoices).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, [orgId]);
 
@@ -1740,79 +1760,393 @@ function IntegrationsModule({ orgId }: { orgId: string }) {
 }
 
 function OrdersModule({ orgId }: { orgId: string }) {
-  const [orders, setOrders] = useState<OrgOrder[]>([]);
+  const [orders,        setOrders]        = useState<OrgOrder[]>([]);
   const [subscriptions, setSubscriptions] = useState<OrgSubscriptionItem[]>([]);
-  const [tab, setTab] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [tab,           setTab]           = useState(0);
+  const [loading,       setLoading]       = useState(false);
+  const [search,        setSearch]        = useState('');
+  const [statusFilter,  setStatusFilter]  = useState('ALL');
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [detailOrder,   setDetailOrder]   = useState<OrgOrder | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!orgId) return;
     setLoading(true);
     Promise.all([
-      ordersApi.list(orgId).then(setOrders),
-      orgSubscriptionsApi.list(orgId).then(setSubscriptions),
+      ordersApi.list(orgId).then(setOrders).catch(() => {}),
+      orgSubscriptionsApi.list(orgId).then(setSubscriptions).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, [orgId]);
 
+  useEffect(() => { load(); }, [load]);
+
+  // ── Derived stats ────────────────────────────────────────────────────────
+  const totalRevenue = orders
+    .filter(o => o.status === 'COMPLETED')
+    .reduce((sum, o) => sum + parseFloat(o.total_amount || '0'), 0);
+  const pendingCount   = orders.filter(o => o.status === 'PENDING').length;
+  const completedCount = orders.filter(o => o.status === 'COMPLETED').length;
+  const activeSubs     = subscriptions.filter(s => s.status === 'ACTIVE').length;
+
+  // ── Filtered orders ──────────────────────────────────────────────────────
+  const filteredOrders = orders.filter(o => {
+    const matchSearch = !search ||
+      o.order_number.toLowerCase().includes(search.toLowerCase()) ||
+      o.items?.some(i => i.product.toLowerCase().includes(search.toLowerCase()));
+    const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const statusColor = (s: string) => {
+    if (s === 'COMPLETED' || s === 'CONFIRMED') return T.green;
+    if (s === 'PENDING' || s === 'TRIALING')   return T.yellow;
+    if (s === 'CANCELLED' || s === 'FAILED' || s === 'EXPIRED') return T.red;
+    return T.sub;
+  };
+
+  const billingCycleLabel = (cycle: string) =>
+    cycle === 'MONTHLY' ? 'Monthly' : cycle === 'ANNUAL' ? 'Annual' : cycle;
+
   return (
     <Box>
-      <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '1.3rem', mb: 2, fontFamily: T.font }}>
-        Orders & Subscriptions
-      </Typography>
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-        <Tab label="Orders" />
-        <Tab label="Subscriptions" />
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box>
+          <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.4rem', fontFamily: T.font }}>Orders & Subscriptions</Typography>
+          <Typography sx={{ color: T.sub, fontSize: '.85rem', mt: 0.25 }}>Manage your purchase history and active plans</Typography>
+        </Box>
+        <Tooltip title="Refresh">
+          <IconButton onClick={load} disabled={loading} sx={{ color: T.sub, '&:hover': { color: T.brand } }}>
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      {/* ── KPI Cards ───────────────────────────────────────────────────── */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {[
+          { label: 'Total Orders',      value: orders.length,                                 icon: <ShoppingCartIcon />, color: T.brand },
+          { label: 'Completed',         value: completedCount,                                icon: <CheckCircleIcon />,  color: T.green },
+          { label: 'Pending',           value: pendingCount,                                  icon: <AccessTimeIcon />,   color: T.yellow },
+          { label: 'Revenue (Completed)', value: `${orders[0]?.currency ?? 'USD'} ${totalRevenue.toFixed(2)}`, icon: <AttachMoneyIcon />,  color: T.purple },
+          { label: 'Active Subs',       value: activeSubs,                                    icon: <RepeatIcon />,       color: T.blue },
+        ].map(kpi => (
+          <Grid key={kpi.label} size={{ xs: 6, sm: 4, md: 'auto' }} sx={{ flex: 1 }}>
+            <Card sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, height: '100%' }}>
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Box sx={{ color: kpi.color, display: 'flex' }}>{kpi.icon}</Box>
+                  <Typography variant="caption" sx={{ color: T.sub, fontWeight: 700, textTransform: 'uppercase', fontSize: '.68rem', letterSpacing: '.06em' }}>
+                    {kpi.label}
+                  </Typography>
+                </Box>
+                <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.4rem' }}>{kpi.value}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* ── Tabs ────────────────────────────────────────────────────────── */}
+      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2.5, '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: '.9rem' } }}>
+        <Tab label={`Orders (${orders.length})`} icon={<ShoppingCartIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
+        <Tab label={`Subscriptions (${subscriptions.length})`} icon={<RepeatIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" />
       </Tabs>
 
       {loading ? (
-        <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress sx={{ color: T.brand }} /></Box>
       ) : tab === 0 ? (
-        orders.length === 0 ? (
-          <Alert>No orders yet.</Alert>
-        ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: T.card2 }}>
-                  {['Order', 'Status', 'Total', 'Date'].map(h => <TableCell key={h} sx={{ color: T.sub, fontWeight: 700 }}>{h}</TableCell>)}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((o: OrgOrder) => (
-                  <TableRow key={o.id} hover>
-                    <TableCell sx={{ color: T.text, fontWeight: 600 }}>{o.order_number}</TableCell>
-                    <TableCell><StatusChip status={o.status} /></TableCell>
-                    <TableCell sx={{ color: T.text }}>{o.currency} {o.total_amount}</TableCell>
-                    <TableCell sx={{ color: T.sub, fontSize: '.85rem' }}>{o.created_at?.slice(0, 10)}</TableCell>
-                  </TableRow>
+        /* ═══ ORDERS TAB ═══════════════════════════════════════════════════ */
+        <Box>
+          {/* Filters */}
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <TextField
+              value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search order # or product…" size="small"
+              InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: T.sub, fontSize: '1rem' }} /> }}
+              sx={{ flex: 1, minWidth: 220, '& .MuiOutlinedInput-root': { fontSize: '.85rem', bgcolor: T.card, borderRadius: 1.5 } }}
+            />
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel sx={{ fontSize: '.85rem' }}>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                label="Status"
+                onChange={e => setStatusFilter(e.target.value)}
+                startAdornment={<FilterListIcon sx={{ fontSize: '1rem', mr: 0.5, color: T.sub }} />}
+                sx={{ fontSize: '.85rem', bgcolor: T.card }}
+              >
+                {['ALL', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map(s => (
+                  <MenuItem key={s} value={s} sx={{ fontSize: '.85rem' }}>
+                    {s === 'ALL' ? 'All Statuses' : s.charAt(0) + s.slice(1).toLowerCase()}
+                  </MenuItem>
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )
-      ) : subscriptions.length === 0 ? (
-        <Alert>No active subscriptions.</Alert>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Orders table */}
+          {filteredOrders.length === 0 ? (
+            <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, p: 5, textAlign: 'center', borderRadius: 2 }}>
+              <ShoppingCartIcon sx={{ color: T.sub, fontSize: '3rem', mb: 1.5 }} />
+              <Typography sx={{ color: T.sub, fontWeight: 600 }}>No orders found</Typography>
+              <Typography sx={{ color: T.sub, fontSize: '.82rem', mt: 0.5 }}>
+                {search || statusFilter !== 'ALL' ? 'Try adjusting your search or filter.' : 'Orders placed for this organization will appear here.'}
+              </Typography>
+            </Paper>
+          ) : (
+            <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, overflow: 'hidden' }}>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: T.card2 }}>
+                      <TableCell sx={{ color: T.sub, fontWeight: 700, width: 40 }} />
+                      {['Order #', 'Status', 'Items', 'Total', 'Date', 'Actions'].map(h => (
+                        <TableCell key={h} sx={{ color: T.sub, fontWeight: 700, fontSize: '.78rem', textTransform: 'uppercase', letterSpacing: '.04em' }}>{h}</TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredOrders.map(o => (
+                      <React.Fragment key={o.id}>
+                        <TableRow
+                          hover
+                          sx={{
+                            bgcolor: expandedOrder === o.id ? `${T.brand}08` : 'transparent',
+                            '& td': { borderBottom: expandedOrder === o.id ? 'none' : undefined },
+                          }}
+                        >
+                          <TableCell sx={{ pr: 0 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => setExpandedOrder(expandedOrder === o.id ? null : o.id)}
+                              sx={{ color: T.sub }}
+                            >
+                              {expandedOrder === o.id ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                            </IconButton>
+                          </TableCell>
+                          <TableCell sx={{ color: T.text, fontWeight: 700, fontFamily: 'monospace', fontSize: '.88rem' }}>{o.order_number}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={o.status.charAt(0) + o.status.slice(1).toLowerCase()}
+                              size="small"
+                              sx={{ bgcolor: `${statusColor(o.status)}22`, color: statusColor(o.status), fontWeight: 700, fontSize: '.74rem' }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ color: T.sub, fontSize: '.85rem' }}>{o.items?.length ?? 0} item{(o.items?.length ?? 0) !== 1 ? 's' : ''}</TableCell>
+                          <TableCell sx={{ color: T.text, fontWeight: 600 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Typography sx={{ fontSize: '.75rem', color: T.sub }}>{o.currency}</Typography>
+                              <Typography sx={{ fontWeight: 700 }}>{parseFloat(o.total_amount).toFixed(2)}</Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ color: T.sub, fontSize: '.82rem' }}>
+                            {o.created_at ? new Date(o.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip title="View Details">
+                              <IconButton size="small" onClick={() => setDetailOrder(o)} sx={{ color: T.sub, '&:hover': { color: T.brand } }}>
+                                <ReceiptIcon sx={{ fontSize: '1rem' }} />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Expandable items row */}
+                        {expandedOrder === o.id && (
+                          <TableRow>
+                            <TableCell />
+                            <TableCell colSpan={6} sx={{ pb: 2, pt: 0 }}>
+                              <Box sx={{ bgcolor: T.card2, borderRadius: 1.5, p: 1.5, mt: 0.5 }}>
+                                <Typography sx={{ color: T.sub, fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1 }}>Order Items</Typography>
+                                {(o.items?.length ?? 0) === 0 ? (
+                                  <Typography sx={{ color: T.sub, fontSize: '.82rem' }}>No items.</Typography>
+                                ) : (
+                                  <Table size="small">
+                                    <TableHead>
+                                      <TableRow>
+                                        {['Product', 'Qty', 'Unit Price', 'Subtotal'].map(h => (
+                                          <TableCell key={h} sx={{ color: T.sub, fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', border: 'none', pb: 0.5 }}>{h}</TableCell>
+                                        ))}
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {o.items.map(item => (
+                                        <TableRow key={item.id} sx={{ '& td': { border: 'none', py: 0.5 } }}>
+                                          <TableCell sx={{ color: T.text, fontSize: '.85rem', fontWeight: 600 }}>{item.product}</TableCell>
+                                          <TableCell sx={{ color: T.sub, fontSize: '.85rem' }}>×{item.quantity}</TableCell>
+                                          <TableCell sx={{ color: T.sub, fontSize: '.85rem' }}>{o.currency} {parseFloat(item.unit_price).toFixed(2)}</TableCell>
+                                          <TableCell sx={{ color: T.text, fontSize: '.85rem', fontWeight: 600 }}>{o.currency} {parseFloat(item.total_price).toFixed(2)}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                      <TableRow sx={{ '& td': { border: 'none', pt: 0.75 } }}>
+                                        <TableCell colSpan={3} sx={{ color: T.sub, fontWeight: 700, fontSize: '.8rem', textAlign: 'right' }}>Total</TableCell>
+                                        <TableCell sx={{ color: T.brand, fontWeight: 800, fontSize: '.9rem' }}>{o.currency} {parseFloat(o.total_amount).toFixed(2)}</TableCell>
+                                      </TableRow>
+                                    </TableBody>
+                                  </Table>
+                                )}
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', px: 2, py: 1, borderTop: `1px solid ${T.border}` }}>
+                <Typography sx={{ color: T.sub, fontSize: '.78rem' }}>
+                  Showing {filteredOrders.length} of {orders.length} order{orders.length !== 1 ? 's' : ''}
+                </Typography>
+              </Box>
+            </Paper>
+          )}
+        </Box>
       ) : (
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow sx={{ bgcolor: T.card2 }}>
-                {['Subscription', 'Status', 'Amount', 'Renewal'].map(h => <TableCell key={h} sx={{ color: T.sub, fontWeight: 700 }}>{h}</TableCell>)}
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        /* ═══ SUBSCRIPTIONS TAB ════════════════════════════════════════════ */
+        <Box>
+          {subscriptions.length === 0 ? (
+            <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, p: 5, textAlign: 'center', borderRadius: 2 }}>
+              <RepeatIcon sx={{ color: T.sub, fontSize: '3rem', mb: 1.5 }} />
+              <Typography sx={{ color: T.sub, fontWeight: 600 }}>No subscriptions yet</Typography>
+              <Typography sx={{ color: T.sub, fontSize: '.82rem', mt: 0.5 }}>Active and past subscriptions will appear here.</Typography>
+            </Paper>
+          ) : (
+            <Grid container spacing={2}>
               {subscriptions.map(s => (
-                <TableRow key={s.id} hover>
-                  <TableCell sx={{ color: T.text, fontWeight: 600 }}>{s.name}</TableCell>
-                  <TableCell><StatusChip status={s.status} /></TableCell>
-                  <TableCell sx={{ color: T.text }}>{s.currency} {s.amount}</TableCell>
-                  <TableCell sx={{ color: T.sub, fontSize: '.85rem' }}>{s.renewal_date?.slice(0, 10) || '—'}</TableCell>
-                </TableRow>
+                <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card sx={{
+                    bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, height: '100%',
+                    borderTop: `3px solid ${statusColor(s.status)}`,
+                  }}>
+                    <CardContent sx={{ p: 2.5 }}>
+                      {/* Header */}
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+                        <Box sx={{ flex: 1, pr: 1 }}>
+                          <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1rem', lineHeight: 1.25 }}>{s.name}</Typography>
+                          <Typography sx={{ color: T.sub, fontSize: '.78rem', mt: 0.25 }}>{s.provider}</Typography>
+                        </Box>
+                        <Chip
+                          label={s.status.charAt(0) + s.status.slice(1).toLowerCase()}
+                          size="small"
+                          sx={{ bgcolor: `${statusColor(s.status)}22`, color: statusColor(s.status), fontWeight: 700, fontSize: '.72rem', flexShrink: 0 }}
+                        />
+                      </Box>
+
+                      <Divider sx={{ borderColor: T.border, mb: 1.5 }} />
+
+                      {/* Details */}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography sx={{ color: T.sub, fontSize: '.8rem' }}>Billing</Typography>
+                          <Chip
+                            label={billingCycleLabel(s.billing_cycle)}
+                            size="small"
+                            icon={<RepeatIcon sx={{ fontSize: '.75rem !important' }} />}
+                            sx={{ bgcolor: `${T.blue}18`, color: T.blue, fontWeight: 600, fontSize: '.72rem', height: 20 }}
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography sx={{ color: T.sub, fontSize: '.8rem' }}>Amount</Typography>
+                          <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.95rem' }}>
+                            {s.currency} {parseFloat(s.amount).toFixed(2)}
+                            <Typography component="span" sx={{ color: T.sub, fontSize: '.72rem', fontWeight: 400, ml: 0.5 }}>
+                              /{s.billing_cycle === 'MONTHLY' ? 'mo' : 'yr'}
+                            </Typography>
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography sx={{ color: T.sub, fontSize: '.8rem' }}>Renewal</Typography>
+                          <Typography sx={{ color: s.renewal_date ? T.text : T.sub, fontSize: '.82rem', fontWeight: s.renewal_date ? 600 : 400 }}>
+                            {s.renewal_date ? new Date(s.renewal_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography sx={{ color: T.sub, fontSize: '.8rem' }}>Started</Typography>
+                          <Typography sx={{ color: T.sub, fontSize: '.82rem' }}>
+                            {s.created_at ? new Date(s.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            </Grid>
+          )}
+        </Box>
       )}
+
+      {/* ── Order Detail Dialog ──────────────────────────────────────────── */}
+      <Dialog
+        open={!!detailOrder}
+        onClose={() => setDetailOrder(null)}
+        maxWidth="sm" fullWidth
+        PaperProps={{ sx: { bgcolor: T.card, borderRadius: 2, border: `1px solid ${T.border}` } }}
+      >
+        {detailOrder && (
+          <>
+            <DialogTitle sx={{ pb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.1rem' }}>Order {detailOrder.order_number}</Typography>
+                  <Typography sx={{ color: T.sub, fontSize: '.78rem' }}>
+                    {detailOrder.created_at ? new Date(detailOrder.created_at).toLocaleString() : ''}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={detailOrder.status.charAt(0) + detailOrder.status.slice(1).toLowerCase()}
+                    size="small"
+                    sx={{ bgcolor: `${statusColor(detailOrder.status)}22`, color: statusColor(detailOrder.status), fontWeight: 700 }}
+                  />
+                  <IconButton size="small" onClick={() => setDetailOrder(null)} sx={{ color: T.sub }}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+            </DialogTitle>
+            <DialogContent sx={{ pt: 0 }}>
+              <Divider sx={{ borderColor: T.border, mb: 2 }} />
+              {(detailOrder.items?.length ?? 0) === 0 ? (
+                <Alert severity="info" sx={{ fontSize: '.85rem' }}>No line items for this order.</Alert>
+              ) : (
+                <Box>
+                  <Typography sx={{ color: T.sub, fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', mb: 1 }}>Line Items</Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {detailOrder.items.map(item => (
+                      <Box key={item.id} sx={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        bgcolor: T.card2, borderRadius: 1.5, px: 2, py: 1.25,
+                      }}>
+                        <Box>
+                          <Typography sx={{ color: T.text, fontWeight: 600, fontSize: '.9rem' }}>{item.product}</Typography>
+                          <Typography sx={{ color: T.sub, fontSize: '.75rem' }}>
+                            {detailOrder.currency} {parseFloat(item.unit_price).toFixed(2)} × {item.quantity}
+                          </Typography>
+                        </Box>
+                        <Typography sx={{ color: T.text, fontWeight: 700 }}>
+                          {detailOrder.currency} {parseFloat(item.total_price).toFixed(2)}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Divider sx={{ borderColor: T.border, my: 2 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 1 }}>
+                    <Typography sx={{ color: T.sub, fontWeight: 700 }}>Total</Typography>
+                    <Typography sx={{ color: T.brand, fontWeight: 800, fontSize: '1.2rem' }}>
+                      {detailOrder.currency} {parseFloat(detailOrder.total_amount).toFixed(2)}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+              <Button onClick={() => setDetailOrder(null)} sx={{ color: T.sub, textTransform: 'none' }}>Close</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }
@@ -2016,6 +2350,248 @@ function SettingsModule({ orgId }: { orgId: string }) {
   );
 }
 
+// ── Meetings Module ─────────────────────────────────────────────────────────
+function MeetingsModule({ orgId }: { orgId: string }) {
+  const upcomingMeetings = [
+    { id: '1', title: 'Engineering Standup', date: '2026-03-05', time: '09:00', duration: 30, attendees: 8, type: 'recurring' },
+    { id: '2', title: 'Product Review Q1', date: '2026-03-06', time: '14:00', duration: 60, attendees: 14, type: 'scheduled' },
+    { id: '3', title: 'Board Sync', date: '2026-03-10', time: '11:00', duration: 90, attendees: 5, type: 'scheduled' },
+  ];
+  const stats = [
+    { label: 'This Week',    value: '3',   color: T.brand },
+    { label: 'This Month',   value: '12',  color: T.blue },
+    { label: 'Avg Duration', value: '45m', color: T.green },
+    { label: 'Participants', value: '24',  color: T.purple },
+  ];
+  return (
+    <Box>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {stats.map(s => (
+          <Grid key={s.label} size={{ xs: 6, sm: 3 }}>
+            <Card sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, textAlign: 'center', p: 2 }}>
+              <Typography sx={{ color: s.color, fontWeight: 800, fontSize: '1.8rem' }}>{s.value}</Typography>
+              <Typography sx={{ color: T.sub, fontSize: '.8rem', mt: 0.25 }}>{s.label}</Typography>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '1.05rem' }}>Upcoming Meetings</Typography>
+        <Button size="small" variant="contained" startIcon={<AddIcon />}
+          sx={{ bgcolor: T.brand, textTransform: 'none', fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>
+          Schedule Meeting
+        </Button>
+      </Box>
+
+      {upcomingMeetings.map(m => (
+        <Card key={m.id} sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, mb: 1.5 }}>
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ bgcolor: `${T.brand}18`, borderRadius: 1.5, p: 1, display: 'flex', color: T.brand }}>
+                  <EventIcon sx={{ fontSize: '1.2rem' }} />
+                </Box>
+                <Box>
+                  <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.95rem' }}>{m.title}</Typography>
+                  <Typography sx={{ color: T.sub, fontSize: '.78rem' }}>
+                    {m.date} at {m.time} &nbsp;·&nbsp; {m.duration} min &nbsp;·&nbsp; {m.attendees} attendees
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Chip label={m.type} size="small"
+                  sx={{ bgcolor: m.type === 'recurring' ? `${T.blue}18` : `${T.green}18`,
+                        color: m.type === 'recurring' ? T.blue : T.green, fontSize: '.72rem' }} />
+                <Button size="small" variant="outlined"
+                  sx={{ borderColor: T.border, color: T.sub, textTransform: 'none', '&:hover': { borderColor: T.brand, color: T.brand } }}>
+                  Join
+                </Button>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+
+      <Card sx={{ bgcolor: T.card, border: `1px dashed ${T.border}`, borderRadius: 2, mt: 2 }}>
+        <CardContent sx={{ textAlign: 'center', py: 4 }}>
+          <EventIcon sx={{ color: T.sub, fontSize: '2.5rem', mb: 1, opacity: 0.4 }} />
+          <Typography sx={{ color: T.sub, fontSize: '.9rem' }}>Full calendar & meeting history coming soon.</Typography>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+}
+
+// ── Developer Hub Module ──────────────────────────────────────────────────────
+function DeveloperHubModule({ orgId }: { orgId: string }) {
+  const [tab, setTab] = useState(0);
+  const apiEndpoints = [
+    { method: 'GET',    path: '/api/v1/organizations/:id',           desc: 'Fetch organization details' },
+    { method: 'GET',    path: '/api/v1/organizations/:id/members',   desc: 'List organization members' },
+    { method: 'POST',   path: '/api/v1/organizations/:id/orders',    desc: 'Create a new order' },
+    { method: 'GET',    path: '/api/v1/organizations/:id/orders',    desc: 'List all orders' },
+    { method: 'GET',    path: '/api/v1/organizations/:id/billing-subscription/current/', desc: 'Get active subscription' },
+    { method: 'POST',   path: '/api/v1/auth/token/',                  desc: 'Obtain auth token (JWT)' },
+    { method: 'POST',   path: '/api/v1/auth/token/refresh/',          desc: 'Refresh auth token' },
+  ];
+  const sdks = [
+    { name: 'Python SDK',     lang: 'Python',     status: 'stable',      version: 'v2.4.1', color: '#3776AB' },
+    { name: 'Node.js SDK',    lang: 'JavaScript', status: 'stable',      version: 'v2.3.0', color: '#339933' },
+    { name: 'Go SDK',         lang: 'Go',         status: 'beta',        version: 'v0.9.2', color: '#00ADD8' },
+    { name: 'Ruby SDK',       lang: 'Ruby',       status: 'stable',      version: 'v1.8.0', color: '#CC342D' },
+    { name: 'Java SDK',       lang: 'Java',       status: 'coming-soon', version: '—',      color: '#007396' },
+  ];
+  const webhookEvents = [
+    'organization.updated', 'member.invited', 'member.removed',
+    'order.created', 'order.completed', 'order.cancelled',
+    'subscription.activated', 'subscription.cancelled',
+    'billing.invoice_paid', 'billing.payment_failed',
+  ];
+  const methodColor = (m: string) =>
+    m === 'GET' ? T.green : m === 'POST' ? T.brand : m === 'DELETE' ? T.red : T.yellow;
+
+  return (
+    <Box>
+      <Tabs value={tab} onChange={(_, v) => setTab(v)}
+        sx={{ mb: 3, '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: '.9rem' } }}>
+        <Tab label="REST API" />
+        <Tab label="SDKs" />
+        <Tab label="Webhooks" />
+        <Tab label="API Keys" />
+      </Tabs>
+
+      {/* ── REST API ── */}
+      {tab === 0 && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography sx={{ color: T.text, fontWeight: 700 }}>API Reference</Typography>
+            <Button size="small" variant="outlined" endIcon={<OpenInNewIcon />}
+              sx={{ borderColor: T.border, color: T.sub, textTransform: 'none', '&:hover': { borderColor: T.brand, color: T.brand } }}>
+              Full Docs
+            </Button>
+          </Box>
+          <Card sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: `${T.brand}08` }}>
+                    <TableCell sx={{ color: T.sub, fontWeight: 700, fontSize: '.75rem', textTransform: 'uppercase' }}>Method</TableCell>
+                    <TableCell sx={{ color: T.sub, fontWeight: 700, fontSize: '.75rem', textTransform: 'uppercase' }}>Endpoint</TableCell>
+                    <TableCell sx={{ color: T.sub, fontWeight: 700, fontSize: '.75rem', textTransform: 'uppercase' }}>Description</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {apiEndpoints.map((e, i) => (
+                    <TableRow key={i} hover sx={{ '&:hover': { bgcolor: `${T.brand}06` } }}>
+                      <TableCell>
+                        <Chip label={e.method} size="small"
+                          sx={{ bgcolor: `${methodColor(e.method)}20`, color: methodColor(e.method),
+                               fontWeight: 700, fontSize: '.7rem', height: 20, minWidth: 48,
+                               '& .MuiChip-label': { px: 0.75 } }} />
+                      </TableCell>
+                      <TableCell sx={{ color: T.text, fontFamily: 'monospace', fontSize: '.82rem' }}>{e.path}</TableCell>
+                      <TableCell sx={{ color: T.sub, fontSize: '.83rem' }}>{e.desc}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
+        </Box>
+      )}
+
+      {/* ── SDKs ── */}
+      {tab === 1 && (
+        <Grid container spacing={2}>
+          {sdks.map(sdk => (
+            <Grid key={sdk.name} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Card sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: sdk.color, flexShrink: 0 }} />
+                  <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.95rem' }}>{sdk.name}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Chip label={sdk.status} size="small"
+                    sx={{
+                      bgcolor: sdk.status === 'stable' ? `${T.green}18` : sdk.status === 'beta' ? `${T.yellow}18` : `${T.sub}18`,
+                      color:   sdk.status === 'stable' ? T.green   : sdk.status === 'beta' ? T.yellow   : T.sub,
+                      fontSize: '.72rem',
+                    }} />
+                  <Typography sx={{ color: T.sub, fontSize: '.8rem', fontFamily: 'monospace' }}>{sdk.version}</Typography>
+                </Box>
+                {sdk.status !== 'coming-soon' && (
+                  <Button size="small" variant="outlined" fullWidth sx={{ mt: 1.5, borderColor: T.border, color: T.sub, textTransform: 'none', '&:hover': { borderColor: T.brand, color: T.brand } }}>
+                    Install
+                  </Button>
+                )}
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* ── Webhooks ── */}
+      {tab === 2 && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography sx={{ color: T.text, fontWeight: 700 }}>Webhook Events</Typography>
+            <Button size="small" variant="contained" startIcon={<AddIcon />}
+              sx={{ bgcolor: T.brand, textTransform: 'none', fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>
+              Add Endpoint
+            </Button>
+          </Box>
+          <Grid container spacing={1}>
+            {webhookEvents.map(ev => (
+              <Grid key={ev} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 1.5, px: 2, py: 1.25,
+                             display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: T.green, flexShrink: 0 }} />
+                  <Typography sx={{ color: T.text, fontFamily: 'monospace', fontSize: '.82rem' }}>{ev}</Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
+
+      {/* ── API Keys ── */}
+      {tab === 3 && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography sx={{ color: T.text, fontWeight: 700 }}>API Keys</Typography>
+            <Button size="small" variant="contained" startIcon={<AddIcon />}
+              sx={{ bgcolor: T.brand, textTransform: 'none', fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>
+              Generate Key
+            </Button>
+          </Box>
+          {[
+            { name: 'Production Key', key: 'sk-prod-••••••••••••••', created: '2026-01-10', lastUsed: '2026-03-03', status: 'active' },
+            { name: 'Development Key', key: 'sk-dev-••••••••••••••', created: '2026-01-15', lastUsed: '2026-03-01', status: 'active' },
+          ].map((k, i) => (
+            <Card key={i} sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, mb: 1.5 }}>
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                  <Box>
+                    <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.9rem' }}>{k.name}</Typography>
+                    <Typography sx={{ color: T.sub, fontFamily: 'monospace', fontSize: '.8rem', mt: 0.25 }}>{k.key}</Typography>
+                    <Typography sx={{ color: T.sub, fontSize: '.72rem', mt: 0.25 }}>Created {k.created} &nbsp;·&nbsp; Last used {k.lastUsed}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Chip label={k.status} size="small" sx={{ bgcolor: `${T.green}18`, color: T.green, fontSize: '.72rem' }} />
+                    <IconButton size="small" sx={{ color: T.sub }}><ContentCopyIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                    <IconButton size="small" sx={{ color: T.sub, '&:hover': { color: T.red } }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 // ── Docs Module ─────────────────────────────────────────────────────────────
 const DocsModule: React.FC = () => {
   const navigate = useNavigate();
@@ -2026,519 +2602,13 @@ const DocsModule: React.FC = () => {
 };
 
 // ── Wiki Module ─────────────────────────────────────────────────────────────
-type WikiView = 'all' | 'categories' | 'pinned' | 'recent';
-
-const WikiModule: React.FC<{ orgId: string }> = ({ orgId }) => {
-  const [view,        setView]        = useState<WikiView>('all');
-  const [pages,       setPages]       = useState<WikiPageSummary[]>([]);
-  const [categories,  setCategories]  = useState<WikiCategory[]>([]);
-  const [selectedPage, setSelectedPage] = useState<WikiPage | null>(null);
-  const [versions,    setVersions]    = useState<WikiPageVersion[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [editing,     setEditing]     = useState(false);
-  const [creating,    setCreating]    = useState(false);
-  const [showVersions, setShowVersions] = useState(false);
-  const [search,      setSearch]      = useState('');
-  const [filterCat,   setFilterCat]   = useState('');
-  const [snack,       setSnack]       = useState('');
-
-  // Edit form state
-  const [editTitle,   setEditTitle]   = useState('');
-  const [editContent, setEditContent] = useState('');
-  const [editSummary, setEditSummary] = useState('');
-  const [editTags,    setEditTags]    = useState('');
-  const [editCatIds,  setEditCatIds]  = useState<string[]>([]);
-  const [editNote,    setEditNote]    = useState('');
-  const [editPinned,  setEditPinned]  = useState(false);
-
-  // Category dialog
-  const [catDialog,  setCatDialog]  = useState(false);
-  const [catName,    setCatName]    = useState('');
-  const [catColor,   setCatColor]   = useState('#3b82f6');
-  const [catDesc,    setCatDesc]    = useState('');
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [ps, cs] = await Promise.all([
-        wikiPagesApi.list(orgId, {
-          q: search || undefined,
-          category: filterCat || undefined,
-          pinned: view === 'pinned' ? true : undefined,
-        }),
-        wikiCategoriesApi.list(orgId),
-      ]);
-      setPages(ps);
-      setCategories(cs);
-    } catch { /* silent */ }
-    setLoading(false);
-  }, [orgId, search, filterCat, view]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const openPage = async (p: WikiPageSummary) => {
-    try {
-      const full = await wikiPagesApi.get(orgId, p.id);
-      setSelectedPage(full);
-      setEditing(false);
-      setCreating(false);
-      setShowVersions(false);
-    } catch { setSnack('Failed to load page'); }
-  };
-
-  const openEditor = (page?: WikiPage) => {
-    if (page) {
-      setEditTitle(page.title);
-      setEditContent(page.content);
-      setEditSummary(page.summary);
-      setEditTags(page.tags.join(', '));
-      setEditCatIds(page.categories.map(c => c.id));
-      setEditPinned(page.is_pinned);
-      setEditing(true);
-      setCreating(false);
-    } else {
-      setEditTitle(''); setEditContent(''); setEditSummary('');
-      setEditTags(''); setEditCatIds([]); setEditPinned(false); setEditNote('');
-      setCreating(true);
-      setEditing(false);
-      setSelectedPage(null);
-    }
-  };
-
-  const save = async () => {
-    const payload = {
-      title: editTitle,
-      content: editContent,
-      summary: editSummary,
-      is_pinned: editPinned,
-      tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
-      category_ids: editCatIds,
-      version_note: editNote,
-    };
-    try {
-      if (creating) {
-        const p = await wikiPagesApi.create(orgId, payload);
-        const full = await wikiPagesApi.get(orgId, p.id);
-        setSelectedPage(full);
-        setSnack('Page created');
-      } else if (selectedPage) {
-        const p = await wikiPagesApi.update(orgId, selectedPage.id, payload);
-        const full = await wikiPagesApi.get(orgId, p.id);
-        setSelectedPage(full);
-        setSnack('Page saved');
-      }
-      setEditing(false);
-      setCreating(false);
-      load();
-    } catch { setSnack('Failed to save page'); }
-  };
-
-  const deletePage = async (id: string) => {
-    if (!window.confirm('Delete this page? This cannot be undone.')) return;
-    try {
-      await wikiPagesApi.delete(orgId, id);
-      setSelectedPage(null);
-      setSnack('Page deleted');
-      load();
-    } catch { setSnack('Failed to delete page'); }
-  };
-
-  const loadVersions = async (pageId: string) => {
-    const vs = await wikiPagesApi.versions(orgId, pageId);
-    setVersions(vs);
-    setShowVersions(true);
-  };
-
-  const restoreVersion = async (verId: string) => {
-    if (!selectedPage) return;
-    if (!window.confirm('Restore this version? Current content will be saved as a version.')) return;
-    try {
-      const p = await wikiPagesApi.restore(orgId, selectedPage.id, verId);
-      const full = await wikiPagesApi.get(orgId, p.id);
-      setSelectedPage(full);
-      setShowVersions(false);
-      setSnack('Version restored');
-      load();
-    } catch { setSnack('Failed to restore version'); }
-  };
-
-  const createCategory = async () => {
-    try {
-      await wikiCategoriesApi.create(orgId, { name: catName, color: catColor, description: catDesc });
-      setSnack('Category created');
-      setCatDialog(false); setCatName(''); setCatColor('#3b82f6'); setCatDesc('');
-      load();
-    } catch { setSnack('Failed to create category'); }
-  };
-
-  const deleteCategory = async (id: string) => {
-    if (!window.confirm('Delete this category?')) return;
-    try {
-      await wikiCategoriesApi.delete(orgId, id);
-      setSnack('Category deleted');
-      load();
-    } catch { setSnack('Failed to delete category'); }
-  };
-
-  const filteredPages = pages.filter(p =>
-    !search || p.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const NAV: Array<{ key: WikiView; label: string; icon: React.ReactNode }> = [
-    { key: 'all',        label: 'All Pages',        icon: <MenuBookIcon sx={{ fontSize: '1rem' }} /> },
-    { key: 'pinned',     label: 'Pinned',           icon: <PushPinIcon sx={{ fontSize: '1rem' }} /> },
-    { key: 'recent',     label: 'Recent',           icon: <HistoryEduIcon sx={{ fontSize: '1rem' }} /> },
-    { key: 'categories', label: 'Categories',       icon: <LabelIcon sx={{ fontSize: '1rem' }} /> },
-  ];
-
-  return (
-    <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 280px)', minHeight: 500 }}>
-
-      {/* ── Left: page list ──────────────────────────────────────────── */}
-      <Box sx={{
-        width: 260, flexShrink: 0,
-        bgcolor: T.card2, border: `1px solid ${T.border}`, borderRadius: 2,
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      }}>
-        {/* Wiki nav */}
-        <Box sx={{ p: 1.5, borderBottom: `1px solid ${T.border}` }}>
-          <Button
-            fullWidth variant="contained" size="small" startIcon={<AddIcon />}
-            onClick={() => openEditor()}
-            sx={{ bgcolor: T.brand, fontWeight: 700, mb: 1.5, '&:hover': { bgcolor: T.brand } }}
-          >
-            New Page
-          </Button>
-          <TextField
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search pages…" size="small" fullWidth
-            InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: T.sub, fontSize: '1rem' }} /> }}
-            sx={{ '& .MuiOutlinedInput-root': { fontSize: '.82rem' } }}
-          />
-        </Box>
-
-        {/* Nav items */}
-        <Box sx={{ px: 1, py: 0.75, borderBottom: `1px solid ${T.border}` }}>
-          {NAV.map(n => (
-            <Box key={n.key} onClick={() => { setView(n.key); setSelectedPage(null); setEditing(false); setCreating(false); setShowVersions(false); }}
-              sx={{
-                display: 'flex', alignItems: 'center', gap: 1,
-                px: 1.5, py: 0.75, borderRadius: 1.5, cursor: 'pointer', mb: 0.25,
-                bgcolor: view === n.key ? `${T.brand}20` : 'transparent',
-                '&:hover': { bgcolor: `${T.brand}10` },
-              }}
-            >
-              <Box sx={{ color: view === n.key ? T.brand : T.sub, display: 'flex' }}>{n.icon}</Box>
-              <Typography sx={{ color: view === n.key ? T.text : T.sub, fontSize: '.83rem', fontWeight: view === n.key ? 600 : 400 }}>
-                {n.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-
-        {/* Category filter */}
-        {categories.length > 0 && view !== 'categories' && (
-          <Box sx={{ px: 1.5, py: 1, borderBottom: `1px solid ${T.border}` }}>
-            <Typography sx={{ color: T.sub, fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', mb: 1, letterSpacing: '.06em' }}>
-              Filter by Category
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              <Chip label="All" size="small"
-                onClick={() => setFilterCat('')}
-                sx={{ bgcolor: !filterCat ? T.brand : `${T.brand}15`, color: !filterCat ? '#fff' : T.sub, fontSize: '.72rem', height: 22 }}
-              />
-              {categories.map(c => (
-                <Chip key={c.id} label={c.name} size="small"
-                  onClick={() => setFilterCat(filterCat === c.id ? '' : c.id)}
-                  sx={{ bgcolor: filterCat === c.id ? c.color : `${c.color}20`, color: filterCat === c.id ? '#fff' : T.sub, fontSize: '.72rem', height: 22 }}
-                />
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        {/* Page list */}
-        <Box sx={{ flex: 1, overflowY: 'auto', py: 0.5 }}>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 3 }}><CircularProgress size={24} sx={{ color: T.brand }} /></Box>
-          ) : filteredPages.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <MenuBookIcon sx={{ color: T.sub, fontSize: '2rem', mb: 1 }} />
-              <Typography sx={{ color: T.sub, fontSize: '.82rem' }}>No pages yet</Typography>
-            </Box>
-          ) : (
-            filteredPages.map(p => (
-              <Box key={p.id} onClick={() => openPage(p)} sx={{
-                px: 2, py: 1.25, cursor: 'pointer',
-                bgcolor: selectedPage?.id === p.id ? `${T.brand}12` : 'transparent',
-                borderLeft: `3px solid ${selectedPage?.id === p.id ? T.brand : 'transparent'}`,
-                '&:hover': { bgcolor: `${T.brand}08` },
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
-                  {p.is_pinned && <PushPinIcon sx={{ fontSize: '.75rem', color: T.brand }} />}
-                  <Typography sx={{ color: T.text, fontSize: '.85rem', fontWeight: 600, lineHeight: 1.25 }}>
-                    {p.title}
-                  </Typography>
-                </Box>
-                {p.summary && (
-                  <Typography sx={{ color: T.sub, fontSize: '.72rem', lineHeight: 1.3,
-                    overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-                    WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                    {p.summary}
-                  </Typography>
-                )}
-                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
-                  {p.categories.slice(0, 2).map(c => (
-                    <Chip key={c.id} label={c.name} size="small"
-                      sx={{ bgcolor: `${c.color}20`, color: c.color, fontSize: '.65rem', height: 18,
-                        '& .MuiChip-label': { px: 0.75 } }} />
-                  ))}
-                </Box>
-                <Typography sx={{ color: T.sub, fontSize: '.68rem', mt: 0.5 }}>
-                  {p.updated_by_name && `Updated by ${p.updated_by_name} · `}
-                  {new Date(p.updated_at).toLocaleDateString()}
-                </Typography>
-              </Box>
-            ))
-          )}
-        </Box>
-      </Box>
-
-      {/* ── Right: content area ──────────────────────────────────────── */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Categories view */}
-        {view === 'categories' && !creating && !editing && (
-          <Box sx={{ flex: 1, overflow: 'auto' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '1.1rem' }}>Categories</Typography>
-              <Button size="small" variant="outlined" startIcon={<AddIcon />}
-                onClick={() => setCatDialog(true)}
-                sx={{ borderColor: T.border, color: T.sub, '&:hover': { borderColor: T.brand, color: T.brand } }}>
-                New Category
-              </Button>
-            </Box>
-            {categories.length === 0 ? (
-              <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, p: 4, textAlign: 'center', borderRadius: 2 }}>
-                <LabelIcon sx={{ color: T.sub, fontSize: '2.5rem', mb: 1 }} />
-                <Typography sx={{ color: T.sub }}>No categories yet. Create one to organise your pages.</Typography>
-              </Paper>
-            ) : (
-              <Grid container spacing={2}>
-                {categories.map(c => (
-                  <Grid key={c.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Card sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2 }}>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: c.color }} />
-                            <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '.95rem' }}>{c.name}</Typography>
-                          </Box>
-                          <IconButton size="small" onClick={() => deleteCategory(c.id)} sx={{ color: T.sub, '&:hover': { color: T.red } }}>
-                            <DeleteIcon sx={{ fontSize: '1rem' }} />
-                          </IconButton>
-                        </Box>
-                        {c.description && <Typography sx={{ color: T.sub, fontSize: '.82rem', mb: 1 }}>{c.description}</Typography>}
-                        <Chip label={`${c.page_count} page${c.page_count !== 1 ? 's' : ''}`} size="small"
-                          sx={{ bgcolor: `${c.color}20`, color: c.color, fontSize: '.72rem' }} />
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Box>
-        )}
-
-        {/* No page selected and not creating/editing */}
-        {!selectedPage && !creating && !editing && view !== 'categories' && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <MenuBookIcon sx={{ color: `${T.sub}50`, fontSize: '5rem', mb: 2 }} />
-            <Typography sx={{ color: T.sub, fontWeight: 600, fontSize: '1.1rem', mb: 1 }}>Select a page to view</Typography>
-            <Typography sx={{ color: T.sub, fontSize: '.85rem', mb: 3 }}>Or create your first wiki page for this organization.</Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => openEditor()}
-              sx={{ bgcolor: T.brand, fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>
-              Create Page
-            </Button>
-          </Box>
-        )}
-
-        {/* Editor (create or edit) */}
-        {(creating || editing) && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5, borderBottom: `1px solid ${T.border}` }}>
-              <Typography sx={{ color: T.text, fontWeight: 700 }}>{creating ? 'New Page' : `Editing: ${selectedPage?.title}`}</Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" variant="outlined" onClick={() => { setCreating(false); setEditing(false); }}
-                  sx={{ borderColor: T.border, color: T.sub }}>Cancel</Button>
-                <Button size="small" variant="contained" onClick={save}
-                  sx={{ bgcolor: T.brand, fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>Save</Button>
-              </Box>
-            </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField label="Title" value={editTitle} onChange={e => setEditTitle(e.target.value)} fullWidth size="small" />
-              <TextField label="Summary (short description)" value={editSummary} onChange={e => setEditSummary(e.target.value)} fullWidth size="small" multiline rows={2} />
-              <TextField
-                label="Content (Markdown)" value={editContent}
-                onChange={e => setEditContent(e.target.value)} fullWidth multiline rows={14}
-                sx={{ '& .MuiInputBase-input': { fontFamily: 'monospace', fontSize: '.85rem' } }}
-              />
-              <TextField label="Tags (comma separated)" value={editTags} onChange={e => setEditTags(e.target.value)} fullWidth size="small" />
-              {categories.length > 0 && (
-                <FormControl size="small" fullWidth>
-                  <InputLabel>Categories</InputLabel>
-                  <Select
-                    multiple value={editCatIds}
-                    onChange={e => setEditCatIds(e.target.value as string[])}
-                    renderValue={selected => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map(id => {
-                          const cat = categories.find(c => c.id === id);
-                          return cat ? <Chip key={id} label={cat.name} size="small" sx={{ height: 20 }} /> : null;
-                        })}
-                      </Box>
-                    )}
-                    label="Categories"
-                  >
-                    {categories.map(c => (
-                      <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <FormControlLabel control={<Switch checked={editPinned} onChange={e => setEditPinned(e.target.checked)} size="small" />} label={<Typography sx={{ fontSize: '.85rem', color: T.sub }}>Pinned</Typography>} />
-                <TextField label="Version note" value={editNote} onChange={e => setEditNote(e.target.value)} size="small" sx={{ flex: 1 }} />
-              </Box>
-            </Box>
-          </Box>
-        )}
-
-        {/* Page viewer */}
-        {selectedPage && !creating && !editing && !showVersions && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2 }}>
-            <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  {selectedPage.is_pinned && <PushPinIcon sx={{ color: T.brand, fontSize: '.9rem' }} />}
-                  <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.3rem' }}>{selectedPage.title}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {selectedPage.categories.map(c => (
-                    <Chip key={c.id} label={c.name} size="small"
-                      sx={{ bgcolor: `${c.color}20`, color: c.color, fontSize: '.72rem', height: 20 }} />
-                  ))}
-                  {selectedPage.tags.map(t => (
-                    <Chip key={t} label={`#${t}`} size="small"
-                      sx={{ bgcolor: `${T.brand}12`, color: T.brand, fontSize: '.72rem', height: 20 }} />
-                  ))}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
-                    <VisibilityIcon sx={{ fontSize: '.8rem', color: T.sub }} />
-                    <Typography sx={{ color: T.sub, fontSize: '.75rem' }}>{selectedPage.view_count} views</Typography>
-                  </Box>
-                </Box>
-                <Typography sx={{ color: T.sub, fontSize: '.72rem', mt: 0.5 }}>
-                  Created by {selectedPage.created_by_name} · Updated by {selectedPage.updated_by_name} · {new Date(selectedPage.updated_at).toLocaleString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" startIcon={<HistoryEduIcon />} onClick={() => loadVersions(selectedPage.id)}
-                  sx={{ color: T.sub, '&:hover': { color: T.brand } }}>History</Button>
-                <Button size="small" startIcon={<EditIcon />} onClick={() => openEditor(selectedPage)}
-                  sx={{ color: T.sub, '&:hover': { color: T.brand } }}>Edit</Button>
-                <IconButton size="small" onClick={() => deletePage(selectedPage.id)} sx={{ color: T.sub, '&:hover': { color: T.red } }}>
-                  <DeleteIcon sx={{ fontSize: '1rem' }} />
-                </IconButton>
-              </Box>
-            </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', p: 2.5 }}>
-              {selectedPage.summary && (
-                <Alert severity="info" sx={{ mb: 2, fontSize: '.85rem', bgcolor: `${T.blue}10`, color: T.text, '& .MuiAlert-icon': { color: T.blue } }}>
-                  {selectedPage.summary}
-                </Alert>
-              )}
-              {selectedPage.content ? (
-                <Box component="pre" sx={{
-                  whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                  fontFamily: '"IBM Plex Mono", monospace', fontSize: '.87rem',
-                  color: T.text, lineHeight: 1.75, m: 0,
-                }}>
-                  {selectedPage.content}
-                </Box>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Typography sx={{ color: T.sub }}>No content yet.</Typography>
-                  <Button size="small" startIcon={<EditIcon />} onClick={() => openEditor(selectedPage)}
-                    sx={{ color: T.brand, mt: 1 }}>Add content</Button>
-                </Box>
-              )}
-            </Box>
-          </Box>
-        )}
-
-        {/* Version history */}
-        {selectedPage && showVersions && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5, borderBottom: `1px solid ${T.border}` }}>
-              <Typography sx={{ color: T.text, fontWeight: 700 }}>Version History — {selectedPage.title}</Typography>
-              <Button size="small" onClick={() => setShowVersions(false)} sx={{ color: T.sub }}>Back to Page</Button>
-            </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto' }}>
-              {versions.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Typography sx={{ color: T.sub }}>No version history for this page yet.</Typography>
-                </Box>
-              ) : (
-                versions.map((v, i) => (
-                  <Box key={v.id} sx={{
-                    px: 2.5, py: 1.75, borderBottom: `1px solid ${T.border}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    '&:hover': { bgcolor: `${T.brand}06` },
-                  }}>
-                    <Box>
-                      <Typography sx={{ color: T.text, fontWeight: 600, fontSize: '.9rem' }}>
-                        {i === 0 ? '(most recent save)' : v.version_note || v.title}
-                      </Typography>
-                      <Typography sx={{ color: T.sub, fontSize: '.75rem' }}>
-                        {v.edited_by_name} · {new Date(v.edited_at).toLocaleString()}
-                      </Typography>
-                    </Box>
-                    <Button size="small" variant="outlined" onClick={() => restoreVersion(v.id)}
-                      sx={{ borderColor: T.border, color: T.sub, '&:hover': { borderColor: T.brand, color: T.brand } }}>
-                      Restore
-                    </Button>
-                  </Box>
-                ))
-              )}
-            </Box>
-          </Box>
-        )}
-      </Box>
-
-      {/* Category create dialog */}
-      <Dialog open={catDialog} onClose={() => setCatDialog(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: T.card, borderRadius: 2, border: `1px solid ${T.border}` } }}>
-        <DialogTitle sx={{ color: T.text, fontWeight: 700 }}>New Category</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
-          <TextField label="Name" value={catName} onChange={e => setCatName(e.target.value)} fullWidth size="small" />
-          <TextField label="Description" value={catDesc} onChange={e => setCatDesc(e.target.value)} fullWidth size="small" multiline rows={2} />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography sx={{ color: T.sub, fontSize: '.85rem' }}>Color:</Typography>
-            <input type="color" value={catColor} onChange={e => setCatColor(e.target.value)}
-              style={{ width: 36, height: 36, border: 'none', padding: 0, cursor: 'pointer', background: 'none' }} />
-            <Box sx={{ width: 18, height: 18, bgcolor: catColor, borderRadius: '50%', flexShrink: 0 }} />
-            <Typography sx={{ color: T.text, fontSize: '.85rem' }}>{catColor}</Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setCatDialog(false)} sx={{ color: T.sub }}>Cancel</Button>
-          <Button onClick={createCategory} variant="contained" disabled={!catName.trim()}
-            sx={{ bgcolor: T.brand, fontWeight: 700, '&:hover': { bgcolor: T.brand } }}>Create</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack('')} message={snack} />
-    </Box>
-  );
+// Redirects to the standalone full-screen wiki page (like DocsModule → /docs)
+const WikiModule: React.FC<{ orgId: string; orgSlug?: string }> = ({ orgSlug }) => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate(`/enterprise/${orgSlug}/wiki`, { replace: true });
+  }, [navigate, orgSlug]);
+  return null;
 };
 
 // ── Main page ──────────────────────────────────────────────────────────────
@@ -2622,35 +2692,42 @@ const BusinessWorkspacePage: React.FC = () => {
 
           {/* Module nav */}
           <Box sx={{ py: 1.5, flex: 1 }}>
-            <Typography sx={{ color: T.sub, fontSize: '.68rem', fontWeight: 700, textTransform: 'uppercase', px: 2, mb: 1.5, letterSpacing: '.08em' }}>
-              Modules
-            </Typography>
-            {MODULES.map(m => {
-              const isActive = module === m.key;
+            {SIDEBAR_GROUPS.map((grp, gi) => {
+              const grpModules = grp.keys.map(k => MODULES.find(m => m.key === k)!).filter(Boolean);
               return (
-                <Box
-                  key={m.key}
-                  onClick={() => goToModule(m)}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.5,
-                    px: 2, py: 1, mx: 1, borderRadius: 1.5, cursor: 'pointer', mb: 0.25,
-                    bgcolor: isActive ? `${T.brand}20` : 'transparent',
-                    '&:hover': { bgcolor: isActive ? `${T.brand}20` : `${T.brand}08` },
-                    transition: 'background .15s',
-                  }}
-                >
-                  <Box sx={{ color: isActive ? T.brand : T.sub, fontSize: '1.05rem', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    {m.icon}
-                  </Box>
-                  <Typography sx={{ color: isActive ? T.text : T.sub, fontWeight: isActive ? 600 : 400, fontSize: '.85rem', flex: 1 }}>
-                    {m.label}
+                <Box key={grp.label} sx={{ mb: gi < SIDEBAR_GROUPS.length - 1 ? 1.5 : 0 }}>
+                  <Typography sx={{ color: T.sub, fontSize: '.65rem', fontWeight: 700, textTransform: 'uppercase', px: 2, mb: 0.5, letterSpacing: '.08em' }}>
+                    {grp.label}
                   </Typography>
-                  {m.externalLink && (
-                    <OpenInNewIcon sx={{ fontSize: '.75rem', color: T.sub, opacity: .5 }} />
-                  )}
-                  {isActive && !m.externalLink && (
-                    <Box sx={{ width: 3, height: 18, bgcolor: T.brand, borderRadius: 4, flexShrink: 0 }} />
-                  )}
+                  {grpModules.map(m => {
+                    const isActive = module === m.key;
+                    return (
+                      <Box
+                        key={m.key}
+                        onClick={() => goToModule(m)}
+                        sx={{
+                          display: 'flex', alignItems: 'center', gap: 1.5,
+                          px: 2, py: 0.85, mx: 1, borderRadius: 1.5, cursor: 'pointer', mb: 0.25,
+                          bgcolor: isActive ? `${T.brand}20` : 'transparent',
+                          '&:hover': { bgcolor: isActive ? `${T.brand}20` : `${T.brand}08` },
+                          transition: 'background .15s',
+                        }}
+                      >
+                        <Box sx={{ color: isActive ? T.brand : T.sub, fontSize: '1rem', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                          {m.icon}
+                        </Box>
+                        <Typography sx={{ color: isActive ? T.text : T.sub, fontWeight: isActive ? 600 : 400, fontSize: '.85rem', flex: 1 }}>
+                          {m.label}
+                        </Typography>
+                        {m.externalLink && (
+                          <OpenInNewIcon sx={{ fontSize: '.75rem', color: T.sub, opacity: .5 }} />
+                        )}
+                        {isActive && !m.externalLink && (
+                          <Box sx={{ width: 3, height: 18, bgcolor: T.brand, borderRadius: 4, flexShrink: 0 }} />
+                        )}
+                      </Box>
+                    );
+                  })}
                 </Box>
               );
             })}
@@ -2747,8 +2824,10 @@ const BusinessWorkspacePage: React.FC = () => {
             {module === 'orders'       && <OrdersModule orgId={org.id} />}
             {module === 'audit'        && <AuditModule orgId={org.id} />}
             {module === 'settings'     && <SettingsModule orgId={org.id} />}
-            {module === 'wiki'         && <WikiModule orgId={org.id} />}
+            {module === 'wiki'         && <WikiModule orgId={org.id} orgSlug={orgSlug} />}
             {module === 'docs'         && <DocsModule />}
+            {module === 'meetings'     && <MeetingsModule orgId={org.id} />}
+            {module === 'developer-hub' && <DeveloperHubModule orgId={org.id} />}
           </Box>
         </Box>
       </Box>

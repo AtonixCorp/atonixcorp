@@ -38,6 +38,8 @@ def _wver_id():  return _uid('wver')
 def _intc_id():  return _uid('intc')
 def _intl_id():  return _uid('intl')
 def _intwh_id(): return _uid('intwh')
+def _order_id(): return _uid('ord')
+def _oitem_id(): return _uid('oitm')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -815,6 +817,228 @@ class IntegrationLog(models.Model):
 
     def __str__(self):
         return f'[{self.level}] {self.provider}/{self.event_type} @ {self.timestamp:%Y-%m-%d %H:%M}'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ORDERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class OrgOrder(TimeStampedModel):
+    """A purchase order placed against this organization."""
+
+    class Status(models.TextChoices):
+        PENDING   = 'PENDING',   'Pending'
+        CONFIRMED = 'CONFIRMED', 'Confirmed'
+        COMPLETED = 'COMPLETED', 'Completed'
+        CANCELLED = 'CANCELLED', 'Cancelled'
+
+    id           = models.CharField(max_length=36, primary_key=True,
+                                    default=_order_id, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE,
+                                     related_name='orders')
+    order_number = models.CharField(max_length=64, unique=True)
+    status       = models.CharField(max_length=20, choices=Status.choices,
+                                    default=Status.PENDING)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    currency     = models.CharField(max_length=8, default='USD')
+    notes        = models.TextField(blank=True, default='')
+
+    class Meta:
+        verbose_name = 'Org Order'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.organization.slug} / {self.order_number} [{self.status}]'
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            import uuid
+            self.order_number = f'ORD-{uuid.uuid4().hex[:8].upper()}'
+        super().save(*args, **kwargs)
+
+
+class OrderItem(TimeStampedModel):
+    """A single line item within an OrgOrder."""
+
+    id          = models.CharField(max_length=36, primary_key=True,
+                                   default=_oitem_id, editable=False)
+    order       = models.ForeignKey(OrgOrder, on_delete=models.CASCADE,
+                                    related_name='items')
+    product     = models.CharField(max_length=255)
+    quantity    = models.PositiveIntegerField(default=1)
+    unit_price  = models.DecimalField(max_digits=12, decimal_places=2)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        verbose_name = 'Order Item'
+        ordering = ['product']
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.unit_price * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.product} x{self.quantity}'
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MEETING HUB
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _mtg_id():   return _uid('mtg')
+def _mtp_id():   return _uid('mtp')
+def _mtn_id():   return _uid('mtn')
+def _ann_id():   return _uid('ann')
+
+
+class Meeting(TimeStampedModel):
+    """An org-scoped meeting event."""
+
+    class Status(models.TextChoices):
+        SCHEDULED  = 'SCHEDULED',  'Scheduled'
+        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+        COMPLETED  = 'COMPLETED',  'Completed'
+        CANCELLED  = 'CANCELLED',  'Cancelled'
+
+    class MeetingType(models.TextChoices):
+        SCHEDULED  = 'scheduled',  'Scheduled'
+        RECURRING  = 'recurring',  'Recurring'
+        INSTANT    = 'instant',    'Instant'
+        DEPARTMENT = 'department', 'Department'
+
+    id              = models.CharField(max_length=36, primary_key=True, default=_mtg_id, editable=False)
+    organization    = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
+    department      = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
+    created_by      = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_meetings')
+    title           = models.CharField(max_length=255)
+    description     = models.TextField(blank=True, default='')
+    agenda          = models.TextField(blank=True, default='')
+    start_time      = models.DateTimeField()
+    end_time        = models.DateTimeField()
+    meeting_type    = models.CharField(max_length=20, choices=MeetingType.choices, default=MeetingType.SCHEDULED)
+    status          = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
+    video_room_id   = models.CharField(max_length=255, blank=True, default='')
+    video_provider  = models.CharField(max_length=50, blank=True, default='livekit',
+                                       help_text='livekit | twilio | daily | webrtc')
+    video_join_url  = models.URLField(blank=True, default='')
+    location        = models.CharField(max_length=255, blank=True, default='')
+    is_recurring    = models.BooleanField(default=False)
+    recurrence_rule = models.CharField(max_length=255, blank=True, default='',
+                                       help_text='RRULE string e.g. FREQ=WEEKLY;BYDAY=MO')
+    recording_url   = models.URLField(blank=True, default='')
+    notes           = models.TextField(blank=True, default='')
+    max_participants = models.PositiveIntegerField(default=0, help_text='0 = unlimited')
+
+    class Meta:
+        verbose_name = 'Meeting'
+        ordering = ['start_time']
+        indexes = [
+            models.Index(fields=['organization', 'start_time']),
+            models.Index(fields=['organization', 'status']),
+        ]
+
+    @property
+    def duration_minutes(self):
+        if self.end_time and self.start_time:
+            return int((self.end_time - self.start_time).total_seconds() / 60)
+        return 0
+
+    def __str__(self):
+        return f'{self.title} ({self.start_time:%Y-%m-%d %H:%M})'
+
+
+class MeetingParticipant(TimeStampedModel):
+    """Junction between a Meeting and an org member."""
+
+    class Role(models.TextChoices):
+        HOST      = 'host',     'Host'
+        CO_HOST   = 'co_host',  'Co-host'
+        ATTENDEE  = 'attendee', 'Attendee'
+
+    class InviteStatus(models.TextChoices):
+        INVITED   = 'invited',  'Invited'
+        ACCEPTED  = 'accepted', 'Accepted'
+        DECLINED  = 'declined', 'Declined'
+        TENTATIVE = 'tentative','Tentative'
+        ATTENDED  = 'attended', 'Attended'
+        NO_SHOW   = 'no_show',  'No Show'
+
+    id             = models.CharField(max_length=36, primary_key=True, default=_mtp_id, editable=False)
+    meeting        = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='participants')
+    user           = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_participations')
+    member         = models.ForeignKey('OrganizationMember', on_delete=models.SET_NULL, null=True, blank=True, related_name='meeting_participations')
+    email          = models.EmailField(blank=True, default='', help_text='For external invitees')
+    name           = models.CharField(max_length=255, blank=True, default='')
+    role           = models.CharField(max_length=20, choices=Role.choices, default=Role.ATTENDEE)
+    invite_status  = models.CharField(max_length=20, choices=InviteStatus.choices, default=InviteStatus.INVITED)
+    joined_at      = models.DateTimeField(null=True, blank=True)
+    left_at        = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Meeting Participant'
+        unique_together = [('meeting', 'user'), ('meeting', 'email')]
+        ordering = ['role', 'name']
+
+    def __str__(self):
+        return f'{self.meeting.title} → {self.name or self.email}'
+
+
+class MeetingNotification(TimeStampedModel):
+    """In-app notifications for meeting events."""
+
+    class NotifType(models.TextChoices):
+        INVITE      = 'invite',       'Meeting Invite'
+        REMINDER    = 'reminder',     'Reminder'
+        UPDATED     = 'updated',      'Meeting Updated'
+        CANCELLED   = 'cancelled',    'Meeting Cancelled'
+        STARTED     = 'started',      'Meeting Started'
+        RECORDING   = 'recording',    'Recording Ready'
+        NOTES       = 'notes',        'Notes Added'
+
+    id          = models.CharField(max_length=36, primary_key=True, default=_mtn_id, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meeting_notifications')
+    meeting     = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='notifications')
+    notif_type  = models.CharField(max_length=30, choices=NotifType.choices)
+    message     = models.TextField(blank=True, default='')
+    is_read     = models.BooleanField(default=False, db_index=True)
+    sent_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f'{self.user} / {self.notif_type} / {self.meeting.title}'
+
+
+class Announcement(TimeStampedModel):
+    """Org-wide or department-scoped announcements shown in the Meeting Hub."""
+
+    class Priority(models.TextChoices):
+        LOW    = 'low',    'Low'
+        NORMAL = 'normal', 'Normal'
+        HIGH   = 'high',   'High'
+        URGENT = 'urgent', 'Urgent'
+
+    id           = models.CharField(max_length=36, primary_key=True, default=_ann_id, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='announcements')
+    department   = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='announcements',
+                                     help_text='Null = org-wide')
+    created_by   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_announcements')
+    title        = models.CharField(max_length=255)
+    message      = models.TextField()
+    priority     = models.CharField(max_length=10, choices=Priority.choices, default=Priority.NORMAL)
+    is_pinned    = models.BooleanField(default=False)
+    expires_at   = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Announcement'
+        ordering = ['-is_pinned', '-created_at']
+        indexes = [
+            models.Index(fields=['organization', '-created_at']),
+        ]
+
+    def __str__(self):
+        return self.title
 
 
 class IntegrationWebhookEvent(models.Model):

@@ -11,6 +11,7 @@ from .models import (
     EnterpriseAuditLog,
     WikiCategory, WikiPage, WikiPageVersion,
     IntegrationConnection, IntegrationLog, IntegrationWebhookEvent,
+    OrgOrder, OrderItem,
 )
 
 
@@ -299,6 +300,53 @@ class EnterpriseInvoiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'organization', 'created_at', 'updated_at']
 
 
+# ── Orders ───────────────────────────────────────────────────────────────────
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = OrderItem
+        fields = ['id', 'product', 'quantity', 'unit_price', 'total_price']
+        read_only_fields = ['id', 'total_price']
+
+
+class OrgOrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = OrgOrder
+        fields = [
+            'id', 'order_number', 'status', 'total_amount', 'currency',
+            'notes', 'items', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'order_number', 'created_at', 'updated_at']
+
+
+class OrgOrderWriteSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+
+    class Meta:
+        model  = OrgOrder
+        fields = ['status', 'total_amount', 'currency', 'notes', 'items']
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items', [])
+        order = OrgOrder.objects.create(**validated_data)
+        for item in items_data:
+            OrderItem.objects.create(order=order, **item)
+        return order
+
+    def update(self, instance, validated_data):
+        items_data = validated_data.pop('items', None)
+        for attr, val in validated_data.items():
+            setattr(instance, attr, val)
+        instance.save()
+        if items_data is not None:
+            instance.items.all().delete()
+            for item in items_data:
+                OrderItem.objects.create(order=instance, **item)
+        return instance
+
+
 # ── Audit Log ────────────────────────────────────────────────────────────────
 
 class EnterpriseAuditLogSerializer(serializers.ModelSerializer):
@@ -466,3 +514,110 @@ class IntegrationWebhookEventSerializer(serializers.ModelSerializer):
             'received_at',
         ]
         read_only_fields = fields
+
+
+# ── Meeting Hub ───────────────────────────────────────────────────────────────
+
+from .models import Meeting, MeetingParticipant, MeetingNotification, Announcement
+
+
+class MeetingParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = MeetingParticipant
+        fields = [
+            'id', 'meeting', 'user', 'member', 'email', 'name',
+            'role', 'invite_status', 'joined_at', 'left_at',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'meeting', 'joined_at', 'left_at', 'created_at']
+
+
+class MeetingSerializer(serializers.ModelSerializer):
+    participants        = MeetingParticipantSerializer(many=True, read_only=True)
+    participant_count   = serializers.SerializerMethodField()
+    duration_minutes    = serializers.ReadOnlyField()
+    created_by_name     = serializers.SerializerMethodField()
+    department_name     = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Meeting
+        fields = [
+            'id', 'organization', 'department', 'department_name',
+            'created_by', 'created_by_name',
+            'title', 'description', 'agenda',
+            'start_time', 'end_time', 'duration_minutes',
+            'meeting_type', 'status',
+            'video_room_id', 'video_provider', 'video_join_url',
+            'location', 'is_recurring', 'recurrence_rule',
+            'recording_url', 'notes', 'max_participants',
+            'participants', 'participant_count',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'id', 'organization', 'created_by', 'duration_minutes',
+            'video_room_id', 'recording_url', 'created_at', 'updated_at',
+        ]
+
+    def get_participant_count(self, obj):
+        return obj.participants.count()
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.get_full_name() or obj.created_by.username
+        return ''
+
+    def get_department_name(self, obj):
+        return obj.department.name if obj.department else ''
+
+
+class MeetingWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Meeting
+        fields = [
+            'title', 'description', 'agenda',
+            'start_time', 'end_time', 'meeting_type', 'status',
+            'video_provider', 'video_join_url', 'location',
+            'is_recurring', 'recurrence_rule', 'notes', 'max_participants',
+            'department',
+        ]
+
+
+class MeetingNotificationSerializer(serializers.ModelSerializer):
+    meeting_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = MeetingNotification
+        fields = ['id', 'user', 'meeting', 'meeting_title', 'notif_type', 'message', 'is_read', 'sent_at']
+        read_only_fields = ['id', 'user', 'meeting', 'sent_at']
+
+    def get_meeting_title(self, obj):
+        return obj.meeting.title if obj.meeting_id else ''
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    created_by_name  = serializers.SerializerMethodField()
+    department_name  = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Announcement
+        fields = [
+            'id', 'organization', 'department', 'department_name',
+            'created_by', 'created_by_name',
+            'title', 'message', 'priority', 'is_pinned', 'expires_at',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'organization', 'created_by', 'created_at', 'updated_at']
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.get_full_name() or obj.created_by.username
+        return ''
+
+    def get_department_name(self, obj):
+        return obj.department.name if obj.department else 'Organization-wide'
+
+
+class AnnouncementWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Announcement
+        fields = ['title', 'message', 'priority', 'is_pinned', 'expires_at', 'department']

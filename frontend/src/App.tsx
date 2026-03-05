@@ -23,6 +23,7 @@ import Homepage from './pages/Homepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
 import AuditLogsPage from './pages/AuditLogsPage';
+import WikiPage from './pages/WikiPage';
 import DeveloperPage from './pages/DeveloperPage';
 import ResourcesPage from './pages/ResourcesPage';
 import BareMetalVpsPage from './pages/BareMetalVpsPage';
@@ -94,6 +95,8 @@ import EnterpriseDashboardPage   from './pages/EnterpriseDashboardPage';
 import BusinessWorkspacePage     from './pages/BusinessWorkspacePage';
 import EnterpriseEntryRoute      from './pages/EnterpriseEntryRoute';
 import MarketingWorkspacePage    from './pages/MarketingWorkspacePage';
+import EnterpriseMeetingsPage    from './pages/EnterpriseMeetingsPage';
+import EnterpriseDeveloperHubPage from './pages/EnterpriseDeveloperHubPage';
 import CreateOrganizationPage    from './pages/CreateOrganizationPage';
 import IAMPage                   from './pages/IAMPage';
 import KMSPage                   from './pages/KMSPage';
@@ -171,13 +174,50 @@ const AppShell: React.FC = () => {
   const isBusinessWorkspace       = /^\/enterprise\/[^\/]+\/workspace/.test(location.pathname);
   const isEnterpriseMarketing     = /^\/enterprise\/[^\/]+\/marketing/.test(location.pathname);
   const isEnterpriseOrganization   = /^\/enterprise\/[^\/]+\/organization/.test(location.pathname);
-  const isEnterpriseDashboard = !isBusinessWorkspace && !isEnterpriseMarketing && !isEnterpriseOrganization &&
+  const isWikiPage                 = /^\/enterprise\/[^\/]+\/wiki$/.test(location.pathname);
+  const isMeetingsPage             = /^\/enterprise\/[^\/]+\/meetings(\/.*)?$/.test(location.pathname);
+  const isDeveloperHubPage         = /^\/enterprise\/[^\/]+\/developer-hub(\/.*)?$/.test(location.pathname);
+  const isEnterpriseDashboard = !isBusinessWorkspace && !isEnterpriseMarketing && !isEnterpriseOrganization && !isWikiPage && !isMeetingsPage && !isDeveloperHubPage &&
     location.pathname.startsWith('/enterprise') &&
     !location.pathname.startsWith('/enterprise/organizations/create');
   const isGroupsPage = location.pathname.startsWith('/groups');
   const isBillingPage = location.pathname === '/billing';
   const isDocsPage = location.pathname === '/docs';
   const isAuditLogsPage = location.pathname === '/audit-logs';
+
+  if (isWikiPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="wiki">
+          <Routes>
+            <Route path="/enterprise/:orgSlug/wiki" element={<WikiPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isMeetingsPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/meetings"   element={<EnterpriseMeetingsPage />} />
+          <Route path="/enterprise/:orgSlug/meetings/*" element={<EnterpriseMeetingsPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isDeveloperHubPage) {
+    return (
+      <ProtectedRoute>
+        <Routes>
+          <Route path="/enterprise/:orgSlug/developer-hub"   element={<EnterpriseDeveloperHubPage />} />
+          <Route path="/enterprise/:orgSlug/developer-hub/*" element={<EnterpriseDeveloperHubPage />} />
+        </Routes>
+      </ProtectedRoute>
+    );
+  }
 
   if (isWorkspaceDashboard) {
     return (

@@ -380,7 +380,7 @@ export const orgGroupsApi = {
 // ── Members ───────────────────────────────────────────────────────────────────
 export const membersApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<OrgMember[]>(`/organizations/${orgId}/members/`).then(r => r.data),
+    enterpriseClient.get<OrgMember[] | { results: OrgMember[] }>(`/organizations/${orgId}/members/`).then(r => unwrap(r.data)),
 
   invite: (orgId: string, payload: { email: string; name?: string; role: string }) =>
     enterpriseClient.post<OrgMember>(`/organizations/${orgId}/members/invite/`, payload).then(r => r.data),
@@ -395,7 +395,7 @@ export const membersApi = {
 // ── Email Sending Domains ─────────────────────────────────────────────────────
 export const sendDomainsApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<SendDomain[]>(`/organizations/${orgId}/email-domains/`).then(r => r.data),
+    enterpriseClient.get<SendDomain[] | { results: SendDomain[] }>(`/organizations/${orgId}/email-domains/`).then(r => unwrap(r.data)),
 
   add: (orgId: string, payload: { domain: string; tracking_domain?: string; selector?: string }) =>
     enterpriseClient.post<SendDomain>(`/organizations/${orgId}/email-domains/`, payload).then(r => r.data),
@@ -410,7 +410,7 @@ export const sendDomainsApi = {
 // ── Sender Identities ─────────────────────────────────────────────────────────
 export const senderIdentitiesApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<SenderIdentity[]>(`/organizations/${orgId}/email-senders/`).then(r => r.data),
+    enterpriseClient.get<SenderIdentity[] | { results: SenderIdentity[] }>(`/organizations/${orgId}/email-senders/`).then(r => unwrap(r.data)),
 
   add: (orgId: string, payload: { email: string; name: string }) =>
     enterpriseClient.post<SenderIdentity>(`/organizations/${orgId}/email-senders/`, payload).then(r => r.data),
@@ -425,7 +425,7 @@ export const senderIdentitiesApi = {
 // ── Email Templates ───────────────────────────────────────────────────────────
 export const emailTemplatesApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<EmailTemplate[]>(`/organizations/${orgId}/email-templates/`).then(r => r.data),
+    enterpriseClient.get<EmailTemplate[] | { results: EmailTemplate[] }>(`/organizations/${orgId}/email-templates/`).then(r => unwrap(r.data)),
 
   create: (orgId: string, payload: Partial<EmailTemplate>) =>
     enterpriseClient.post<EmailTemplate>(`/organizations/${orgId}/email-templates/`, payload).then(r => r.data),
@@ -440,13 +440,13 @@ export const emailTemplatesApi = {
 // ── Email Logs ────────────────────────────────────────────────────────────────
 export const emailLogsApi = {
   list: (orgId: string, filters?: { status?: string; campaign_id?: string }) =>
-    enterpriseClient.get<EmailLogEntry[]>(`/organizations/${orgId}/email-logs/`, { params: filters }).then(r => r.data),
+    enterpriseClient.get<EmailLogEntry[] | { results: EmailLogEntry[] }>(`/organizations/${orgId}/email-logs/`, { params: filters }).then(r => unwrap(r.data)),
 };
 
 // ── Organization Domains ──────────────────────────────────────────────────────
 export const orgDomainsApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<OrgDomain[]>(`/organizations/${orgId}/domains/`).then(r => r.data),
+    enterpriseClient.get<OrgDomain[] | { results: OrgDomain[] }>(`/organizations/${orgId}/domains/`).then(r => unwrap(r.data)),
 
   add: (orgId: string, payload: { name: string; type?: string }) =>
     enterpriseClient.post<OrgDomain>(`/organizations/${orgId}/domains/`, payload).then(r => r.data),
@@ -491,7 +491,7 @@ export const enterpriseBillingApi = {
     enterpriseClient.post<Subscription>(`/organizations/${orgId}/billing-subscription/change-plan/`, { plan_id: planId }).then(r => r.data),
 
   invoices: (orgId: string) =>
-    enterpriseClient.get<EnterpriseInvoice[]>(`/organizations/${orgId}/billing-invoices/`).then(r => r.data),
+    enterpriseClient.get<EnterpriseInvoice[] | { results: EnterpriseInvoice[] }>(`/organizations/${orgId}/billing-invoices/`).then(r => unwrap(r.data)),
 };
 
 // ── Audit Logs ────────────────────────────────────────────────────────────────
@@ -579,8 +579,8 @@ export interface IntegrationPayload {
 export const integrationsApi = {
   list: (orgId: string, params?: { category?: string; status?: string }) =>
     enterpriseClient
-      .get<OrgIntegration[]>(`/organizations/${orgId}/integrations/`, { params })
-      .then(r => r.data),
+      .get<OrgIntegration[] | { results: OrgIntegration[] }>(`/organizations/${orgId}/integrations/`, { params })
+      .then(r => unwrap(r.data)),
 
   get: (orgId: string, id: string) =>
     enterpriseClient.get<OrgIntegration>(`/organizations/${orgId}/integrations/${id}/`).then(r => r.data),
@@ -663,10 +663,30 @@ export interface OrgSubscriptionItem {
 }
 
 export const orgSubscriptionsApi = {
-  list: (orgId: string) =>
+  list: (orgId: string): Promise<OrgSubscriptionItem[]> =>
     enterpriseClient
-      .get<OrgSubscriptionItem[] | { results: OrgSubscriptionItem[] }>(`/organizations/${orgId}/subscriptions/`)
-      .then(r => unwrap(r.data)),
+      .get<any>(`/organizations/${orgId}/billing-subscription/current/`)
+      .then(r => {
+        const sub = r.data;
+        if (!sub || !sub.id) return [];
+        return [
+          {
+            id: sub.id,
+            name: sub.plan?.name ?? 'Platform Subscription',
+            provider: 'AtonixCorp',
+            status: (sub.status === 'ACTIVE'   ? 'ACTIVE'
+                   : sub.status === 'TRIALING'  ? 'TRIALING'
+                   : sub.status === 'CANCELED'  ? 'CANCELLED'
+                   : 'EXPIRED') as OrgSubscriptionItem['status'],
+            billing_cycle: 'MONTHLY' as const,
+            amount: String(sub.plan?.price_monthly ?? '0.00'),
+            currency: 'USD',
+            renewal_date: sub.renewal_date ?? null,
+            created_at: sub.created_at,
+          } as OrgSubscriptionItem,
+        ];
+      })
+      .catch(() => []),
 };
 
 // ── Security Policies ─────────────────────────────────────────────────────────
@@ -768,7 +788,7 @@ export interface WikiPagePayload {
 
 export const wikiCategoriesApi = {
   list: (orgId: string) =>
-    enterpriseClient.get<WikiCategory[]>(`/organizations/${orgId}/wiki/categories/`).then(r => r.data),
+    enterpriseClient.get<WikiCategory[] | { results: WikiCategory[] }>(`/organizations/${orgId}/wiki/categories/`).then(r => unwrap(r.data)),
 
   create: (orgId: string, payload: { name: string; color?: string; description?: string }) =>
     enterpriseClient.post<WikiCategory>(`/organizations/${orgId}/wiki/categories/`, payload).then(r => r.data),
@@ -805,6 +825,180 @@ export const wikiPagesApi = {
     enterpriseClient.post<WikiPage>(`/organizations/${orgId}/wiki/pages/${pageId}/restore/${versionId}/`).then(r => r.data),
 };
 
+// ── Meeting Hub Types ─────────────────────────────────────────────────────────
+
+export type MeetingStatus       = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type MeetingType         = 'scheduled' | 'recurring' | 'instant' | 'department';
+export type InviteStatus        = 'invited' | 'accepted' | 'declined' | 'tentative' | 'attended' | 'no_show';
+export type ParticipantRole     = 'host' | 'co_host' | 'attendee';
+export type AnnouncementPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type MeetingNotifType    = 'invite' | 'reminder' | 'updated' | 'cancelled' | 'started' | 'recording' | 'notes';
+
+export interface MeetingParticipant {
+  id: string;
+  meeting: string;
+  user: number | null;
+  member: string | null;
+  email: string;
+  name: string;
+  role: ParticipantRole;
+  invite_status: InviteStatus;
+  joined_at: string | null;
+  left_at: string | null;
+  created_at: string;
+}
+
+export interface Meeting {
+  id: string;
+  organization: string;
+  department: string | null;
+  department_name: string;
+  created_by: number | null;
+  created_by_name: string;
+  title: string;
+  description: string;
+  agenda: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  meeting_type: MeetingType;
+  status: MeetingStatus;
+  video_room_id: string;
+  video_provider: string;
+  video_join_url: string;
+  location: string;
+  is_recurring: boolean;
+  recurrence_rule: string;
+  recording_url: string;
+  notes: string;
+  max_participants: number;
+  participants: MeetingParticipant[];
+  participant_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MeetingWrite {
+  title: string;
+  description?: string;
+  agenda?: string;
+  start_time: string;
+  end_time: string;
+  meeting_type?: MeetingType;
+  video_provider?: string;
+  video_join_url?: string;
+  location?: string;
+  is_recurring?: boolean;
+  recurrence_rule?: string;
+  notes?: string;
+  max_participants?: number;
+  department?: string | null;
+}
+
+export interface MeetingNotification {
+  id: string;
+  user: number;
+  meeting: string;
+  meeting_title: string;
+  notif_type: MeetingNotifType;
+  message: string;
+  is_read: boolean;
+  sent_at: string;
+}
+
+export interface Announcement {
+  id: string;
+  organization: string;
+  department: string | null;
+  department_name: string;
+  created_by: number | null;
+  created_by_name: string;
+  title: string;
+  message: string;
+  priority: AnnouncementPriority;
+  is_pinned: boolean;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MeetingAnalytics {
+  total: number;
+  this_week: number;
+  this_month: number;
+  upcoming: number;
+  in_progress: number;
+  completed: number;
+  avg_duration: number;
+}
+
+// ── Meeting Hub API ───────────────────────────────────────────────────────────
+
+export const meetingsApi = {
+  list: (orgId: string, params?: { department?: string; status?: string; type?: string; upcoming?: string }) =>
+    enterpriseClient
+      .get<Meeting[] | { results: Meeting[] }>(`/organizations/${orgId}/meetings/`, { params })
+      .then(r => unwrap(r.data)),
+
+  get: (orgId: string, id: string) =>
+    enterpriseClient.get<Meeting>(`/organizations/${orgId}/meetings/${id}/`).then(r => r.data),
+
+  create: (orgId: string, payload: MeetingWrite) =>
+    enterpriseClient.post<Meeting>(`/organizations/${orgId}/meetings/`, payload).then(r => r.data),
+
+  update: (orgId: string, id: string, payload: Partial<MeetingWrite>) =>
+    enterpriseClient.patch<Meeting>(`/organizations/${orgId}/meetings/${id}/`, payload).then(r => r.data),
+
+  delete: (orgId: string, id: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/meetings/${id}/`),
+
+  invite: (orgId: string, id: string, participants: { email: string; name?: string; role?: string }[]) =>
+    enterpriseClient.post<{ invited: number }>(`/organizations/${orgId}/meetings/${id}/invite/`, { participants }).then(r => r.data),
+
+  start: (orgId: string, id: string) =>
+    enterpriseClient.post<{ status: string; video_room_id: string; video_join_url: string }>(
+      `/organizations/${orgId}/meetings/${id}/start/`
+    ).then(r => r.data),
+
+  end: (orgId: string, id: string, notes?: string) =>
+    enterpriseClient.post<{ status: string }>(`/organizations/${orgId}/meetings/${id}/end/`, { notes }).then(r => r.data),
+
+  rsvp: (orgId: string, id: string, rsvpStatus: InviteStatus) =>
+    enterpriseClient.post<{ status: string }>(`/organizations/${orgId}/meetings/${id}/rsvp/`, { status: rsvpStatus }).then(r => r.data),
+
+  analytics: (orgId: string) =>
+    enterpriseClient.get<MeetingAnalytics>(`/organizations/${orgId}/meetings/analytics/`).then(r => r.data),
+};
+
+export const meetingNotificationsApi = {
+  list: (orgId: string) =>
+    enterpriseClient
+      .get<MeetingNotification[] | { results: MeetingNotification[] }>(`/organizations/${orgId}/meeting-notifications/`)
+      .then(r => unwrap(r.data)),
+
+  markRead: (orgId: string, id: string) =>
+    enterpriseClient.patch<MeetingNotification>(`/organizations/${orgId}/meeting-notifications/${id}/`, { is_read: true }).then(r => r.data),
+
+  markAllRead: (orgId: string) =>
+    enterpriseClient.post<{ marked: number }>(`/organizations/${orgId}/meeting-notifications/mark-all-read/`).then(r => r.data),
+};
+
+export const announcementsApi = {
+  list: (orgId: string, params?: { department?: string }) =>
+    enterpriseClient
+      .get<Announcement[] | { results: Announcement[] }>(`/organizations/${orgId}/announcements/`, { params })
+      .then(r => unwrap(r.data)),
+
+  create: (orgId: string, payload: { title: string; message: string; priority?: AnnouncementPriority; is_pinned?: boolean; department?: string | null }) =>
+    enterpriseClient.post<Announcement>(`/organizations/${orgId}/announcements/`, payload).then(r => r.data),
+
+  update: (orgId: string, id: string, payload: Partial<{ title: string; message: string; priority: AnnouncementPriority; is_pinned: boolean }>) =>
+    enterpriseClient.patch<Announcement>(`/organizations/${orgId}/announcements/${id}/`, payload).then(r => r.data),
+
+  delete: (orgId: string, id: string) =>
+    enterpriseClient.delete(`/organizations/${orgId}/announcements/${id}/`),
+};
+
 export default {
   entry: enterpriseEntryApi,
   organization: organizationApi,
@@ -828,4 +1022,7 @@ export default {
   settings: orgSettingsApi,
   wikiCategories: wikiCategoriesApi,
   wikiPages: wikiPagesApi,
+  meetings: meetingsApi,
+  meetingNotifications: meetingNotificationsApi,
+  announcements: announcementsApi,
 };
