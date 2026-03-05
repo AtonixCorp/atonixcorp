@@ -47,8 +47,17 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import LabelIcon from '@mui/icons-material/Label';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import ArticleIcon from '@mui/icons-material/Article';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarIcon from '@mui/icons-material/Star';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import StyleIcon from '@mui/icons-material/Style';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SaveIcon from '@mui/icons-material/Save';
+import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
 
 // APIs and types
 import {
@@ -68,6 +77,7 @@ import type {
 
 // Design
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
+import EnterpriseDocsModule from '../components/Enterprise/EnterpriseDocsModule';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const T = {
@@ -91,11 +101,11 @@ const SIDEBAR_COLLAPSED_WIDTH = 70;
 
 // ── Module definitions ─────────────────────────────────────────────────────
 type WorkspaceModule = 'overview' | 'organization' | 'departments' | 'members' | 'billing' |
-  'domains' | 'email' | 'marketing' | 'compliance' | 'integrations' | 'orders' | 'audit' | 'settings' | 'wiki';
+  'domains' | 'email' | 'marketing' | 'compliance' | 'integrations' | 'orders' | 'audit' | 'settings' | 'wiki' | 'docs';
 
 const VALID_MODULES: WorkspaceModule[] = [
   'overview', 'organization', 'departments', 'members', 'billing',
-  'domains', 'email', 'marketing', 'compliance', 'integrations', 'orders', 'audit', 'settings', 'wiki',
+  'domains', 'email', 'marketing', 'compliance', 'integrations', 'orders', 'audit', 'settings', 'wiki', 'docs',
 ];
 
 const MODULES: Array<{
@@ -120,6 +130,7 @@ const MODULES: Array<{
   { key: 'audit',        label: 'Audit Logs',   icon: <HistoryIcon />,      desc: 'Full activity log & actor trail',      enterprisePath: s => `/enterprise/${s}/compliance` },
   { key: 'settings',     label: 'Settings',     icon: <SettingsIcon />,     desc: 'General, notifications & API keys',    enterprisePath: s => `/enterprise/${s}/settings` },
   { key: 'wiki',         label: 'Wiki',         icon: <MenuBookIcon />,     desc: 'Org knowledge base & documentation',   enterprisePath: s => `/enterprise/${s}/workspace/wiki` },
+  { key: 'docs',         label: 'Docs',         icon: <AutoStoriesIcon />,  desc: 'Platform docs, runbooks & guides',     enterprisePath: s => `/docs`, externalLink: true },
 ];
 
 // ── Utility components ─────────────────────────────────────────────────────
@@ -2005,6 +2016,11 @@ function SettingsModule({ orgId }: { orgId: string }) {
   );
 }
 
+// ── Docs Module ─────────────────────────────────────────────────────────────
+const DocsModule: React.FC = () => {
+  return <EnterpriseDocsModule mode="embedded" />;
+};
+
 // ── Wiki Module ─────────────────────────────────────────────────────────────
 type WikiView = 'all' | 'categories' | 'pinned' | 'recent';
 
@@ -2728,6 +2744,7 @@ const BusinessWorkspacePage: React.FC = () => {
             {module === 'audit'        && <AuditModule orgId={org.id} />}
             {module === 'settings'     && <SettingsModule orgId={org.id} />}
             {module === 'wiki'         && <WikiModule orgId={org.id} />}
+            {module === 'docs'         && <DocsModule />}
           </Box>
         </Box>
       </Box>

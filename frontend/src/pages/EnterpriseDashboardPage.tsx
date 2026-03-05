@@ -1950,7 +1950,11 @@ function EnterpriseSectionNav({ orgSlug, section, navigate }: { orgSlug: string;
           <Button
             key={key}
             startIcon={icon}
-            onClick={() => navigate(key === 'billing' ? '/billing' : `/enterprise/${orgSlug}/${key}`)}
+            onClick={() => navigate(
+              key === 'billing' ? '/billing' :
+              key === 'docs' ? '/docs' :
+              `/enterprise/${orgSlug}/${key}`
+            )}
             variant="text"
             size="small"
             sx={{

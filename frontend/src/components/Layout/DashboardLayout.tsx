@@ -60,6 +60,8 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import SourceIcon              from '@mui/icons-material/Source';
 import WorkspacesIcon         from '@mui/icons-material/Workspaces';
 import ArticleIcon            from '@mui/icons-material/Article';
+import MenuBookIcon           from '@mui/icons-material/MenuBook';
+import HistoryIcon            from '@mui/icons-material/History';
 
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
@@ -104,7 +106,7 @@ interface NavItem {
   children?: NavItem[];
 }
 
-type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor' | 'enterprise';
+type DashboardMode = 'cloud' | 'developer' | 'marketing' | 'domains' | 'monitor' | 'enterprise' | 'docs' | 'audit';
 
 // ── Nav definition — exact order from spec ────────────────────────────────────
 const I = (fontSize = '1.05rem') => ({ sx: { fontSize } });
@@ -214,6 +216,24 @@ const MONITOR_SUPPORT_NAV: NavItem[] = [];
 const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 
 const ACCOUNT_NAV: NavItem[] = [];
+
+// ── Docs nav ──────────────────────────────────────────────────────────────────
+const DOCS_NAV: NavItem[] = [
+  { label: 'Documentation', icon: <MenuBookIcon {...I()} />, path: '/docs' },
+];
+
+const DOCS_ACCOUNT_NAV: NavItem[] = [];
+
+const DOCS_SUPPORT_NAV: NavItem[] = [];
+
+// ── Audit Logs nav ────────────────────────────────────────────────────────────
+const AUDIT_NAV: NavItem[] = [
+  { label: 'Audit Logs', icon: <HistoryIcon {...I()} />, path: '/audit-logs' },
+];
+
+const AUDIT_ACCOUNT_NAV: NavItem[] = [];
+
+const AUDIT_SUPPORT_NAV: NavItem[] = [];
 
 // ── Enterprise nav (org-slug is injected at runtime) ────────────────────────
 const ENTERPRISE_NAV = (orgSlug: string): NavItem[] => {
@@ -427,7 +447,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           ? '/monitor-dashboard'
           : dashboardMode === 'enterprise'
             ? (enterpriseOrgSlug ? `/enterprise/${enterpriseOrgSlug}/overview` : '/enterprise')
-            : '/dashboard';
+            : dashboardMode === 'docs'
+              ? '/docs'
+              : dashboardMode === 'audit'
+                ? '/audit-logs'
+                : '/dashboard';
 
   const navItems = dashboardMode === 'developer'
     ? DEVELOPER_NAV
@@ -439,7 +463,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           ? MONITOR_NAV
           : dashboardMode === 'enterprise'
             ? ENTERPRISE_NAV(enterpriseOrgSlug)
-            : CLOUD_NAV;
+            : dashboardMode === 'docs'
+              ? DOCS_NAV
+              : dashboardMode === 'audit'
+                ? AUDIT_NAV
+                : CLOUD_NAV;
 
   const accountNav = dashboardMode === 'developer'
     ? DEVELOPER_ACCOUNT_NAV
@@ -451,13 +479,21 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
           ? MONITOR_ACCOUNT_NAV
           : dashboardMode === 'enterprise'
             ? ENTERPRISE_ACCOUNT_NAV
-            : ACCOUNT_NAV;
+            : dashboardMode === 'docs'
+              ? DOCS_ACCOUNT_NAV
+              : dashboardMode === 'audit'
+                ? AUDIT_ACCOUNT_NAV
+                : ACCOUNT_NAV;
 
   const supportNav = dashboardMode === 'developer'
     ? DEVELOPER_SUPPORT_NAV
     : dashboardMode === 'marketing'
       ? MARKETING_SUPPORT_NAV
-      : dashboardMode === 'domains'
+      : dashboardMode === 'docs'
+        ? DOCS_SUPPORT_NAV
+        : dashboardMode === 'audit'
+          ? AUDIT_SUPPORT_NAV
+          : dashboardMode === 'domains'
         ? DOMAINS_SUPPORT_NAV
         : dashboardMode === 'monitor'
           ? MONITOR_SUPPORT_NAV

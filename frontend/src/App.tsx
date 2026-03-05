@@ -22,6 +22,7 @@ import DashboardLayout from './components/Layout/DashboardLayout';
 import Homepage from './pages/Homepage';
 import FeaturesPage from './pages/FeaturesPage';
 import DocsPage from './pages/DocsPage';
+import AuditLogsPage from './pages/AuditLogsPage';
 import DeveloperPage from './pages/DeveloperPage';
 import ResourcesPage from './pages/ResourcesPage';
 import BareMetalVpsPage from './pages/BareMetalVpsPage';
@@ -175,6 +176,8 @@ const AppShell: React.FC = () => {
     !location.pathname.startsWith('/enterprise/organizations/create');
   const isGroupsPage = location.pathname.startsWith('/groups');
   const isBillingPage = location.pathname === '/billing';
+  const isDocsPage = location.pathname === '/docs';
+  const isAuditLogsPage = location.pathname === '/audit-logs';
 
   if (isWorkspaceDashboard) {
     return (
@@ -520,6 +523,30 @@ const AppShell: React.FC = () => {
     );
   }
 
+  if (isDocsPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="docs">
+          <Routes>
+            <Route path="/docs" element={<DocsPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isAuditLogsPage) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout dashboardMode="audit">
+          <Routes>
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CloudPlatformHeader />
@@ -529,7 +556,6 @@ const AppShell: React.FC = () => {
           <Route path="/features"  element={<FeaturesPage />} />
           <Route path="/bare-metal-vps/:slug" element={<BareMetalVpsPage />} />
           <Route path="/developer" element={<DeveloperPage />} />
-          <Route path="/docs"      element={<DocsPage />} />
           <Route path="/about"     element={<AboutPage />} />
           <Route path="/domains"   element={<DomainsLandingPage />} />
           <Route path="/domains/dashboard" element={<ProtectedRoute><DomainsServiceDashboardPage /></ProtectedRoute>} />
