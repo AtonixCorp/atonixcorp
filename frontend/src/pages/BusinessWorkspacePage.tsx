@@ -2018,7 +2018,11 @@ function SettingsModule({ orgId }: { orgId: string }) {
 
 // ── Docs Module ─────────────────────────────────────────────────────────────
 const DocsModule: React.FC = () => {
-  return <EnterpriseDocsModule mode="embedded" />;
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate('/docs', { replace: true });
+  }, [navigate]);
+  return null;
 };
 
 // ── Wiki Module ─────────────────────────────────────────────────────────────

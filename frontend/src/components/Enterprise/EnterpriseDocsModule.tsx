@@ -3,6 +3,7 @@
 // Implements the enterprise brain specification
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, IconButton, TextField, Chip, Avatar, Tooltip,
   Paper, Divider, Menu, MenuItem, ListItemIcon, ListItemText, Dialog,
@@ -32,10 +33,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
 import HistoryIcon from '@mui/icons-material/History';
-import CommentIcon from '@mui/icons-material/Comment';
-import LockIcon from '@mui/icons-material/Lock';
-import PublicIcon from '@mui/icons-material/Public';
-import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -54,10 +51,12 @@ import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RateReviewIcon from '@mui/icons-material/RateReview';
-import ArchiveIcon from '@mui/icons-material/Archive';
 
 // Types
 interface DocBlock {
@@ -312,13 +311,13 @@ const EnterpriseDocsModule: React.FC<EnterpriseDocsModuleProps> = ({
   mode = 'full',
 }) => {
   // Theme
-  const { mode: themeMode } = useTheme();
+  const { mode: themeMode, toggleTheme } = useTheme();
   const isDark = themeMode === 'dark';
+  const navigate = useNavigate();
   const T = getDocTheme(isDark);
 
   // State
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [currentPage, setCurrentPage] = useState<DocPage>(SAMPLE_PAGE);
   const [spaces, setSpaces] = useState<DocSpace[]>(SAMPLE_SPACES);
   const [selectedSpace, setSelectedSpace] = useState<DocSpace | null>(SAMPLE_SPACES[0]);
@@ -330,7 +329,6 @@ const EnterpriseDocsModule: React.FC<EnterpriseDocsModuleProps> = ({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-  const [comments, setComments] = useState<DocComment[]>([]);
   const [activeCollaborators] = useState([
     { id: 'u1', name: 'Sarah Chen', avatar: '', color: '#2563EB' },
     { id: 'u2', name: 'James Wilson', avatar: '', color: '#10B981' },
@@ -644,6 +642,12 @@ const EnterpriseDocsModule: React.FC<EnterpriseDocsModuleProps> = ({
         <Box sx={{ borderBottom: `1px solid ${T.border.light}`, bgcolor: T.bg.primary, p: 2 }}>
           <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
             <Stack direction="row" spacing={2} alignItems="center" flex={1}>
+              <Tooltip title="Return to Workspace">
+                <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: T.text.secondary }}>
+                  <ArrowBackIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
               <IconButton size="small" onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}>
                 <ViewSidebarIcon />
               </IconButton>
@@ -709,7 +713,13 @@ const EnterpriseDocsModule: React.FC<EnterpriseDocsModuleProps> = ({
                 </IconButton>
               </Tooltip>
 
-              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+              <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+                <IconButton size="small" onClick={toggleTheme} sx={{ color: T.text.secondary }}>
+                  {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+
+              <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
 
               <Button
                 size="small"
@@ -826,136 +836,7 @@ const EnterpriseDocsModule: React.FC<EnterpriseDocsModuleProps> = ({
         </Box>
       </Box>
 
-      {/* Right Panel - Metadata & Collaboration */}
-      {rightPanelOpen && (
-        <Box
-          sx={{
-            width: 320,
-            bgcolor: T.sidebar.bg,
-            borderLeft: `1px solid ${T.border.light}`,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          <Box sx={{ p: 2, borderBottom: `1px solid ${T.border.light}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="subtitle2" fontWeight={600}>Page Info</Typography>
-            <IconButton size="small" onClick={() => setRightPanelOpen(false)}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
 
-          <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
-            {/* Status */}
-            <Box mb={3}>
-              <Typography variant="caption" sx={{ color: T.text.tertiary, fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
-                Status
-              </Typography>
-              <FormControl fullWidth size="small">
-                <Select
-                  value={currentPage.status}
-                  onChange={(e) => setCurrentPage(prev => ({ ...prev, status: e.target.value as any }))}
-                  disabled={!editMode}
-                >
-                  <MenuItem value="draft">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <EditIcon fontSize="small" />
-                      <Typography>Draft</Typography>
-                    </Stack>
-                  </MenuItem>
-                  <MenuItem value="in_review">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <RateReviewIcon fontSize="small" />
-                      <Typography>In Review</Typography>
-                    </Stack>
-                  </MenuItem>
-                  <MenuItem value="published">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <CheckCircleIcon fontSize="small" />
-                      <Typography>Published</Typography>
-                    </Stack>
-                  </MenuItem>
-                  <MenuItem value="archived">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <ArchiveIcon fontSize="small" />
-                      <Typography>Archived</Typography>
-                    </Stack>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Permissions */}
-            <Box mb={3}>
-              <Typography variant="caption" sx={{ color: T.text.tertiary, fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
-                Visibility
-              </Typography>
-              <Stack spacing={1}>
-                <Paper sx={{ p: 1.5, border: `1px solid ${T.border.light}` }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <PublicIcon fontSize="small" sx={{ color: T.text.tertiary }} />
-                    <Typography fontSize={14} flex={1}>Organization</Typography>
-                    <Chip label="View" size="small" sx={{ height: 22, fontSize: 11 }} />
-                  </Stack>
-                </Paper>
-                <Paper sx={{ p: 1.5, border: `1px solid ${T.border.light}` }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <GroupIcon fontSize="small" sx={{ color: T.text.tertiary }} />
-                    <Typography fontSize={14} flex={1}>Engineering Team</Typography>
-                    <Chip label="Edit" size="small" color="primary" sx={{ height: 22, fontSize: 11 }} />
-                  </Stack>
-                </Paper>
-              </Stack>
-            </Box>
-
-            {/* Metadata */}
-            <Box mb={3}>
-              <Typography variant="caption" sx={{ color: T.text.tertiary, fontWeight: 600, textTransform: 'uppercase', mb: 1, display: 'block' }}>
-                Metadata
-              </Typography>
-              <Stack spacing={1.5}>
-                <Box>
-                  <Typography fontSize={12} color={T.text.tertiary} mb={0.5}>Created</Typography>
-                  <Typography fontSize={13}>{new Date(currentPage.createdAt).toLocaleDateString()}</Typography>
-                </Box>
-                <Box>
-                  <Typography fontSize={12} color={T.text.tertiary} mb={0.5}>Last Updated</Typography>
-                  <Typography fontSize={13}>{new Date(currentPage.updatedAt).toLocaleDateString()}</Typography>
-                </Box>
-                <Box>
-                  <Typography fontSize={12} color={T.text.tertiary} mb={0.5}>Created By</Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Avatar sx={{ width: 20, height: 20, fontSize: 11 }}>S</Avatar>
-                    <Typography fontSize={13}>Sarah Chen</Typography>
-                  </Stack>
-                </Box>
-                <Box>
-                  <Typography fontSize={12} color={T.text.tertiary} mb={0.5}>Last Edited By</Typography>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Avatar sx={{ width: 20, height: 20, fontSize: 11 }}>J</Avatar>
-                    <Typography fontSize={13}>James Wilson</Typography>
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
-
-            {/* Comments */}
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="caption" sx={{ color: T.text.tertiary, fontWeight: 600, textTransform: 'uppercase' }}>
-                  Comments
-                </Typography>
-                <Chip label={comments.length} size="small" sx={{ height: 18, fontSize: 10 }} />
-              </Stack>
-              <Paper sx={{ p: 2, border: `1px solid ${T.border.light}`, bgcolor: T.bg.primary }}>
-                <Typography fontSize={13} color={T.text.tertiary} textAlign="center">
-                  No comments yet
-                </Typography>
-              </Paper>
-            </Box>
-          </Box>
-        </Box>
-      )}
 
       {/* Block Type Menu */}
       <Menu

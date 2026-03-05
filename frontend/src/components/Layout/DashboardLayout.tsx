@@ -218,18 +218,14 @@ const DOMAINS_SUPPORT_NAV: NavItem[] = [];
 const ACCOUNT_NAV: NavItem[] = [];
 
 // ── Docs nav ──────────────────────────────────────────────────────────────────
-const DOCS_NAV: NavItem[] = [
-  { label: 'Documentation', icon: <MenuBookIcon {...I()} />, path: '/docs' },
-];
+const DOCS_NAV: NavItem[] = [];
 
 const DOCS_ACCOUNT_NAV: NavItem[] = [];
 
 const DOCS_SUPPORT_NAV: NavItem[] = [];
 
-// ── Audit Logs nav ────────────────────────────────────────────────────────────
-const AUDIT_NAV: NavItem[] = [
-  { label: 'Audit Logs', icon: <HistoryIcon {...I()} />, path: '/audit-logs' },
-];
+// ── Audit Logs nav ──────────────────────────────────────────────
+const AUDIT_NAV: NavItem[] = [];
 
 const AUDIT_ACCOUNT_NAV: NavItem[] = [];
 
@@ -556,7 +552,11 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
                     ? 'Domains Service'
                     : dashboardMode === 'monitor'
                       ? 'Monitor Dashboard'
-                      : 'Cloud Platform'}
+                      : dashboardMode === 'docs'
+                        ? 'Documentation'
+                        : dashboardMode === 'audit'
+                          ? 'Audit Logs'
+                          : 'Cloud Platform'}
             </Typography>
           </Box>
         )}
@@ -586,6 +586,37 @@ const SidebarContent: React.FC<{ collapsed?: boolean; dashboardMode: DashboardMo
               {!collapsed && (
                 <Typography sx={{ fontSize: '.78rem', fontWeight: 600, color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.01em' }}>
                   Cloud Dashboard
+                </Typography>
+              )}
+            </Box>
+          </Tooltip>
+        </Box>
+      )}
+
+      {/* Return to Workspace — shown in docs / audit modes */}
+      {(dashboardMode === 'docs' || dashboardMode === 'audit') && (
+        <Box
+          onClick={() => navigate(-1)}
+          sx={{
+            px: collapsed ? 0 : 1.5,
+            py: 0.75,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: 1,
+            borderBottom: `1px solid ${SB_DIV}`,
+            cursor: 'pointer',
+            flexShrink: 0,
+            '&:hover': { bgcolor: isDarkSidebar ? DARK_HOVER : BLUE_HOVER },
+            transition: 'background .15s',
+          }}
+        >
+          <Tooltip title={collapsed ? 'Return to Workspace' : ''} placement="right">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: collapsed ? 'center' : 'flex-start' }}>
+              <ArrowBackIcon sx={{ fontSize: '.9rem', color: TEXT_SECONDARY, flexShrink: 0 }} />
+              {!collapsed && (
+                <Typography sx={{ fontSize: '.78rem', fontWeight: 600, color: TEXT_SECONDARY, fontFamily: FONT, letterSpacing: '.01em' }}>
+                  Return to Workspace
                 </Typography>
               )}
             </Box>
@@ -733,41 +764,43 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
     >
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', lg: 'none' },
-            '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: NAVY },
-          }}
-        >
-          <SidebarContent dashboardMode={dashboardMode} />
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', lg: 'block' },
-            '& .MuiDrawer-paper': {
-              width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH, border: 'none',
-              borderRight: `1px solid ${DIVIDER_COLOR}`,
-              bgcolor: NAVY,
-              transition: 'width .2s ease',
-            },
-          }}
-          open
-        >
-          <SidebarContent collapsed={sidebarCollapsed} dashboardMode={dashboardMode} />
-        </Drawer>
-      </Box>
+      {dashboardMode !== 'docs' && dashboardMode !== 'audit' && (
+        <Box component="nav" sx={{ width: { lg: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }, flexShrink: { lg: 0 } }}>
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={() => setMobileOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            sx={{
+              display: { xs: 'block', lg: 'none' },
+              '& .MuiDrawer-paper': { width: SIDEBAR_WIDTH, border: 'none', bgcolor: NAVY },
+            }}
+          >
+            <SidebarContent dashboardMode={dashboardMode} />
+          </Drawer>
+          <Drawer
+            variant="permanent"
+            sx={{
+              display: { xs: 'none', lg: 'block' },
+              '& .MuiDrawer-paper': {
+                width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH, border: 'none',
+                borderRight: `1px solid ${DIVIDER_COLOR}`,
+                bgcolor: NAVY,
+                transition: 'width .2s ease',
+              },
+            }}
+            open
+          >
+            <SidebarContent collapsed={sidebarCollapsed} dashboardMode={dashboardMode} />
+          </Drawer>
+        </Box>
+      )}
 
       {/* ── Right column ─────────────────────────────────────────────────────── */}
       <Box
         sx={{
           flexGrow: 1,
-          width: { lg: `calc(100% - ${sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px)` },
+          width: { lg: (dashboardMode === 'docs' || dashboardMode === 'audit') ? '100%' : `calc(100% - ${sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH}px)` },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -777,7 +810,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
       >
 
         {/* ── Top AppBar ─────────────────────────────────────────────────────── */}
-        <DashboardTopBar
+        {dashboardMode !== 'docs' && dashboardMode !== 'audit' && <DashboardTopBar
           routeBase={routeBase}
           showMobileMenu
           onMobileMenuOpen={() => setMobileOpen(true)}
@@ -797,16 +830,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, dashboardMo
               <TopBarSearch />
             </>
           }
-        />
+        />}
 
         {/* ── Page content ──────────────────────────────────────────────────── */}
         <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
-          <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', bgcolor: dashboardTokens.colors.background }}>
+          <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', height: '100%', bgcolor: dashboardTokens.colors.background }}>
             {children}
           </Box>
 
           {/* ── Right activity panel ─────────────────────────────────────────── */}
-          {dashboardMode !== 'enterprise' && (
+          {dashboardMode !== 'enterprise' && dashboardMode !== 'docs' && dashboardMode !== 'audit' && (
             <>
               <RightActivityPanel
                 collapsed={rightCollapsed}
