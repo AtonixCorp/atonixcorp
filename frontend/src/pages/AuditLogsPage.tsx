@@ -177,7 +177,7 @@ const SAMPLE_EVENTS: AuditEvent[] = [
     action: 'integration.updated',
     status: 'success',
     ip_address: '192.168.1.100',
-    metadata: { 
+    metadata: {
       provider: 'github',
       changes: { webhook_url: { old: 'https://old.example.com', new: 'https://new.example.com' } }
     },
@@ -271,10 +271,10 @@ const AuditLogsPage: React.FC = () => {
   };
 
   const handleExport = (format: 'csv' | 'json') => {
-    const data = format === 'json' 
+    const data = format === 'json'
       ? JSON.stringify(filteredEvents, null, 2)
       : convertToCSV(filteredEvents);
-    
+
     const blob = new Blob([data], { type: format === 'json' ? 'application/json' : 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -563,9 +563,9 @@ const AuditLogsPage: React.FC = () => {
           <TableBody>
             {filteredEvents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((event) => (
               <React.Fragment key={event.id}>
-                <TableRow 
+                <TableRow
                   hover
-                  sx={{ 
+                  sx={{
                     cursor: 'pointer',
                     bgcolor: expandedRow === event.id ? T.bg.hover : 'transparent',
                     '&:hover': { bgcolor: T.bg.hover }
@@ -591,15 +591,15 @@ const AuditLogsPage: React.FC = () => {
                         <Typography fontSize={13} fontWeight={500} color={T.text.primary}>
                           {event.actor_display}
                         </Typography>
-                        <Chip 
-                          label={event.actor_type} 
-                          size="small" 
-                          sx={{ 
-                            height: 18, 
-                            fontSize: 11, 
+                        <Chip
+                          label={event.actor_type}
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: 11,
                             bgcolor: T.bg.tertiary,
                             color: T.text.secondary
-                          }} 
+                          }}
                         />
                       </Box>
                     </Stack>
@@ -622,8 +622,8 @@ const AuditLogsPage: React.FC = () => {
                   <TableCell>
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       {getStatusIcon(event.status)}
-                      <Typography 
-                        fontSize={13} 
+                      <Typography
+                        fontSize={13}
                         fontWeight={500}
                         color={
                           event.status === 'success' ? T.accent.green :
@@ -637,7 +637,7 @@ const AuditLogsPage: React.FC = () => {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <IconButton 
+                    <IconButton
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -692,9 +692,9 @@ const AuditLogsPage: React.FC = () => {
                           <Box sx={{ mt: 2 }}>
                             <Typography fontSize={11} color={T.text.secondary} mb={1}>Metadata</Typography>
                             <Paper sx={{ p: 1.5, bgcolor: isDark ? '#1E1E1E' : '#F7F7F7', borderRadius: 1 }}>
-                              <pre style={{ 
-                                margin: 0, 
-                                fontSize: 12, 
+                              <pre style={{
+                                margin: 0,
+                                fontSize: 12,
                                 color: T.text.primary,
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word'
@@ -861,9 +861,9 @@ const AuditLogsPage: React.FC = () => {
                     <Box>
                       <Typography fontSize={12} color={T.text.secondary} mb={1}>Metadata</Typography>
                       <Paper sx={{ p: 2, bgcolor: isDark ? '#1E1E1E' : '#F7F7F7', borderRadius: 1 }}>
-                        <pre style={{ 
-                          margin: 0, 
-                          fontSize: 13, 
+                        <pre style={{
+                          margin: 0,
+                          fontSize: 13,
                           color: T.text.primary,
                           whiteSpace: 'pre-wrap',
                           wordBreak: 'break-word'
