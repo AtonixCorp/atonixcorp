@@ -47,12 +47,14 @@ export default function EnterpriseEntryRoute() {
       .then(({ organizations }) => {
         if (cancelled) return;
         setOrgs(organizations);
-        if (organizations.length === 1) {
+        if (organizations.length === 0) {
+          // No org registered yet → send to the standalone registration page
+          // (outside of DashboardLayout so no sidebar/chrome is visible)
+          navigate('/enterprise/organizations/create', { replace: true });
+        } else if (organizations.length === 1) {
           setSingleSlug(organizations[0].slug);
           setState('single');
         } else {
-          // 0 orgs: show empty state — dialog opens only when user clicks the button
-          // 2+ orgs: switcher to choose one
           setState('switcher');
         }
       })
@@ -106,30 +108,14 @@ export default function EnterpriseEntryRoute() {
             <BusinessIcon sx={{ color: T.brand, fontSize: '2rem' }} />
           </Box>
           <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.6rem', fontFamily: T.font, mb: 0.5 }}>
-            {orgs.length === 0 ? 'Welcome to Enterprise' : 'Choose an organization'}
+            Choose an organization
           </Typography>
           <Typography sx={{ color: T.sub }}>
-            {orgs.length === 0
-              ? 'Create your first organization to get started, or explore the platform.'
-              : 'Select an organization to continue, or create a new one.'}
+            Select an organization to continue, or create a new one.
           </Typography>
         </Box>
 
         <Paper sx={{ bgcolor: T.card, border: `1px solid ${T.border}`, borderRadius: 2, overflow: 'hidden' }}>
-          {orgs.length === 0 && (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <BusinessIcon sx={{ color: T.sub, fontSize: '3rem', opacity: 0.4, mb: 1 }} />
-              <Typography sx={{ color: T.sub, mb: 2 }}>No organizations yet.</Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setCreateOpen(true)}
-                sx={{ bgcolor: T.brand, '&:hover': { bgcolor: T.brand, opacity: 0.9 } }}
-              >
-                Create your first organization
-              </Button>
-            </Box>
-          )}
           {orgs.map((org, idx) => (
             <React.Fragment key={org.id}>
               {idx > 0 && <Divider sx={{ borderColor: T.border }} />}

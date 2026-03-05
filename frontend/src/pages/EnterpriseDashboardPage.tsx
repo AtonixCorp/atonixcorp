@@ -52,6 +52,8 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import BadgeIcon from '@mui/icons-material/Badge';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import WorkspacesIcon  from '@mui/icons-material/Workspaces';
+import ArticleIcon     from '@mui/icons-material/Article';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { dashboardTokens, dashboardSemanticColors } from '../styles/dashboardDesignSystem';
 import { COUNTRIES } from './CreateOrganizationPage';
@@ -1880,6 +1882,44 @@ function ComplianceSection() {
   );
 }
 
+// ── Section: Workspace ────────────────────────────────────────────────────
+function WorkspaceSection() {
+  return (
+    <Box>
+      <SectionCard title="Workspace" icon={<WorkspacesIcon />}>
+        <Box sx={{ py: 6, textAlign: 'center' }}>
+          <WorkspacesIcon sx={{ fontSize: '3rem', color: T.sub, mb: 2 }} />
+          <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '1.1rem', mb: 1 }}>
+            Workspace coming soon
+          </Typography>
+          <Typography sx={{ color: T.sub, fontSize: '.92rem' }}>
+            Collaborative workspace tools — shared docs, boards, and wikis — will be available here.
+          </Typography>
+        </Box>
+      </SectionCard>
+    </Box>
+  );
+}
+
+// ── Section: Docs ─────────────────────────────────────────────────────────
+function DocsSection() {
+  return (
+    <Box>
+      <SectionCard title="Docs" icon={<ArticleIcon />}>
+        <Box sx={{ py: 6, textAlign: 'center' }}>
+          <ArticleIcon sx={{ fontSize: '3rem', color: T.sub, mb: 2 }} />
+          <Typography sx={{ color: T.text, fontWeight: 700, fontSize: '1.1rem', mb: 1 }}>
+            Documentation coming soon
+          </Typography>
+          <Typography sx={{ color: T.sub, fontSize: '.92rem' }}>
+            Internal knowledge base, runbooks, and API references for your organization will live here.
+          </Typography>
+        </Box>
+      </SectionCard>
+    </Box>
+  );
+}
+
 // ── Section Navigation Metadata ──────────────────────────────────────────────
 const SECTION_META: Record<string, { label: string; icon: React.ReactNode }> = {
   overview:      { label: 'Overview',     icon: <BusinessIcon />    },
@@ -1888,6 +1928,8 @@ const SECTION_META: Record<string, { label: string; icon: React.ReactNode }> = {
   email:         { label: 'Email Service', icon: <MailOutlineIcon /> },
   domains:       { label: 'Domains',      icon: <DomainIcon />      },
   branding:      { label: 'Branding',     icon: <PaletteIcon />     },
+  workspace:     { label: 'Workspace',    icon: <WorkspacesIcon />  },
+  docs:          { label: 'Docs',         icon: <ArticleIcon />     },
   billing:       { label: 'Billing',      icon: <ReceiptLongIcon /> },
   compliance:    { label: 'Compliance',   icon: <GppGoodIcon />     },
 };
@@ -2033,27 +2075,6 @@ const EnterpriseDashboardPage: React.FC = () => {
               <Box sx={{ color: T.brand, fontSize: '1.6rem' }}>{SECTION_META[section]?.icon}</Box>
               <Typography sx={{ color: T.text, fontWeight: 800, fontSize: '1.5rem', fontFamily: T.font }}>{SECTION_META[section]?.label}</Typography>
             </Box>
-            {/* Org actions (hidden for org section; those live in the unified topbar) */}
-            {section !== 'organization' && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                size="small"
-                startIcon={<SwapHorizIcon />}
-                onClick={() => navigate('/enterprise')}
-                sx={{ color: T.sub, borderColor: T.border, border: '1px solid', borderRadius: 1, px: 1.5, textTransform: 'none', '&:hover': { color: T.brand, borderColor: T.brand } }}
-              >
-                Switch Org
-              </Button>
-              <Button
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => setNewOrgOpen(true)}
-                sx={{ color: T.brand, borderColor: T.brand, border: '1px solid', borderRadius: 1, px: 1.5, textTransform: 'none', '&:hover': { bgcolor: `${T.brand}12` } }}
-              >
-                New Org
-              </Button>
-            </Box>
-            )}
           </Box>
           <Typography variant="body2" sx={{ color: T.sub }}>Manage your {SECTION_META[section]?.label?.toLowerCase() || 'organization'} settings and operations</Typography>
         </Box>
@@ -2068,6 +2089,8 @@ const EnterpriseDashboardPage: React.FC = () => {
         {section === 'branding' && <BrandingSection />}
         {section === 'billing' && <BillingSection />}
         {section === 'compliance' && <ComplianceSection />}
+        {section === 'workspace' && <WorkspaceSection />}
+        {section === 'docs' && <DocsSection />}
 
         {/* Fallback */}
         {!SECTION_META[section] && (

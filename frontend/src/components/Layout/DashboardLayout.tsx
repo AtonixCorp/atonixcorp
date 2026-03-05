@@ -58,6 +58,8 @@ import SecurityIcon          from '@mui/icons-material/Security';
 
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import SourceIcon              from '@mui/icons-material/Source';
+import WorkspacesIcon         from '@mui/icons-material/Workspaces';
+import ArticleIcon            from '@mui/icons-material/Article';
 
 import { useAuth }           from '../../contexts/AuthContext';
 import { useTheme as useColorMode } from '../../contexts/ThemeContext';
@@ -223,6 +225,8 @@ const ENTERPRISE_NAV = (orgSlug: string): NavItem[] => {
     { label: 'Email Service', icon: <MailOutlineIcon {...I()} />, path: p('email')         },
     { label: 'Domains',       icon: <DomainIcon      {...I()} />, path: p('domains')       },
     { label: 'Branding',      icon: <PaletteIcon     {...I()} />, path: p('branding')      },
+    { label: 'Workspace',     icon: <WorkspacesIcon  {...I()} />, path: p('workspace')     },
+    { label: 'Docs',          icon: <ArticleIcon     {...I()} />, path: p('docs')          },
     { label: 'Billing',       icon: <BillingIcon     {...I()} />, path: '/billing'          },
     { label: 'Compliance',    icon: <GppGoodIcon     {...I()} />, path: p('compliance')    },
   ];

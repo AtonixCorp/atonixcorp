@@ -21,8 +21,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model  = Organization
         fields = [
             'id', 'name', 'slug', 'primary_domain', 'industry', 'country',
-            'plan', 'status', 'member_count', 'contact_email', 'logo_url',
-            'created_at', 'updated_at',
+            'plan', 'status', 'member_count', 'contact_email', 'domain_email',
+            'logo_url', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'member_count']
 
@@ -34,7 +34,7 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Organization
         fields = ['name', 'slug', 'primary_domain', 'industry', 'country',
-                  'contact_email', 'logo_url']
+                  'contact_email', 'domain_email', 'logo_url']
 
 
 # ── Organization Member ───────────────────────────────────────────────────────

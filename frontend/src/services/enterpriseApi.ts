@@ -257,6 +257,7 @@ export const organizationApi = {
     name: string;
     slug: string;
     primary_domain?: string;
+    domain_email?: string;
     industry?: string;
     country?: string;
     contact_email?: string;

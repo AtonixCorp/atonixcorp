@@ -59,6 +59,8 @@ class Organization(TimeStampedModel):
     status         = models.CharField(max_length=20,  choices=Status.choices,
                                       default=Status.TRIAL)
     contact_email  = models.EmailField(blank=True, default='')
+    domain_email   = models.EmailField(blank=True, default='',
+                                       help_text='Primary organization email, e.g. admin@acme.com')
     logo_url       = models.URLField(blank=True, default='')
     class Meta:
         verbose_name = 'Organization'
