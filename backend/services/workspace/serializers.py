@@ -69,6 +69,9 @@ class DevWorkspaceSerializer(serializers.ModelSerializer):
             'pipeline_last_run', 'pipeline_last_success',
             'pipeline_last_failure', 'pipeline_last_status',
             'setup_metadata',
+            # Context-aware architecture fields
+            'created_by_role', 'created_from_dashboard',
+            'parent_context_id', 'return_path',
         ]
         read_only_fields = [
             'id', 'owner', 'status', 'editor_url',
@@ -100,6 +103,9 @@ class DevWorkspaceCreateSerializer(serializers.ModelSerializer):
             'container_runtime', 'container_template',
             # Domain
             'domain',
+            # Context-aware architecture fields
+            'created_by_role', 'created_from_dashboard',
+            'parent_context_id', 'return_path',
         ]
 
 

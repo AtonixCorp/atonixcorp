@@ -58,6 +58,15 @@ class Organization(TimeStampedModel):
     domain_email   = models.EmailField(blank=True)
     logo_url       = models.URLField(blank=True)
 
+    # ── Settings fields ──────────────────────────────────────────────────────
+    language                   = models.CharField(max_length=10,  default='en')
+    timezone                   = models.CharField(max_length=64,  default='UTC')
+    default_department         = models.CharField(max_length=100, blank=True)
+    notifications_billing      = models.BooleanField(default=True)
+    notifications_security     = models.BooleanField(default=True)
+    notifications_usage        = models.BooleanField(default=True)
+    notification_slack_webhook = models.CharField(max_length=500, blank=True)
+
     class Meta:
         verbose_name = 'Organization'
 

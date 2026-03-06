@@ -35,7 +35,35 @@ class DevWorkspaceViewSet(viewsets.ModelViewSet):
     lookup_field = 'workspace_id'
 
     def get_queryset(self):
-        return DevWorkspace.objects.filter(owner=self.request.user)
+        """
+        Context-aware queryset filter.
+
+        Query params:
+            dashboard           'developer' (default) | 'enterprise' | 'group'
+            parent_context_id   enterprise org id or group id (required when
+                                dashboard is 'enterprise' or 'group')
+
+        Visibility rules:
+            developer  → only workspaces created from the Developer Dashboard
+            enterprise → only workspaces for the given enterprise org
+            group      → only workspaces for the given group
+        """
+        qs = DevWorkspace.objects.filter(owner=self.request.user)
+        dashboard = self.request.query_params.get('dashboard', 'developer')
+        parent_id = self.request.query_params.get('parent_context_id', '')
+
+        if dashboard == 'enterprise':
+            qs = qs.filter(created_from_dashboard='enterprise')
+            if parent_id:
+                qs = qs.filter(parent_context_id=parent_id)
+        elif dashboard == 'group':
+            qs = qs.filter(created_from_dashboard='group')
+            if parent_id:
+                qs = qs.filter(parent_context_id=parent_id)
+        else:
+            # Default: Developer Dashboard — only personal workspaces
+            qs = qs.filter(created_from_dashboard='developer')
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'create':

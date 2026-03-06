@@ -16,6 +16,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -60,6 +61,7 @@ import CloudQueueIcon from '@mui/icons-material/CloudQueue'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 import { dashboardSemanticColors, dashboardTokens } from '../../styles/dashboardDesignSystem'
+import { getResourceOrigin } from '../../services/resourceContext'
 import {
   createDevWorkspace,
   fetchWorkspaceCatalog,
@@ -194,6 +196,19 @@ export interface WorkspaceCreationWizardProps {
   open: boolean
   onClose: () => void
   onCreated: (workspace: DevWorkspace) => void
+  /**
+   * When provided, the wizard creates an enterprise-scoped workspace:
+   *   - created_by_role        = 'enterprise'
+   *   - created_from_dashboard = 'enterprise'
+   *   - parent_context_id      = enterpriseOrgSlug
+   * Enterprise workspaces are hidden from the Developer Dashboard.
+   */
+  enterpriseOrgSlug?: string
+  /**
+   * When provided (without enterpriseOrgSlug), the wizard creates a
+   * group-scoped workspace visible only inside that group's dashboard.
+   */
+  groupId?: string
 }
 
 // ─── State shape ─────────────────────────────────────────────────────────────
@@ -312,7 +327,8 @@ const inputSx = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-export default function WorkspaceCreationWizard({ open, onClose, onCreated }: WorkspaceCreationWizardProps) {
+export default function WorkspaceCreationWizard({ open, onClose, onCreated, enterpriseOrgSlug, groupId }: WorkspaceCreationWizardProps) {
+  const location = useLocation()
   const [step, setStep] = useState(0)
   const [state, setState] = useState<WizardState>(defaultState)
   const [busy, setBusy] = useState(false)
@@ -438,6 +454,26 @@ export default function WorkspaceCreationWizard({ open, onClose, onCreated }: Wo
       payload.pull_image = true
       if (state.containerTemplate === 'custom' && state.customImageUrl.trim()) {
         payload.custom_image_url = state.customImageUrl.trim()
+      }
+
+      // ── Inject resource origin context ──────────────────────────────────
+      // Props take priority; fall back to deriving from the current URL.
+      if (enterpriseOrgSlug) {
+        payload.created_by_role         = 'enterprise'
+        payload.created_from_dashboard  = 'enterprise'
+        payload.parent_context_id       = enterpriseOrgSlug
+        payload.return_path             = `/enterprise/${enterpriseOrgSlug}/workspace/developer/workspace`
+      } else if (groupId) {
+        payload.created_by_role         = 'developer'
+        payload.created_from_dashboard  = 'group'
+        payload.parent_context_id       = groupId
+        payload.return_path             = `/developer/groups/${groupId}`
+      } else {
+        const origin = getResourceOrigin(location.pathname)
+        payload.created_by_role         = origin.created_by_role
+        payload.created_from_dashboard  = origin.created_from_dashboard
+        payload.parent_context_id       = origin.parent_context_id
+        payload.return_path             = origin.return_path
       }
 
       const ws = await createDevWorkspace(payload)

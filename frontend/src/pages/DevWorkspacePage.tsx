@@ -37,8 +37,9 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { dashboardCardSx, dashboardSemanticColors, dashboardTokens } from '../styles/dashboardDesignSystem';
+import { getResourceOrigin } from '../services/resourceContext';
 import {
   listDevWorkspaces,
   createDevWorkspace,
@@ -145,7 +146,10 @@ function CreateDialog({ open, onClose, onCreated }: CreateDialogProps) {
     }
     setBusy(true);
     try {
-      await createDevWorkspace(form);
+      // Attach developer context so this workspace is only visible on the
+      // Developer Dashboard and never leaks into Enterprise or Group dashboards.
+      const origin = getResourceOrigin(window.location.pathname);
+      await createDevWorkspace({ ...form, ...origin });
       onCreated();
       onClose();
     } catch (ex: any) {
@@ -241,7 +245,8 @@ const DevWorkspacePage: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const data = await listDevWorkspaces();
+      // Developer Dashboard: only show workspaces created from developer context
+      const data = await listDevWorkspaces({ dashboard: 'developer' });
       setWorkspaces(Array.isArray(data) ? data : []);
     } catch {
       setError('Unable to fetch workspaces from backend. Check your connection and try again.');

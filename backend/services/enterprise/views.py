@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
+from .serializers import OrgSettingsSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -157,6 +158,27 @@ class OrganizationViewSet(
         _log_action(org, request, 'ORGANIZATION_UPDATED',
                     target_type='ORGANIZATION', target_id=org.id, target_label=org.name)
         return Response(ser.data)
+
+    @action(detail=True, methods=['get', 'put'], url_path='settings')
+    def settings(self, request, pk=None):
+        """
+        GET  /api/enterprise/organizations/:id/settings/  – retrieve org settings
+        PUT  /api/enterprise/organizations/:id/settings/  – update org settings
+        """
+        org = self.get_object()
+        if request.method == 'GET':
+            return Response(OrgSettingsSerializer(org).data)
+        # PUT
+        branding_color = request.data.get('branding_primary_color')
+        ser = OrgSettingsSerializer(
+            org, data=request.data, partial=True,
+            context={**self.get_serializer_context(), 'branding_primary_color': branding_color},
+        )
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        _log_action(org, request, 'ORGANIZATION_SETTINGS_UPDATED',
+                    target_type='ORGANIZATION', target_id=org.id, target_label=org.name)
+        return Response(OrgSettingsSerializer(org).data)
 
 
 # ── 2. Organization Members ───────────────────────────────────────────────────

@@ -54,6 +54,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'name', 'project_key', 'namespace', 'description',
             'visibility', 'avatar_color', 'last_activity',
             'repo_count', 'pipeline_count', 'has_repo',
+            # Context-aware architecture fields
+            'created_by_role', 'parent_context_id', 'return_path',
             'created_at', 'updated_at',
         ]
         read_only_fields = (

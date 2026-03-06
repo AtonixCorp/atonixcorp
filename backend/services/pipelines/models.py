@@ -57,6 +57,27 @@ class Project(TimeStampedModel):
         help_text='Group ID this project belongs to.')
     group_name     = models.CharField(max_length=200, blank=True, default='')
 
+    # ── Resource origin context (context-aware architecture) ─────────────────
+    ROLE_CHOICES = [
+        ('enterprise', 'Enterprise'),
+        ('developer',  'Developer'),
+    ]
+    created_by_role = models.CharField(
+        max_length=20, choices=ROLE_CHOICES, default='developer',
+        db_index=True,
+        help_text='Whether this project was created under an enterprise or developer identity.',
+    )
+    # parent_context_id is the enterprise org id or group id (reuses group_id for group context)
+    parent_context_id = models.CharField(
+        max_length=100, blank=True, default='',
+        db_index=True,
+        help_text='Owning entity ID: enterprise org id, group id, or empty for personal.',
+    )
+    return_path = models.CharField(
+        max_length=500, blank=True, default='',
+        help_text='Frontend URL the user navigates back to from this project.',
+    )
+
     class Meta:
         db_table = 'projects'
         indexes = [

@@ -2,6 +2,7 @@
 
 import client from './apiClient'
 import type { GroupSidebarData } from './groupsApi'
+import type { ContextListParams } from './resourceContext'
 
 const BASE = '/api/services/dev-workspaces'
 
@@ -71,6 +72,15 @@ export interface DevWorkspace {
   pipeline_last_failure: string | null
   pipeline_last_status: string
   setup_metadata: Record<string, unknown>
+  // ── Context-aware architecture fields ────────────────────────────────────
+  /** 'enterprise' | 'developer' — role of user who created this workspace */
+  created_by_role: 'enterprise' | 'developer'
+  /** Which dashboard this workspace was created from */
+  created_from_dashboard: 'enterprise' | 'developer' | 'group'
+  /** Enterprise org slug, group id, or '' for personal workspaces */
+  parent_context_id: string
+  /** Frontend URL to navigate back to from this workspace */
+  return_path: string
 }
 
 // ── Catalog types ────────────────────────────────────────────────────────────
@@ -186,13 +196,38 @@ export interface CreateDevWorkspacePayload {
   // Image pull
   pull_image?: boolean
   custom_image_url?: string
+  // ── Context-aware architecture fields ────────────────────────────────────
+  /** Set automatically from current URL via getResourceOrigin() */
+  created_by_role?: 'enterprise' | 'developer'
+  /** Which dashboard this workspace is being created from */
+  created_from_dashboard?: 'enterprise' | 'developer' | 'group'
+  /** Enterprise org slug, group id, or '' for personal workspaces */
+  parent_context_id?: string
+  /** Frontend URL the user navigates back to from this workspace */
+  return_path?: string
 }
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
 
-/** List all dev workspaces for the current user */
-export async function listDevWorkspaces(): Promise<DevWorkspace[]> {
-  const { data } = await client.get<DevWorkspace[] | { results: DevWorkspace[] }>(BASE + '/')
+/**
+ * List dev workspaces for the current user filtered by dashboard context.
+ *
+ * Pass no args (or `{ dashboard: 'developer' }`) to get personal workspaces
+ * only — enterprise workspaces are excluded by default.
+ *
+ * Pass `{ dashboard: 'enterprise', parent_context_id: orgSlug }` to get
+ * workspaces created from that enterprise org.
+ *
+ * Pass `{ dashboard: 'group', parent_context_id: groupId }` to get group
+ * workspaces.
+ */
+export async function listDevWorkspaces(
+  params: ContextListParams = { dashboard: 'developer' },
+): Promise<DevWorkspace[]> {
+  const { data } = await client.get<DevWorkspace[] | { results: DevWorkspace[] }>(
+    BASE + '/',
+    { params },
+  )
   return Array.isArray(data) ? data : (data as any).results ?? []
 }
 

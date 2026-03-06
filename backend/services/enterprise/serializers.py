@@ -40,6 +40,34 @@ class OrganizationCreateSerializer(serializers.ModelSerializer):
                   'contact_email', 'domain_email', 'logo_url']
 
 
+class OrgSettingsSerializer(serializers.ModelSerializer):
+    branding_primary_color = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Organization
+        fields = [
+            'language', 'timezone', 'default_department',
+            'notifications_billing', 'notifications_security', 'notifications_usage',
+            'notification_slack_webhook', 'branding_primary_color',
+        ]
+
+    def get_branding_primary_color(self, obj):
+        try:
+            return obj.branding.primary_color
+        except Exception:
+            return '#153d75'
+
+    def update(self, instance, validated_data):
+        branding_color = self.context.get('branding_primary_color')
+        if branding_color:
+            try:
+                instance.branding.primary_color = branding_color
+                instance.branding.save(update_fields=['primary_color'])
+            except Exception:
+                pass
+        return super().update(instance, validated_data)
+
+
 # ── Organization Member ───────────────────────────────────────────────────────
 
 class OrganizationMemberSerializer(serializers.ModelSerializer):

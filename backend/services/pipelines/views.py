@@ -48,7 +48,33 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Project.objects.filter(owner=self.request.user).order_by('-created_at')
+        """
+        Context-aware project filter.
+
+        Query params:
+            dashboard           'developer' (default) | 'enterprise' | 'group'
+            parent_context_id   enterprise org id or group id
+            group_id            shorthand for group context (legacy support)
+        """
+        qs = Project.objects.filter(owner=self.request.user)
+        dashboard = self.request.query_params.get('dashboard', '')
+        parent_id = self.request.query_params.get('parent_context_id', '')
+        # Legacy: ?group_id= filter still works
+        legacy_group = self.request.query_params.get('group_id', '')
+
+        if dashboard == 'enterprise':
+            qs = qs.filter(created_by_role='enterprise')
+            if parent_id:
+                qs = qs.filter(parent_context_id=parent_id)
+        elif dashboard == 'group' or legacy_group:
+            gid = parent_id or legacy_group
+            qs = qs.filter(context='group')
+            if gid:
+                qs = qs.filter(group_id=gid)
+        elif dashboard == 'developer':
+            qs = qs.filter(created_by_role='developer')
+        # No dashboard param → return all user projects (backward compat)
+        return qs.order_by('-created_at')
 
     def perform_create(self, serializer):
         provided_id = self.request.data.get('id') or self.request.data.get('project_key')

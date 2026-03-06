@@ -13,8 +13,20 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardTopBar from '../components/Layout/DashboardTopBar';
+import WorkspaceCreationWizard from '../components/Workspace/WorkspaceCreationWizard';
+import {
+  listDevWorkspaces,
+  startDevWorkspace,
+  stopDevWorkspace,
+  deleteDevWorkspace,
+  type DevWorkspace as DevWs,
+} from '../services/devWorkspaceApi';
 
 // Icons
+import LaptopIcon from '@mui/icons-material/Laptop';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import MemoryIcon from '@mui/icons-material/Memory';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -110,12 +122,12 @@ const SIDEBAR_COLLAPSED_WIDTH = 70;
 // ── Module definitions ─────────────────────────────────────────────────────
 type WorkspaceModule = 'overview' | 'organization' | 'departments' | 'members' | 'billing' |
   'domains' | 'email' | 'marketing' | 'compliance' | 'integrations' | 'orders' | 'audit' | 'settings' | 'wiki' | 'docs' |
-  'meetings' | 'developer-hub';
+  'meetings' | 'developer-hub' | 'developer';
 
 const VALID_MODULES: WorkspaceModule[] = [
   'overview', 'organization', 'departments', 'members', 'billing',
   'domains', 'email', 'marketing', 'compliance', 'integrations', 'orders', 'audit', 'settings', 'wiki', 'docs',
-  'meetings', 'developer-hub',
+  'meetings', 'developer-hub', 'developer',
 ];
 
 const MODULES: Array<{
@@ -143,14 +155,16 @@ const MODULES: Array<{
   { key: 'docs',         label: 'Docs',         icon: <AutoStoriesIcon />,    desc: 'Platform docs, runbooks & guides',     enterprisePath: s => `/docs`, externalLink: true },
   { key: 'meetings',     label: 'Meetings',     icon: <EventIcon />,          desc: 'Schedule, join & manage meetings',     enterprisePath: s => `/enterprise/${s}/meetings`,      externalLink: true },
   { key: 'developer-hub', label: 'Developer Hub', icon: <DeveloperModeIcon />, desc: 'APIs, SDKs, webhooks & dev tools',    enterprisePath: s => `/enterprise/${s}/developer-hub`, externalLink: true },
+  { key: 'developer',     label: 'Dev Workspaces', icon: <LaptopIcon />,         desc: 'Enterprise-scoped developer workspaces', enterprisePath: s => `/enterprise/${s}/workspace/developer/workspace` },
 ];
 
 const SIDEBAR_GROUPS: Array<{ label: string; keys: WorkspaceModule[] }> = [
   { label: 'Workspace',            keys: ['overview', 'organization', 'departments', 'members'] },
   { label: 'Finance',              keys: ['billing', 'orders'] },
-  { label: 'Domain',               keys: ['domains', 'email', 'marketing', 'meetings', 'developer-hub'] },
+  { label: 'Domain',               keys: ['domains', 'email', 'marketing', 'meetings'] },
   { label: 'Security & Compliance',keys: ['compliance', 'integrations', 'audit'] },
   { label: 'Resources',            keys: ['settings', 'wiki', 'docs'] },
+  { label: 'Developer',            keys: ['developer-hub', 'developer'] },
 ];
 
 // ── Utility components ─────────────────────────────────────────────────────
@@ -2423,6 +2437,161 @@ function MeetingsModule({ orgId }: { orgId: string }) {
   );
 }
 
+// ── Enterprise Dev Workspace Module ──────────────────────────────────────────
+// Workspaces created here carry created_from_dashboard='enterprise' and are
+// therefore invisible on the personal Developer Dashboard.
+function EnterpriseDevWorkspaceModule({ org, orgSlug }: { org: OrgData; orgSlug: string }) {
+  const [workspaces, setWorkspaces] = useState<DevWs[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [actionBusy, setActionBusy] = useState<Record<string, boolean>>({});
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DevWs | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await listDevWorkspaces({ dashboard: 'enterprise', parent_context_id: orgSlug });
+      setWorkspaces(Array.isArray(data) ? data : []);
+    } finally { setLoading(false); }
+  }, [orgSlug]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const withBusy = async (id: string, fn: () => Promise<void>) => {
+    setActionBusy(b => ({ ...b, [id]: true }));
+    try { await fn(); await load(); } finally {
+      setActionBusy(b => ({ ...b, [id]: false }));
+    }
+  };
+
+  const statusColor = (s: string) => (
+    s === 'running'  ? T.green  :
+    s === 'starting' ? T.yellow :
+    s === 'stopping' ? T.yellow :
+    s === 'error'    ? T.red    : T.sub
+  );
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.3rem', color: T.brand, fontFamily: T.font }}>
+            Enterprise Dev Workspaces
+          </Typography>
+          <Typography sx={{ fontSize: '.82rem', color: T.sub, mt: .3, fontFamily: T.font }}>
+            Workspaces here are enterprise-scoped and hidden from the personal Developer Dashboard.
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />}
+          onClick={() => setWizardOpen(true)}
+          sx={{ bgcolor: T.brand, '&:hover': { bgcolor: '#0f2d5a' }, fontFamily: T.font, fontWeight: 700 }}>
+          New Workspace
+        </Button>
+      </Box>
+
+      {loading && <LinearProgress sx={{ borderRadius: 1, mb: 2 }} />}
+
+      {!loading && workspaces.length === 0 && (
+        <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
+          <LaptopIcon sx={{ fontSize: 40, color: T.sub, mb: 1 }} />
+          <Typography sx={{ fontFamily: T.font, color: T.sub, mb: 2 }}>
+            No enterprise workspaces yet.
+          </Typography>
+          <Button variant="outlined" onClick={() => setWizardOpen(true)} startIcon={<AddIcon />}>
+            Create first workspace
+          </Button>
+        </Paper>
+      )}
+
+      <Grid container spacing={2}>
+        {workspaces.map(ws => (
+          <Grid size={{ xs: 12, md: 6 }} key={ws.workspace_id}>
+            <Card variant="outlined" sx={{ borderRadius: 2 }}>
+              <CardContent sx={{ pb: '12px !important' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography sx={{ fontWeight: 700, fontFamily: T.font, fontSize: '.9rem', color: T.brand }}>
+                    {ws.display_name}
+                  </Typography>
+                  <Chip label={ws.status} size="small"
+                    sx={{ bgcolor: `${statusColor(ws.status)}22`, color: statusColor(ws.status),
+                          fontWeight: 700, fontSize: '.7rem' }} />
+                </Box>
+                <Typography sx={{ fontSize: '.75rem', color: T.sub, fontFamily: T.font, mb: 1.5 }}>
+                  {ws.workspace_id}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
+                  {ws.region && <Chip label={ws.region} size="small" variant="outlined" sx={{ fontSize: '.7rem' }} />}
+                  <Chip icon={<MemoryIcon sx={{ fontSize: 14 }} />}
+                    label={`${ws.vcpus} vCPU / ${ws.ram_gb} GB`} size="small" variant="outlined"
+                    sx={{ fontSize: '.7rem' }} />
+                </Box>
+                <Box sx={{ display: 'flex', gap: .75 }}>
+                  {ws.status === 'stopped' && (
+                    <Tooltip title="Start">
+                      <IconButton size="small" disabled={!!actionBusy[ws.workspace_id]}
+                        onClick={() => withBusy(ws.workspace_id, () => startDevWorkspace(ws.workspace_id) as Promise<any>)}>
+                        <PlayArrowIcon fontSize="small" sx={{ color: T.green }} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {ws.status === 'running' && (
+                    <Tooltip title="Stop">
+                      <IconButton size="small" disabled={!!actionBusy[ws.workspace_id]}
+                        onClick={() => withBusy(ws.workspace_id, () => stopDevWorkspace(ws.workspace_id) as Promise<any>)}>
+                        <StopIcon fontSize="small" sx={{ color: T.red }} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {ws.editor_url && ws.status === 'running' && (
+                    <Tooltip title="Open IDE">
+                      <IconButton size="small" component="a" href={ws.editor_url} target="_blank">
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="Delete">
+                    <IconButton size="small" disabled={ws.status !== 'stopped' || !!actionBusy[ws.workspace_id]}
+                      onClick={() => setDeleteTarget(ws)}>
+                      <DeleteIcon fontSize="small" sx={{ color: T.red }} />
+                    </IconButton>
+                  </Tooltip>
+                  {actionBusy[ws.workspace_id] && <CircularProgress size={16} sx={{ ml: .5 }} />}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <WorkspaceCreationWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={() => { setWizardOpen(false); load(); }}
+        enterpriseOrgSlug={orgSlug}
+      />
+
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontFamily: T.font, fontWeight: 700 }}>Delete Workspace</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontFamily: T.font }}>
+            Delete <strong>{deleteTarget?.display_name}</strong>? This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)}>Cancel</Button>
+          <Button variant="contained" color="error" disabled={!!actionBusy[deleteTarget?.workspace_id ?? '']}
+            onClick={() => deleteTarget && withBusy(deleteTarget.workspace_id, async () => {
+              await deleteDevWorkspace(deleteTarget.workspace_id);
+              setDeleteTarget(null);
+            })}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
+
 // ── Developer Hub Module ──────────────────────────────────────────────────────
 function DeveloperHubModule({ orgId }: { orgId: string }) {
   const [tab, setTab] = useState(0);
@@ -2828,6 +2997,7 @@ const BusinessWorkspacePage: React.FC = () => {
             {module === 'docs'         && <DocsModule />}
             {module === 'meetings'     && <MeetingsModule orgId={org.id} />}
             {module === 'developer-hub' && <DeveloperHubModule orgId={org.id} />}
+            {module === 'developer'     && <EnterpriseDevWorkspaceModule org={org} orgSlug={orgSlug} />}
           </Box>
         </Box>
       </Box>

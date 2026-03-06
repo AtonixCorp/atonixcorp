@@ -19,6 +19,62 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class ResourceContextMixin(models.Model):
+    """
+    Mixin that records *where* and *by whom* a resource was created.
+
+    This is the foundation of the context-aware architecture:
+
+        created_by_role         — the user's active role at creation time
+                                  ('enterprise' | 'developer')
+        created_from_dashboard  — which dashboard triggered the creation
+                                  ('enterprise' | 'developer' | 'group')
+        parent_context_id       — the owning entity's ID
+                                  (enterprise org id, group id, or '')
+        return_path             — full frontend URL the user navigates back to
+                                  e.g. '/enterprise/acme/workspace/developer/workspace'
+
+    Visibility rules enforced at the viewset layer:
+        • developer dashboard  → filter created_from_dashboard='developer'
+        • enterprise dashboard → filter created_from_dashboard='enterprise'
+                                   AND parent_context_id=<org_id>
+        • group context        → filter created_from_dashboard='group'
+                                   AND parent_context_id=<group_id>
+    """
+    ROLE_CHOICES = [
+        ('enterprise', 'Enterprise'),
+        ('developer',  'Developer'),
+    ]
+    DASHBOARD_CHOICES = [
+        ('enterprise', 'Enterprise Dashboard'),
+        ('developer',  'Developer Dashboard'),
+        ('group',      'Group Dashboard'),
+    ]
+
+    created_by_role = models.CharField(
+        max_length=20, choices=ROLE_CHOICES, default='developer',
+        db_index=True,
+        help_text='Role of the user who created this resource.',
+    )
+    created_from_dashboard = models.CharField(
+        max_length=20, choices=DASHBOARD_CHOICES, default='developer',
+        db_index=True,
+        help_text='Dashboard context in which this resource was created.',
+    )
+    parent_context_id = models.CharField(
+        max_length=100, blank=True, default='',
+        db_index=True,
+        help_text='ID of the owning entity: enterprise org id, group id, or empty for personal.',
+    )
+    return_path = models.CharField(
+        max_length=500, blank=True, default='',
+        help_text='Frontend URL the user returns to after viewing this resource.',
+    )
+
+    class Meta:
+        abstract = True
+
+
 class ResourceModel(TimeStampedModel):
     """Base model for cloud resources."""
     resource_id = models.CharField(

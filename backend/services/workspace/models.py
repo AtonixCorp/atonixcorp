@@ -10,6 +10,7 @@
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from ..core.base_models import ResourceContextMixin
 
 User = get_user_model()
 
@@ -250,6 +251,38 @@ class DevWorkspace(models.Model):
     pipeline_last_status   = models.CharField(max_length=32, blank=True, default='')
     # Flexible extra metadata supplied by setup wizard
     setup_metadata         = models.JSONField(default=dict, blank=True)
+
+    # ── Resource origin context (context-aware architecture) ─────────────────
+    # These four fields drive dashboard visibility, navigation, and governance.
+    # See ResourceContextMixin in services/core/base_models.py for full docs.
+    ROLE_CHOICES = [
+        ('enterprise', 'Enterprise'),
+        ('developer',  'Developer'),
+    ]
+    DASHBOARD_CHOICES = [
+        ('enterprise', 'Enterprise Dashboard'),
+        ('developer',  'Developer Dashboard'),
+        ('group',      'Group Dashboard'),
+    ]
+    created_by_role = models.CharField(
+        max_length=20, choices=ROLE_CHOICES, default='developer',
+        db_index=True,
+        help_text='Role of the user who created this workspace.',
+    )
+    created_from_dashboard = models.CharField(
+        max_length=20, choices=DASHBOARD_CHOICES, default='developer',
+        db_index=True,
+        help_text='Dashboard context in which this workspace was created.',
+    )
+    parent_context_id = models.CharField(
+        max_length=100, blank=True, default='',
+        db_index=True,
+        help_text='Owning entity ID: enterprise org id, group id, or empty for personal.',
+    )
+    return_path = models.CharField(
+        max_length=500, blank=True, default='',
+        help_text='Frontend URL the user navigates back to from this workspace.',
+    )
 
     class Meta:
         ordering = ['-created_at']

@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import type { ContextListParams } from './resourceContext';
 
 export interface BackendProject {
   id:                  string;
@@ -22,6 +23,13 @@ export interface BackendProject {
   workspace_name?:     string;
   group_id?:           string;
   group_name?:         string;
+  // Context-aware architecture fields
+  /** 'enterprise' | 'developer' — role identity at creation time */
+  created_by_role?:    'enterprise' | 'developer';
+  /** Owning entity ID: enterprise org slug, group id, or '' */
+  parent_context_id?:  string;
+  /** Frontend URL to navigate back to from this project */
+  return_path?:        string;
   created_at?:         string;
   updated_at?:         string;
 }
@@ -45,11 +53,25 @@ export interface CreateBackendProjectPayload {
   workspace_name?: string;
   group_id?:      string;
   group_name?:    string;
+  // Context-aware architecture fields
+  /** Set from current URL via getResourceOrigin() */
+  created_by_role?:   'enterprise' | 'developer';
+  parent_context_id?: string;
+  return_path?:       string;
 }
 
-export async function listProjects(): Promise<BackendProject[]> {
+/**
+ * List projects for the current user filtered by dashboard context.
+ *
+ * Pass no args to list all user projects (backward compatible).
+ * Pass `{ dashboard: 'developer' }` for only developer-created projects.
+ * Pass `{ dashboard: 'enterprise', parent_context_id: orgSlug }` for enterprise projects.
+ * Pass `{ dashboard: 'group', parent_context_id: groupId }` for group projects.
+ */
+export async function listProjects(params?: ContextListParams): Promise<BackendProject[]> {
   const response = await apiClient.get<BackendProject[] | { results: BackendProject[]; count: number }>(
     '/api/services/pipelines/projects/',
+    params ? { params } : undefined,
   );
   const d = response.data;
   return Array.isArray(d) ? d : (d as any).results ?? [];
